@@ -2180,7 +2180,8 @@ struct SettingsContentView: View {
             Spacer()
 
             Picker("", selection: $chatBridgeMode) {
-              Text("omi account").tag("agentSDK")
+              Text("Omi AI").tag("agentSDK")
+              Text("Omi AI (Pi-Mono)").tag("piMono")
               Text("Your Claude Account").tag("claudeCode")
             }
             .pickerStyle(.menu)
@@ -2197,6 +2198,8 @@ struct SettingsContentView: View {
           Text(
             chatBridgeMode == "claudeCode"
               ? "Using your Claude Pro/Max subscription. You'll be prompted to sign in with your Claude account."
+              : chatBridgeMode == "piMono"
+              ? "Using Omi AI via pi-mono agent. All inference routed through api.omi.me."
               : "Using your omi account."
           )
           .scaledFont(size: 12)
@@ -3003,7 +3006,8 @@ struct SettingsContentView: View {
             Spacer()
 
             Picker("", selection: $chatBridgeMode) {
-              Text("omi account").tag("agentSDK")
+              Text("Omi AI").tag("agentSDK")
+              Text("Omi AI (Pi-Mono)").tag("piMono")
               Text("Your Claude Account").tag("claudeCode")
             }
             .pickerStyle(.menu)
@@ -3020,6 +3024,8 @@ struct SettingsContentView: View {
           Text(
             chatBridgeMode == "claudeCode"
               ? "Use your Claude subscription for desktop chat."
+              : chatBridgeMode == "piMono"
+              ? "Use Omi AI via pi-mono agent for desktop chat."
               : "Use your omi account for desktop chat."
           )
           .scaledFont(size: 12)
