@@ -264,7 +264,7 @@ struct SettingsContentView: View {
   @AppStorage("conversationsCompactView") private var conversationsCompactView = true
 
   // AI Chat settings
-  @AppStorage("chatBridgeMode") private var chatBridgeMode: String = "agentSDK"
+  @AppStorage("chatBridgeMode") private var chatBridgeMode: String = "piMono"
   @AppStorage("askModeEnabled") private var askModeEnabled = false
   @AppStorage("claudeMdEnabled") private var claudeMdEnabled = true
   @AppStorage("projectClaudeMdEnabled") private var projectClaudeMdEnabled = true
@@ -2180,8 +2180,7 @@ struct SettingsContentView: View {
             Spacer()
 
             Picker("", selection: $chatBridgeMode) {
-              Text("Omi AI").tag("agentSDK")
-              Text("Omi AI (Pi-Mono)").tag("piMono")
+              Text("Omi AI").tag("piMono")
               Text("Your Claude Account").tag("claudeCode")
             }
             .pickerStyle(.menu)
@@ -2198,9 +2197,7 @@ struct SettingsContentView: View {
           Text(
             chatBridgeMode == "claudeCode"
               ? "Using your Claude Pro/Max subscription. You'll be prompted to sign in with your Claude account."
-              : chatBridgeMode == "piMono"
-              ? "Using Omi AI via pi-mono agent. All inference routed through api.omi.me."
-              : "Using your omi account."
+              : "Using your Omi account. All inference routed through api.omi.me."
           )
           .scaledFont(size: 12)
           .foregroundColor(OmiColors.textTertiary)
@@ -3006,8 +3003,7 @@ struct SettingsContentView: View {
             Spacer()
 
             Picker("", selection: $chatBridgeMode) {
-              Text("Omi AI").tag("agentSDK")
-              Text("Omi AI (Pi-Mono)").tag("piMono")
+              Text("Omi AI").tag("piMono")
               Text("Your Claude Account").tag("claudeCode")
             }
             .pickerStyle(.menu)
@@ -3024,9 +3020,7 @@ struct SettingsContentView: View {
           Text(
             chatBridgeMode == "claudeCode"
               ? "Use your Claude subscription for desktop chat."
-              : chatBridgeMode == "piMono"
-              ? "Use Omi AI via pi-mono agent for desktop chat."
-              : "Use your omi account for desktop chat."
+              : "Use your Omi account for desktop chat."
           )
           .scaledFont(size: 12)
           .foregroundColor(OmiColors.textTertiary)
