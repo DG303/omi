@@ -197,7 +197,11 @@ int app_settings_init(void)
         return err;
     }
 
-    err = settings_load();
+    /*
+     * The BT-side settings_load() is done later in transport_start() after
+     * bt_enable(), which is the correct ordering.
+     */
+    err = settings_load_subtree("omi");
     if (err) {
         LOG_ERR("Failed to load settings (err %d)", err);
     }
