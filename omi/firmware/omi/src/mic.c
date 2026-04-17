@@ -18,7 +18,8 @@ LOG_MODULE_REGISTER(mic, CONFIG_LOG_DEFAULT_LEVEL);
 #define MAX_SAMPLE_RATE 16000
 #define SAMPLE_BIT_WIDTH 16
 #define BYTES_PER_SAMPLE sizeof(int16_t)
-#define CHANNELS 2
+#define STEREO_CHANNELS 2
+#define MONO_CHANNELS 1
 
 /* Milliseconds to wait for a block to be read. */
 #define READ_TIMEOUT 1000
@@ -30,7 +31,7 @@ LOG_MODULE_REGISTER(mic, CONFIG_LOG_DEFAULT_LEVEL);
  * Application, after getting a given block from the driver and processing its
  * data, needs to free that block.
  */
-#define MAX_BLOCK_SIZE BLOCK_SIZE(MAX_SAMPLE_RATE, 2)
+#define MAX_BLOCK_SIZE BLOCK_SIZE(MAX_SAMPLE_RATE, STEREO_CHANNELS)
 #define BLOCK_COUNT 4
 
 K_MEM_SLAB_DEFINE_STATIC(mem_slab, MAX_BLOCK_SIZE, BLOCK_COUNT, 4);
@@ -38,9 +39,53 @@ K_MEM_SLAB_DEFINE_STATIC(mem_slab, MAX_BLOCK_SIZE, BLOCK_COUNT, 4);
 static const struct device *dmic_dev;
 static volatile mix_handler callback_func = NULL;
 static volatile bool mic_running = false;
+static struct pcm_stream_cfg mic_stream;
+static struct dmic_cfg mic_cfg;
+static mic_mode_t current_mode = MIC_MODE_STEREO;
+static uint8_t active_channels = STEREO_CHANNELS;
 
 #define MAX_FRAMES (MAX_SAMPLE_RATE / 10)
 static int16_t mono_buffer[MAX_FRAMES];
+
+static void copy_mono_to_buffer(const int16_t *restrict mono_in, size_t frames, int16_t *restrict mono_out)
+{
+    for (size_t i = 0; i < frames; ++i) {
+        mono_out[i] = mono_in[i];
+    }
+}
+
+static uint8_t mic_channels_for_mode(mic_mode_t mode)
+{
+    return (mode == MIC_MODE_MONO_LEFT) ? MONO_CHANNELS : STEREO_CHANNELS;
+}
+
+static uint32_t mic_channel_map_for_mode(mic_mode_t mode)
+{
+    if (mode == MIC_MODE_MONO_LEFT) {
+        /* MIC1 SELECT is tied low in schematic, so it is the left channel. */
+        return dmic_build_channel_map(0, 0, PDM_CHAN_LEFT);
+    }
+
+    return dmic_build_channel_map(0, 0, PDM_CHAN_LEFT) | dmic_build_channel_map(1, 0, PDM_CHAN_RIGHT);
+}
+
+static int mic_configure_mode(mic_mode_t mode)
+{
+    active_channels = mic_channels_for_mode(mode);
+    mic_stream.block_size = BLOCK_SIZE(MAX_SAMPLE_RATE, active_channels);
+    mic_cfg.channel.req_num_chan = active_channels;
+    mic_cfg.channel.req_chan_map_lo = mic_channel_map_for_mode(mode);
+
+    int ret = dmic_configure(dmic_dev, &mic_cfg);
+    if (ret < 0) {
+        LOG_ERR("Failed to configure microphone mode %d: %d", mode, ret);
+        return ret;
+    }
+
+    current_mode = mode;
+    LOG_INF("Microphone mode set to %s", mode == MIC_MODE_MONO_LEFT ? "mono MIC1" : "stereo MIC1+MIC2");
+    return 0;
+}
 
 static inline void
 interleaved_stereo_to_mono(const int16_t *restrict interleaved, size_t frames, int16_t *restrict mono_out)
@@ -61,10 +106,9 @@ interleaved_stereo_to_mono(const int16_t *restrict interleaved, size_t frames, i
 
 static void process_audio_buffer(void *buffer, uint32_t size)
 {
-    /* size is total interleaved stereo size: frames * 2ch * 2bytes */
-    __ASSERT_NO_MSG((size % (BYTES_PER_SAMPLE * CHANNELS)) == 0);
-    size_t frames = size / (BYTES_PER_SAMPLE * CHANNELS);
-    int16_t *inter = (int16_t *) buffer;
+    __ASSERT_NO_MSG((size % (BYTES_PER_SAMPLE * active_channels)) == 0);
+    size_t frames = size / (BYTES_PER_SAMPLE * active_channels);
+    int16_t *samples = (int16_t *) buffer;
 
     /* Verify we don't exceed static buffer size */
     if (frames > MAX_FRAMES) {
@@ -73,13 +117,17 @@ static void process_audio_buffer(void *buffer, uint32_t size)
         return;
     }
 
-    interleaved_stereo_to_mono(inter, frames, mono_buffer);
+    if (active_channels == MONO_CHANNELS) {
+        copy_mono_to_buffer(samples, frames, mono_buffer);
+    } else {
+        interleaved_stereo_to_mono(samples, frames, mono_buffer);
+    }
+
+    k_mem_slab_free(&mem_slab, buffer);
 
     if (callback_func) {
         callback_func(mono_buffer);
     }
-
-    k_mem_slab_free(&mem_slab, buffer);
 }
 
 static void mic_thread_function(void *p1, void *p2, void *p3)
@@ -92,13 +140,13 @@ static void mic_thread_function(void *p1, void *p2, void *p3)
         if (mic_running) {
             void *buffer;
             uint32_t size;
-    
+
             int ret = dmic_read(dmic_dev, 0, &buffer, &size, READ_TIMEOUT);
             if (ret < 0) {
                 LOG_ERR("Read failed: %d", ret);
                 continue;
             }
-    
+
             LOG_DBG("Got buffer %p of %u bytes", buffer, size);
             process_audio_buffer(buffer, size);
         } else {
@@ -129,14 +177,14 @@ int mic_start()
         return -ENODEV;
     }
 
-    struct pcm_stream_cfg stream = {
+    mic_stream = (struct pcm_stream_cfg){
         .pcm_width = SAMPLE_BIT_WIDTH,
         .mem_slab = &mem_slab,
         .pcm_rate = MAX_SAMPLE_RATE,
-        .block_size = BLOCK_SIZE(MAX_SAMPLE_RATE, CHANNELS),
+        .block_size = BLOCK_SIZE(MAX_SAMPLE_RATE, STEREO_CHANNELS),
     };
 
-    struct dmic_cfg cfg = {
+    mic_cfg = (struct dmic_cfg){
         .io =
             {
                 .min_pdm_clk_freq = 512000,
@@ -144,22 +192,20 @@ int mic_start()
                 .min_pdm_clk_dc = 48,
                 .max_pdm_clk_dc = 52,
             },
-        .streams = &stream,
+        .streams = &mic_stream,
         .channel =
             {
                 .req_num_streams = 1,
-                .req_num_chan = CHANNELS,
-                .req_chan_map_lo =
-                    dmic_build_channel_map(0, 0, PDM_CHAN_LEFT) | dmic_build_channel_map(1, 0, PDM_CHAN_RIGHT),
+                .req_num_chan = STEREO_CHANNELS,
+                .req_chan_map_lo = mic_channel_map_for_mode(MIC_MODE_STEREO),
             },
 
     };
 
-    LOG_INF("PCM output rate: %u, channels: %u", cfg.streams[0].pcm_rate, cfg.channel.req_num_chan);
+    LOG_INF("PCM output rate: %u, channels: %u", mic_cfg.streams[0].pcm_rate, mic_cfg.channel.req_num_chan);
 
-    ret = dmic_configure(dmic_dev, &cfg);
+    ret = mic_configure_mode(MIC_MODE_STEREO);
     if (ret < 0) {
-        LOG_ERR("Failed to configure the driver: %d", ret);
         return ret;
     }
 
@@ -209,6 +255,59 @@ void mic_resume()
         }
         mic_running = true;
     }
+}
+
+int mic_set_mode(mic_mode_t mode)
+{
+    if (!dmic_dev) {
+        return -ENODEV;
+    }
+
+    if (mode == current_mode) {
+        return 0;
+    }
+
+    bool was_running = mic_running;
+    mic_mode_t previous_mode = current_mode;
+
+    if (was_running) {
+        int ret = dmic_trigger(dmic_dev, DMIC_TRIGGER_STOP);
+        if (ret < 0) {
+            LOG_ERR("STOP trigger failed during mode switch: %d", ret);
+            return ret;
+        }
+        mic_running = false;
+    }
+
+    int ret = mic_configure_mode(mode);
+    if (ret < 0) {
+        (void) mic_configure_mode(previous_mode);
+        if (was_running) {
+            int restart_ret = dmic_trigger(dmic_dev, DMIC_TRIGGER_START);
+            if (restart_ret < 0) {
+                LOG_ERR("Failed to restore microphone after mode-switch error: %d", restart_ret);
+                return restart_ret;
+            }
+            mic_running = true;
+        }
+        return ret;
+    }
+
+    if (was_running) {
+        ret = dmic_trigger(dmic_dev, DMIC_TRIGGER_START);
+        if (ret < 0) {
+            LOG_ERR("START trigger failed during mode switch: %d", ret);
+            return ret;
+        }
+        mic_running = true;
+    }
+
+    return 0;
+}
+
+mic_mode_t mic_get_mode(void)
+{
+    return current_mode;
 }
 
 bool mic_is_running()

@@ -10,7 +10,7 @@
 #define MAX_WRITE_SIZE 440
 #define MAX_FILENAME_LEN 64
 #define MAX_AUDIO_FILES 100
-#define FILE_ROTATION_INTERVAL_MS (30 * 60 * 1000) // 30 minutes in milliseconds
+#define FILE_ROTATION_INTERVAL_MS (15 * 60 * 1000) // 15 minutes in milliseconds
 
 /* Request types for the SD worker */
 typedef enum {
