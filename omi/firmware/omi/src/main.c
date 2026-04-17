@@ -52,6 +52,11 @@ static uint8_t mic_low_power_skip_frames = 0;
 static uint8_t mic_low_power_wake_history = 0;
 static uint8_t vad_preroll_write_index = 0;
 static uint8_t vad_preroll_count = 0;
+#ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
+static bool sd_suspended_for_vad_sleep = false;
+static bool sd_suspend_request = false;
+static bool sd_resume_request = false;
+#endif
 
 #define VAD_PREROLL_FRAMES 3
 static int16_t vad_preroll_buffer[VAD_PREROLL_FRAMES][MIC_BUFFER_SAMPLES];
@@ -230,6 +235,11 @@ static void mic_handler(int16_t *buffer)
         vad_last_voice_ms = now_ms;
         if (!vad_is_recording) {
             if (mic_low_power_mode) {
+#ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
+                if (sd_suspended_for_vad_sleep) {
+                    sd_resume_request = true;
+                }
+#endif
                 int mic_ret = mic_set_mode(MIC_MODE_STEREO);
                 if (mic_ret == 0) {
                     mic_low_power_mode = false;
@@ -268,6 +278,11 @@ static void mic_handler(int16_t *buffer)
                         mic_low_power_mode = true;
                         mic_low_power_skip_frames = MIC_LOW_POWER_SKIP_FRAMES_COUNT;
                         mic_low_power_wake_history = 0;
+#ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
+                        if (!is_connected && !sd_suspended_for_vad_sleep) {
+                            sd_suspend_request = true;
+                        }
+#endif
                         vad_preroll_reset();
                         LOG_INF("VAD: software sleep active (MIC1 only, waiting for voice)");
                     } else {
@@ -592,67 +607,35 @@ int main(void)
             vad_is_recording = false;
             LOG_INF("AAD: WAKE fired → mic resumed, VAD debounce reset");
         }
+#endif
 
-        /* Debug: poll WAKE at 500 ms while AAD sleeping */
-        if (t5838_aad_is_sleeping()) {
-            int64_t now_ms = k_uptime_get();
+#if defined(CONFIG_OMI_ENABLE_VAD_GATE) && defined(CONFIG_OMI_ENABLE_OFFLINE_STORAGE)
+        if (is_connected && sd_suspended_for_vad_sleep) {
+            sd_resume_request = true;
+        }
 
-            /* ---- POLLING-BASED WAKE DETECTION ----
-             * Datasheet: WAKE HIGH = sound detected, WAKE LOW = idle.
-             * Only trigger on LATCH (LOW→HIGH transition), NOT on raw level.
-             * Raw WAKE=1 at arm time just means TXS pull-up or T5838 not in
-             * AAD yet — not a real sound event.
-             *
-             * Guard time: ignore first 1s after arming to let T5838 settle.
-             * Timeout: force resume after 60s as safety.
-             */
-            int64_t aad_elapsed_ms = now_ms - aad_sleep_started_ms;
+        if (sd_resume_request) {
+            int sd_ret = app_sd_init();
+            if (sd_ret == 0) {
+                sd_suspended_for_vad_sleep = false;
+                LOG_INF("VAD: SD card resumed for recording");
+            } else {
+                LOG_ERR("VAD: failed to resume SD card (%d)", sd_ret);
+            }
+            sd_resume_request = false;
+        }
 
-            if (aad_elapsed_ms >= AAD_GUARD_MS) {
-                int latch_poll = t5838_aad_read_wake_latch();
-                if (latch_poll == 1) {
-                    int wake_poll = t5838_aad_read_wake_pin_raw();
-                    LOG_INF("AAD POLL: LATCH fired! wake=%d latch=1 → resuming mic", wake_poll);
-                    t5838_aad_exit_sleep();
-                    aad_sleep_started_ms = 0;
-                    aad_selftest_done = false;
-                    vad_voice_streak = 0;
-                    vad_last_voice_ms = k_uptime_get();
-                    vad_is_recording = false;
+        if (sd_suspend_request) {
+            if (!is_connected && mic_low_power_mode && !vad_is_recording && !sd_suspended_for_vad_sleep) {
+                int sd_ret = app_sd_off();
+                if (sd_ret == 0) {
+                    sd_suspended_for_vad_sleep = true;
+                    LOG_INF("VAD: SD card suspended during sleep");
+                } else {
+                    LOG_WRN("VAD: failed to suspend SD card (%d)", sd_ret);
                 }
             }
-
-            /* Timeout: force resume after 60s with no wake event */
-            if (t5838_aad_is_sleeping() && aad_elapsed_ms >= AAD_TIMEOUT_MS) {
-                LOG_WRN("AAD TIMEOUT: no wake after %llds, forcing resume", (long long) (aad_elapsed_ms / 1000));
-                t5838_aad_exit_sleep();
-                aad_sleep_started_ms = 0;
-                aad_selftest_done = false;
-                vad_voice_streak = 0;
-                vad_last_voice_ms = k_uptime_get();
-                vad_is_recording = false;
-            }
-
-            if (t5838_aad_is_sleeping() && now_ms >= aad_next_debug_log_ms) {
-                int wake_r = t5838_aad_read_wake_pin_raw();
-                int wake_lat = t5838_aad_read_wake_latch();
-                uint32_t p1_in = t5838_aad_read_p1_in();
-                uint32_t isr_cnt = t5838_aad_get_isr_count();
-                LOG_INF("AAD DBG: WAKE=%d latch=%d isr=%u | P1_IN=0x%04X",
-                        wake_r,
-                        wake_lat,
-                        isr_cnt,
-                        (unsigned) (p1_in & 0xFFFF));
-                aad_next_debug_log_ms = now_ms + 200;
-            }
-
-            /* Self-test: after 5s, check WAKE state and report AAD status */
-            if (!aad_selftest_done && aad_sleep_started_ms > 0 &&
-                (now_ms - aad_sleep_started_ms) >= AAD_SELFTEST_DELAY_MS) {
-                aad_selftest_done = true;
-                LOG_INF("AAD: running self-test (checking WAKE state)...");
-                t5838_aad_selftest_wake_irq();
-            }
+            sd_suspend_request = false;
         }
 #endif
 

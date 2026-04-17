@@ -41,6 +41,7 @@ LOG_MODULE_REGISTER(sd_card, CONFIG_LOG_DEFAULT_LEVEL);
 /* LittleFS paths are relative to FS root (no mount-point prefix) */
 #define FILE_DATA_DIR "audio"
 #define FILE_INFO_PATH "info.txt"
+#define BOOT_MIN_VALID_AUDIO_FILE_SIZE_BYTES 10000U
 
 /* ------------------------------------------------------------------ */
 /* LittleFS state                                                     */
@@ -563,6 +564,63 @@ static bool filename_equals_ignore_case(const char *a, const char *b)
     return true;
 }
 
+static bool filename_starts_with_tmp(const char *name)
+{
+    if (!name) {
+        return false;
+    }
+
+    return strncasecmp(name, "TMP", 3) == 0;
+}
+
+static void cleanup_audio_files_at_boot(void)
+{
+    lfs_dir_t dir;
+    struct lfs_info info;
+    uint32_t removed_tmp = 0;
+    uint32_t removed_small = 0;
+
+    if (lfs_dir_open(&lfs_fs, &dir, FILE_DATA_DIR) < 0) {
+        LOG_INF("[SD_BOOT] Skip cleanup: audio directory not found");
+        return;
+    }
+
+    while (lfs_dir_read(&lfs_fs, &dir, &info) > 0) {
+        if (info.type != LFS_TYPE_REG) {
+            continue;
+        }
+
+        bool should_remove_tmp = filename_starts_with_tmp(info.name);
+        bool should_remove_small = info.size < BOOT_MIN_VALID_AUDIO_FILE_SIZE_BYTES;
+        if (!should_remove_tmp && !should_remove_small) {
+            continue;
+        }
+
+        char path[64];
+        build_file_path(info.name, path, sizeof(path));
+        int rm = lfs_remove(&lfs_fs, path);
+        if (rm < 0) {
+            LOG_WRN("[SD_BOOT] Failed to remove %s (%d)", info.name, rm);
+            continue;
+        }
+
+        if (should_remove_tmp) {
+            removed_tmp++;
+        }
+        if (should_remove_small) {
+            removed_small++;
+        }
+
+        LOG_INF("[SD_BOOT] Removed stale file: %s (%u bytes)", info.name, (unsigned) info.size);
+    }
+
+    lfs_dir_close(&lfs_fs, &dir);
+    LOG_INF("[SD_BOOT] Cleanup complete: removed TMP=%u, small(<%uB)=%u",
+            removed_tmp,
+            BOOT_MIN_VALID_AUDIO_FILE_SIZE_BYTES,
+            removed_small);
+}
+
 /* ------------------------------------------------------------------ */
 /* Boot: list existing audio files                                     */
 /* ------------------------------------------------------------------ */
@@ -1064,6 +1122,9 @@ void sd_worker_thread(void)
             sd_write_blocked = true;
         }
     }
+
+    /* ---- Remove stale temp/truncated files from previous boots ---- */
+    cleanup_audio_files_at_boot();
 
     /* ---- Print existing files at boot ---- */
     print_audio_files_at_boot();
