@@ -41,9 +41,6 @@ LOG_MODULE_REGISTER(sd_card, CONFIG_LOG_DEFAULT_LEVEL);
 /* LittleFS paths are relative to FS root (no mount-point prefix) */
 #define FILE_DATA_DIR "audio"
 #define FILE_INFO_PATH "info.txt"
-#define BOOT_MIN_VALID_AUDIO_FILE_SIZE_BYTES 10000U
-#define SD_BOOT_PREWARM_ENABLED 1
-#define SD_BOOT_LOG_FILE_LIST 1
 
 /* ------------------------------------------------------------------ */
 /* LittleFS state                                                     */
@@ -566,63 +563,6 @@ static bool filename_equals_ignore_case(const char *a, const char *b)
     return true;
 }
 
-static bool filename_starts_with_tmp(const char *name)
-{
-    if (!name) {
-        return false;
-    }
-
-    return strncasecmp(name, "TMP", 3) == 0;
-}
-
-static void cleanup_audio_files_at_boot(void)
-{
-    lfs_dir_t dir;
-    struct lfs_info info;
-    uint32_t removed_tmp = 0;
-    uint32_t removed_small = 0;
-
-    if (lfs_dir_open(&lfs_fs, &dir, FILE_DATA_DIR) < 0) {
-        LOG_INF("[SD_BOOT] Skip cleanup: audio directory not found");
-        return;
-    }
-
-    while (lfs_dir_read(&lfs_fs, &dir, &info) > 0) {
-        if (info.type != LFS_TYPE_REG) {
-            continue;
-        }
-
-        bool should_remove_tmp = filename_starts_with_tmp(info.name);
-        bool should_remove_small = info.size < BOOT_MIN_VALID_AUDIO_FILE_SIZE_BYTES;
-        if (!should_remove_tmp && !should_remove_small) {
-            continue;
-        }
-
-        char path[64];
-        build_file_path(info.name, path, sizeof(path));
-        int rm = lfs_remove(&lfs_fs, path);
-        if (rm < 0) {
-            LOG_WRN("[SD_BOOT] Failed to remove %s (%d)", info.name, rm);
-            continue;
-        }
-
-        if (should_remove_tmp) {
-            removed_tmp++;
-        }
-        if (should_remove_small) {
-            removed_small++;
-        }
-
-        LOG_INF("[SD_BOOT] Removed stale file: %s (%u bytes)", info.name, (unsigned) info.size);
-    }
-
-    lfs_dir_close(&lfs_fs, &dir);
-    LOG_INF("[SD_BOOT] Cleanup complete: removed TMP=%u, small(<%uB)=%u",
-            removed_tmp,
-            BOOT_MIN_VALID_AUDIO_FILE_SIZE_BYTES,
-            removed_small);
-}
-
 /* ------------------------------------------------------------------ */
 /* Boot: list existing audio files                                     */
 /* ------------------------------------------------------------------ */
@@ -1125,19 +1065,20 @@ void sd_worker_thread(void)
         }
     }
 
-    /* ---- Remove stale temp/truncated files from previous boots ---- */
-    cleanup_audio_files_at_boot();
+    /* ---- Print existing files at boot ---- */
+    print_audio_files_at_boot();
 
-    /* ---- Optional file-list logging at boot (expensive on large cards) ---- */
-    if (SD_BOOT_LOG_FILE_LIST) {
-        print_audio_files_at_boot();
-    } else {
-        invalidate_file_cache();
-    }
-
-    /* Optional: allocator pre-warm can cost tens of seconds on large cards.
-     * Keep it disabled for fast boot and immediate recording readiness. */
-#if SD_BOOT_PREWARM_ENABLED
+    /* ---- Pre-warm LFS block allocator ---- */
+    /* After mount, the LFS lookahead buffer is EMPTY and the start position
+     * is random (seed % block_count).  The very first lfs_alloc() would
+     * trigger lfs_alloc_scan() — a full O(used_blocks) filesystem traversal
+     * over SPI SD that can take 10-50+ seconds with 100-200 MB of data.
+     *
+     * By calling lfs_fs_gc() here (with compact_thresh=-1 so it skips
+     * metadata compaction), we force that expensive scan to happen NOW,
+     * during boot init, BEFORE the audio pipeline starts feeding data.
+     * This moves the latency spike from the real-time write path to a
+     * one-time boot cost where dropping audio is acceptable. */
     {
         int64_t gc_start_ms = k_uptime_get();
         LOG_INF("[SD_BOOT] Pre-warming LFS allocator (lookahead=%u bytes, %u blocks window)...",
@@ -1151,7 +1092,6 @@ void sd_worker_thread(void)
             LOG_INF("[SD_BOOT] LFS allocator pre-warmed OK in %lld ms", gc_elapsed_ms);
         }
     }
-#endif
 
     /* ---- Open / create info file ---- */
     {
