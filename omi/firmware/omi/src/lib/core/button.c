@@ -382,9 +382,7 @@ void turnoff_all()
     k_msleep(100);
 #endif
 
-    if (is_sd_on()) {
-        app_sd_off();
-    }
+    app_sd_off();
     k_msleep(300);
 
     // Put the buttons device to sleep if button is enabled
