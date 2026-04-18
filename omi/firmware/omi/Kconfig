@@ -111,14 +111,6 @@ config OMI_ENABLE_T5838_AAD
          point the driver resumes PDM and the software VAD takes over.
          Requires THSEL (P1.5) and WAKE (P1.2) to be wired to the T5838."
 
-config OMI_T5838_AAD_HIGH_THRESHOLD
-    bool "Use high AAD threshold (less sensitive)"
-    depends on OMI_ENABLE_T5838_AAD
-    default n
-    help
-        "Set the T5838 THSEL pin HIGH for a higher acoustic threshold.
-         Default (n) = LOW = more sensitive (quieter sounds trigger wake)."
-
 config OMI_WATCHDOG_TIMEOUT_MS
     int "Watchdog timeout (ms)"
     range 5000 300000

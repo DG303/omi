@@ -1,8 +1,8 @@
 ﻿/*
- * T5838 AAD + VAD gate for Omi (software-only mode)
+ * AAD + VAD gate for Omi
  *
- * Monitors WAKE pin (P1.2) via GPIO ISR, runs all VAD state machine
- * logic, and manages SD card suspend/resume in a background thread.
+ * Monitors WAKE pin (P1.2) via GPIO ISR, runs VAD state machine,
+ * and manages SD card suspend/resume in a background thread.
  */
 
 #ifndef AAD_H
@@ -24,8 +24,8 @@ int aad_start(void);
 /**
  * @brief Process a mic buffer through the VAD gate.
  *
- * Called from the mic callback.  Handles debounce, low-power mode
- * switching, pre-roll buffering, and SD suspend/resume.
+ * Called from the mic callback.  Handles debounce, pre-roll
+ * buffering, and SD suspend/resume.
  *
  * @param buffer       Raw PCM samples from the microphone
  * @param sample_count Number of samples in @p buffer
