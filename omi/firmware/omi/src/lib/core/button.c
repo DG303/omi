@@ -13,13 +13,12 @@
 #include <zephyr/sys/poweroff.h>
 
 #include "haptic.h"
+#include "imu.h"
 #include "led.h"
 #include "mic.h"
 #include "speaker.h"
 #include "transport.h"
 #include "wdog_facade.h"
-
-#include "imu.h"
 #ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
 #include "sd_card.h"
 #endif
@@ -383,9 +382,7 @@ void turnoff_all()
     k_msleep(100);
 #endif
 
-    if (is_sd_on()) {
-        app_sd_off();
-    }
+    app_sd_off();
     k_msleep(300);
 
     // Put the buttons device to sleep if button is enabled
@@ -420,7 +417,6 @@ void turnoff_all()
         return;
     }
 
-    
     /* Persist an IMU timestamp base so we can estimate time across system_off. */
     lsm6dsl_time_prepare_for_system_off();
     k_msleep(1000);
