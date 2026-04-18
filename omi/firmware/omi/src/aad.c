@@ -47,6 +47,8 @@ static K_SEM_DEFINE(aad_sem, 0, 1);
 static atomic_t wake_pending = ATOMIC_INIT(0);
 static atomic_t wake_consumed = ATOMIC_INIT(0);
 static atomic_t sd_paused = ATOMIC_INIT(0);
+static atomic_t sd_pause_req = ATOMIC_INIT(0);
+static atomic_t sd_resume_req = ATOMIC_INIT(0);
 
 /* ---- VAD state (mic callback context only) ---- */
 static bool vad_is_recording = false;
@@ -141,6 +143,22 @@ static void aad_thread_fn(void *p1, void *p2, void *p3)
             LOG_INF("AAD: WAKE detected");
         }
 
+        /* SD pause request (run in thread to avoid blocking audio callback) */
+        if (atomic_cas(&sd_pause_req, 1, 0)) {
+            if (!is_connected && !atomic_get(&sd_paused)) {
+                sd_write_pause(true);
+                atomic_set(&sd_paused, 1);
+            }
+        }
+
+        /* SD resume request (run in thread to avoid blocking audio callback) */
+        if (atomic_cas(&sd_resume_req, 1, 0)) {
+            if (atomic_get(&sd_paused)) {
+                sd_write_pause(false);
+                atomic_set(&sd_paused, 0);
+            }
+        }
+
         /* Auto-resume SD writes when BLE connects */
         if (is_connected && atomic_get(&sd_paused)) {
             sd_write_pause(false);
@@ -174,8 +192,9 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
             vad_voice_streak++;
             if (vad_voice_streak >= CONFIG_OMI_VAD_DEBOUNCE_FRAMES) {
 #ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
-                if (atomic_cas(&sd_paused, 1, 0)) {
-                    sd_write_pause(false);
+                if (atomic_get(&sd_paused)) {
+                    atomic_set(&sd_resume_req, 1);
+                    k_sem_give(&aad_sem);
                 }
 #endif
                 preroll_flush();
@@ -192,8 +211,8 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
                 LOG_INF("VAD: SLEEP (silent %lld ms)", silent_ms);
 #ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
                 if (!is_connected && !atomic_get(&sd_paused)) {
-                    sd_write_pause(true);
-                    atomic_set(&sd_paused, 1);
+                    atomic_set(&sd_pause_req, 1);
+                    k_sem_give(&aad_sem);
                 }
 #endif
                 preroll_reset();
