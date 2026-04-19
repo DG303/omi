@@ -23,11 +23,8 @@
 
 #include "lib/core/codec.h"
 #include "lib/core/config.h"
-#include "lib/core/sd_card.h"
 
 LOG_MODULE_REGISTER(aad, CONFIG_LOG_DEFAULT_LEVEL);
-
-extern bool is_connected;
 
 /* ---- DTS GPIO spec for WAKE pin ---- */
 static const struct gpio_dt_spec pin_wake = GPIO_DT_SPEC_GET_OR(DT_NODELABEL(pdm_wake_pin), gpios, {0});
@@ -46,9 +43,6 @@ static K_SEM_DEFINE(aad_sem, 0, 1);
 /* ---- Atomic flags (ISR / cross-thread safe) ---- */
 static atomic_t wake_pending = ATOMIC_INIT(0);
 static atomic_t wake_consumed = ATOMIC_INIT(0);
-static atomic_t sd_paused = ATOMIC_INIT(0);
-static atomic_t sd_pause_req = ATOMIC_INIT(0);
-static atomic_t sd_resume_req = ATOMIC_INIT(0);
 
 
 /* ---- VAD state (mic callback context only) ---- */
@@ -144,31 +138,6 @@ static void aad_thread_fn(void *p1, void *p2, void *p3)
             atomic_set(&wake_consumed, 1);
             LOG_INF("AAD: WAKE detected");
         }
-
-        /* SD pause request (run in thread to avoid blocking audio callback) */
-        if (atomic_cas(&sd_pause_req, 1, 0)) {
-            if (!is_connected && !atomic_get(&sd_paused)) {
-                sd_write_pause(true);
-                atomic_set(&sd_paused, 1);
-            }
-        }
-
-        /* SD resume request (run in thread to avoid blocking audio callback) */
-        if (atomic_cas(&sd_resume_req, 1, 0)) {
-            if (atomic_get(&sd_paused)) {
-                sd_write_pause(false);
-                atomic_set(&sd_paused, 0);
-            }
-        }
-
-        /* Auto-resume SD writes when BLE connects */
-        if (is_connected && atomic_get(&sd_paused)) {
-            sd_write_pause(false);
-            atomic_set(&sd_paused, 0);
-            LOG_INF("AAD: SD resumed (BLE connected)");
-        }
-
-
     }
 }
 
@@ -195,18 +164,6 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
         if (!vad_is_recording) {
             vad_voice_streak++;
             if (vad_voice_streak >= CONFIG_OMI_VAD_DEBOUNCE_FRAMES) {
-#ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
-                /* Cancel any pending pause that the thread hasn't
-                 * processed yet, then request resume.  This closes
-                 * the race where SLEEP sets sd_pause_req but the
-                 * thread hasn't run yet, so sd_paused is still 0
-                 * and we'd skip the resume. */
-                atomic_set(&sd_pause_req, 0);
-                if (atomic_get(&sd_paused)) {
-                    atomic_set(&sd_resume_req, 1);
-                    k_sem_give(&aad_sem);
-                }
-#endif
                 preroll_flush();
                 vad_is_recording = true;
                 vad_sleeping = false;
@@ -221,12 +178,6 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
                 vad_is_recording = false;
                 vad_sleeping = true;
                 LOG_INF("VAD: SLEEP (silent %lld ms)", silent_ms);
-#ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
-                if (!is_connected && !atomic_get(&sd_paused)) {
-                    atomic_set(&sd_pause_req, 1);
-                    k_sem_give(&aad_sem);
-                }
-#endif
                 preroll_reset();
             }
         }
