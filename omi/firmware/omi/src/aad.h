@@ -34,4 +34,12 @@ int aad_start(void);
  */
 bool aad_process_audio(int16_t *buffer, size_t sample_count);
 
+/**
+ * @brief Check if VAD is in sleep mode (low-power).
+ *
+ * @return true  if VAD is sleeping (mic paused, T5838 hw AAD active)
+ * @return false if VAD is active / recording
+ */
+bool aad_is_sleeping(void);
+
 #endif /* AAD_H */

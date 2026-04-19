@@ -24,6 +24,7 @@
 #include "lib/core/codec.h"
 #include "lib/core/config.h"
 #include "lib/core/sd_card.h"
+#include "lib/core/transport.h"
 
 LOG_MODULE_REGISTER(aad, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -49,9 +50,12 @@ static atomic_t wake_consumed = ATOMIC_INIT(0);
 static atomic_t sd_paused = ATOMIC_INIT(0);
 static atomic_t sd_pause_req = ATOMIC_INIT(0);
 static atomic_t sd_resume_req = ATOMIC_INIT(0);
+static atomic_t adv_slow_req = ATOMIC_INIT(0);
+static atomic_t adv_fast_req = ATOMIC_INIT(0);
 
 /* ---- VAD state (mic callback context only) ---- */
 static bool vad_is_recording = false;
+static bool vad_sleeping = false;
 static uint16_t vad_voice_streak = 0;
 static int64_t vad_last_voice_ms = 0;
 static int64_t vad_next_status_ms = 0;
@@ -165,6 +169,14 @@ static void aad_thread_fn(void *p1, void *p2, void *p3)
             atomic_set(&sd_paused, 0);
             LOG_INF("AAD: SD resumed (BLE connected)");
         }
+
+        /* BLE advertising rate control (run from thread context) */
+        if (atomic_cas(&adv_slow_req, 1, 0)) {
+            transport_set_adv_slow();
+        }
+        if (atomic_cas(&adv_fast_req, 1, 0)) {
+            transport_set_adv_fast();
+        }
     }
 }
 
@@ -199,6 +211,10 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
 #endif
                 preroll_flush();
                 vad_is_recording = true;
+                vad_sleeping = false;
+                /* Switch back to fast advertising for quicker reconnection */
+                atomic_set(&adv_fast_req, 1);
+                k_sem_give(&aad_sem);
                 LOG_INF("VAD: RECORDING (avg=%u)", avg);
             }
         }
@@ -208,6 +224,7 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
             int64_t silent_ms = now - vad_last_voice_ms;
             if (silent_ms >= CONFIG_OMI_VAD_HOLD_MS) {
                 vad_is_recording = false;
+                vad_sleeping = true;
                 LOG_INF("VAD: SLEEP (silent %lld ms)", silent_ms);
 #ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
                 if (!is_connected && !atomic_get(&sd_paused)) {
@@ -215,6 +232,9 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
                     k_sem_give(&aad_sem);
                 }
 #endif
+                /* Switch to slow advertising to save ~300-500 µA */
+                atomic_set(&adv_slow_req, 1);
+                k_sem_give(&aad_sem);
                 preroll_reset();
             }
         }
@@ -284,4 +304,9 @@ int aad_start(void)
             CONFIG_OMI_VAD_DEBOUNCE_FRAMES,
             CONFIG_OMI_VAD_HOLD_MS);
     return 0;
+}
+
+bool aad_is_sleeping(void)
+{
+    return vad_sleeping;
 }

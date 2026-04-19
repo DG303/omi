@@ -37,4 +37,21 @@ int broadcast_audio_packets(uint8_t *buffer, size_t size);
  */
 struct bt_conn *get_current_connection();
 
+/**
+ * @brief Switch BLE advertising to slow interval for low-power mode.
+ *
+ * Uses ~1 s interval instead of the default fast interval.
+ * Only effective when not connected (advertising only).
+ *
+ * @return 0 if successful, negative errno code if error
+ */
+int transport_set_adv_slow(void);
+
+/**
+ * @brief Switch BLE advertising back to normal fast interval.
+ *
+ * @return 0 if successful, negative errno code if error
+ */
+int transport_set_adv_fast(void);
+
 #endif // TRANSPORT_H
