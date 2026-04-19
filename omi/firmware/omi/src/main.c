@@ -144,6 +144,14 @@ void set_led_state()
         return;
     }
 
+#ifdef CONFIG_OMI_ENABLE_T5838_AAD
+    // Turn off LEDs during VAD sleep to save ~500 µA
+    if (aad_is_sleeping()) {
+        led_off();
+        return;
+    }
+#endif
+
 #ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
     // If RTC not synced, blink red to warn user to connect phone app
     if (!rtc_is_valid()) {
