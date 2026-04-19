@@ -304,12 +304,14 @@ static void build_file_path(const char *filename, char *path, size_t path_size);
 static void invalidate_file_cache(void);
 static void update_current_file_cache_size(uint32_t delta);
 static void sort_cached_file_entries(void);
+static void sd_set_io_low_power(bool enable);
 
 static void process_save_offset_req(const sd_req_t *req)
 {
     if (sd_write_blocked)
         return;
 
+    sd_set_io_low_power(false);
     lfs_file_seek(&lfs_fs, &lfs_fil_info, 0, LFS_SEEK_SET);
     lfs_ssize_t bw = lfs_file_write(&lfs_fs, &lfs_fil_info, &req->u.info.offset_info, sizeof(sd_offset_info_t));
     if (bw == (lfs_ssize_t) sizeof(sd_offset_info_t)) {
@@ -318,6 +320,7 @@ static void process_save_offset_req(const sd_req_t *req)
     } else {
         LOG_ERR("[SD_WORK] save offset write err %d", (int) bw);
     }
+    sd_set_io_low_power(true);
 }
 
 static void drain_pending_write_queue_for_shutdown(void)
@@ -343,27 +346,37 @@ static void process_write_data_req(const sd_req_t *req)
     if (current_file_deleted && ble_connected)
         return;
 
+    /* Track whether we woke SPI for I/O in this call so we can
+     * suspend it once at the end — keeps SPI + SD card powered
+     * only during actual flash operations, not during the long
+     * batch-accumulation window between flushes. */
+    bool spi_woken = false;
+
     if (current_filename[0] == '\0') {
+        sd_set_io_low_power(false);
+        spi_woken = true;
         int res = create_audio_file_with_timestamp();
         if (res < 0) {
             sd_write_blocked = true;
-            return;
+            goto done;
         }
     }
 
     if (should_rotate_file()) {
         LOG_INF("[SD_WORK] Rotating file after 30 min");
+        if (!spi_woken) { sd_set_io_low_power(false); spi_woken = true; }
         flush_batch_buffer();
         create_audio_file_with_timestamp();
     }
 
     if (write_batch_offset + req->u.write.len > sizeof(write_batch_buffer)) {
+        if (!spi_woken) { sd_set_io_low_power(false); spi_woken = true; }
         flush_batch_buffer();
         if (write_batch_offset + req->u.write.len > sizeof(write_batch_buffer)) {
             LOG_ERR("[SD_WORK] batch buffer overflow guard len=%u off=%u",
                     (unsigned) req->u.write.len,
                     (unsigned) write_batch_offset);
-            return;
+            goto done;
         }
     }
 
@@ -375,6 +388,7 @@ static void process_write_data_req(const sd_req_t *req)
     bool queue_pressure_high = queued_writes >= (SD_REQ_QUEUE_MSGS / 3);
 
     if (write_batch_counter >= WRITE_BATCH_COUNT || queue_pressure_high) {
+        if (!spi_woken) { sd_set_io_low_power(false); spi_woken = true; }
         flush_batch_buffer();
     }
 
@@ -382,10 +396,16 @@ static void process_write_data_req(const sd_req_t *req)
         (bytes_since_sync > 0) && ((k_uptime_get() - last_file_sync_uptime_ms) >= SD_FSYNC_INTERVAL_MS);
 
     if (sync_due_to_interval) {
+        if (!spi_woken) { sd_set_io_low_power(false); spi_woken = true; }
         lfs_file_sync(&lfs_fs, &lfs_fil_data);
         data_sync_gen++;
         bytes_since_sync = 0;
         last_file_sync_uptime_ms = k_uptime_get();
+    }
+
+done:
+    if (spi_woken) {
+        sd_set_io_low_power(true);
     }
 }
 
@@ -1288,6 +1308,10 @@ void sd_worker_thread(void)
     atomic_set(&sd_boot_ready, 1);
     LOG_INF("[SD_BOOT] SD card ready for audio writes (boot took %lld ms)", k_uptime_get());
 
+    /* Suspend SPI + SD until the first batch flush actually needs I/O.
+     * Saves ~0.5 mA idle current during the initial accumulation window. */
+    sd_set_io_low_power(true);
+
     /* ---- Main loop ---- */
     while (1) {
         /* Handle deferred control requests first (when queue was saturated). */
@@ -1315,6 +1339,13 @@ void sd_worker_thread(void)
             continue;
 
     handle_req:
+        /* Wake SPI for request types that need filesystem I/O.
+         * REQ_WRITE_DATA manages its own SPI gating internally
+         * (only wakes when a batch flush actually occurs). */
+        if (req.type != REQ_WRITE_DATA) {
+            sd_set_io_low_power(false);
+        }
+
         switch (req.type) {
 
         /* ---- Write data ---- */
@@ -1609,6 +1640,11 @@ void sd_worker_thread(void)
         default:
             LOG_ERR("[SD_WORK] unknown request type %d", req.type);
         }
+
+        /* Suspend SPI after non-write requests complete */
+        if (req.type != REQ_WRITE_DATA) {
+            sd_set_io_low_power(true);
+        }
     }
 }
 
@@ -1714,7 +1750,10 @@ void sd_write_pause(bool pause)
         }
         LOG_INF("SD writes paused");
     } else {
-        sd_set_io_low_power(false);
+        /* Don't resume SPI here — the write path's own SPI gating
+         * will wake it only when a batch flush actually needs I/O.
+         * This avoids ~20s of unnecessary SPI active current between
+         * resume and the first flush. */
         atomic_set(&sd_write_paused, 0);
         LOG_INF("SD writes resumed");
     }
