@@ -204,6 +204,12 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
             vad_voice_streak++;
             if (vad_voice_streak >= CONFIG_OMI_VAD_DEBOUNCE_FRAMES) {
 #ifdef CONFIG_OMI_ENABLE_OFFLINE_STORAGE
+                /* Cancel any pending pause that the thread hasn't
+                 * processed yet, then request resume.  This closes
+                 * the race where SLEEP sets sd_pause_req but the
+                 * thread hasn't run yet, so sd_paused is still 0
+                 * and we'd skip the resume. */
+                atomic_set(&sd_pause_req, 0);
                 if (atomic_get(&sd_paused)) {
                     atomic_set(&sd_resume_req, 1);
                     k_sem_give(&aad_sem);
