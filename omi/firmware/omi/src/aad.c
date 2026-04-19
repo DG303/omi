@@ -24,7 +24,6 @@
 #include "lib/core/codec.h"
 #include "lib/core/config.h"
 #include "lib/core/sd_card.h"
-#include "lib/core/transport.h"
 
 LOG_MODULE_REGISTER(aad, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -50,8 +49,7 @@ static atomic_t wake_consumed = ATOMIC_INIT(0);
 static atomic_t sd_paused = ATOMIC_INIT(0);
 static atomic_t sd_pause_req = ATOMIC_INIT(0);
 static atomic_t sd_resume_req = ATOMIC_INIT(0);
-static atomic_t adv_slow_req = ATOMIC_INIT(0);
-static atomic_t adv_fast_req = ATOMIC_INIT(0);
+
 
 /* ---- VAD state (mic callback context only) ---- */
 static bool vad_is_recording = false;
@@ -170,13 +168,7 @@ static void aad_thread_fn(void *p1, void *p2, void *p3)
             LOG_INF("AAD: SD resumed (BLE connected)");
         }
 
-        /* BLE advertising rate control (run from thread context) */
-        if (atomic_cas(&adv_slow_req, 1, 0)) {
-            transport_set_adv_slow();
-        }
-        if (atomic_cas(&adv_fast_req, 1, 0)) {
-            transport_set_adv_fast();
-        }
+
     }
 }
 
@@ -218,9 +210,6 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
                 preroll_flush();
                 vad_is_recording = true;
                 vad_sleeping = false;
-                /* Switch back to fast advertising for quicker reconnection */
-                atomic_set(&adv_fast_req, 1);
-                k_sem_give(&aad_sem);
                 LOG_INF("VAD: RECORDING (avg=%u)", avg);
             }
         }
@@ -238,9 +227,6 @@ bool aad_process_audio(int16_t *buffer, size_t sample_count)
                     k_sem_give(&aad_sem);
                 }
 #endif
-                /* Switch to slow advertising to save ~300-500 µA */
-                atomic_set(&adv_slow_req, 1);
-                k_sem_give(&aad_sem);
                 preroll_reset();
             }
         }
