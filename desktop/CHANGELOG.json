@@ -1,6 +1,7 @@
 {
   "unreleased": [
-    "Dashboard Tasks/Goals cards now shrink to fit content instead of stretching to fill the screen"
+    "Dashboard Tasks/Goals cards now shrink to fit content instead of stretching to fill the screen",
+    "Dashboard Tasks/Goals cards now match heights even when shrunk to fit content"
   ],
   "releases": [
     {

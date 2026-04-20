@@ -80,7 +80,7 @@ struct GoalsWidget: View {
             }
         }
         .padding(22)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .omiPanel(fill: OmiColors.backgroundSecondary)
         .sheet(isPresented: $showingCreateSheet) {
             GoalEditSheet(
