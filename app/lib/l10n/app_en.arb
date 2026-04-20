@@ -10552,6 +10552,10 @@
             }
         }
     },
+    "batteryHistory": "Battery",
+    "noBatteryDataYet": "No battery data yet",
+    "day": "Day",
+    "week": "Week",
     "rollbackToStableFirmware": "Roll Back to Stable Firmware",
     "@rollbackToStableFirmware": {
         "description": "Action item title for rolling back to the latest stable firmware version"

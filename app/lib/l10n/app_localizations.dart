@@ -16503,6 +16503,30 @@ abstract class AppLocalizations {
   /// **'GATT error ({code})'**
   String gattError(String code);
 
+  /// No description provided for @batteryHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery'**
+  String get batteryHistory;
+
+  /// No description provided for @noBatteryDataYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No battery data yet'**
+  String get noBatteryDataYet;
+
+  /// No description provided for @day.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get day;
+
+  /// No description provided for @week.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get week;
+
   /// Action item title for rolling back to the latest stable firmware version
   ///
   /// In en, this message translates to:
