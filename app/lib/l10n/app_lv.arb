@@ -2978,5 +2978,9 @@
     "chatUsageMessages": "Tērzēšana: {used} / {limit} ziņojumi šomēnes",
     "chatUsageMessagesNoLimit": "Tērzēšana: {used} ziņojumi šomēnes",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Jūs esat sasniedzis savu mēneša limitu. Jauniniet, lai turpinātu tērzēt ar Omi bez ierobežojumiem."
+    "chatQuotaExceededReply": "Jūs esat sasniedzis savu mēneša limitu. Jauniniet, lai turpinātu tērzēt ar Omi bez ierobežojumiem.",
+    "batteryHistory": "Akumulators",
+    "day": "Diena",
+    "noBatteryDataYet": "Pagaidām nav akumulatora datu",
+    "week": "Nedēļa"
 }

@@ -8861,16 +8861,16 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'ಬ್ಯಾಟರಿ';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'ಇನ್ನೂ ಬ್ಯಾಟರಿ ಡೇಟಾ ಇಲ್ಲ';
 
   @override
-  String get day => 'Day';
+  String get day => 'ದಿನ';
 
   @override
-  String get week => 'Week';
+  String get week => 'ವಾರ';
 
   @override
   String get rollbackToStableFirmware => 'ಸ್ಥಿರ ಫರ್ಮ್‌ವೇರ್ ಹಿಂದಕ್ಕೆ ರೆಟರ್ನ್';

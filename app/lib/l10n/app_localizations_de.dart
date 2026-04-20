@@ -8904,16 +8904,16 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Batterie';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Noch keine Batteriedaten';
 
   @override
-  String get day => 'Day';
+  String get day => 'Tag';
 
   @override
-  String get week => 'Week';
+  String get week => 'Woche';
 
   @override
   String get rollbackToStableFirmware => 'Auf stabile Firmware zurücksetzen';

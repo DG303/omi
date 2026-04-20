@@ -2978,5 +2978,9 @@
     "chatUsageMessages": "Chat: {used} / {limit} mesaje luna aceasta",
     "chatUsageMessagesNoLimit": "Chat: {used} mesaje luna aceasta",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Ai atins limita lunară. Fă upgrade pentru a continua să discuți cu Omi fără restricții."
+    "chatQuotaExceededReply": "Ai atins limita lunară. Fă upgrade pentru a continua să discuți cu Omi fără restricții.",
+    "batteryHistory": "Baterie",
+    "day": "Zi",
+    "noBatteryDataYet": "Încă nu există date despre baterie",
+    "week": "Săptămână"
 }

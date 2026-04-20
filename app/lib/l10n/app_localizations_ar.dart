@@ -8769,16 +8769,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'البطارية';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'لا توجد بيانات بطارية بعد';
 
   @override
-  String get day => 'Day';
+  String get day => 'يوم';
 
   @override
-  String get week => 'Week';
+  String get week => 'أسبوع';
 
   @override
   String get rollbackToStableFirmware => 'الرجوع إلى البرنامج الثابت المستقر';

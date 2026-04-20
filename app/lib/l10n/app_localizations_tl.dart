@@ -8909,16 +8909,16 @@ class AppLocalizationsTl extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Baterya';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Wala pang datos ng baterya';
 
   @override
-  String get day => 'Day';
+  String get day => 'Araw';
 
   @override
-  String get week => 'Week';
+  String get week => 'Linggo';
 
   @override
   String get rollbackToStableFirmware => 'Bumalik sa Stable Firmware';

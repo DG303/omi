@@ -3000,5 +3000,9 @@
     "chatUsageMessages": "聊天：{used} / {limit} 条消息本月",
     "chatUsageMessagesNoLimit": "聊天：{used} 条消息本月",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "您已达到每月限额。升级以无限制地继续与Omi聊天。"
+    "chatQuotaExceededReply": "您已达到每月限额。升级以无限制地继续与Omi聊天。",
+    "batteryHistory": "电池",
+    "day": "日",
+    "noBatteryDataYet": "暂无电池数据",
+    "week": "周"
 }

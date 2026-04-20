@@ -2978,5 +2978,9 @@
     "chatUsageMessages": "Vestlus: {used} / {limit} sõnumit sel kuul",
     "chatUsageMessagesNoLimit": "Vestlus: {used} sõnumit sel kuul",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Olete saavutanud oma igakuise limiidi. Uuendage, et jätkata Omiga piiranguteta vestlemist."
+    "chatQuotaExceededReply": "Olete saavutanud oma igakuise limiidi. Uuendage, et jätkata Omiga piiranguteta vestlemist.",
+    "batteryHistory": "Aku",
+    "day": "Päev",
+    "noBatteryDataYet": "Aku andmed puuduvad",
+    "week": "Nädal"
 }

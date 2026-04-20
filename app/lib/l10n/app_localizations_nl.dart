@@ -8858,13 +8858,13 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Batterij';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Nog geen batterijgegevens';
 
   @override
-  String get day => 'Day';
+  String get day => 'Dag';
 
   @override
   String get week => 'Week';

@@ -2978,5 +2978,9 @@
     "chatUsageMessages": "Chat: {used} / {limit} viestiä tässä kuussa",
     "chatUsageMessagesNoLimit": "Chat: {used} viestiä tässä kuussa",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Olet saavuttanut kuukausittaisen rajasi. Päivitä jatkaaksesi keskustelua Omin kanssa ilman rajoituksia."
+    "chatQuotaExceededReply": "Olet saavuttanut kuukausittaisen rajasi. Päivitä jatkaaksesi keskustelua Omin kanssa ilman rajoituksia.",
+    "batteryHistory": "Akku",
+    "day": "Päivä",
+    "noBatteryDataYet": "Ei vielä akkutietoja",
+    "week": "Viikko"
 }

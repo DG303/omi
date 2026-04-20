@@ -8832,16 +8832,16 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Bateria';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Ainda sem dados de bateria';
 
   @override
-  String get day => 'Day';
+  String get day => 'Dia';
 
   @override
-  String get week => 'Week';
+  String get week => 'Semana';
 
   @override
   String get rollbackToStableFirmware => 'Voltar ao firmware estável';

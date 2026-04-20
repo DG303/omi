@@ -3020,5 +3020,9 @@
     "chatUsageMessages": "Obrolan: {used} / {limit} pesan bulan ini",
     "chatUsageMessagesNoLimit": "Obrolan: {used} pesan bulan ini",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Anda telah mencapai batas bulanan. Upgrade untuk terus mengobrol dengan Omi tanpa batasan."
+    "chatQuotaExceededReply": "Anda telah mencapai batas bulanan. Upgrade untuk terus mengobrol dengan Omi tanpa batasan.",
+    "batteryHistory": "Baterai",
+    "day": "Hari",
+    "noBatteryDataYet": "Belum ada data baterai",
+    "week": "Minggu"
 }

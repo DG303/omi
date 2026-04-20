@@ -8834,16 +8834,16 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Batteri';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Inga batteridata ännu';
 
   @override
-  String get day => 'Day';
+  String get day => 'Dag';
 
   @override
-  String get week => 'Week';
+  String get week => 'Vecka';
 
   @override
   String get rollbackToStableFirmware => 'Återgå till stabil firmware';

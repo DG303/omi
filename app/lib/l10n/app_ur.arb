@@ -10701,5 +10701,9 @@
     "chatUsageMessages": "چیٹ: {used} / {limit} پیغامات اس مہینے",
     "chatUsageMessagesNoLimit": "چیٹ: {used} پیغامات اس مہینے",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "آپ اپنی ماہانہ حد تک پہنچ گئے ہیں۔ بغیر کسی پابندی کے Omi کے ساتھ چیٹ جاری رکھنے کے لیے اپ گریڈ کریں۔"
+    "chatQuotaExceededReply": "آپ اپنی ماہانہ حد تک پہنچ گئے ہیں۔ بغیر کسی پابندی کے Omi کے ساتھ چیٹ جاری رکھنے کے لیے اپ گریڈ کریں۔",
+    "batteryHistory": "بیٹری",
+    "day": "دن",
+    "noBatteryDataYet": "ابھی تک کوئی بیٹری ڈیٹا نہیں",
+    "week": "ہفتہ"
 }
