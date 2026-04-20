@@ -10,6 +10,11 @@ from datetime import datetime, timezone
 import database.action_items as action_items_db
 import database.conversations as conversations_db
 import database.redis_db as redis_db
+from database.vector_db import (
+    upsert_action_item_vector,
+    delete_action_item_vector,
+    search_action_items_by_vector,
+)
 from utils.users import get_user_display_name
 from utils.other import endpoints as auth
 from utils.notifications import (
@@ -202,6 +207,8 @@ def create_action_item(request: CreateActionItemRequest, uid: str = Depends(auth
             due_at=request.due_at.isoformat(),
         )
 
+    upsert_action_item_vector(uid, action_item_id, request.description)
+
     def _run_auto_sync():
         asyncio.run(auto_sync_action_item(uid, {"id": action_item_id, **action_item_data}, skip_apple_reminders=True))
 
@@ -317,6 +324,9 @@ def update_action_item(
     if not success:
         raise HTTPException(status_code=500, detail="Failed to update action item")
 
+    if request.description is not None:
+        upsert_action_item_vector(uid, action_item_id, request.description)
+
     # Return updated action item
     updated_item = action_items_db.get_action_item(uid, action_item_id)
 
@@ -376,6 +386,8 @@ def delete_action_item(action_item_id: str, uid: str = Depends(auth.get_current_
     success = action_items_db.delete_action_item(uid, action_item_id)
     if not success:
         raise HTTPException(status_code=404, detail="Action item not found")
+
+    delete_action_item_vector(uid, action_item_id)
 
     # Send FCM deletion message to cancel scheduled notification
     send_action_item_deletion_message(user_id=uid, action_item_id=action_item_id)
