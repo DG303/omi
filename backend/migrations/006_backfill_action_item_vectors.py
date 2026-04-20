@@ -20,7 +20,6 @@ from firebase_admin import credentials, firestore
 import sys
 import os
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
