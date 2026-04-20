@@ -1,9 +1,14 @@
 {
-  "unreleased": [
-    "Dashboard Tasks/Goals cards now shrink to fit content instead of stretching to fill the screen",
-    "Dashboard Tasks/Goals cards now match heights even when shrunk to fit content"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.345",
+      "date": "2026-04-20",
+      "changes": [
+        "Dashboard Tasks/Goals cards now shrink to fit content instead of stretching to fill the screen",
+        "Dashboard Tasks/Goals cards now match heights even when shrunk to fit content"
+      ]
+    },
     {
       "version": "0.11.343",
       "date": "2026-04-20",
