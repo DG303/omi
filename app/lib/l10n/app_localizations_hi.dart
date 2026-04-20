@@ -8810,16 +8810,16 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'बैटरी';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => 'अभी तक कोई बैटरी डेटा नहीं';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => 'दिन';
+  String get day => 'Day';
 
   @override
-  String get week => 'सप्ताह';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => 'स्थिर फ़र्मवेयर पर वापस जाएँ';

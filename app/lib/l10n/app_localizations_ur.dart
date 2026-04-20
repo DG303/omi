@@ -8845,16 +8845,16 @@ class AppLocalizationsUr extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'بیٹری';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => 'ابھی تک کوئی بیٹری ڈیٹا نہیں';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => 'دن';
+  String get day => 'Day';
 
   @override
-  String get week => 'ہفتہ';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => 'مستحکم فرم ویئر پر واپس لیں';

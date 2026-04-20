@@ -8826,16 +8826,16 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Baterie';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => 'Zatím žádná data o baterii';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => 'Den';
+  String get day => 'Day';
 
   @override
-  String get week => 'Týden';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => 'Vrátit se na stabilní firmware';

@@ -8818,16 +8818,16 @@ class AppLocalizationsSk extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Batéria';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => 'Zatiaľ žiadne údaje o batérii';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => 'Deň';
+  String get day => 'Day';
 
   @override
-  String get week => 'Týždeň';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => 'Vrátiť sa na stabilný firmvér';

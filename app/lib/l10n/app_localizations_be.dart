@@ -8854,16 +8854,16 @@ class AppLocalizationsBe extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Батарэя';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => 'Даных пра батарэю яшчэ няма';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => 'Дзень';
+  String get day => 'Day';
 
   @override
-  String get week => 'Тыдзень';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => 'Вярнуцца да стабільнай прошыўкі';

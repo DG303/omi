@@ -8669,16 +8669,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => '电池';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => '暂无电池数据';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => '日';
+  String get day => 'Day';
 
   @override
-  String get week => '周';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => '回滚到稳定固件';

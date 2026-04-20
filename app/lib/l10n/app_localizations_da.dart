@@ -8815,16 +8815,16 @@ class AppLocalizationsDa extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Batteri';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => 'Ingen batteridata endnu';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => 'Dag';
+  String get day => 'Day';
 
   @override
-  String get week => 'Uge';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => 'Rul tilbage til stabil firmware';

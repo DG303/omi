@@ -8827,16 +8827,16 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Aku';
+  String get batteryHistory => 'Battery';
 
   @override
-  String get noBatteryDataYet => 'Aku andmed puuduvad';
+  String get noBatteryDataYet => 'No battery data yet';
 
   @override
-  String get day => 'Päev';
+  String get day => 'Day';
 
   @override
-  String get week => 'Nädal';
+  String get week => 'Week';
 
   @override
   String get rollbackToStableFirmware => 'Tagasi stabiilsele püsivarale';
