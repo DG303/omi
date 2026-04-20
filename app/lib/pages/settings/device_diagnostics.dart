@@ -39,8 +39,7 @@ class _DeviceDiagnosticsState extends State<DeviceDiagnostics> {
   void initState() {
     super.initState();
     MixpanelManager().track('Diagnostics Opened');
-    _loadDiagnostics();
-    _loadBatteryHistory();
+    _loadAll();
     _startRssiStreaming();
   }
 
@@ -50,20 +49,20 @@ class _DeviceDiagnosticsState extends State<DeviceDiagnostics> {
     super.dispose();
   }
 
+  Future<void> _loadAll() async {
+    await Future.wait([_loadDiagnostics(), _loadBatteryHistory()]);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _loadDiagnostics() async {
     try {
       final diagnostics = await _bleHostApi.getDeviceDiagnostics(widget.deviceId);
       if (mounted) {
-        setState(() {
-          _diagnostics = diagnostics;
-          _isLoading = false;
-        });
+        setState(() => _diagnostics = diagnostics);
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
+    } catch (_) {}
   }
 
   Future<void> _loadBatteryHistory() async {
@@ -72,7 +71,9 @@ class _DeviceDiagnosticsState extends State<DeviceDiagnostics> {
       if (mounted) {
         setState(() => _batteryHistory = history);
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[DeviceDiagnostics] getBatteryHistory failed: $e');
+    }
   }
 
   void _startRssiStreaming() {
@@ -461,7 +462,7 @@ class _DeviceDiagnosticsState extends State<DeviceDiagnostics> {
                     style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
                   ),
                 )
-              : LineChart(_buildBatteryLineChartData(points, cutoff)),
+              : LineChart(_buildBatteryLineChartData(points)),
         ),
       ],
     );
@@ -485,7 +486,7 @@ class _DeviceDiagnosticsState extends State<DeviceDiagnostics> {
     );
   }
 
-  LineChartData _buildBatteryLineChartData(List<BleBatteryPoint> points, int cutoffMs) {
+  LineChartData _buildBatteryLineChartData(List<BleBatteryPoint> points) {
     final now = DateTime.now().millisecondsSinceEpoch;
     final spots = points.map((p) {
       final hoursAgo = (now - p.timestamp) / 3600000.0;
