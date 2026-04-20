@@ -1,5 +1,7 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Center dashboard Tasks/Goals rows vertically when one card is shorter than the other"
+  ],
   "releases": [
     {
       "version": "0.11.345",
