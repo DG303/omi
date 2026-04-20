@@ -8896,6 +8896,18 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'பேட்டரி';
+
+  @override
+  String get noBatteryDataYet => 'இன்னும் பேட்டரி தரவு இல்லை';
+
+  @override
+  String get day => 'நாள்';
+
+  @override
+  String get week => 'வாரம்';
+
+  @override
   String get rollbackToStableFirmware => 'நிலையான Firmware க்கு மீண்டு திரும்பு';
 
   @override

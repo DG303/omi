@@ -2978,5 +2978,9 @@
     "chatUsageMessages": "Chatt: {used} / {limit} meddelanden denna månad",
     "chatUsageMessagesNoLimit": "Chatt: {used} meddelanden denna månad",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Du har nått din månatliga gräns. Uppgradera för att fortsätta chatta med Omi utan begränsningar."
+    "chatQuotaExceededReply": "Du har nått din månatliga gräns. Uppgradera för att fortsätta chatta med Omi utan begränsningar.",
+    "batteryHistory": "Batteri",
+    "day": "Dag",
+    "noBatteryDataYet": "Inga batteridata ännu",
+    "week": "Vecka"
 }

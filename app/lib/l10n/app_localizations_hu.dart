@@ -8868,6 +8868,18 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Akkumulátor';
+
+  @override
+  String get noBatteryDataYet => 'Még nincsenek akkumulátor adatok';
+
+  @override
+  String get day => 'Nap';
+
+  @override
+  String get week => 'Hét';
+
+  @override
   String get rollbackToStableFirmware => 'Visszaállítás stabil firmware-re';
 
   @override

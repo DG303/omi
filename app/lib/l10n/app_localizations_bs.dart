@@ -8852,6 +8852,18 @@ class AppLocalizationsBs extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Baterija';
+
+  @override
+  String get noBatteryDataYet => 'Još nema podataka o bateriji';
+
+  @override
+  String get day => 'Dan';
+
+  @override
+  String get week => 'Sedmica';
+
+  @override
   String get rollbackToStableFirmware => 'Vrati se na stabilnu firmware';
 
   @override

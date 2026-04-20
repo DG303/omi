@@ -8858,6 +8858,18 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Batterij';
+
+  @override
+  String get noBatteryDataYet => 'Nog geen batterijgegevens';
+
+  @override
+  String get day => 'Dag';
+
+  @override
+  String get week => 'Week';
+
+  @override
   String get rollbackToStableFirmware => 'Terugkeren naar stabiele firmware';
 
   @override

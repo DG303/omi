@@ -8827,6 +8827,18 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Aku';
+
+  @override
+  String get noBatteryDataYet => 'Aku andmed puuduvad';
+
+  @override
+  String get day => 'Päev';
+
+  @override
+  String get week => 'Nädal';
+
+  @override
   String get rollbackToStableFirmware => 'Tagasi stabiilsele püsivarale';
 
   @override

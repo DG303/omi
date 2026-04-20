@@ -8848,6 +8848,18 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Batería';
+
+  @override
+  String get noBatteryDataYet => 'Aún no hay datos de batería';
+
+  @override
+  String get day => 'Día';
+
+  @override
+  String get week => 'Semana';
+
+  @override
   String get rollbackToStableFirmware => 'Volver al firmware estable';
 
   @override

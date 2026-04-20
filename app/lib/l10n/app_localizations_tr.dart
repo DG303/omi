@@ -8843,6 +8843,18 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Pil';
+
+  @override
+  String get noBatteryDataYet => 'Henüz pil verisi yok';
+
+  @override
+  String get day => 'Gün';
+
+  @override
+  String get week => 'Hafta';
+
+  @override
   String get rollbackToStableFirmware => 'Kararlı yazılıma geri dön';
 
   @override

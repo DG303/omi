@@ -8839,6 +8839,18 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'ব্যাটারি';
+
+  @override
+  String get noBatteryDataYet => 'এখনও কোনো ব্যাটারি ডেটা নেই';
+
+  @override
+  String get day => 'দিন';
+
+  @override
+  String get week => 'সপ্তাহ';
+
+  @override
   String get rollbackToStableFirmware => 'স্থিতিশীল ফার্মওয়্যারে রোলব্যাক করুন';
 
   @override

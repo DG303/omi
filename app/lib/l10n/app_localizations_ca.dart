@@ -8881,6 +8881,18 @@ class AppLocalizationsCa extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Bateria';
+
+  @override
+  String get noBatteryDataYet => 'Encara no hi ha dades de bateria';
+
+  @override
+  String get day => 'Dia';
+
+  @override
+  String get week => 'Setmana';
+
+  @override
   String get rollbackToStableFirmware => 'Tornar al firmware estable';
 
   @override

@@ -8878,6 +8878,18 @@ class AppLocalizationsMk extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Батерија';
+
+  @override
+  String get noBatteryDataYet => 'Сè уште нема податоци за батеријата';
+
+  @override
+  String get day => 'Ден';
+
+  @override
+  String get week => 'Седмица';
+
+  @override
   String get rollbackToStableFirmware => 'Врати се на стабилен фирмвер';
 
   @override

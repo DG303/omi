@@ -10701,5 +10701,9 @@
     "chatUsageMessages": "Чат: {used} / {limit} паведамленняў у гэтым месяцы",
     "chatUsageMessagesNoLimit": "Чат: {used} паведамленняў у гэтым месяцы",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Вы дасягнулі свайго месячнага ліміту. Абнавіце, каб працягваць размаўляць з Omi без абмежаванняў."
+    "chatQuotaExceededReply": "Вы дасягнулі свайго месячнага ліміту. Абнавіце, каб працягваць размаўляць з Omi без абмежаванняў.",
+    "batteryHistory": "Батарэя",
+    "day": "Дзень",
+    "noBatteryDataYet": "Даных пра батарэю яшчэ няма",
+    "week": "Тыдзень"
 }

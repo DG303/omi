@@ -8826,6 +8826,18 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Baterie';
+
+  @override
+  String get noBatteryDataYet => 'Zatím žádná data o baterii';
+
+  @override
+  String get day => 'Den';
+
+  @override
+  String get week => 'Týden';
+
+  @override
   String get rollbackToStableFirmware => 'Vrátit se na stabilní firmware';
 
   @override

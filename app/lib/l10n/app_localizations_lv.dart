@@ -8847,6 +8847,18 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Akumulators';
+
+  @override
+  String get noBatteryDataYet => 'Pagaidām nav akumulatora datu';
+
+  @override
+  String get day => 'Diena';
+
+  @override
+  String get week => 'Nedēļa';
+
+  @override
   String get rollbackToStableFirmware => 'Atgriezties uz stabilo programmaparatūru';
 
   @override

@@ -2945,5 +2945,9 @@
     "chatUsageMessages": "الدردشة: {used} / {limit} رسالة هذا الشهر",
     "chatUsageMessagesNoLimit": "الدردشة: {used} رسالة هذا الشهر",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "لقد وصلت إلى حدك الشهري. قم بالترقية لمتابعة الدردشة مع Omi بدون قيود."
+    "chatQuotaExceededReply": "لقد وصلت إلى حدك الشهري. قم بالترقية لمتابعة الدردشة مع Omi بدون قيود.",
+    "batteryHistory": "البطارية",
+    "day": "يوم",
+    "noBatteryDataYet": "لا توجد بيانات بطارية بعد",
+    "week": "أسبوع"
 }

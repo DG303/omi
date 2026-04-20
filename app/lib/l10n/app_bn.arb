@@ -10701,5 +10701,9 @@
     "chatUsageMessages": "চ্যাট: {used} / {limit} বার্তা এই মাসে",
     "chatUsageMessagesNoLimit": "চ্যাট: {used} বার্তা এই মাসে",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "আপনি আপনার মাসিক সীমায় পৌঁছেছেন। বিনা সীমাবদ্ধতায় Omi-এর সাথে চ্যাট চালিয়ে যেতে আপগ্রেড করুন।"
+    "chatQuotaExceededReply": "আপনি আপনার মাসিক সীমায় পৌঁছেছেন। বিনা সীমাবদ্ধতায় Omi-এর সাথে চ্যাট চালিয়ে যেতে আপগ্রেড করুন।",
+    "batteryHistory": "ব্যাটারি",
+    "day": "দিন",
+    "noBatteryDataYet": "এখনও কোনো ব্যাটারি ডেটা নেই",
+    "week": "সপ্তাহ"
 }

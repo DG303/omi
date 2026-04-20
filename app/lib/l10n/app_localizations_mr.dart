@@ -8841,6 +8841,18 @@ class AppLocalizationsMr extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'बॅटरी';
+
+  @override
+  String get noBatteryDataYet => 'अजून बॅटरी डेटा नाही';
+
+  @override
+  String get day => 'दिवस';
+
+  @override
+  String get week => 'आठवडा';
+
+  @override
   String get rollbackToStableFirmware => 'स्थिर फर्मवेअर वर रोल बॅक करा';
 
   @override

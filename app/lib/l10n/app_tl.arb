@@ -10701,5 +10701,9 @@
     "chatUsageMessages": "Chat: {used} / {limit} mensahe ngayong buwan",
     "chatUsageMessagesNoLimit": "Chat: {used} mensahe ngayong buwan",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Naabot mo na ang iyong buwanang limitasyon. Mag-upgrade para magpatuloy ng chat sa Omi nang walang limitasyon."
+    "chatQuotaExceededReply": "Naabot mo na ang iyong buwanang limitasyon. Mag-upgrade para magpatuloy ng chat sa Omi nang walang limitasyon.",
+    "batteryHistory": "Baterya",
+    "day": "Araw",
+    "noBatteryDataYet": "Wala pang datos ng baterya",
+    "week": "Linggo"
 }

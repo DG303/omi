@@ -8837,6 +8837,18 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Baterija';
+
+  @override
+  String get noBatteryDataYet => 'Kol kas nėra baterijos duomenų';
+
+  @override
+  String get day => 'Diena';
+
+  @override
+  String get week => 'Savaitė';
+
+  @override
   String get rollbackToStableFirmware => 'Grįžti prie stabilios programinės įrangos';
 
   @override

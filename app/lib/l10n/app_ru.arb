@@ -3013,5 +3013,9 @@
     "chatUsageMessages": "Чат: {used} / {limit} сообщений в этом месяце",
     "chatUsageMessagesNoLimit": "Чат: {used} сообщений в этом месяце",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Вы достигли месячного лимита. Обновите план, чтобы продолжить общение с Omi без ограничений."
+    "chatQuotaExceededReply": "Вы достигли месячного лимита. Обновите план, чтобы продолжить общение с Omi без ограничений.",
+    "batteryHistory": "Батарея",
+    "day": "День",
+    "noBatteryDataYet": "Данных о батарее пока нет",
+    "week": "Неделя"
 }

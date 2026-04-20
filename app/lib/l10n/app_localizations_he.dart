@@ -8758,6 +8758,18 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'סוללה';
+
+  @override
+  String get noBatteryDataYet => 'אין עדיין נתוני סוללה';
+
+  @override
+  String get day => 'יום';
+
+  @override
+  String get week => 'שבוע';
+
+  @override
   String get rollbackToStableFirmware => 'חזור ל-Firmware יציב';
 
   @override

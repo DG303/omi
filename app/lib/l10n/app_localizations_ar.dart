@@ -8769,6 +8769,18 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'البطارية';
+
+  @override
+  String get noBatteryDataYet => 'لا توجد بيانات بطارية بعد';
+
+  @override
+  String get day => 'يوم';
+
+  @override
+  String get week => 'أسبوع';
+
+  @override
   String get rollbackToStableFirmware => 'الرجوع إلى البرنامج الثابت المستقر';
 
   @override

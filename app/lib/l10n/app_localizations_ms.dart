@@ -8854,6 +8854,18 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Bateri';
+
+  @override
+  String get noBatteryDataYet => 'Tiada data bateri lagi';
+
+  @override
+  String get day => 'Hari';
+
+  @override
+  String get week => 'Minggu';
+
+  @override
   String get rollbackToStableFirmware => 'Kembali ke firmware stabil';
 
   @override

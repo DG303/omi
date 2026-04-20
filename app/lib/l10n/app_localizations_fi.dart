@@ -8829,6 +8829,18 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Akku';
+
+  @override
+  String get noBatteryDataYet => 'Ei vielä akkutietoja';
+
+  @override
+  String get day => 'Päivä';
+
+  @override
+  String get week => 'Viikko';
+
+  @override
   String get rollbackToStableFirmware => 'Palaa vakaaseen laiteohjelmistoon';
 
   @override

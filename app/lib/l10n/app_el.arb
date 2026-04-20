@@ -2978,5 +2978,9 @@
     "chatUsageMessages": "Συνομιλία: {used} / {limit} μηνύματα αυτόν τον μήνα",
     "chatUsageMessagesNoLimit": "Συνομιλία: {used} μηνύματα αυτόν τον μήνα",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Φτάσατε το μηνιαίο σας όριο. Αναβαθμίστε για να συνεχίσετε να συνομιλείτε με το Omi χωρίς περιορισμούς."
+    "chatQuotaExceededReply": "Φτάσατε το μηνιαίο σας όριο. Αναβαθμίστε για να συνεχίσετε να συνομιλείτε με το Omi χωρίς περιορισμούς.",
+    "batteryHistory": "Μπαταρία",
+    "day": "Ημέρα",
+    "noBatteryDataYet": "Δεν υπάρχουν δεδομένα μπαταρίας ακόμα",
+    "week": "Εβδομάδα"
 }

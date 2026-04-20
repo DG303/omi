@@ -8909,6 +8909,18 @@ class AppLocalizationsTl extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Baterya';
+
+  @override
+  String get noBatteryDataYet => 'Wala pang datos ng baterya';
+
+  @override
+  String get day => 'Araw';
+
+  @override
+  String get week => 'Linggo';
+
+  @override
   String get rollbackToStableFirmware => 'Bumalik sa Stable Firmware';
 
   @override

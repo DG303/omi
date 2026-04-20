@@ -10701,5 +10701,9 @@
     "chatUsageMessages": "Разговор: {used} / {limit} пораки овој месец",
     "chatUsageMessagesNoLimit": "Разговор: {used} пораки овој месец",
     "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
-    "chatQuotaExceededReply": "Го достигнавте вашиот месечен лимит. Надградете за да продолжите да разговарате со Omi без ограничувања."
+    "chatQuotaExceededReply": "Го достигнавте вашиот месечен лимит. Надградете за да продолжите да разговарате со Omi без ограничувања.",
+    "batteryHistory": "Батерија",
+    "day": "Ден",
+    "noBatteryDataYet": "Сè уште нема податоци за батеријата",
+    "week": "Седмица"
 }

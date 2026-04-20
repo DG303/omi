@@ -8843,6 +8843,18 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Батерија';
+
+  @override
+  String get noBatteryDataYet => 'Још нема података о батерији';
+
+  @override
+  String get day => 'Дан';
+
+  @override
+  String get week => 'Недеља';
+
+  @override
   String get rollbackToStableFirmware => 'Врати се на стабилан firmware';
 
   @override
