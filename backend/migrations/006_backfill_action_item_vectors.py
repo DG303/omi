@@ -24,7 +24,7 @@ import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from database.vector_db import upsert_action_item_vector
+from database.vector_db import upsert_action_item_vectors_batch
 import logging
 
 logger = logging.getLogger(__name__)
@@ -58,21 +58,7 @@ def get_user_action_items(uid: str):
     return items
 
 
-def process_action_item(uid: str, item: dict, dry_run: bool = False) -> dict:
-    item_id = item['id']
-    description = item.get('description', '')
-
-    if not description:
-        return {'status': 'skipped', 'reason': 'empty description', 'item_id': item_id}
-
-    if dry_run:
-        return {'status': 'dry_run', 'item_id': item_id}
-
-    try:
-        upsert_action_item_vector(uid, item_id, description)
-        return {'status': 'success', 'item_id': item_id}
-    except Exception as e:
-        return {'status': 'error', 'item_id': item_id, 'error': str(e)}
+BATCH_SIZE = 100
 
 
 def process_user(uid: str, dry_run: bool = False) -> dict:
@@ -80,17 +66,24 @@ def process_user(uid: str, dry_run: bool = False) -> dict:
     items = get_user_action_items(uid)
     logger.info(f"  Found {len(items)} action items")
 
-    results = {'total': len(items), 'success': 0, 'skipped': 0, 'errors': 0}
+    eligible = [item for item in items if item.get('description', '')]
+    skipped = len(items) - len(eligible)
+    results = {'total': len(items), 'success': 0, 'skipped': skipped, 'errors': 0}
 
-    for item in items:
-        result = process_action_item(uid, item, dry_run)
-        if result['status'] == 'success' or result['status'] == 'dry_run':
-            results['success'] += 1
-        elif result['status'] == 'skipped':
-            results['skipped'] += 1
-        else:
-            results['errors'] += 1
-            logger.error(f"  Error processing {result['item_id']}: {result.get('error')}")
+    if dry_run:
+        results['success'] = len(eligible)
+        logger.info(f"  Dry run: {len(eligible)} would be upserted, {skipped} skipped (empty description)")
+        return results
+
+    for i in range(0, len(eligible), BATCH_SIZE):
+        batch = eligible[i : i + BATCH_SIZE]
+        batch_items = [{'action_item_id': item['id'], 'description': item['description']} for item in batch]
+        try:
+            written = upsert_action_item_vectors_batch(uid, batch_items)
+            results['success'] += written
+        except Exception as e:
+            results['errors'] += len(batch)
+            logger.error(f"  Batch error at offset {i}: {e}")
 
     logger.info(f"  Done: {results['success']} ok, {results['skipped']} skipped, {results['errors']} errors")
     return results
