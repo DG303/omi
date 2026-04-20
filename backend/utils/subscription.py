@@ -215,11 +215,6 @@ NEO_CHAT_QUESTIONS_PER_MONTH = int(os.getenv('NEO_CHAT_QUESTIONS_PER_MONTH', '20
 OPERATOR_CHAT_QUESTIONS_PER_MONTH = int(os.getenv('OPERATOR_CHAT_QUESTIONS_PER_MONTH', '500'))
 ARCHITECT_CHAT_COST_USD_PER_MONTH = float(os.getenv('ARCHITECT_CHAT_COST_USD_PER_MONTH', '400.0'))
 
-# Hard kill-switch for the cap. Default OFF so we can deploy the backend to
-# prod without immediately blocking any existing over-cap user. Flip to "true"
-# via Cloud Run env var once beta has validated the UX.
-CHAT_CAP_ENFORCEMENT_ENABLED = os.getenv('CHAT_CAP_ENFORCEMENT_ENABLED', 'false').lower() in ('true', '1', 'yes', 'on')
-
 # Display names shown to users. Internal PlanType stays the same for Stripe compat.
 PLAN_DISPLAY_NAMES = {
     PlanType.basic: 'Free',
@@ -272,15 +267,8 @@ def get_chat_quota_snapshot(uid: str) -> dict:
 
 
 def enforce_chat_quota(uid: str) -> None:
-    """Raise HTTPException(402) if the user is past their monthly chat cap.
-
-    Guarded by CHAT_CAP_ENFORCEMENT_ENABLED so we can deploy the code first,
-    ship the UI to beta, validate, then flip the kill-switch from ops.
-    """
+    """Raise HTTPException(402) if the user is past their monthly chat cap."""
     from fastapi import HTTPException
-
-    if not CHAT_CAP_ENFORCEMENT_ENABLED:
-        return
 
     snapshot = get_chat_quota_snapshot(uid)
     if snapshot['allowed']:
@@ -323,7 +311,7 @@ def get_plan_limits(plan: PlanType) -> PlanLimits:
     Chat caps:
       - Free: question count
       - Operator: question count (OPERATOR_CHAT_QUESTIONS_PER_MONTH, default 500)
-      - Unlimited (legacy): question count (NEO_CHAT_QUESTIONS_PER_MONTH, default 500)
+      - Unlimited (legacy): question count (NEO_CHAT_QUESTIONS_PER_MONTH, default 200)
       - Architect: dollar cap ($400/mo default)
     """
     if plan == PlanType.operator:
@@ -353,31 +341,51 @@ def get_plan_limits(plan: PlanType) -> PlanLimits:
     return get_basic_plan_limits()
 
 
-def get_plan_features(plan: PlanType) -> List[str]:
-    """Returns the list of feature strings for the given plan."""
+def get_plan_features(plan: PlanType, simplified: bool = False) -> List[str]:
+    """Returns the list of feature strings for the given plan.
+
+    Args:
+        plan: The plan type.
+        simplified: If True, returns only plan-differentiating features (for mobile),
+                    omitting items already shown in the top-level highlights section.
+                    If False, returns the full feature list (for desktop).
+    """
     if plan == PlanType.architect:
-        # Lead with what you GET, keep the $400 as a soft fair-use line at the bottom.
+        if simplified:
+            return [
+                "Automations and vibe coding",
+                "Priority desktop AI features",
+                f"~${int(ARCHITECT_CHAT_COST_USD_PER_MONTH)} of monthly AI compute included",
+            ]
         return [
             "Automations and vibe coding",
             "Unlimited listening, memories, and insights",
             "Priority desktop AI features",
-            f"~${int(ARCHITECT_CHAT_COST_USD_PER_MONTH)} of monthly AI compute included (fair-use cap)",
+            f"~${int(ARCHITECT_CHAT_COST_USD_PER_MONTH)} of monthly AI compute included",
         ]
 
     if plan == PlanType.operator:
+        if simplified:
+            return [
+                f"{OPERATOR_CHAT_QUESTIONS_PER_MONTH} chat questions per month",
+            ]
         return [
             f"{OPERATOR_CHAT_QUESTIONS_PER_MONTH} chat questions per month",
             "Unlimited listening and transcription",
             "Unlimited memories and insights",
-            "Shared with mobile and web",
+            "Available on Mac, mobile, and web",
         ]
 
     if plan == PlanType.unlimited:
+        if simplified:
+            return [
+                f"{NEO_CHAT_QUESTIONS_PER_MONTH} chat questions per month",
+            ]
         return [
             f"{NEO_CHAT_QUESTIONS_PER_MONTH} chat questions per month",
             "Unlimited listening and transcription",
             "Unlimited memories and insights",
-            "Shared with mobile and web",
+            "Available on Mac, mobile, and web",
         ]
 
     # Basic plan

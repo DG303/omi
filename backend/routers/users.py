@@ -50,16 +50,17 @@ from models.user_usage import UserUsageResponse, UsagePeriod
 from datetime import datetime, time, timedelta
 
 from models.users import (
+    ChatUsageQuota,
+    ChatQuotaUnit,
     WebhookType,
     UserSubscriptionResponse,
     SubscriptionPlan,
     PlanType,
     PricingOption,
-    ChatUsageQuota,
-    ChatQuotaUnit,
 )
 from utils.apps import get_available_app_by_id
 from utils.subscription import (
+    get_chat_quota_snapshot,
     get_paid_plan_definitions,
     get_plan_display_name,
     get_plan_limits,
@@ -874,7 +875,8 @@ def get_user_subscription_endpoint(
 
     # Populate dynamic fields for the response
     subscription.limits = get_plan_limits(subscription.plan)
-    subscription.features = get_plan_features(subscription.plan)
+    is_mobile = x_app_platform in ('ios', 'android')
+    subscription.features = get_plan_features(subscription.plan, simplified=is_mobile)
 
     new_plans_enabled = should_show_new_plans(x_app_platform, x_app_version)
 
@@ -965,7 +967,7 @@ def get_user_subscription_endpoint(
 
         if plan_prices:
             features = (
-                get_plan_features(definition["plan_type"])
+                get_plan_features(definition["plan_type"], simplified=is_mobile)
                 if new_plans_enabled
                 else legacy_plan_features(definition["plan_type"])
             )
@@ -984,6 +986,13 @@ def get_user_subscription_endpoint(
 
     show_subscription_ui = not should_hide_subscription_ui(uid, x_app_platform, x_app_version)
 
+    # Chat quota — reuse the shared snapshot helper
+    chat_snapshot = get_chat_quota_snapshot(uid)
+    chat_percent = 0.0
+    if chat_snapshot['limit'] is not None and chat_snapshot['limit'] > 0:
+        chat_percent = min(100.0, round(100.0 * chat_snapshot['used'] / chat_snapshot['limit'], 2))
+    chat_allowed = chat_snapshot['allowed']
+
     return UserSubscriptionResponse(
         subscription=subscription,
         transcription_seconds_used=transcription_seconds_used,
@@ -996,66 +1005,43 @@ def get_user_subscription_endpoint(
         memories_created_limit=memories_created_limit,
         available_plans=available_plans,
         show_subscription_ui=show_subscription_ui,
+        chat_quota_used=round(chat_snapshot['used'], 4),
+        chat_quota_unit=chat_snapshot['unit'],
+        chat_quota_percent=chat_percent,
+        chat_quota_allowed=chat_allowed,
+        chat_quota_reset_at=chat_snapshot['reset_at'],
     )
-
-
-# **************************************
-# ****** Daily Summary Settings ********
-# **************************************
 
 
 @router.get('/v1/users/me/usage-quota', tags=['users'], response_model=ChatUsageQuota)
 def get_user_chat_usage_quota(uid: str = Depends(auth.get_current_user_uid)):
     """Current-month chat usage for the user, plus their plan's cap.
 
-    - Free / Plus: counted in questions (user-initiated chat turns)
-    - Pro: counted in dollar spend on desktop chat
-    - Resets at the start of each UTC month
+    Used by the desktop app. Mobile uses the subscription endpoint instead.
     """
-    # BYOK free plan: user brings their own keys, so there's no Omi-side cost
-    # to meter. Return unlimited so the client doesn't gate sendMessage.
-    if users_db.is_byok_active(uid):
-        return ChatUsageQuota(
-            plan='Free (BYOK)',
-            plan_type=PlanType.unlimited.value,
-            unit=ChatQuotaUnit.questions,
-            used=0.0,
-            limit=None,
-            percent=0.0,
-            allowed=True,
-            reset_at=None,
-        )
+    snapshot = get_chat_quota_snapshot(uid)
+    plan = snapshot['plan']
 
-    subscription = get_user_valid_subscription(uid)
-    plan = subscription.plan if subscription else PlanType.basic
-    limits = get_plan_limits(plan)
-    usage = user_usage_db.get_monthly_chat_usage(uid)
-
-    if limits.chat_cost_usd_per_month is not None:
-        unit = ChatQuotaUnit.cost_usd
-        used = float(usage['cost_usd'])
-        limit_value = float(limits.chat_cost_usd_per_month)
+    if snapshot['limit'] is not None and snapshot['limit'] > 0:
+        percent = min(100.0, round(100.0 * snapshot['used'] / snapshot['limit'], 2))
     else:
-        unit = ChatQuotaUnit.questions
-        used = float(usage['questions'])
-        limit_value = float(limits.chat_questions_per_month) if limits.chat_questions_per_month is not None else None
-
-    percent = 0.0
-    allowed = True
-    if limit_value is not None and limit_value > 0:
-        percent = min(100.0, round(100.0 * used / limit_value, 2))
-        allowed = used < limit_value
+        percent = 0.0
 
     return ChatUsageQuota(
         plan=get_plan_display_name(plan),
         plan_type=plan.value,
-        unit=unit,
-        used=round(used, 4),
-        limit=limit_value,
+        unit=ChatQuotaUnit(snapshot['unit']),
+        used=round(snapshot['used'], 4),
+        limit=snapshot['limit'],
         percent=percent,
-        allowed=allowed,
-        reset_at=usage['reset_at'],
+        allowed=snapshot['allowed'],
+        reset_at=snapshot['reset_at'],
     )
+
+
+# **************************************
+# ****** Daily Summary Settings ********
+# **************************************
 
 
 class DailySummarySettingsResponse(BaseModel):
