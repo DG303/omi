@@ -1,5 +1,7 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Dashboard Tasks/Goals cards now shrink to fit content instead of stretching to fill the screen"
+  ],
   "releases": [
     {
       "version": "0.11.343",
