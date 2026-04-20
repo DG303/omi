@@ -38,34 +38,29 @@ struct GoalsWidget: View {
 
             if goals.isEmpty {
                 // Empty state — header already has a + button, so just offer
-                // the AI generation action centered in the empty area.
-                VStack {
-                    Spacer(minLength: 0)
-
-                    Button(action: { triggerGoalGeneration() }) {
-                        HStack(spacing: 6) {
-                            if isGeneratingGoal {
-                                ProgressView()
-                                    .scaleEffect(0.6)
-                                    .frame(width: 12, height: 12)
-                            } else {
-                                Image(systemName: "sparkles")
-                                    .scaledFont(size: 12)
-                            }
-                            Text(isGeneratingGoal ? "Generating..." : "Generate AI Goal")
-                                .scaledFont(size: 13, weight: .medium)
+                // the AI generation action below.
+                Button(action: { triggerGoalGeneration() }) {
+                    HStack(spacing: 6) {
+                        if isGeneratingGoal {
+                            ProgressView()
+                                .scaleEffect(0.6)
+                                .frame(width: 12, height: 12)
+                        } else {
+                            Image(systemName: "sparkles")
+                                .scaledFont(size: 12)
                         }
-                        .foregroundColor(OmiColors.purplePrimary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 9)
-                        .omiControlSurface(fill: OmiColors.purplePrimary.opacity(0.12), radius: OmiChrome.chipRadius)
+                        Text(isGeneratingGoal ? "Generating..." : "Generate AI Goal")
+                            .scaledFont(size: 13, weight: .medium)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(isGeneratingGoal)
-
-                    Spacer(minLength: 0)
+                    .foregroundColor(OmiColors.purplePrimary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 9)
+                    .omiControlSurface(fill: OmiColors.purplePrimary.opacity(0.12), radius: OmiChrome.chipRadius)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .buttonStyle(.plain)
+                .disabled(isGeneratingGoal)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
             } else {
                 // Goals list
                 VStack(spacing: 14) {
@@ -85,7 +80,7 @@ struct GoalsWidget: View {
             }
         }
         .padding(22)
-        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .omiPanel(fill: OmiColors.backgroundSecondary)
         .sheet(isPresented: $showingCreateSheet) {
             GoalEditSheet(
