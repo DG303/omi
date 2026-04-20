@@ -267,6 +267,22 @@ def get_action_items(
     return {"action_items": response_items, "has_more": has_more}
 
 
+@router.get("/v1/action-items/search", tags=['action-items'])
+def search_action_items(
+    query: str = Query(..., min_length=1, description="Search query"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum results"),
+    uid: str = Depends(auth.get_current_user_uid),
+):
+    """Semantic search across action items using vector similarity."""
+    action_item_ids = search_action_items_by_vector(uid, query, limit=limit)
+    if not action_item_ids:
+        return {"action_items": []}
+
+    action_items = action_items_db.get_action_items_by_ids(uid, action_item_ids)
+    action_items = [item for item in action_items if not item.get('is_locked', False)]
+    return {"action_items": [ActionItemResponse(**item) for item in action_items]}
+
+
 @router.get("/v1/action-items/{action_item_id}", response_model=ActionItemResponse, tags=['action-items'])
 def get_action_item(action_item_id: str, uid: str = Depends(auth.get_current_user_uid)):
     """Get a specific action item by ID."""
