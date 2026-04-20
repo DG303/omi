@@ -31,64 +31,51 @@ struct TasksWidget: View {
 
             if totalTaskCount == 0 {
                 // Empty state
-                VStack {
-                    Spacer(minLength: 0)
-
-                    VStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle")
-                            .scaledFont(size: 28)
-                            .foregroundColor(OmiColors.textQuaternary)
-                        Text("No incomplete tasks")
-                            .scaledFont(size: 13)
-                            .foregroundColor(OmiColors.textTertiary)
-                    }
-
-                    Spacer(minLength: 0)
+                VStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle")
+                        .scaledFont(size: 28)
+                        .foregroundColor(OmiColors.textQuaternary)
+                    Text("No incomplete tasks")
+                        .scaledFont(size: 13)
+                        .foregroundColor(OmiColors.textTertiary)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(maxHeight: .infinity)
+                .padding(.vertical, 12)
             } else {
                 let allTasks = (combinedTodayTasks + recentTasks).prefix(3)
 
-                VStack(spacing: 0) {
-                    Spacer(minLength: 0)
-
-                    VStack(spacing: 10) {
-                        ForEach(Array(allTasks)) { task in
-                            TaskRowView(
-                                task: task,
-                                onToggle: { onToggleCompletion(task) }
-                            )
-                        }
-                    }
-
-                    Button(action: {
-                        NotificationCenter.default.post(
-                            name: .navigateToTasks,
-                            object: nil
+                VStack(spacing: 10) {
+                    ForEach(Array(allTasks)) { task in
+                        TaskRowView(
+                            task: task,
+                            onToggle: { onToggleCompletion(task) }
                         )
-                    }) {
-                        HStack {
-                            Spacer()
-                            Text("View all tasks")
-                                .scaledFont(size: 12, weight: .semibold)
-                                .foregroundColor(OmiColors.textSecondary)
-                            Image(systemName: "chevron.right")
-                                .scaledFont(size: 10)
-                                .foregroundColor(OmiColors.textSecondary)
-                            Spacer()
-                        }
                     }
-                    .buttonStyle(.plain)
-                    .padding(.top, 8)
-
-                    Spacer(minLength: 0)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                Button(action: {
+                    NotificationCenter.default.post(
+                        name: .navigateToTasks,
+                        object: nil
+                    )
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("View all tasks")
+                            .scaledFont(size: 12, weight: .semibold)
+                            .foregroundColor(OmiColors.textSecondary)
+                        Image(systemName: "chevron.right")
+                            .scaledFont(size: 10)
+                            .foregroundColor(OmiColors.textSecondary)
+                        Spacer()
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
             }
         }
         .padding(22)
-        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .omiPanel(fill: OmiColors.backgroundSecondary)
     }
 }
