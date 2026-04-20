@@ -30,48 +30,63 @@ struct TasksWidget: View {
             }
 
             if totalTaskCount == 0 {
-                // Empty state
-                VStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle")
-                        .scaledFont(size: 28)
-                        .foregroundColor(OmiColors.textQuaternary)
-                    Text("No incomplete tasks")
-                        .scaledFont(size: 13)
-                        .foregroundColor(OmiColors.textTertiary)
+                // Empty state — vertically centered in the cell
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+
+                    VStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle")
+                            .scaledFont(size: 28)
+                            .foregroundColor(OmiColors.textQuaternary)
+                        Text("No incomplete tasks")
+                            .scaledFont(size: 13)
+                            .foregroundColor(OmiColors.textTertiary)
+                    }
+
+                    Spacer(minLength: 0)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 let allTasks = (combinedTodayTasks + recentTasks).prefix(3)
 
-                VStack(spacing: 10) {
-                    ForEach(Array(allTasks)) { task in
-                        TaskRowView(
-                            task: task,
-                            onToggle: { onToggleCompletion(task) }
-                        )
-                    }
-                }
+                // Task rows + "View all" centered vertically in remaining
+                // cell height — when the Goals card is taller, the row
+                // group floats to the middle instead of pinning to the top.
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
 
-                Button(action: {
-                    NotificationCenter.default.post(
-                        name: .navigateToTasks,
-                        object: nil
-                    )
-                }) {
-                    HStack {
-                        Spacer()
-                        Text("View all tasks")
-                            .scaledFont(size: 12, weight: .semibold)
-                            .foregroundColor(OmiColors.textSecondary)
-                        Image(systemName: "chevron.right")
-                            .scaledFont(size: 10)
-                            .foregroundColor(OmiColors.textSecondary)
-                        Spacer()
+                    VStack(spacing: 10) {
+                        ForEach(Array(allTasks)) { task in
+                            TaskRowView(
+                                task: task,
+                                onToggle: { onToggleCompletion(task) }
+                            )
+                        }
                     }
+
+                    Button(action: {
+                        NotificationCenter.default.post(
+                            name: .navigateToTasks,
+                            object: nil
+                        )
+                    }) {
+                        HStack {
+                            Spacer()
+                            Text("View all tasks")
+                                .scaledFont(size: 12, weight: .semibold)
+                                .foregroundColor(OmiColors.textSecondary)
+                            Image(systemName: "chevron.right")
+                                .scaledFont(size: 10)
+                                .foregroundColor(OmiColors.textSecondary)
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 8)
+
+                    Spacer(minLength: 0)
                 }
-                .buttonStyle(.plain)
-                .padding(.top, 4)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .padding(22)
