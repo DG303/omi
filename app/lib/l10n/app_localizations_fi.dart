@@ -8829,16 +8829,16 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Akku';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Ei vielä akkutietoja';
 
   @override
-  String get day => 'Day';
+  String get day => 'Päivä';
 
   @override
-  String get week => 'Week';
+  String get week => 'Viikko';
 
   @override
   String get rollbackToStableFirmware => 'Palaa vakaaseen laiteohjelmistoon';

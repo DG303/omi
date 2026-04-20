@@ -8840,16 +8840,16 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Baterai';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Belum ada data baterai';
 
   @override
-  String get day => 'Day';
+  String get day => 'Hari';
 
   @override
-  String get week => 'Week';
+  String get week => 'Minggu';
 
   @override
   String get rollbackToStableFirmware => 'Kembali ke firmware stabil';

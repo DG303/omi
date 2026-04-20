@@ -8681,16 +8681,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'バッテリー';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'バッテリーデータはまだありません';
 
   @override
-  String get day => 'Day';
+  String get day => '日';
 
   @override
-  String get week => 'Week';
+  String get week => '週';
 
   @override
   String get rollbackToStableFirmware => '安定版ファームウェアに戻す';

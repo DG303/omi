@@ -8858,16 +8858,16 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Батарея';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Данных о батарее пока нет';
 
   @override
-  String get day => 'Day';
+  String get day => 'День';
 
   @override
-  String get week => 'Week';
+  String get week => 'Неделя';
 
   @override
   String get rollbackToStableFirmware => 'Откатить до стабильной прошивки';

@@ -8881,16 +8881,16 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'బ్యాటరీ';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'ఇంకా బ్యాటరీ డేటా లేదు';
 
   @override
-  String get day => 'Day';
+  String get day => 'రోజు';
 
   @override
-  String get week => 'Week';
+  String get week => 'వారం';
 
   @override
   String get rollbackToStableFirmware => 'స్థిర ఫర్మ్‌వేర్‌కు రిటర్న్ చేయండి';

@@ -8853,16 +8853,16 @@ class AppLocalizationsSl extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Baterija';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Še ni podatkov o bateriji';
 
   @override
-  String get day => 'Day';
+  String get day => 'Dan';
 
   @override
-  String get week => 'Week';
+  String get week => 'Teden';
 
   @override
   String get rollbackToStableFirmware => 'Povrni na stabilno vdelano programsko opremo';

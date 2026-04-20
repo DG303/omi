@@ -8832,16 +8832,16 @@ class AppLocalizationsFa extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'باتری';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'هنوز داده‌ای از باتری موجود نیست';
 
   @override
-  String get day => 'Day';
+  String get day => 'روز';
 
   @override
-  String get week => 'Week';
+  String get week => 'هفته';
 
   @override
   String get rollbackToStableFirmware => 'برگشت به فیرم‌ور پایدار';

@@ -8847,16 +8847,16 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Akumulators';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Pagaidām nav akumulatora datu';
 
   @override
-  String get day => 'Day';
+  String get day => 'Diena';
 
   @override
-  String get week => 'Week';
+  String get week => 'Nedēļa';
 
   @override
   String get rollbackToStableFirmware => 'Atgriezties uz stabilo programmaparatūru';

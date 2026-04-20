@@ -8872,16 +8872,16 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'Baterie';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'Încă nu există date despre baterie';
 
   @override
-  String get day => 'Day';
+  String get day => 'Zi';
 
   @override
-  String get week => 'Week';
+  String get week => 'Săptămână';
 
   @override
   String get rollbackToStableFirmware => 'Revenire la firmware-ul stabil';

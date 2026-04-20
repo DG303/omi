@@ -8683,16 +8683,16 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => '배터리';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => '아직 배터리 데이터가 없습니다';
 
   @override
-  String get day => 'Day';
+  String get day => '일';
 
   @override
-  String get week => 'Week';
+  String get week => '주';
 
   @override
   String get rollbackToStableFirmware => '안정 펌웨어로 롤백';

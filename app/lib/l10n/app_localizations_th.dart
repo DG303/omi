@@ -8784,16 +8784,16 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
-  String get batteryHistory => 'Battery';
+  String get batteryHistory => 'แบตเตอรี่';
 
   @override
-  String get noBatteryDataYet => 'No battery data yet';
+  String get noBatteryDataYet => 'ยังไม่มีข้อมูลแบตเตอรี่';
 
   @override
-  String get day => 'Day';
+  String get day => 'วัน';
 
   @override
-  String get week => 'Week';
+  String get week => 'สัปดาห์';
 
   @override
   String get rollbackToStableFirmware => 'ย้อนกลับเป็นเฟิร์มแวร์เสถียร';
