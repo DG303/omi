@@ -12,7 +12,9 @@ import database.conversations as conversations_db
 import database.redis_db as redis_db
 from database.vector_db import (
     upsert_action_item_vector,
+    upsert_action_item_vectors_batch,
     delete_action_item_vector,
+    delete_action_item_vectors_batch,
     search_action_items_by_vector,
 )
 from utils.users import get_user_display_name
@@ -174,6 +176,14 @@ def sync_batch_update(request: SyncBatchRequest, uid: str = Depends(auth.get_cur
             updates.append({'id': item.id, 'data': update_data})
 
     action_items_db.batch_sync_update_action_items(uid, updates)
+
+    desc_updates = [u for u in updates if 'description' in u['data']]
+    if desc_updates:
+        upsert_action_item_vectors_batch(
+            uid,
+            [{'action_item_id': u['id'], 'description': u['data']['description']} for u in desc_updates],
+        )
+
     return {"status": "ok", "updated_count": len(updates)}
 
 
@@ -433,7 +443,13 @@ def get_conversation_action_items(conversation_id: str, uid: str = Depends(auth.
 @router.delete("/v1/conversations/{conversation_id}/action-items", status_code=204, tags=['action-items'])
 def delete_conversation_action_items(conversation_id: str, uid: str = Depends(auth.get_current_user_uid)):
     """Delete all action items for a specific conversation."""
+    existing = action_items_db.get_action_items_by_conversation(uid, conversation_id)
+    existing_ids = [item['id'] for item in existing]
+
     deleted_count = action_items_db.delete_action_items_for_conversation(uid, conversation_id)
+
+    if existing_ids:
+        delete_action_item_vectors_batch(uid, existing_ids)
 
     return {"status": "Ok", "deleted_count": deleted_count}
 
@@ -475,6 +491,14 @@ def create_action_items_batch(
                     description=action_items[idx].description,
                     due_at=action_items[idx].due_at.isoformat(),
                 )
+
+    upsert_action_item_vectors_batch(
+        uid,
+        [
+            {'action_item_id': aid, 'description': data['description']}
+            for aid, data in zip(created_ids, action_items_data)
+        ],
+    )
 
     return {"action_items": created_items, "created_count": len(created_items)}
 
@@ -595,6 +619,7 @@ def accept_shared_action_items(request: AcceptSharedTasksRequest, uid: str = Dep
         }
         new_id = action_items_db.create_action_item(uid, new_item)
         created_ids.append(new_id)
+        upsert_action_item_vector(uid, new_id, new_item['description'])
 
     # If race condition caused all items to become locked after pre-check, rollback token
     if not created_ids:

@@ -25,6 +25,7 @@ from database.vector_db import (
     upsert_memory_vector,
     delete_memory_vector,
     upsert_action_item_vectors_batch,
+    delete_action_item_vectors_batch,
 )
 from utils.llm.memories import resolve_memory_conflict
 from database.apps import record_app_usage, get_omi_personas_by_uid_db, get_app_by_id_db
@@ -555,7 +556,11 @@ def _save_action_items(uid: str, conversation: Conversation):
         action_items_data.append(action_item_data)
 
     if action_items_data:
-        # Delete existing action items for this conversation first (in case of reprocessing)
+        # Delete existing action items and their vectors first (in case of reprocessing)
+        old_items = action_items_db.get_action_items_by_conversation(uid, conversation.id)
+        old_ids = [item['id'] for item in old_items]
+        if old_ids:
+            delete_action_item_vectors_batch(uid, old_ids)
         action_items_db.delete_action_items_for_conversation(uid, conversation.id)
         # Save new action items
         action_item_ids = action_items_db.create_action_items_batch(uid, action_items_data)

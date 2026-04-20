@@ -468,3 +468,13 @@ def delete_action_item_vector(uid: str, action_item_id: str):
     vector_id = f'{uid}-ai-{action_item_id}'
     result = index.delete(ids=[vector_id], namespace=ACTION_ITEMS_NAMESPACE)
     logger.info(f'delete_action_item_vector {vector_id} {result}')
+
+
+def delete_action_item_vectors_batch(uid: str, action_item_ids: List[str]):
+    if index is None:
+        return
+    if not action_item_ids:
+        return
+    vector_ids = [f'{uid}-ai-{aid}' for aid in action_item_ids]
+    index.delete(ids=vector_ids, namespace=ACTION_ITEMS_NAMESPACE)
+    logger.info(f'delete_action_item_vectors_batch count={len(vector_ids)}')
