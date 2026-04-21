@@ -705,19 +705,6 @@ async def get_or_create_user_persona(uid: str = Depends(auth.get_current_user_ui
     return persona_data
 
 
-@router.get('/v1/apps/check-username', tags=['v1'])
-def check_username(username: str, uid: str = Depends(auth.get_current_user_uid)):
-    is_taken = is_username_taken(username)
-    return {'is_taken': is_taken}
-
-
-@router.get('/v1/personas/generate-username', tags=['v1'])
-def generate_username(handle: str, uid: str = Depends(auth.get_current_user_uid)):
-    username = handle.replace(' ', '')
-    username = increment_username(username)
-    return {'username': username}
-
-
 @router.patch('/v1/apps/{app_id}', tags=['v1'])
 def update_app(
     app_id: str, app_data: str = Form(...), file: UploadFile = File(None), uid=Depends(auth.get_current_user_uid)
@@ -1165,7 +1152,7 @@ async def generate_sample_prompts_endpoint(
     Generate sample app prompts for the AI app generator.
     Uses a fast model to generate creative suggestions.
     """
-    from utils.llm.clients import llm_mini
+    from utils.llm.clients import get_llm
     import json
 
     system_prompt = """Generate 5 creative and diverse ideas for apps that are either:
@@ -1186,7 +1173,7 @@ Be creative, fun, and varied. No generic ideas."""
 
     try:
         with track_usage(uid, Features.APP_GENERATOR):
-            response = await llm_mini.ainvoke(
+            response = await get_llm('app_integration').ainvoke(
                 [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": "Generate 5 creative app ideas now"},
