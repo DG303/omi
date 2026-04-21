@@ -1,8 +1,13 @@
 {
-  "unreleased": [
-    "Auto-updates no longer install during an active conversation \u2014 the app waits for 2 minutes of silence before restarting"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.350",
+      "date": "2026-04-21",
+      "changes": [
+        "Auto-updates no longer install during an active conversation \u2014 the app waits for 2 minutes of silence before restarting"
+      ]
+    },
     {
       "version": "0.11.349",
       "date": "2026-04-21",
