@@ -45,6 +45,7 @@ import type {
 } from "./protocol.js";
 import { startOAuthFlow, type OAuthFlowHandle } from "./oauth-flow.js";
 import type { PromptBlock } from "./adapters/interface.js";
+import { detectImageMimeType } from "./mime-detect.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -768,7 +769,8 @@ async function handleQuery(msg: QueryMessage): Promise<void> {
     const sendPrompt = async (): Promise<void> => {
       const promptBlocks: Array<Record<string, unknown>> = [];
       if (msg.imageBase64) {
-        promptBlocks.push({ type: "image", data: msg.imageBase64, mimeType: "image/webp" });
+        const imgMime = detectImageMimeType(msg.imageBase64);
+        promptBlocks.push({ type: "image", data: msg.imageBase64, mimeType: imgMime });
       }
       promptBlocks.push({ type: "text", text: fullPrompt });
 
@@ -1258,8 +1260,9 @@ async function runPiMonoMode(): Promise<void> {
           // Build prompt blocks — include screenshot if available
           const promptBlocks: PromptBlock[] = [];
           if (qm.imageBase64) {
-            promptBlocks.push({ type: "image" as const, data: qm.imageBase64, mimeType: "image/jpeg" });
-            logErr("Pi-mono: including screenshot image in prompt");
+            const mimeType = detectImageMimeType(qm.imageBase64);
+            promptBlocks.push({ type: "image" as const, data: qm.imageBase64, mimeType });
+            logErr(`Pi-mono: including screenshot image in prompt (${mimeType})`);
           }
           promptBlocks.push({ type: "text" as const, text: qm.prompt });
 
