@@ -1,8 +1,13 @@
 {
-  "unreleased": [
-    "Center dashboard Tasks/Goals rows vertically when one card is shorter than the other"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.346",
+      "date": "2026-04-21",
+      "changes": [
+        "Center dashboard Tasks/Goals rows vertically when one card is shorter than the other"
+      ]
+    },
     {
       "version": "0.11.345",
       "date": "2026-04-20",
