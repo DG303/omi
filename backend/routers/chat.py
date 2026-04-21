@@ -155,10 +155,12 @@ def send_message(
     uid: str = Depends(auth.with_rate_limit(auth.get_current_user_uid, "chat:send_message")),
 ):
     # Hard cap: Free by question count, Architect by cost_usd. Operator enters
-    # overage mode silently. If exceeded, instead of raising 402 (which older
-    # mobile clients swallow as a generic error), save a canned AI reply so
-    # the user sees why they're blocked. Desktop pre-checks via
-    # /v1/users/me/usage-quota and never reaches here when over.
+    # overage mode silently. If exceeded, instead of raising 402 (which mobile
+    # clients render as a generic "having issues with the server" error), save
+    # a canned AI reply and emit it as an SSE `done:` chunk — matching the
+    # streaming contract this endpoint already uses — so mobile parses it like
+    # any other reply. Desktop pre-checks via /v1/users/me/usage-quota and
+    # never reaches here when over.
     try:
         enforce_chat_quota(uid)
     except HTTPException as exc:
@@ -169,7 +171,13 @@ def send_message(
         _compat_id = app_id or plugin_id
         if _compat_id in ['null', '']:
             _compat_id = None
-        return _build_quota_exceeded_reply(uid, data, _compat_id, exc.detail)
+        response_msg = _build_quota_exceeded_reply(uid, data, _compat_id, exc.detail)
+
+        def _quota_exceeded_stream():
+            encoded = base64.b64encode(bytes(response_msg.model_dump_json(), 'utf-8')).decode('utf-8')
+            yield f"done: {encoded}\n\n"
+
+        return StreamingResponse(_quota_exceeded_stream(), media_type="text/event-stream")
 
     compat_app_id = app_id or plugin_id
     logger.info(f'send_message {data.text} {compat_app_id} {uid}')
