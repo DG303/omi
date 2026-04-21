@@ -232,7 +232,6 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
                     ),
                   ),
                   _buildDailySummaryCard(),
-
                 ],
               ),
             ),
