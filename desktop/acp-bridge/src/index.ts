@@ -768,7 +768,14 @@ async function handleQuery(msg: QueryMessage): Promise<void> {
     const sendPrompt = async (): Promise<void> => {
       const promptBlocks: Array<Record<string, unknown>> = [];
       if (msg.imageBase64) {
-        promptBlocks.push({ type: "image", data: msg.imageBase64, mimeType: "image/webp" });
+        const hdr = Buffer.from(msg.imageBase64.slice(0, 24), "base64");
+        let imgMime = "image/jpeg";
+        if (hdr.length >= 12 && hdr.slice(0, 4).toString("ascii") === "RIFF" && hdr.slice(8, 12).toString("ascii") === "WEBP") {
+          imgMime = "image/webp";
+        } else if (hdr.length >= 4 && hdr[0] === 0x89 && hdr[1] === 0x50) {
+          imgMime = "image/png";
+        }
+        promptBlocks.push({ type: "image", data: msg.imageBase64, mimeType: imgMime });
       }
       promptBlocks.push({ type: "text", text: fullPrompt });
 
@@ -1258,8 +1265,16 @@ async function runPiMonoMode(): Promise<void> {
           // Build prompt blocks — include screenshot if available
           const promptBlocks: PromptBlock[] = [];
           if (qm.imageBase64) {
-            promptBlocks.push({ type: "image" as const, data: qm.imageBase64, mimeType: "image/jpeg" });
-            logErr("Pi-mono: including screenshot image in prompt");
+            // Detect image format from base64-decoded header bytes
+            const header = Buffer.from(qm.imageBase64.slice(0, 24), "base64");
+            let mimeType = "image/jpeg";
+            if (header.length >= 12 && header.slice(0, 4).toString("ascii") === "RIFF" && header.slice(8, 12).toString("ascii") === "WEBP") {
+              mimeType = "image/webp";
+            } else if (header.length >= 4 && header[0] === 0x89 && header[1] === 0x50) {
+              mimeType = "image/png";
+            }
+            promptBlocks.push({ type: "image" as const, data: qm.imageBase64, mimeType });
+            logErr(`Pi-mono: including screenshot image in prompt (${mimeType})`);
           }
           promptBlocks.push({ type: "text" as const, text: qm.prompt });
 
