@@ -6042,7 +6042,7 @@
     "@additionalSpeechSampleRemoved": {
         "description": "Confirmation message when an additional speech sample is deleted"
     },
-    "consentDataMessage": "Nastavkom, svi podaci koje dijelite s ovom aplikacijom (uključujući vaše razgovore, snimanja i osobne podatke) bit će sigurno pohranjeni na našim poslužiteljima kako bismo vam dali AI-powered insights i omogućili sve karakteristike aplikacije.",
+    "consentDataMessage": "Nastavljanjem, vaši razgovori, snimke i osobni podaci bit će sigurno pohranjeni na našim poslužiteljima. Vaši audio zapisi i transkripti obrađuju se od strane AI usluga trećih strana (uključujući Deepgram za transkripciju i OpenAI za analizu) kako bi vam pružili uvide pokretane umjetnom inteligencijom i omogućili sve značajke aplikacije.",
     "@consentDataMessage": {
         "description": "Consent message explaining how user data will be stored and used"
     },

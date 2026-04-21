@@ -5110,7 +5110,7 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'S nadaljevanjem bodo vsi podatki, ki jih delite s to aplikacijo (vključno s pogovori, posnetki in osebnimi informacijami), varno shranjeni na naših strežnikih, da vam zagotovimo umetnostno inteligenco in omogočimo vse funkcije aplikacije.';
+      'Z nadaljevanjem bodo vaši pogovori, posnetki in osebni podatki varno shranjeni na naših strežnikih. Vaši zvočni posnetki in prepisi se obdelujejo s storitvami umetne inteligence tretjih oseb (vključno z Deepgram za prepis in OpenAI za analizo), da vam zagotovimo vpoglede, ki jih poganja umetna inteligenca, in omogočimo vse funkcije aplikacije.';
 
   @override
   String get tasksEmptyStateMessage =>

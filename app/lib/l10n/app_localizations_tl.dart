@@ -5142,7 +5142,7 @@ class AppLocalizationsTl extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Sa pamamagitan ng pagpatuloy, ang lahat ng data na ibinabahagi mo sa app na ito (kabilang ang iyong mga pag-uusap, mga recordings, at personal na impormasyon) ay magiging secure na naka-store sa aming mga servers upang magbigay sa iyo ng AI-powered insights at paganahin ang lahat ng app features.';
+      'Sa pagpapatuloy, ang iyong mga pag-uusap, recording, at personal na impormasyon ay ligtas na maiimbak sa aming mga server. Ang iyong mga audio recording at transcript ay pinoproseso ng third-party na mga serbisyo ng AI (kabilang ang Deepgram para sa transcription at OpenAI para sa analysis) upang mabigyan ka ng AI-powered na mga insight at ma-enable ang lahat ng feature ng app.';
 
   @override
   String get tasksEmptyStateMessage =>
