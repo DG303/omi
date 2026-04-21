@@ -1562,7 +1562,7 @@
     "additionalSampleIndex": "Lisanäidis {index}",
     "durationSeconds": "Kestus: {seconds} sekundit",
     "additionalSpeechSampleRemoved": "Lisakõnenäidis eemaldatud",
-    "consentDataMessage": "Jätkates salvestatakse kõik selle rakendusega jagatud andmed (sealhulgas teie vestlused, salvestised ja isiklikud andmed) turvaliselt meie serverites, et pakkuda teile tehisintellektil põhinevaid teadmisi ja võimaldada kõiki rakenduse funktsioone.",
+    "consentDataMessage": "Jätkates salvestatakse teie vestlused, salvestised ja isikuandmed turvaliselt meie serverites. Teie helisalvestisi ja transkriptsioone töötlevad kolmandate osapoolte AI-teenused (sealhulgas Deepgram transkriptsiooni ja OpenAI analüüsi jaoks), et pakkuda teile AI-põhiseid ülevaateid ja võimaldada kõiki rakenduse funktsioone.",
     "tasksEmptyStateMessage": "Teie vestlustest pärit ülesanded ilmuvad siia.\nPuudutage + käsitsi loomiseks.",
     "clearChatAction": "Tühjenda vestlus",
     "enableApps": "Luba rakendused",

@@ -6042,7 +6042,7 @@
     "@additionalSpeechSampleRemoved": {
         "description": "Confirmation message when an additional speech sample is deleted"
     },
-    "consentDataMessage": "Прыступаючы, усе дадзеныя, якія вы дзеліцеся з гэтым прыложэннем (уключаючы вашы разговоры, запісы і персанальную інфармацыю), будуць безбяспечна захаваны на нашых серверах, каб забяспечыць вас аналітыкай на аснове ШІ і ўключыць усе функцыі прыложэння.",
+    "consentDataMessage": "Працягваючы, вашы размовы, запісы і асабістая інфармацыя будуць надзейна захоўвацца на нашых серверах. Вашы аўдыязапісы і транскрыпцыі апрацоўваюцца староннімі сэрвісамі ШІ (уключаючы Deepgram для транскрыпцыі і OpenAI для аналізу), каб забяспечыць вас аналітыкай на аснове ШІ і ўключыць усе функцыі праграмы.",
     "@consentDataMessage": {
         "description": "Consent message explaining how user data will be stored and used"
     },

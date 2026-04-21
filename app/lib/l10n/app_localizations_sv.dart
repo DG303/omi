@@ -5101,7 +5101,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Genom att fortsätta kommer all data du delar med denna app (inklusive dina konversationer, inspelningar och personlig information) att lagras säkert på våra servrar för att ge dig AI-drivna insikter och aktivera alla appfunktioner.';
+      'Genom att fortsätta kommer dina konversationer, inspelningar och personlig information att lagras säkert på våra servrar. Dina ljudinspelningar och transkriptioner behandlas av AI-tjänster från tredje part (inklusive Deepgram för transkription och OpenAI för analys) för att ge dig AI-drivna insikter och aktivera alla appfunktioner.';
 
   @override
   String get tasksEmptyStateMessage =>

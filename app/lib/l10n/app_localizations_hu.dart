@@ -5125,7 +5125,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'A folytatással az alkalmazással megosztott összes adat (beleértve a beszélgetéseket, felvételeket és személyes adatokat) biztonságosan tárolódik a szervereinkei, hogy AI-alapú betekintéseket nyújthassunk és engedélyezhessük az összes alkalmazásfunkciót.';
+      'A folytatással beszélgetéseit, felvételeit és személyes adatait biztonságosan tároljuk szervereinken. Hangfelvételeit és átiratait harmadik féltől származó AI szolgáltatások dolgozzák fel (beleértve a Deepgramot az átíráshoz és az OpenAI-t az elemzéshez), hogy AI-alapú betekintéseket nyújtsunk Önnek és az alkalmazás összes funkcióját biztosítsuk.';
 
   @override
   String get tasksEmptyStateMessage =>

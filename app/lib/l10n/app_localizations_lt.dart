@@ -5100,7 +5100,7 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Tęsdami, visi duomenys, kuriuos bendrinate su šia programa (įskaitant jūsų pokalbius, įrašus ir asmeninę informaciją), bus saugiai saugomi mūsų serveriuose, kad galėtume teikti jums dirbtinio intelekto paremtas įžvalgas ir įjungti visas programos funkcijas.';
+      'Tęsdami, jūsų pokalbiai, įrašai ir asmeninė informacija bus saugiai saugomi mūsų serveriuose. Jūsų garso įrašai ir transkripcijos apdorojami trečiųjų šalių AI paslaugų (įskaitant Deepgram transkripcijai ir OpenAI analizei), kad suteiktų jums AI paremtas įžvalgas ir įgalintų visas programėlės funkcijas.';
 
   @override
   String get tasksEmptyStateMessage =>

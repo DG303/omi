@@ -6042,7 +6042,7 @@
     "@additionalSpeechSampleRemoved": {
         "description": "Confirmation message when an additional speech sample is deleted"
     },
-    "consentDataMessage": "جاری رکھ کر تمام ڈیٹا جو آپ اس ایپ کے ساتھ شیئر کرتے ہیں (آپ کی گفتگو، ریکارڈنگز اور ذاتی معلومات سمیت) ہماری سرورز پر محفوظ طریقے سے محفوظ کیے جائیں گے تاکہ آپ کو AI کی طاقت سے چلنے والی بصیرت فراہم کی جا سکے اور تمام ایپ کی خصوصیات کو فعال کیا جا سکے۔",
+    "consentDataMessage": "جاری رکھ کر، آپ کی بات چیت، ریکارڈنگز اور ذاتی معلومات ہمارے سرورز پر محفوظ طریقے سے ذخیرہ کی جائیں گی۔ آپ کی آڈیو ریکارڈنگز اور ٹرانسکرپٹس تھرڈ پارٹی AI سروسز کے ذریعے پراسیس کی جاتی ہیں (بشمول ٹرانسکرپشن کے لیے Deepgram اور تجزیے کے لیے OpenAI) تاکہ آپ کو AI سے چلنے والی بصیرتیں فراہم کی جا سکیں اور ایپ کی تمام خصوصیات کو فعال کیا جا سکے۔",
     "@consentDataMessage": {
         "description": "Consent message explaining how user data will be stored and used"
     },

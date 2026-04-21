@@ -5003,7 +5003,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      '계속하면 이 앱과 공유하는 모든 데이터(대화, 녹음, 개인 정보 포함)가 당사 서버에 안전하게 저장되어 AI 기반 인사이트를 제공하고 모든 앱 기능을 활성화합니다.';
+      '계속하면 대화, 녹음 및 개인 정보가 서버에 안전하게 저장됩니다. 오디오 녹음 및 텍스트 변환은 제3자 AI 서비스(전사를 위한 Deepgram 및 분석을 위한 OpenAI 포함)에 의해 처리되어 AI 기반 인사이트를 제공하고 모든 앱 기능을 활성화합니다.';
 
   @override
   String get tasksEmptyStateMessage => '대화에서 생성된 작업이 여기에 표시됩니다.\n수동으로 만들려면 +를 탭하세요.';

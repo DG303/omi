@@ -5113,7 +5113,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Dengan melanjutkan, semua data yang Anda bagikan dengan aplikasi ini (termasuk percakapan, rekaman, dan informasi pribadi Anda) akan disimpan dengan aman di server kami untuk memberikan wawasan berbasis AI dan mengaktifkan semua fitur aplikasi.';
+      'Dengan melanjutkan, percakapan, rekaman, dan informasi pribadi Anda akan disimpan dengan aman di server kami. Rekaman audio dan transkrip Anda diproses oleh layanan AI pihak ketiga (termasuk Deepgram untuk transkripsi dan OpenAI untuk analisis) untuk memberikan Anda wawasan berbasis AI dan mengaktifkan semua fitur aplikasi.';
 
   @override
   String get tasksEmptyStateMessage =>

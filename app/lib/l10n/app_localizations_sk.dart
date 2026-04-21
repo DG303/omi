@@ -5096,7 +5096,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Pokračovaním budú všetky údaje, ktoré zdieľate s touto aplikáciou (vrátane vašich konverzácií, nahrávok a osobných informácií), bezpečne uložené na našich serveroch, aby sme vám mohli poskytovať poznatky založené na AI a umožniť všetky funkcie aplikácie.';
+      'Pokračovaním budú vaše konverzácie, nahrávky a osobné údaje bezpečne uložené na našich serveroch. Vaše audio nahrávky a prepisy sú spracovávané AI službami tretích strán (vrátane Deepgram na prepis a OpenAI na analýzu), aby vám poskytli poznatky založené na AI a umožnili všetky funkcie aplikácie.';
 
   @override
   String get tasksEmptyStateMessage =>

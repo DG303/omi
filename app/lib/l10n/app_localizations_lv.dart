@@ -5107,7 +5107,7 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Turpinot, visi dati, ko kopīgojat ar šo lietotni (tostarp jūsu sarunas, ierakstus un personisko informāciju), tiks droši glabāti mūsu serveros, lai sniegtu jums AI balstītas atziņas un iespējotu visas lietotnes funkcijas.';
+      'Turpinot, jūsu sarunas, ieraksti un personiskā informācija tiks droši glabāta mūsu serveros. Jūsu audio ieraksti un transkripcijas tiek apstrādātas ar trešo pušu AI pakalpojumiem (ieskaitot Deepgram transkripcijai un OpenAI analīzei), lai sniegtu jums AI vadītus ieskatus un iespējotu visas lietotnes funkcijas.';
 
   @override
   String get tasksEmptyStateMessage =>

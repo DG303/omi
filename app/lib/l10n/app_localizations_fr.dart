@@ -5149,7 +5149,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'En continuant, toutes les données que vous partagez avec cette application (y compris vos conversations, enregistrements et informations personnelles) seront stockées en toute sécurité sur nos serveurs pour vous fournir des informations basées sur l\'IA et activer toutes les fonctionnalités de l\'application.';
+      'En continuant, vos conversations, enregistrements et informations personnelles seront stockés en toute sécurité sur nos serveurs. Vos enregistrements audio et transcriptions sont traités par des services d\'IA tiers (notamment Deepgram pour la transcription et OpenAI pour l\'analyse) afin de vous fournir des informations alimentées par l\'IA et d\'activer toutes les fonctionnalités de l\'application.';
 
   @override
   String get tasksEmptyStateMessage =>

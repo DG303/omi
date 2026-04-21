@@ -5101,7 +5101,7 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Ved å fortsette vil alle data du deler med denne appen (inkludert samtalene, opptakene og personlig informasjon) bli sikkert lagret på våre servere for å gi deg AI-drevne innsikter og aktivere alle appfunksjoner.';
+      'Ved å fortsette vil samtalene, opptakene og den personlige informasjonen din bli lagret sikkert på våre servere. Lydopptakene og transkripsjonene dine behandles av tredjeparts AI-tjenester (inkludert Deepgram for transkripsjon og OpenAI for analyse) for å gi deg AI-drevne innsikter og aktivere alle appfunksjoner.';
 
   @override
   String get tasksEmptyStateMessage => 'Oppgaver fra samtalene dine vil vises her.\nTrykk på + for å opprette manuelt.';

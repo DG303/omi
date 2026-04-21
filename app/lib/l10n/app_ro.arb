@@ -1562,7 +1562,7 @@
     "additionalSampleIndex": "Mostră suplimentară {index}",
     "durationSeconds": "Durată: {seconds} secunde",
     "additionalSpeechSampleRemoved": "Mostră vocală suplimentară eliminată",
-    "consentDataMessage": "Continuând, toate datele pe care le partajați cu această aplicație (inclusiv conversațiile, înregistrările și informațiile personale) vor fi stocate în siguranță pe serverele noastre pentru a vă oferi informații bazate pe IA și pentru a activa toate funcțiile aplicației.",
+    "consentDataMessage": "Continuând, conversațiile, înregistrările și informațiile dvs. personale vor fi stocate în siguranță pe serverele noastre. Înregistrările audio și transcrierile dvs. sunt procesate de servicii AI terțe (inclusiv Deepgram pentru transcriere și OpenAI pentru analiză) pentru a vă oferi informații bazate pe AI și a activa toate funcțiile aplicației.",
     "tasksEmptyStateMessage": "Sarcinile din conversațiile tale vor apărea aici.\nAtinge + pentru a crea una manual.",
     "clearChatAction": "Șterge conversația",
     "enableApps": "Activează aplicațiile",

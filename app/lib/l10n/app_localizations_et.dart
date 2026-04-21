@@ -5099,7 +5099,7 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Jätkates salvestatakse kõik selle rakendusega jagatud andmed (sealhulgas teie vestlused, salvestised ja isiklikud andmed) turvaliselt meie serverites, et pakkuda teile tehisintellektil põhinevaid teadmisi ja võimaldada kõiki rakenduse funktsioone.';
+      'Jätkates salvestatakse teie vestlused, salvestised ja isikuandmed turvaliselt meie serverites. Teie helisalvestisi ja transkriptsioone töötlevad kolmandate osapoolte AI-teenused (sealhulgas Deepgram transkriptsiooni ja OpenAI analüüsi jaoks), et pakkuda teile AI-põhiseid ülevaateid ja võimaldada kõiki rakenduse funktsioone.';
 
   @override
   String get tasksEmptyStateMessage => 'Teie vestlustest pärit ülesanded ilmuvad siia.\nPuudutage + käsitsi loomiseks.';

@@ -5111,7 +5111,7 @@ class AppLocalizationsBs extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Nastavkom, svi podaci koje dijelite s ovom aplikacijom (uključujući vaše razgovore, snimke i osobne informacije) bit će sigurno pohranjeni na našim serverima kako bi vam omogućili AI-pogonjena uvida i omogućili sve značajke aplikacije.';
+      'Nastavljanjem, vaši razgovori, snimke i lični podaci bit će sigurno pohranjeni na našim serverima. Vaši audio zapisi i transkripti se obrađuju od strane AI usluga trećih strana (uključujući Deepgram za transkripciju i OpenAI za analizu) kako bi vam pružili uvide pokretane vještačkom inteligencijom i omogućili sve funkcije aplikacije.';
 
   @override
   String get tasksEmptyStateMessage =>

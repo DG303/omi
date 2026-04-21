@@ -5108,7 +5108,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Bằng cách tiếp tục, tất cả dữ liệu bạn chia sẻ với ứng dụng này (bao gồm các cuộc trò chuyện, bản ghi và thông tin cá nhân của bạn) sẽ được lưu trữ an toàn trên máy chủ của chúng tôi để cung cấp cho bạn thông tin chi tiết được hỗ trợ bởi AI và kích hoạt tất cả các tính năng của ứng dụng.';
+      'Bằng cách tiếp tục, các cuộc trò chuyện, bản ghi âm và thông tin cá nhân của bạn sẽ được lưu trữ an toàn trên máy chủ của chúng tôi. Bản ghi âm và bản phiên âm của bạn được xử lý bởi các dịch vụ AI bên thứ ba (bao gồm Deepgram cho phiên âm và OpenAI cho phân tích) để cung cấp cho bạn thông tin chi tiết được hỗ trợ bởi AI và kích hoạt tất cả các tính năng ứng dụng.';
 
   @override
   String get tasksEmptyStateMessage =>

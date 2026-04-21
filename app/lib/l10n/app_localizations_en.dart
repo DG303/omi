@@ -5100,7 +5100,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'By continuing, all data you share with this app (including your conversations, recordings, and personal information) will be securely stored on our servers to provide you with AI-powered insights and enable all app features.';
+      'By continuing, your conversations, recordings, and personal information will be securely stored on our servers. Your audio recordings and transcripts are processed by third-party AI services (including Deepgram for transcription and OpenAI for analysis) to provide you with AI-powered insights and enable all app features.';
 
   @override
   String get tasksEmptyStateMessage => 'Tasks from your conversations will appear here.\nTap + to create one manually.';

@@ -5110,7 +5110,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Kontynuując, wszystkie dane, które udostępniasz tej aplikacji (w tym rozmowy, nagrania i dane osobowe), będą bezpiecznie przechowywane na naszych serwerach, aby zapewnić Ci spostrzeżenia oparte na AI i włączyć wszystkie funkcje aplikacji.';
+      'Kontynuując, Twoje rozmowy, nagrania i dane osobowe będą bezpiecznie przechowywane na naszych serwerach. Twoje nagrania audio i transkrypcje są przetwarzane przez zewnętrzne usługi AI (w tym Deepgram do transkrypcji i OpenAI do analizy), aby dostarczyć Ci wglądy oparte na AI i umożliwić wszystkie funkcje aplikacji.';
 
   @override
   String get tasksEmptyStateMessage => 'Zadania z twoich rozmów pojawią się tutaj.\nDotknij +, aby utworzyć ręcznie.';

@@ -5109,7 +5109,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Devam ederek, bu uygulamayla paylaştığınız tüm veriler (konuşmalarınız, kayıtlarınız ve kişisel bilgileriniz dahil) size yapay zeka destekli içgörüler sağlamak ve tüm uygulama özelliklerini etkinleştirmek için sunucularımızda güvenli bir şekilde saklanacaktır.';
+      'Devam ederek, konuşmalarınız, kayıtlarınız ve kişisel bilgileriniz sunucularımızda güvenli bir şekilde saklanacaktır. Ses kayıtlarınız ve transkriptleriniz, size yapay zeka destekli içgörüler sağlamak ve tüm uygulama özelliklerini etkinleştirmek için üçüncü taraf yapay zeka hizmetleri (transkripsiyon için Deepgram ve analiz için OpenAI dahil) tarafından işlenir.';
 
   @override
   String get tasksEmptyStateMessage =>
