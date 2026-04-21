@@ -321,6 +321,7 @@ class OverageInfoResponse(BaseModel):
     plan_type: str
     is_overage_plan: bool
     included_questions: Optional[int] = None
+    included_cost_usd: Optional[float] = None
     used_questions: int = 0
     excess_questions: int = 0
     real_cost_usd: float = 0.0
@@ -351,6 +352,7 @@ def get_overage_info_endpoint(uid: str = Depends(auth.get_current_user_uid_no_by
         plan_type=plan.value,
         is_overage_plan=is_overage_plan(plan),
         included_questions=snapshot['included_questions'],
+        included_cost_usd=snapshot.get('included_cost_usd'),
         used_questions=snapshot['used_questions'],
         excess_questions=snapshot['excess_questions'],
         real_cost_usd=snapshot['real_cost_usd'],
