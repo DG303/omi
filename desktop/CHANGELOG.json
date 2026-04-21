@@ -1,5 +1,7 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Auto-updates no longer install during an active conversation \u2014 the app waits for 2 minutes of silence before restarting"
+  ],
   "releases": [
     {
       "version": "0.11.348",
