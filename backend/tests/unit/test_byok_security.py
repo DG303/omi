@@ -1017,32 +1017,35 @@ class TestWSAuthDependencyBYOK:
     @patch('utils.other.endpoints.validate_byok_websocket', return_value=None)
     @patch('utils.other.endpoints._verify_ws_auth', return_value='ws-uid')
     def test_ws_listen_with_byok_headers_validates(self, _mock_auth, mock_validate):
+        import asyncio
         from utils.other.endpoints import get_current_user_uid_ws_listen
 
         ws = self._make_ws({'x-byok-openai': 'sk-test'})
-        uid = get_current_user_uid_ws_listen(websocket=ws, authorization='Bearer tok')
+        uid = asyncio.run(get_current_user_uid_ws_listen(websocket=ws, authorization='Bearer tok'))
         assert uid == 'ws-uid'
         mock_validate.assert_called_once_with('ws-uid')
 
     @patch('utils.other.endpoints.validate_byok_websocket', return_value=None)
     @patch('utils.other.endpoints._verify_ws_auth', return_value='ws-uid')
     def test_ws_listen_no_headers_passes(self, _mock_auth, mock_validate):
+        import asyncio
         from utils.other.endpoints import get_current_user_uid_ws_listen
 
         ws = self._make_ws({})
-        uid = get_current_user_uid_ws_listen(websocket=ws, authorization='Bearer tok')
+        uid = asyncio.run(get_current_user_uid_ws_listen(websocket=ws, authorization='Bearer tok'))
         assert uid == 'ws-uid'
         mock_validate.assert_called_once()
 
     @patch('utils.other.endpoints.validate_byok_websocket', return_value='fingerprint mismatch')
     @patch('utils.other.endpoints._verify_ws_auth', return_value='ws-uid')
     def test_ws_listen_validation_failure_raises_4003(self, _mock_auth, _mock_validate):
+        import asyncio
         from fastapi import WebSocketException
         from utils.other.endpoints import get_current_user_uid_ws_listen
 
         ws = self._make_ws({'x-byok-openai': 'wrong-key'})
         with pytest.raises(WebSocketException) as exc_info:
-            get_current_user_uid_ws_listen(websocket=ws, authorization='Bearer tok')
+            asyncio.run(get_current_user_uid_ws_listen(websocket=ws, authorization='Bearer tok'))
         assert exc_info.value.code == 4003
 
 

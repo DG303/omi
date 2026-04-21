@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import time
@@ -142,7 +143,7 @@ def _verify_ws_auth(authorization: str) -> str:
         raise WebSocketException(code=1008, reason="Auth error")
 
 
-def get_current_user_uid_ws_listen(
+async def get_current_user_uid_ws_listen(
     websocket: WebSocket = None,
     authorization: str = Header(None),
 ):
@@ -154,15 +155,23 @@ def get_current_user_uid_ws_listen(
     Also extracts BYOK headers from the WS upgrade request and validates
     them against Firestore enrollment (BaseHTTPMiddleware doesn't fire for
     WebSocket scope, so this is the shared entry point for WS BYOK).
+
+    **Why async:** Starlette runs sync WS deps in a worker thread via
+    ``anyio.to_thread.run_sync``, which copies the context. ContextVar
+    mutations inside the sync dep (``set_byok_keys``) are discarded when
+    control returns to the async handler, so ``get_byok_key('deepgram')``
+    would return None downstream. Running the dep on the event loop keeps
+    the mutation in the handler's context; the blocking Firebase and
+    Firestore calls are offloaded via ``asyncio.to_thread``.
     """
-    uid = _verify_ws_auth(authorization)
+    uid = await asyncio.to_thread(_verify_ws_auth, authorization)
 
     # Extract BYOK headers from the WS upgrade request and validate.
     if websocket is not None:
         byok_keys = extract_byok_from_websocket(websocket)
         if byok_keys:
             set_byok_keys(byok_keys)
-        error = validate_byok_websocket(uid)
+        error = await asyncio.to_thread(validate_byok_websocket, uid)
         if error:
             raise WebSocketException(code=4003, reason=error)
 
