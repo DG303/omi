@@ -2779,7 +2779,7 @@
     "@trackPersonalGoalsOnHomepage": {
         "description": "Description for goal tracker"
     },
-"actionItemDescriptionCannotBeEmpty": "Action item description cannot be empty",
+    "actionItemDescriptionCannotBeEmpty": "Action item description cannot be empty",
     "@actionItemDescriptionCannotBeEmpty": {
         "description": "Error message when action item description is empty"
     },
@@ -4413,7 +4413,7 @@
     "noAPIKeys": "No API keys. Create one to get started.",
     "autoCreateWhenDetected": "Auto-create when name detected",
     "trackPersonalGoals": "Track personal goals on homepage",
-"endpointURL": "Endpoint URL",
+    "endpointURL": "Endpoint URL",
     "links": "Links",
     "discordMemberCount": "8000+ members on Discord",
     "userInformation": "User Information",
@@ -8885,7 +8885,7 @@
             }
         }
     },
-"actionItemReminderTitle": "Omi Reminder",
+    "actionItemReminderTitle": "Omi Reminder",
     "@actionItemReminderTitle": {
         "description": "Title for action item reminder notifications"
     },
