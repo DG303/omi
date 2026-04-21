@@ -1620,7 +1620,4 @@ class MixpanelManager {
     track('Notification Frequency Changed', properties: {'old_frequency': oldFrequency, 'new_frequency': newFrequency});
   }
 
-  void dailyReflectionToggled({required bool enabled}) {
-    track('Daily Reflection Toggled', properties: {'enabled': enabled});
-  }
 }
