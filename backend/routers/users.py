@@ -923,7 +923,7 @@ def get_user_subscription_endpoint(
     if not new_plans_enabled:
         all_definitions = adapt_plans_for_legacy_client(all_definitions)
     available_plans: List[SubscriptionPlan] = []
-    definitions_for_user = filter_plans_for_user(all_definitions, subscription.plan)
+    definitions_for_user = filter_plans_for_user(all_definitions, subscription.plan, platform=x_app_platform)
     for definition in definitions_for_user:
         plan_prices: List[PricingOption] = []
         monthly_price_id = definition["monthly_price_id"]
