@@ -6250,8 +6250,14 @@ struct SettingsContentView: View {
 
   private func normalizedPlanId(from title: String) -> String? {
     let normalized = title.lowercased()
-    if normalized.contains("unlimited") {
+    // Match the three plan families by title keyword. Neo is the post-rename
+    // display name for the legacy "unlimited" plan and still maps to that id
+    // because Stripe/backend PlanType enum is unchanged.
+    if normalized.contains("unlimited") || normalized.contains("neo") {
       return "unlimited"
+    }
+    if normalized.contains("operator") {
+      return "operator"
     }
     if normalized.contains("architect") || normalized.contains("pro") {
       return "architect"
@@ -6270,7 +6276,9 @@ struct SettingsContentView: View {
       let title: String
       switch planId {
       case "unlimited":
-        title = "Plus"
+        title = "Neo"
+      case "operator":
+        title = "Operator"
       case "architect":
         title = "Architect"
       default:
