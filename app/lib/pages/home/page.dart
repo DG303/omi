@@ -53,12 +53,10 @@ import 'package:omi/providers/home_provider.dart';
 import 'package:omi/providers/message_provider.dart';
 import 'package:omi/providers/sync_provider.dart';
 import 'package:omi/providers/task_integration_provider.dart';
-import 'package:omi/pages/settings/task_integrations_page.dart';
 import 'package:omi/services/apple_reminders_sync_service.dart';
 import 'package:omi/utils/platform/platform_service.dart';
 import 'package:omi/services/announcement_service.dart';
 import 'package:omi/services/notifications.dart';
-import 'package:omi/services/notifications/daily_reflection_notification.dart';
 import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/utils/audio/foreground.dart';
 import 'package:omi/utils/enums.dart';
@@ -74,8 +72,7 @@ import 'widgets/battery_info_widget.dart';
 
 class HomePageWrapper extends StatefulWidget {
   final String? navigateToRoute;
-  final String? autoMessage;
-  const HomePageWrapper({super.key, this.navigateToRoute, this.autoMessage});
+  const HomePageWrapper({super.key, this.navigateToRoute});
 
   @override
   State<HomePageWrapper> createState() => _HomePageWrapperState();
@@ -83,7 +80,6 @@ class HomePageWrapper extends StatefulWidget {
 
 class _HomePageWrapperState extends State<HomePageWrapper> {
   String? _navigateToRoute;
-  String? _autoMessage;
 
   @override
   void initState() {
@@ -98,28 +94,21 @@ class _HomePageWrapperState extends State<HomePageWrapper> {
         SharedPreferencesUtil().notificationsEnabled = true;
         NotificationService.instance.register();
         NotificationService.instance.saveNotificationToken();
-
-        // Schedule daily reflection notification if enabled
-        if (SharedPreferencesUtil().dailyReflectionEnabled) {
-          DailyReflectionNotification.scheduleDailyNotification(channelKey: 'channel');
-        }
       }
     });
     _navigateToRoute = widget.navigateToRoute;
-    _autoMessage = widget.autoMessage;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return HomePage(navigateToRoute: _navigateToRoute, autoMessage: _autoMessage);
+    return HomePage(navigateToRoute: _navigateToRoute);
   }
 }
 
 class HomePage extends StatefulWidget {
   final String? navigateToRoute;
-  final String? autoMessage;
-  const HomePage({super.key, this.navigateToRoute, this.autoMessage});
+  const HomePage({super.key, this.navigateToRoute});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -368,12 +357,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
           // Navigate to chat page directly since it's no longer in the tab bar
           // All async setup (streamDeviceRecording, refreshMessages) is already awaited above,
           // so the widget tree is fully settled — push directly.
-          // If there's an auto-message (e.g., from daily reflection notification), send it
-          final autoMessageToSend = widget.autoMessage;
           if (mounted) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ChatPage(isPivotBottom: false, autoMessage: autoMessageToSend)),
+              MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false)),
             );
           }
           break;
