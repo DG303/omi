@@ -1486,12 +1486,18 @@ class MemoryAssistantSettings(BaseModel):
     excluded_apps: list[str] | None = None
 
 
+class FloatingBarSettings(BaseModel):
+    voice_answers_enabled: bool | None = None
+    elevenlabs_voice_id: str | None = Field(None, max_length=200)
+
+
 class UpdateAssistantSettingsRequest(BaseModel):
     shared: SharedAssistantSettings | None = None
     focus: FocusAssistantSettings | None = None
     task: TaskAssistantSettings | None = None
     advice: AdviceAssistantSettings | None = None
     memory: MemoryAssistantSettings | None = None
+    floating_bar: FloatingBarSettings | None = None
     update_channel: str | None = Field(None, max_length=50)
 
 
