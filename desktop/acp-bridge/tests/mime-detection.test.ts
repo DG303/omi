@@ -60,6 +60,11 @@ describe("detectImageMimeType", () => {
     expect(detectImageMimeType(bytesToBase64(partialPng))).toBe("image/jpeg");
   });
 
+  it("falls back to JPEG for malformed non-base64 input", () => {
+    // Garbage string that isn't valid base64
+    expect(detectImageMimeType("not-base64-at-all!!!")).toBe("image/jpeg");
+  });
+
   it("does not misidentify RIFF without WEBP marker", () => {
     // RIFF header but with AVI instead of WEBP
     const aviHeader = [
