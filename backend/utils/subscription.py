@@ -80,14 +80,39 @@ LEGACY_PRICE_MAP = {
 }
 
 
-def filter_plans_for_user(definitions: list[dict], current_plan: PlanType) -> list[dict]:
-    """Drop legacy plans from the purchase catalog unless the user is on one.
+def _platform_hidden_plans(platform: Optional[str]) -> set:
+    """Plans that are hidden from the purchase catalog for the given platform.
 
-    Legacy subscribers need their plan kept in the catalog so the mobile app
-    can detect `is_active` for interval-change flows.  New users never see
-    legacy plans in the picker.
+    Desktop (macOS) sells Operator + Architect (pricier tier with usage-based
+    overage on Operator), so Neo is dropped from the desktop picker. Mobile
+    and all other clients are left alone — their catalog is unchanged.
     """
-    return [d for d in definitions if not d.get('legacy') or d.get('plan_type') == current_plan]
+    if (platform or '').lower() == 'macos':
+        return {PlanType.unlimited}
+    return set()
+
+
+def filter_plans_for_user(
+    definitions: list[dict],
+    current_plan: PlanType,
+    platform: Optional[str] = None,
+) -> list[dict]:
+    """Drop legacy / platform-hidden plans from the purchase catalog.
+
+    Subscribers already on a "wrong-platform" plan (e.g. a Neo subscriber
+    opening the desktop app) still see their current plan so the management UI
+    works. Only the *purchase* catalog is filtered.
+    """
+    hidden = _platform_hidden_plans(platform)
+    out: list[dict] = []
+    for d in definitions:
+        plan_type = d.get('plan_type')
+        if d.get('legacy') and plan_type != current_plan:
+            continue
+        if plan_type in hidden and plan_type != current_plan:
+            continue
+        out.append(d)
+    return out
 
 
 # Minimum desktop build that ships with the new plan catalog + quota UI.
@@ -268,8 +293,25 @@ def get_chat_quota_snapshot(uid: str) -> dict:
     }
 
 
+# Plans that enter usage-based overage billing instead of hard-blocking when
+# they exceed their included chat question count. For these plans, going over
+# is a soft event: the call is served and the excess is billed at end of cycle
+# against the card on file.
+#
+# Only Operator (desktop mid-tier) uses overage. Neo is hard-capped on mobile;
+# Architect uses a monthly cost cap.
+OVERAGE_ENABLED_PLANS = {PlanType.operator}
+
+
 def enforce_chat_quota(uid: str) -> None:
-    """Raise HTTPException(402) if the user is past their monthly chat cap."""
+    """Block or allow a chat request based on the user's plan + usage.
+
+    - BYOK users with an LLM key attached: always allowed, no Omi-side cost.
+    - Free plan past its cap: blocked (no card on file). 402.
+    - Neo (unlimited) / overage-enabled plans past their cap: ALLOWED — we
+      serve the call and accrue an overage charge. See ``utils.overage``.
+    - Architect (cost-capped): still blocked when monthly cost cap is hit.
+    """
     # BYOK users pay their own LLM provider — no Omi-side cost to cap.
     # Require an LLM provider key on this request (not just any BYOK header)
     # so a user can't activate with fake fingerprints or send only x-byok-deepgram
@@ -282,6 +324,12 @@ def enforce_chat_quota(uid: str) -> None:
         return
 
     plan = snapshot['plan']
+
+    # Overage-enabled plans never hard-block on chat question count — the
+    # excess becomes a billable overage at end of cycle.
+    if plan in OVERAGE_ENABLED_PLANS and snapshot['unit'] == 'questions':
+        return
+
     raise HTTPException(
         status_code=402,
         detail={
