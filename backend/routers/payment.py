@@ -44,6 +44,13 @@ from fastapi.responses import HTMLResponse
 
 from utils.stripe import base_url, create_connect_account, refresh_connect_account_link, is_onboarding_complete
 from utils import subscription as subscription_utils
+from utils.overage import (
+    OVERAGE_EXPLAINER_TITLE,
+    PROVIDER_REFERENCE_RATES,
+    build_explainer_text,
+    get_user_overage,
+    is_overage_plan,
+)
 from utils.log_sanitizer import sanitize
 import os
 import logging
@@ -248,7 +255,7 @@ def get_available_plans_endpoint(
 
         current_plan = current_subscription.plan if current_subscription else PlanType.basic
         pricing_options: List[PricingOption] = []
-        for definition in filter_plans_for_user(all_definitions, current_plan):
+        for definition in filter_plans_for_user(all_definitions, current_plan, platform=x_app_platform):
             monthly_price_id = definition["monthly_price_id"]
             annual_price_id = definition["annual_price_id"]
             if monthly_price_id:
@@ -304,6 +311,54 @@ def get_available_plans_endpoint(
     except Exception as e:
         logger.error(f"Error fetching available plans: {sanitize(str(e))}")
         raise HTTPException(status_code=500, detail="Failed to fetch available plans")
+
+
+class OverageInfoResponse(BaseModel):
+    plan: str
+    plan_type: str
+    is_overage_plan: bool
+    included_questions: Optional[int] = None
+    used_questions: int = 0
+    excess_questions: int = 0
+    real_cost_usd: float = 0.0
+    overage_usd: float = 0.0
+    markup_multiplier: float
+    markup_percent: float
+    reset_at: Optional[int] = None
+    explainer_title: str
+    explainer_body: str
+    provider_reference_rates: dict
+    byok_available: bool = True
+
+
+@router.get('/v1/payments/overage-info', response_model=OverageInfoResponse)
+def get_overage_info_endpoint(uid: str = Depends(auth.get_current_user_uid)):
+    """Explain overage billing + return the user's current accrued charge.
+
+    Powers the clickable "What happens past the limit?" text on the plan page.
+    Safe to call on any plan — non-overage plans just get a zero snapshot plus
+    the explainer copy.
+    """
+    subscription = users_db.get_user_subscription(uid)
+    plan = subscription.plan if subscription else PlanType.basic
+    snapshot = get_user_overage(uid, plan)
+
+    return OverageInfoResponse(
+        plan=subscription_utils.get_plan_display_name(plan),
+        plan_type=plan.value,
+        is_overage_plan=is_overage_plan(plan),
+        included_questions=snapshot['included_questions'],
+        used_questions=snapshot['used_questions'],
+        excess_questions=snapshot['excess_questions'],
+        real_cost_usd=snapshot['real_cost_usd'],
+        overage_usd=snapshot['overage_usd'],
+        markup_multiplier=snapshot['markup_multiplier'],
+        markup_percent=round((snapshot['markup_multiplier'] - 1.0) * 100.0, 2),
+        reset_at=snapshot['reset_at'],
+        explainer_title=OVERAGE_EXPLAINER_TITLE,
+        explainer_body=build_explainer_text(),
+        provider_reference_rates=PROVIDER_REFERENCE_RATES,
+    )
 
 
 @router.post('/v1/payments/checkout-session')

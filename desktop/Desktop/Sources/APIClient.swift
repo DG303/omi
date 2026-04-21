@@ -3818,6 +3818,40 @@ struct AvailablePlansResponse: Codable {
   let plans: [AvailablePlanPriceOption]
 }
 
+struct OverageInfoResponse: Codable {
+  let plan: String
+  let planType: String
+  let isOveragePlan: Bool
+  let includedQuestions: Int?
+  let usedQuestions: Int
+  let excessQuestions: Int
+  let realCostUsd: Double
+  let overageUsd: Double
+  let markupMultiplier: Double
+  let markupPercent: Double
+  let resetAt: Int?
+  let explainerTitle: String
+  let explainerBody: String
+  let byokAvailable: Bool
+
+  enum CodingKeys: String, CodingKey {
+    case plan
+    case planType = "plan_type"
+    case isOveragePlan = "is_overage_plan"
+    case includedQuestions = "included_questions"
+    case usedQuestions = "used_questions"
+    case excessQuestions = "excess_questions"
+    case realCostUsd = "real_cost_usd"
+    case overageUsd = "overage_usd"
+    case markupMultiplier = "markup_multiplier"
+    case markupPercent = "markup_percent"
+    case resetAt = "reset_at"
+    case explainerTitle = "explainer_title"
+    case explainerBody = "explainer_body"
+    case byokAvailable = "byok_available"
+  }
+}
+
 struct CustomerPortalResponse: Codable {
   let url: String
 }
@@ -4386,6 +4420,10 @@ extension APIClient {
 
   func getAvailablePlans() async throws -> AvailablePlansResponse {
     return try await get("v1/payments/available-plans")
+  }
+
+  func getOverageInfo() async throws -> OverageInfoResponse {
+    return try await get("v1/payments/overage-info")
   }
 
   func createCheckoutSession(priceId: String) async throws -> CheckoutSessionResponse {
