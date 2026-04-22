@@ -12,7 +12,7 @@ from langchain_core.runnables import RunnableConfig
 import database.memories as memory_db
 import database.vector_db as vector_db
 import logging
-from models.memories import CATEGORY_BOOSTS
+from models.memories import MemoryDB
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +70,6 @@ def save_user_preference_tool(preference: str, config: RunnableConfig = None) ->
 
     now = datetime.now(timezone.utc)
     memory_id = str(uuid.uuid4())
-    cat_boost = 999 - CATEGORY_BOOSTS.get('system', 0)
-    scoring = "{:02d}_{:02d}_{:010d}".format(0, cat_boost, int(now.timestamp()))
     memory_data = {
         'id': memory_id,
         'uid': uid,
@@ -83,8 +81,8 @@ def save_user_preference_tool(preference: str, config: RunnableConfig = None) ->
         'reviewed': False,
         'visibility': 'private',
         'tags': ['agent-learned'],
-        'scoring': scoring,
     }
+    memory_data['scoring'] = MemoryDB.calculate_score(MemoryDB.model_validate(memory_data))
 
     try:
         memory_db.create_memory(uid, memory_data)
