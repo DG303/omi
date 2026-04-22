@@ -57,11 +57,12 @@ async def create_memory(
     memory.category = MemoryCategory.manual
     memory_db = MemoryDB.from_memory(memory, uid, None, True)
 
-    def _persist():
-        memories_db.create_memory(uid, memory_db.dict())
+    # Build payload outside try so serialization bugs aren't misreported as
+    # transient 503s — only the Firestore write should be retryable.
+    payload = memory_db.dict()
 
     try:
-        await asyncio.to_thread(_persist)
+        await asyncio.to_thread(memories_db.create_memory, uid, payload)
     except Exception:
         logger.exception("Firestore create_memory failed uid=%s", uid)
         raise HTTPException(status_code=503, detail="Service temporarily unavailable")
