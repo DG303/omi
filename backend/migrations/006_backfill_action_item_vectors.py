@@ -6,7 +6,7 @@ for each description, and upserts to Pinecone. Same approach as
 005_backfill_memory_vectors.py.
 
 Usage:
-    python 006_backfill_action_item_vectors.py [--dry-run] [--uid USER_ID]
+    python 006_backfill_action_item_vectors.py [--dry-run] [--uid USER_ID] [--workers N]
 
 Environment:
     GOOGLE_APPLICATION_CREDENTIALS: Path to Firebase service account key
@@ -21,6 +21,7 @@ import sys
 import os
 import argparse
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -93,6 +94,7 @@ def main():
     parser = argparse.ArgumentParser(description='Backfill action item vectors to Pinecone')
     parser.add_argument('--dry-run', action='store_true', help='Preview without writing')
     parser.add_argument('--uid', type=str, help='Process a single user')
+    parser.add_argument('--workers', type=int, default=8, help='Parallel user workers (default: 8)')
     args = parser.parse_args()
 
     if args.uid:
@@ -100,22 +102,26 @@ def main():
     else:
         user_ids = get_all_user_ids()
 
-    logger.info(f"Processing {len(user_ids)} users (dry_run={args.dry_run})")
+    workers = 1 if args.uid else max(1, args.workers)
+    logger.info(f"Processing {len(user_ids)} users (dry_run={args.dry_run}, workers={workers})")
     start = time.time()
 
     totals = {'users': 0, 'items': 0, 'success': 0, 'skipped': 0, 'errors': 0}
 
-    for uid in user_ids:
-        try:
-            result = process_user(uid, dry_run=args.dry_run)
-            totals['users'] += 1
-            totals['items'] += result['total']
-            totals['success'] += result['success']
-            totals['skipped'] += result['skipped']
-            totals['errors'] += result['errors']
-        except Exception as e:
-            logger.error(f"Failed to process user {uid}: {e}")
-            totals['errors'] += 1
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(process_user, uid, args.dry_run): uid for uid in user_ids}
+        for future in as_completed(futures):
+            uid = futures[future]
+            try:
+                result = future.result()
+                totals['users'] += 1
+                totals['items'] += result['total']
+                totals['success'] += result['success']
+                totals['skipped'] += result['skipped']
+                totals['errors'] += result['errors']
+            except Exception as e:
+                logger.error(f"Failed to process user {uid}: {e}")
+                totals['errors'] += 1
 
     elapsed = time.time() - start
     logger.info(f"\nDone in {elapsed:.1f}s")
