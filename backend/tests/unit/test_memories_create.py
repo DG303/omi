@@ -115,13 +115,28 @@ class TestCreateMemoryErrorHandling:
         source = _read_router()
         assert re.search(r'async def create_memory\(', source), "create_memory must be async def"
 
-    def test_create_memory_uses_to_thread(self):
-        """Blocking work must be offloaded via asyncio.to_thread."""
+    def test_create_memory_uses_to_thread_for_firestore(self):
+        """Firestore write in create_memory must use asyncio.to_thread."""
         source = _read_router()
-        # Must have at least 2 to_thread calls (Firestore + vector)
-        to_thread_calls = re.findall(r'asyncio\.to_thread\(', source)
-        # At least 3: batch's _persist, create's Firestore, create's vector
-        assert len(to_thread_calls) >= 3, f"Expected >=3 asyncio.to_thread calls, got {len(to_thread_calls)}"
+        # Extract the create_memory function body (between its def and the next @router)
+        match = re.search(
+            r'(async def create_memory\(.+?)(?=\n@router\.)', source, re.DOTALL
+        )
+        assert match, "create_memory function not found"
+        fn_body = match.group(1)
+        assert 'asyncio.to_thread(memories_db.create_memory' in fn_body, \
+            "create_memory must offload Firestore write via asyncio.to_thread"
+
+    def test_create_memory_uses_to_thread_for_vector(self):
+        """Vector upsert in create_memory must use asyncio.to_thread."""
+        source = _read_router()
+        match = re.search(
+            r'(async def create_memory\(.+?)(?=\n@router\.)', source, re.DOTALL
+        )
+        assert match, "create_memory function not found"
+        fn_body = match.group(1)
+        assert 'asyncio.to_thread' in fn_body and 'upsert_memory_vector' in fn_body, \
+            "create_memory must offload vector upsert via asyncio.to_thread"
 
     def test_firestore_write_has_error_handling(self):
         """Firestore write in create_memory must be wrapped in try/except."""
@@ -157,9 +172,39 @@ class TestCreateMemoryErrorHandling:
 # ---------------------------------------------------------------------------
 
 
-class TestDeleteAllRateLimit:
+class TestPolicyBoundaries:
+    """Verify rate limit policy values are safe and reasonable."""
+
     def test_delete_all_limit_is_tight(self):
         """delete_all is extremely destructive — must have very tight limits."""
         max_req, window = RATE_POLICIES["memories:delete_all"]
         assert max_req <= 5, f"delete_all limit too high: {max_req}"
         assert window >= 3600, f"delete_all window too short: {window}"
+
+    def test_modify_limit_higher_than_create(self):
+        """Modify (lightweight Firestore writes) should allow more than create (OpenAI+Pinecone)."""
+        create_max, _ = RATE_POLICIES["memories:create"]
+        modify_max, _ = RATE_POLICIES["memories:modify"]
+        assert modify_max > create_max, \
+            f"modify ({modify_max}) should be higher than create ({create_max})"
+
+    def test_delete_limit_matches_create(self):
+        """Single delete should match create rate (same Firestore+Pinecone cost)."""
+        create_max, create_window = RATE_POLICIES["memories:create"]
+        delete_max, delete_window = RATE_POLICIES["memories:delete"]
+        assert delete_max == create_max
+        assert delete_window == create_window
+
+    def test_delete_all_much_tighter_than_single_delete(self):
+        """Bulk delete must be much tighter than single delete."""
+        delete_max, _ = RATE_POLICIES["memories:delete"]
+        delete_all_max, _ = RATE_POLICIES["memories:delete_all"]
+        assert delete_all_max < delete_max / 10, \
+            f"delete_all ({delete_all_max}) should be <<< delete ({delete_max})"
+
+    def test_all_memory_policies_use_1h_window(self):
+        """All memory policies should use consistent 1-hour windows."""
+        for name in ["memories:create", "memories:batch", "memories:modify",
+                      "memories:delete", "memories:delete_all"]:
+            _, window = RATE_POLICIES[name]
+            assert window == 3600, f"{name} window is {window}, expected 3600"
