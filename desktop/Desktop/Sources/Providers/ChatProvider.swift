@@ -507,31 +507,35 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// When true, user can create multiple chat sessions
     @AppStorage("multiChatEnabled") var multiChatEnabled = false
 
-    // MARK: - Bridge (ACP-only, passApiKey controls OMI vs user's account)
+    // MARK: - Bridge
     // NOTE: initialized lazily so it reads the persisted bridgeMode from UserDefaults,
     // not always defaulting to Omi mode on cold start.
     //
     // Default harness: piMono (Omi AI via the bundled pi-mono subprocess, authenticated
     // with the user's Firebase ID token). Claude Code remains as an opt-in harness that
-    // uses the user's own API key/env.
-    private lazy var acpBridge: ACPBridge = {
+    // uses the user's own Claude OAuth.
+    private lazy var agentBridge: AgentBridge = {
         let mode = UserDefaults.standard.string(forKey: "chatBridgeMode") ?? BridgeMode.piMono.rawValue
-        let useOmiKey = mode != BridgeMode.userClaude.rawValue
         let harness = mode == BridgeMode.piMono.rawValue ? "piMono" : "acp"
-        return ACPBridge(passApiKey: useOmiKey, harnessMode: harness)
+        activeBridgeHarness = harness
+        return AgentBridge(harnessMode: harness)
     }()
-    private var acpBridgeStarted = false
+    private var agentBridgeStarted = false
+    /// Tracks the harness mode the bridge is actually running (NOT the @AppStorage preference).
+    /// @AppStorage("chatBridgeMode") can be updated by other views sharing the same key,
+    /// so comparing against it in switchBridgeMode() would always match → no-op.
+    private var activeBridgeHarness: String = "piMono"
 
     enum BridgeMode: String {
-        case omiAI = "agentSDK"
+        case omiAI = "agentSDK"     // Legacy, auto-migrated to piMono
         case userClaude = "claudeCode"
         case piMono = "piMono"
     }
     @AppStorage("chatBridgeMode") var bridgeMode: String = BridgeMode.piMono.rawValue
 
-    /// Whether the ACP bridge requires authentication (shown as sheet in UI)
+    /// Whether the agent bridge requires authentication (shown as sheet in UI)
     @Published var isClaudeAuthRequired = false
-    /// Auth methods returned by ACP bridge
+    /// Auth methods returned by agent bridge
     @Published var claudeAuthMethods: [[String: Any]] = []
     /// OAuth URL to open in browser (sent by bridge when auth is needed)
     @Published var claudeAuthUrl: String?
@@ -679,16 +683,16 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             .sink { [weak self] _ in
                 Task { @MainActor in
                     guard let self = self else { return }
-                    guard self.acpBridgeStarted else { return }
+                    guard self.agentBridgeStarted else { return }
                     guard !self.isSending else {
                         log("ChatProvider: system woke but query in progress — skipping bridge restart")
                         return
                     }
-                    log("ChatProvider: system woke — restarting ACP bridge to clear stale session")
-                    self.acpBridgeStarted = false
+                    log("ChatProvider: system woke — restarting agent bridge to clear stale session")
+                    self.agentBridgeStarted = false
                     do {
-                        try await self.acpBridge.restart()
-                        self.acpBridgeStarted = true
+                        try await self.agentBridge.restart()
+                        self.agentBridgeStarted = true
                     } catch {
                         logError("ChatProvider: bridge restart after wake failed", error: error)
                     }
@@ -714,15 +718,15 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                         log("ChatProvider: Skipping bridge restart — query in progress")
                         return
                     }
-                    guard self.acpBridgeStarted else { return }
-                    log("ChatProvider: Playwright extension setting changed, restarting ACP bridge")
-                    self.acpBridgeStarted = false
+                    guard self.agentBridgeStarted else { return }
+                    log("ChatProvider: Playwright extension setting changed, restarting agent bridge")
+                    self.agentBridgeStarted = false
                     do {
-                        try await self.acpBridge.restart()
-                        self.acpBridgeStarted = true
-                        log("ChatProvider: ACP bridge restarted with new Playwright settings")
+                        try await self.agentBridge.restart()
+                        self.agentBridgeStarted = true
+                        log("ChatProvider: agent bridge restarted with new Playwright settings")
                     } catch {
-                        logError("Failed to restart ACP bridge after Playwright setting change", error: error)
+                        logError("Failed to restart agent bridge after Playwright setting change", error: error)
                     }
                 }
             }
@@ -735,14 +739,14 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 self.groupedSessions = self.computeGroupedSessions()
             }
 
-        // Kill ACP bridge subprocess on app quit to prevent orphaned Node.js processes
+        // Kill agent bridge subprocess on app quit to prevent orphaned Node.js processes
         terminationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification,
             object: nil, queue: .main
         ) { [weak self] _ in
             guard let self else { return }
             Task { @MainActor in
-                await self.acpBridge.stop()
+                await self.agentBridge.stop()
             }
         }
     }
@@ -757,8 +761,8 @@ A screenshot may be attached — use it silently only if relevant. Never mention
 
     /// Drop a cached ACP session so the next query recreates it with fresh prompt context.
     func invalidateAgentSession(sessionKey: String) async {
-        guard acpBridgeStarted else { return }
-        await acpBridge.invalidateSession(sessionKey: sessionKey)
+        guard agentBridgeStarted else { return }
+        await agentBridge.invalidateSession(sessionKey: sessionKey)
     }
 
     /// Test that the Playwright Chrome extension is connected and working.
@@ -766,15 +770,15 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// then sends a lightweight test query that triggers a browser_snapshot tool call.
     func testPlaywrightConnection() async throws -> Bool {
         // Restart bridge to pick up new extension token
-        acpBridgeStarted = false
+        agentBridgeStarted = false
         do {
-            try await acpBridge.restart()
-            acpBridgeStarted = true
+            try await agentBridge.restart()
+            agentBridgeStarted = true
         } catch {
-            try await acpBridge.start()
-            acpBridgeStarted = true
+            try await agentBridge.start()
+            agentBridgeStarted = true
         }
-        return try await acpBridge.testPlaywrightConnection()
+        return try await agentBridge.testPlaywrightConnection()
     }
 
     /// Whether we're currently in user's Claude account mode
@@ -782,29 +786,25 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         bridgeMode == BridgeMode.userClaude.rawValue
     }
 
-    /// Ensure the ACP bridge is started (restarts if the process died)
+    /// Ensure the agent bridge is started (restarts if the process died)
     private func ensureBridgeStarted() async -> Bool {
-        if acpBridgeStarted {
-            let alive = await acpBridge.isAlive
+        if agentBridgeStarted {
+            let alive = await agentBridge.isAlive
             if !alive {
-                log("ChatProvider: ACP bridge process died, will restart")
-                acpBridgeStarted = false
+                log("ChatProvider: agent bridge process died, will restart")
+                agentBridgeStarted = false
             }
         }
-        guard !acpBridgeStarted else { return true }
-        // Wait for API keys before starting the bridge — the subprocess reads
-        // ANTHROPIC_API_KEY from environment on launch. Without this, Mode B
-        // (no key / OAuth) is used even when the user should be on Mode A.
-        if acpBridge.passApiKey {
-            await APIKeyService.shared.waitForKeys()
-        }
+        guard !agentBridgeStarted else { return true }
+        // Wait for API keys (Firebase, Calendar) before starting the bridge.
+        await APIKeyService.shared.waitForKeys()
         do {
             await preparePromptContextIfNeeded()
-            try await acpBridge.start()
-            acpBridgeStarted = true
-            log("ChatProvider: ACP bridge started successfully")
+            try await agentBridge.start()
+            agentBridgeStarted = true
+            log("ChatProvider: agent bridge started successfully")
             // Set up global auth handlers so auth_required during warmup is handled
-            await acpBridge.setGlobalAuthHandlers(
+            await agentBridge.setGlobalAuthHandlers(
                 onAuthRequired: { [weak self] methods, authUrl in
                     Task { @MainActor [weak self] in
                         self?.claudeAuthMethods = methods
@@ -827,13 +827,13 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 ? ModelQoS.Claude.defaultSelection
                 : ShortcutSettings.shared.selectedModel
             cachedMainSystemPrompt = mainSystemPrompt
-            await acpBridge.warmupSession(cwd: workingDirectory, sessions: [
+            await agentBridge.warmupSession(cwd: workingDirectory, sessions: [
                 .init(key: "main", model: ModelQoS.Claude.chat, systemPrompt: mainSystemPrompt),
                 .init(key: "floating", model: floatingModel, systemPrompt: floatingSystemPrompt)
             ])
             return true
         } catch {
-            logError("Failed to start ACP bridge", error: error)
+            logError("Failed to start agent bridge", error: error)
             let rawError = String(describing: error)
             AnalyticsManager.shared.chatAgentError(error: "AI not available: bridge failed to start", rawError: rawError)
             errorMessage = "AI not available: \(error.localizedDescription)"
@@ -850,23 +850,26 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         await loadSchemaIfNeeded()
     }
 
-    /// Switch between bridge modes (Omi AI, Pi-Mono, or user's Claude account)
+    /// Switch between bridge modes (Omi AI via piMono, or user's Claude OAuth)
     func switchBridgeMode(to mode: BridgeMode) async {
-        let oldMode = bridgeMode
-        // Skip if already in this mode
-        guard mode.rawValue != oldMode else { return }
-        log("ChatProvider: Switching bridge mode from \(bridgeMode) to \(mode.rawValue)")
+        // Normalize legacy omiAI to piMono
+        let resolvedMode: BridgeMode = (mode == .omiAI) ? .piMono : mode
+        let newHarness = resolvedMode == .piMono ? "piMono" : "acp"
+        let previousHarness = activeBridgeHarness
+        // Compare against the actual running harness, NOT @AppStorage (which may
+        // already reflect the new value because another view wrote the same key).
+        guard newHarness != previousHarness else { return }
+        log("ChatProvider: Switching bridge mode from \(previousHarness) to \(resolvedMode.rawValue)")
 
         // Stop the current bridge
-        await acpBridge.stop()
-        acpBridgeStarted = false
+        await agentBridge.stop()
+        agentBridgeStarted = false
 
-        // Switch mode and recreate bridge with appropriate passApiKey
-        // Both omiAI and piMono use Omi's API key; userClaude uses OAuth
-        bridgeMode = mode.rawValue
-        let harness = mode == .piMono ? "piMono" : "acp"
-        acpBridge = ACPBridge(passApiKey: mode != .userClaude, harnessMode: harness)
-        AnalyticsManager.shared.chatBridgeModeChanged(from: oldMode, to: mode.rawValue)
+        // Switch mode and recreate bridge
+        bridgeMode = resolvedMode.rawValue
+        activeBridgeHarness = newHarness
+        agentBridge = AgentBridge(harnessMode: newHarness)
+        AnalyticsManager.shared.chatBridgeModeChanged(from: previousHarness, to: resolvedMode.rawValue)
 
         // Check Claude connection status when switching to user's Claude account
         if mode == .userClaude {
@@ -924,9 +927,9 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     func disconnectClaude() async {
         log("ChatProvider: Disconnecting Claude account")
 
-        // 1. Stop the ACP bridge
-        await acpBridge.stop()
-        acpBridgeStarted = false
+        // 1. Stop the agent bridge
+        await agentBridge.stop()
+        agentBridgeStarted = false
 
         // 2. Clear the OAuth token from config file
         let configPath = NSString(string: "~/Library/Application Support/Claude/config.json").expandingTildeInPath
@@ -962,10 +965,8 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         isClaudeConnected = false
 
         // 5. Switch back to the default Omi harness (pi-mono) and recreate the bridge.
-        //    piMono authenticates with a Firebase ID token; passApiKey is still true
-        //    for consistency with the old Omi-server-side-key flow.
         bridgeMode = BridgeMode.piMono.rawValue
-        acpBridge = ACPBridge(passApiKey: true, harnessMode: "piMono")
+        agentBridge = AgentBridge(harnessMode: "piMono")
     }
 
     // MARK: - Session Management
@@ -1660,7 +1661,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         return prompt
     }
 
-    /// Run a single question through the ACP bridge for Chat Lab evaluation.
+    /// Run a single question through the agent bridge for Chat Lab evaluation.
     /// Uses a unique session key so it doesn't interfere with the real chat.
     func labRunQuestion(question: String, systemPrompt: String, sessionKey: String) async -> String {
         // Ensure bridge is running
@@ -1669,7 +1670,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         }
 
         do {
-            let result = try await acpBridge.query(
+            let result = try await agentBridge.query(
                 prompt: question,
                 systemPrompt: systemPrompt,
                 sessionKey: sessionKey,
@@ -2083,7 +2084,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         sendGeneration += 1
         let myGen = sendGeneration
         Task {
-            await acpBridge.interrupt()
+            await agentBridge.interrupt()
             // Normal path: interrupt → bridge emits final result or .stopped →
             // sendMessage's do/catch resets isSending via its finally (line 2631).
             // Fallback: if the bridge drops the turn_end as "stray" (known
@@ -2145,7 +2146,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         // When sendMessage finishes (due to the interrupt), it checks
         // pendingFollowUpText and chains a new full query automatically.
         pendingFollowUpText = trimmedText
-        await acpBridge.interrupt()
+        await agentBridge.interrupt()
         log("ChatProvider: follow-up queued, interrupt sent")
     }
 
@@ -2341,7 +2342,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         var sqlQueryCount = 0
 
         do {
-            // Use the system prompt built at warmup. The ACP bridge applies it only
+            // Use the system prompt built at warmup. The agent bridge applies it only
             // at session/new; for the normal reused-session path it is ignored.
             // Passing it here ensures it is applied if the session was invalidated
             // (e.g. cwd change) and a new session/new is triggered mid-conversation.
@@ -2378,13 +2379,13 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             }
 
             // Query the active bridge with streaming
-            // Callbacks for ACP bridge
-            let textDeltaHandler: ACPBridge.TextDeltaHandler = { [weak self] delta in
+            // Callbacks for agent bridge
+            let textDeltaHandler: AgentBridge.TextDeltaHandler = { [weak self] delta in
                 Task { @MainActor [weak self] in
                     self?.appendToMessage(id: aiMessageId, text: delta)
                 }
             }
-            let toolCallHandler: ACPBridge.ToolCallHandler = { callId, name, input in
+            let toolCallHandler: AgentBridge.ToolCallHandler = { callId, name, input in
                 let toolCall = ToolCall(name: name, arguments: input, thoughtSignature: nil)
                 let result = await ChatToolExecutor.execute(toolCall)
                 log("OMI tool \(name) executed for callId=\(callId)")
@@ -2399,7 +2400,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 }
                 return result
             }
-            let toolActivityHandler: ACPBridge.ToolActivityHandler = { [weak self] name, status, toolUseId, input in
+            let toolActivityHandler: AgentBridge.ToolActivityHandler = { [weak self] name, status, toolUseId, input in
                 Task { @MainActor [weak self] in
                     self?.addToolActivity(
                         messageId: aiMessageId,
@@ -2441,18 +2442,18 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                     }
                 }
             }
-            let thinkingDeltaHandler: ACPBridge.ThinkingDeltaHandler = { [weak self] text in
+            let thinkingDeltaHandler: AgentBridge.ThinkingDeltaHandler = { [weak self] text in
                 Task { @MainActor [weak self] in
                     self?.appendThinking(messageId: aiMessageId, text: text)
                 }
             }
-            let toolResultDisplayHandler: ACPBridge.ToolResultDisplayHandler = { [weak self] toolUseId, name, output in
+            let toolResultDisplayHandler: AgentBridge.ToolResultDisplayHandler = { [weak self] toolUseId, name, output in
                 Task { @MainActor [weak self] in
                     self?.addToolResult(messageId: aiMessageId, toolUseId: toolUseId, name: name, output: output)
                 }
             }
 
-            let queryResult = try await acpBridge.query(
+            let queryResult = try await agentBridge.query(
                 prompt: trimmedText,
                 systemPrompt: systemPrompt,
                 sessionKey: isOnboarding ? "onboarding" : (sessionKey ?? "main"),
@@ -2631,7 +2632,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             // On timeout, cancel the stuck ACP session so it's not left dangling
             if let bridgeError = error as? BridgeError, case .timeout = bridgeError {
                 log("ChatProvider: ACP query timed out, sending interrupt to cancel stuck session")
-                await acpBridge.interrupt()
+                await agentBridge.interrupt()
             }
 
             // Flush any remaining buffered streaming text before handling the error

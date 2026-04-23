@@ -325,11 +325,11 @@ for i in {1..30}; do
     sleep 0.5
 done
 
-# Build acp-bridge
-echo "Building acp-bridge..."
-ACP_BRIDGE_DIR="$(dirname "$0")/acp-bridge"
-if [ -d "$ACP_BRIDGE_DIR" ]; then
-    cd "$ACP_BRIDGE_DIR"
+# Build agent
+echo "Building agent..."
+AGENT_DIR="$(dirname "$0")/agent"
+if [ -d "$AGENT_DIR" ]; then
+    cd "$AGENT_DIR"
     if [ ! -d "node_modules" ] || [ "package.json" -nt "node_modules/.package-lock.json" ]; then
         npm install --no-fund --no-audit 2>&1 | tail -1
     fi
@@ -370,13 +370,13 @@ if [ -d "$RESOURCE_BUNDLE" ]; then
     echo "  Copied resource bundle"
 fi
 
-# Copy acp-bridge
-if [ -d "$ACP_BRIDGE_DIR/dist" ]; then
-    mkdir -p "$APP_BUNDLE/Contents/Resources/acp-bridge"
-    cp -Rf "$ACP_BRIDGE_DIR/dist" "$APP_BUNDLE/Contents/Resources/acp-bridge/"
-    cp -f "$ACP_BRIDGE_DIR/package.json" "$APP_BUNDLE/Contents/Resources/acp-bridge/"
-    cp -Rf "$ACP_BRIDGE_DIR/node_modules" "$APP_BUNDLE/Contents/Resources/acp-bridge/"
-    echo "  Copied acp-bridge to bundle"
+# Copy agent
+if [ -d "$AGENT_DIR/dist" ]; then
+    mkdir -p "$APP_BUNDLE/Contents/Resources/agent"
+    cp -Rf "$AGENT_DIR/dist" "$APP_BUNDLE/Contents/Resources/agent/"
+    cp -f "$AGENT_DIR/package.json" "$APP_BUNDLE/Contents/Resources/agent/"
+    cp -Rf "$AGENT_DIR/node_modules" "$APP_BUNDLE/Contents/Resources/agent/"
+    echo "  Copied agent to bundle"
 fi
 
 # Embed provisioning profile (required for Apple Development signing + restricted entitlements)
