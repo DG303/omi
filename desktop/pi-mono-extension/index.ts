@@ -28,7 +28,7 @@ import {
   type ToolResultEvent,
 } from "@mariozechner/pi-coding-agent";
 import { Type } from "@mariozechner/pi-ai";
-import { appendFile, mkdir } from "node:fs/promises";
+import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { createConnection, type Socket } from "node:net";
 import { dirname, join, resolve } from "node:path";
@@ -689,18 +689,40 @@ export const OMI_TOOLS = [
     },
     required: ["action_item_id"],
   }),
-  omiTool({
+  defineTool({
     name: "capture_screen",
     label: "Capture Screen",
-    description: "Capture a screenshot of the user's current screen. Returns the file path to the saved JPEG image. Use the Read tool to view the image after capturing.",
+    description: "Capture a screenshot of the user's current screen. Returns the image inline — do NOT call any other tool to view it.",
     promptSnippet: "capture_screen - Take a screenshot of the user's current screen",
     promptGuidelines: [
       "Call capture_screen when the user asks about what's on their screen or what they're looking at.",
-      "After capture_screen returns a file path, use Read to view the image.",
+      "The screenshot is returned inline with this tool result — do NOT call Read on it. The Read tool would re-encode the WebP as PNG, which is wasteful and can exceed upstream payload limits.",
       "Do NOT use bash screencapture — always use this tool instead.",
     ],
-    properties: {},
-    required: [],
+    parameters: Type.Object({}, { additionalProperties: false }),
+    async execute(_toolCallId, _params, signal) {
+      const path = await callSwiftTool("capture_screen", {}, signal);
+      if (path.startsWith("Error:")) {
+        return { content: [{ type: "text" as const, text: path }], details: undefined };
+      }
+      try {
+        const bytes = await readFile(path);
+        const data = bytes.toString("base64");
+        return {
+          content: [
+            { type: "text" as const, text: `Screenshot captured (${(bytes.length / 1024) | 0} KB WebP)` },
+            { type: "image" as const, data, mimeType: "image/webp" },
+          ],
+          details: undefined,
+        };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return {
+          content: [{ type: "text" as const, text: `Error: could not read screenshot at ${path}: ${msg}` }],
+          details: undefined,
+        };
+      }
+    },
   }),
 ];
 
