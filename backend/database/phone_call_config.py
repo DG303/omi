@@ -51,11 +51,18 @@ def _get_config() -> dict:
 
 
 def _merge_defaults(override: Optional[dict], defaults: dict) -> dict:
+    """Overlay a Firestore override onto the hardcoded defaults.
+
+    An explicit ``None`` in the override is preserved (so ops can set
+    ``max_duration_seconds: null`` in Firestore to clear the default cap).
+    Only keys known to ``defaults`` are honored — unknown override keys are
+    ignored so a typo in Firestore can't silently change behavior.
+    """
     merged = dict(defaults)
     if isinstance(override, dict):
-        for k, v in override.items():
-            if v is not None:
-                merged[k] = v
+        for k in defaults.keys():
+            if k in override:
+                merged[k] = override[k]
     return merged
 
 
