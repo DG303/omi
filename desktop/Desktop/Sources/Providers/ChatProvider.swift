@@ -921,15 +921,19 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             checkClaudeConnectionStatus()
         }
 
-        // Unblock queries and wake all waiting switches.
+        // Unblock queries (sendMessage's ensureBridgeStarted waits on this flag).
+        // Keep modeSwitchInProgress true through warmup so a resumed waiter can't
+        // race the ensureBridgeStarted below and replace agentBridge mid-start.
         modeSwitchInProgress = false
-        let waiters = modeSwitchWaiters
-        modeSwitchWaiters.removeAll()
-        for waiter in waiters { waiter.resume() }
 
         // Warm up the new bridge
         let started = await ensureBridgeStarted()
         log("ChatProvider: Bridge mode switch complete — \(resolvedMode.rawValue) started=\(started)")
+
+        // Wake all waiting switches now that the bridge is fully started.
+        let waiters = modeSwitchWaiters
+        modeSwitchWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
     }
 
     /// Start Claude OAuth authentication (Mode B)
