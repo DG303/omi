@@ -683,16 +683,16 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             .sink { [weak self] _ in
                 Task { @MainActor in
                     guard let self = self else { return }
-                    guard self.acpBridgeStarted else { return }
+                    guard self.agentBridgeStarted else { return }
                     guard !self.isSending else {
                         log("ChatProvider: system woke but query in progress — skipping bridge restart")
                         return
                     }
-                    log("ChatProvider: system woke — restarting ACP bridge to clear stale session")
-                    self.acpBridgeStarted = false
+                    log("ChatProvider: system woke — restarting agent bridge to clear stale session")
+                    self.agentBridgeStarted = false
                     do {
-                        try await self.acpBridge.restart()
-                        self.acpBridgeStarted = true
+                        try await self.agentBridge.restart()
+                        self.agentBridgeStarted = true
                     } catch {
                         logError("ChatProvider: bridge restart after wake failed", error: error)
                     }
