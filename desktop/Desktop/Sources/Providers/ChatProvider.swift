@@ -528,6 +528,9 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// True while switchBridgeMode is in the critical section between stopping the old
     /// bridge and starting the new one.  sendMessage checks this to avoid racing.
     private var modeSwitchInProgress = false
+    /// Continuation used to serialize overlapping switchBridgeMode calls. Only one
+    /// switch runs at a time; a new call waits for the in-flight switch to finish.
+    private var modeSwitchContinuation: CheckedContinuation<Void, Never>?
 
     enum BridgeMode: String {
         case omiAI = "agentSDK"     // Legacy, auto-migrated to piMono
@@ -875,7 +878,23 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         // Compare against the actual running harness, NOT @AppStorage (which may
         // already reflect the new value because another view wrote the same key).
         guard newHarness != previousHarness else { return }
-        log("ChatProvider: Switching bridge mode from \(previousHarness) to \(resolvedMode.rawValue)")
+
+        // Serialize overlapping switches. The SettingsPage picker fires onChange
+        // in a new Task on each toggle, so rapid A→B→A can overlap two calls.
+        // Without serialization, the second call could overwrite agentBridge and
+        // leak the intermediate process that the first call created.
+        if modeSwitchInProgress {
+            log("ChatProvider: switchBridgeMode waiting for in-flight switch to finish")
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                modeSwitchContinuation = c
+            }
+        }
+
+        // Re-check after waiting — the in-flight switch may have already reached
+        // the same target mode we wanted.
+        guard newHarness != activeBridgeHarness else { return }
+
+        log("ChatProvider: Switching bridge mode from \(activeBridgeHarness) to \(resolvedMode.rawValue)")
 
         // Update activeBridgeHarness immediately so a rapid second flip (e.g. user
         // toggles back before the first switch finishes) sees the correct target
@@ -902,9 +921,10 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             checkClaudeConnectionStatus()
         }
 
-        // Unblock queries before starting the new bridge (ensureBridgeStarted
-        // will set agentBridgeStarted = true on success).
+        // Unblock queries and wake any waiting switch.
         modeSwitchInProgress = false
+        modeSwitchContinuation?.resume()
+        modeSwitchContinuation = nil
 
         // Warm up the new bridge
         let started = await ensureBridgeStarted()
