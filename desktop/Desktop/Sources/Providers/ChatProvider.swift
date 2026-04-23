@@ -464,6 +464,12 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     @Published var isClearing = false
     @Published var errorMessage: String?
 
+    /// Monotonically-incremented id for each sendMessage / stopAgent cycle.
+    /// Watchdog tasks capture their gen and only reset state if it still
+    /// matches — so a watchdog fired by a stuck send #N won't cancel a
+    /// later, healthy send #N+1. See sendMessage() and stopAgent().
+    private var sendGeneration: Int = 0
+
     /// Set to true during onboarding so the ACP session ID is persisted for restart recovery.
     var isOnboarding = false
     @Published var sessionsLoadError: String?
@@ -545,6 +551,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     private var playwrightExtensionObserver: AnyCancellable?
     private var sessionGroupingObserver: AnyCancellable?
     private var activationObserver: AnyCancellable?
+    private var systemWakeObserver: AnyCancellable?
 
     private var refreshAllObserver: AnyCancellable?
 
@@ -657,6 +664,34 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             .sink { [weak self] _ in
                 Task { @MainActor in
                     await self?.pollForNewMessages()
+                }
+            }
+
+        // After the system wakes from sleep, the ACP bridge's internal state is
+        // stale — auth tokens expired, pipes half-dead, session context rotted.
+        // First query after wake often hangs because the bridge silently drops
+        // "stray turn_end" messages and the Swift waitForMessage() sits on an
+        // unbounded await forever. Preemptively restart the bridge on wake so
+        // the next query starts with a fresh subprocess. Skipped if a query is
+        // actively running (rare for user to wake mid-query).
+        systemWakeObserver = NSWorkspace.shared.notificationCenter
+            .publisher(for: NSWorkspace.didWakeNotification)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    guard let self = self else { return }
+                    guard self.acpBridgeStarted else { return }
+                    guard !self.isSending else {
+                        log("ChatProvider: system woke but query in progress — skipping bridge restart")
+                        return
+                    }
+                    log("ChatProvider: system woke — restarting ACP bridge to clear stale session")
+                    self.acpBridgeStarted = false
+                    do {
+                        try await self.acpBridge.restart()
+                        self.acpBridgeStarted = true
+                    } catch {
+                        logError("ChatProvider: bridge restart after wake failed", error: error)
+                    }
                 }
             }
 
@@ -2045,8 +2080,25 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     func stopAgent() {
         guard isSending else { return }
         isStopping = true
+        sendGeneration += 1
+        let myGen = sendGeneration
         Task {
             await acpBridge.interrupt()
+            // Normal path: interrupt → bridge emits final result or .stopped →
+            // sendMessage's do/catch resets isSending via its finally (line 2631).
+            // Fallback: if the bridge drops the turn_end as "stray" (known
+            // sleep/wake flake — see PR where this watchdog was added), the
+            // for-await in sendMessage hangs forever and isSending stays true.
+            // After a short grace, force-release so the user's next query isn't
+            // silently swallowed by the guard at sendMessage:start.
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            await MainActor.run {
+                if self.isSending && self.sendGeneration == myGen {
+                    log("ChatProvider: interrupt didn't close stream in 3s — force-resetting isSending")
+                    self.isSending = false
+                    self.isStopping = false
+                }
+            }
         }
         // Result flows back normally through the bridge with partial text
     }
@@ -2195,6 +2247,26 @@ A screenshot may be attached — use it silently only if relevant. Never mention
 
         isSending = true
         errorMessage = nil
+        sendGeneration += 1
+        let sendGen = sendGeneration
+
+        // Safety-net watchdog: if this specific send is still "in flight"
+        // 3 minutes from now, something in the bridge / stream pipeline has
+        // hung (commonly: stale ACP subprocess after laptop sleep emits a
+        // "stray turn_end" that Swift's waitForMessage never sees). Force-
+        // release isSending so the user's next query isn't silently dropped
+        // by the "already sending" guard. The generation check means the
+        // watchdog only fires if no later send has replaced this one.
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 180_000_000_000)
+            await MainActor.run {
+                guard let self = self, self.isSending, self.sendGeneration == sendGen else { return }
+                log("ChatProvider: send watchdog fired at 180s — bridge is stuck; force-resetting")
+                self.isSending = false
+                self.isStopping = false
+                self.errorMessage = "Response took too long. Try again."
+            }
+        }
 
         // Save user message to backend and add to UI.
         // (skip for follow-ups — sendFollowUp already did both)
