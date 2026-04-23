@@ -6,7 +6,6 @@ import 'package:omi/backend/preferences.dart';
 import 'package:omi/app_globals.dart';
 import 'package:omi/providers/base_provider.dart';
 import 'package:omi/services/agent_chat_service.dart';
-import 'package:omi/services/notifications/daily_reflection_notification.dart';
 import 'package:omi/utils/alerts/app_snackbar.dart';
 import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/utils/l10n_extensions.dart';
@@ -38,7 +37,6 @@ class DeveloperModeProvider extends BaseProvider {
   bool showDailyScoreEnabled = true;
   bool showTasksEnabled = true;
   bool showPhoneCallButton = true;
-  bool dailyReflectionEnabled = true;
 
   // VAD Gate (experimental)
   bool vadGateEnabled = false;
@@ -121,7 +119,6 @@ class DeveloperModeProvider extends BaseProvider {
     showDailyScoreEnabled = SharedPreferencesUtil().showDailyScoreEnabled;
     showTasksEnabled = SharedPreferencesUtil().showTasksEnabled;
     showPhoneCallButton = SharedPreferencesUtil().showPhoneCallButton;
-    dailyReflectionEnabled = SharedPreferencesUtil().dailyReflectionEnabled;
     vadGateEnabled = SharedPreferencesUtil().vadGateEnabled;
     claudeAgentEnabled = SharedPreferencesUtil().claudeAgentEnabled;
     conversationEventsToggled = SharedPreferencesUtil().conversationEventsToggled;
@@ -282,20 +279,6 @@ class DeveloperModeProvider extends BaseProvider {
   void onShowPhoneCallButtonChanged(var value) {
     showPhoneCallButton = value;
     SharedPreferencesUtil().showPhoneCallButton = value;
-    notifyListeners();
-  }
-
-  void onDailyReflectionChanged(var value) {
-    dailyReflectionEnabled = value;
-    SharedPreferencesUtil().dailyReflectionEnabled = value; // Save immediately
-
-    // Schedule or cancel the notification based on the setting
-    if (value) {
-      DailyReflectionNotification.scheduleDailyNotification(channelKey: 'channel');
-    } else {
-      DailyReflectionNotification.cancelNotification();
-    }
-
     notifyListeners();
   }
 

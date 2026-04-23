@@ -294,23 +294,20 @@ def get_chat_quota_snapshot(uid: str) -> dict:
 
 
 # Plans that enter usage-based overage billing instead of hard-blocking when
-# they exceed their included chat question count. For these plans, going over
-# is a soft event: the call is served and the excess is billed at end of cycle
-# against the card on file.
-#
-# Only Operator (desktop mid-tier) uses overage. Neo is hard-capped on mobile;
-# Architect uses a monthly cost cap.
-OVERAGE_ENABLED_PLANS = {PlanType.operator}
+# they exceed their included allowance. Paying users are never asked to
+# "upgrade past their plan" — the excess is billed at end of cycle against
+# the card on file. Free stays hard-capped (no payment method on file).
+OVERAGE_ENABLED_PLANS = {PlanType.operator, PlanType.unlimited, PlanType.architect}
 
 
 def enforce_chat_quota(uid: str) -> None:
     """Block or allow a chat request based on the user's plan + usage.
 
     - BYOK users with an LLM key attached: always allowed, no Omi-side cost.
-    - Free plan past its cap: blocked (no card on file). 402.
-    - Neo (unlimited) / overage-enabled plans past their cap: ALLOWED — we
-      serve the call and accrue an overage charge. See ``utils.overage``.
-    - Architect (cost-capped): still blocked when monthly cost cap is hit.
+    - Paid plans past their cap: ALLOWED — the call is served and the excess
+      accrues an overage charge. See ``utils.overage``.
+    - Free plan past its cap: blocked (no card on file) → 402, which the
+      chat endpoint converts into a canned AI reply for mobile UX.
     """
     # BYOK users pay their own LLM provider — no Omi-side cost to cap.
     # Require an LLM provider key on this request (not just any BYOK header)
@@ -325,9 +322,10 @@ def enforce_chat_quota(uid: str) -> None:
 
     plan = snapshot['plan']
 
-    # Overage-enabled plans never hard-block on chat question count — the
-    # excess becomes a billable overage at end of cycle.
-    if plan in OVERAGE_ENABLED_PLANS and snapshot['unit'] == 'questions':
+    # Every paying plan goes into overage mode past its cap, regardless of
+    # whether the cap is expressed in questions or dollars. Only Free
+    # (PlanType.basic) falls through to the 402 below.
+    if plan in OVERAGE_ENABLED_PLANS:
         return
 
     raise HTTPException(
