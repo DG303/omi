@@ -1,8 +1,13 @@
 {
-  "unreleased": [
-    "Removed Anthropic API key from client, added Omi AI branding in Settings, improved harness switching"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.354",
+      "date": "2026-04-23",
+      "changes": [
+        "Removed Anthropic API key from client, added Omi AI branding in Settings, improved harness switching"
+      ]
+    },
     {
       "version": "0.11.353",
       "date": "2026-04-23",
