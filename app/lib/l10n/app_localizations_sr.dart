@@ -2504,12 +2504,6 @@ class AppLocalizationsSr extends AppLocalizations {
   String get trackPersonalGoalsOnHomepage => 'Пратите своје личне циљеве на почетној страници';
 
   @override
-  String get dailyReflection => 'Дневна рефлексија';
-
-  @override
-  String get get9PmReminderToReflect => 'Добите подсетник у 21:00 да размислите о својем дану';
-
-  @override
   String get actionItemDescriptionCannotBeEmpty => 'Опис ставке радног списка не може бити празан';
 
   @override
@@ -3926,10 +3920,6 @@ class AppLocalizationsSr extends AppLocalizations {
   String get trackPersonalGoals => 'Пратите личне циљеве на почетној страни';
 
   @override
-  String get dailyReflectionDescription =>
-      'Добијте подсетник у 21:00 да размислите о вашем дану и хватите своје мисли.';
-
-  @override
   String get endpointURL => 'URL крајне тачке';
 
   @override
@@ -4570,10 +4560,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get alreadyBestValuePlan => 'Већ имате план са најбољом вредношћу. Никаква промена није потребна.';
 
   @override
-  String get unableToLoadPlans => 'Не могу да учитам планове';
+  String get unableToLoadPlans => 'Није могуће учитати планове';
 
   @override
-  String get checkConnectionTryAgain => 'Молим вас, проверите вашу везу и покушајте поново';
+  String get checkConnectionTryAgain => 'Проверите везу и покушајте поново';
 
   @override
   String get useFreePlan => 'Користи бесплатни план';
@@ -5106,7 +5096,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Наставком, сви подаци које делиш са овом апликацијом (укључујући твоје разговоре, снимања и личне информације) биће безбедно чувани на нашим серверима да бисмо вам пружили утицаје који се могу унапредити и омогућили све функције апликације.';
+      'Настављањем, ваши разговори, снимци и лични подаци биће безбедно ускладиштени на нашим серверима. Ваши аудио снимци и транскрипти се обрађују од стране AI сервиса трећих страна (укључујући Deepgram за транскрипцију и OpenAI за анализу) како би вам пружили увиде засноване на вештачкој интелигенцији и омогућили све функције апликације.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7194,12 +7184,6 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Време за дневну рефлексију';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Расскажите ми о вашем дану';
-
-  @override
   String get actionItemReminderTitle => 'Omi подсетник';
 
   @override
@@ -8843,6 +8827,18 @@ class AppLocalizationsSr extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Батерија';
+
+  @override
+  String get noBatteryDataYet => 'Још нема података о батерији';
+
+  @override
+  String get day => 'Дан';
+
+  @override
+  String get week => 'Недеља';
+
+  @override
   String get rollbackToStableFirmware => 'Врати се на стабилан firmware';
 
   @override
@@ -8958,4 +8954,186 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get appleHealthDeniedBody =>
       'Omi нема дозволу да чита ваше Apple Health податке. Омогућите га у iOS Подешавања → Приватност и безбедност → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Зашто одлазите?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Ваше повратне информације помажу нам да побољшамо Omi за све.';
+
+  @override
+  String get deleteReasonPrivacy => 'Бриге о приватности';
+
+  @override
+  String get deleteReasonNotUsing => 'Не користим довољно често';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Недостају функције које су ми потребне';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Превише техничких проблема';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Користим нешто друго';
+
+  @override
+  String get deleteReasonTakingBreak => 'Само правим паузу';
+
+  @override
+  String get deleteReasonOther => 'Остало';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Реците нам више';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Шта би учинило да Omi ради за вас?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Опционо — ваше мисли нам помажу да направимо бољи производ.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Ово је трајно';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Након брисања налога, његово враћање није могуће.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Свака активна претплата биће отказана.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Ваш налог се не може вратити — чак ни путем подршке.';
+
+  @override
+  String get deleteTypeToConfirm => 'Унесите DELETE за потврду';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Трајно избриши налог';
+
+  @override
+  String get keepMyAccount => 'Задржи мој налог';
+
+  @override
+  String get deleteAccountFailed => 'Брисање вашег налога није успело. Покушајте поново.';
+
+  @override
+  String get planUpdate => 'Ажурирање плана';
+
+  @override
+  String get planDeprecationMessage =>
+      'Ваш Unlimited план се укида. Пређите на Operator план — исте одличне функције за \$49/мес. Ваш тренутни план ће наставити да ради у међувремену.';
+
+  @override
+  String get upgradeYourPlan => 'Надоградите свој план';
+
+  @override
+  String get youAreOnAPaidPlan => 'На плаћеном сте плану.';
+
+  @override
+  String get chatTitle => 'Ћаскање';
+
+  @override
+  String get chatMessages => 'порука';
+
+  @override
+  String get unlimitedChatThisMonth => 'Неограничене поруке овог месеца';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used од $limit буџета за рачунање искоришћено';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used од $limit порука искоришћено овог месеца';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit искоришћено';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Лимит ћаскања достигнут. Надоградите за више порука.';
+
+  @override
+  String get chatLimitReachedTitle => 'Лимит ћаскања достигнут';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Искористили сте $used од $limitDisplay на плану $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Ресетује се за $count дана';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Ресетује се за $count сати';
+  }
+
+  @override
+  String get resetsSoon => 'Ускоро се ресетује';
+
+  @override
+  String get upgradePlan => 'Надогради план';
+
+  @override
+  String get billingMonthly => 'Месечно';
+
+  @override
+  String get billingYearly => 'Годишње';
+
+  @override
+  String get savePercent => 'Уштедите ~17%';
+
+  @override
+  String get popular => 'Популарно';
+
+  @override
+  String get currentPlan => 'Тренутни';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count питања месечно';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count питања месечно';
+  }
+
+  @override
+  String get architectSubtitle => 'Напредни AI — хиљаде разговора + агентна аутоматизација';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Ћаскање: \$$used / \$$limit искоришћено овог месеца';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Ћаскање: \$$used искоришћено овог месеца';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Ћаскање: $used / $limit порука овог месеца';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Ћаскање: $used порука овог месеца';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Достигли сте свој месечни лимит. Надоградите да наставите да разговарате са Omi без ограничења.';
 }

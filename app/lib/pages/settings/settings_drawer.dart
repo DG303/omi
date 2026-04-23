@@ -297,7 +297,8 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                 const Divider(height: 1, color: Color(0xFF3C3C43)),
                 Consumer<UsageProvider>(
                   builder: (context, usageProvider, child) {
-                    final isUnlimited = usageProvider.subscription?.subscription.plan == PlanType.unlimited;
+                    final sp = usageProvider.subscription?.subscription.plan;
+                    final isUnlimited = sp == PlanType.unlimited || sp == PlanType.operator || sp == PlanType.architect;
                     return _buildSettingsItem(
                       title: context.l10n.planAndUsage,
                       icon: const FaIcon(FontAwesomeIcons.chartLine, color: Color(0xFF8E8E93), size: 20),
@@ -337,9 +338,8 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                   title: context.l10n.offlineSync,
                   icon: const FaIcon(FontAwesomeIcons.solidCloud, color: Color(0xFF8E8E93), size: 20),
                   onTap: () {
-                    final page = SharedPreferencesUtil().deviceSupportsMultiFileSync
-                        ? const AutoSyncPage()
-                        : const SyncPage();
+                    final page =
+                        SharedPreferencesUtil().deviceSupportsMultiFileSync ? const AutoSyncPage() : const SyncPage();
                     Navigator.of(context).push(MaterialPageRoute(builder: (context) => page));
                   },
                 ),
@@ -373,8 +373,7 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                 ),
                 Consumer<UsageProvider>(
                   builder: (context, usageProvider, child) {
-                    final isUnlimited = usageProvider.subscription?.subscription.plan == PlanType.unlimited;
-                    if (!isUnlimited) return const SizedBox.shrink();
+                    if (!usageProvider.shouldShowPhoneCallsEntry) return const SizedBox.shrink();
                     return Column(
                       children: [
                         const Divider(height: 1, color: Color(0xFF3C3C43)),

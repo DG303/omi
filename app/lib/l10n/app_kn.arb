@@ -2779,14 +2779,6 @@
     "@trackPersonalGoalsOnHomepage": {
         "description": "Description for goal tracker"
     },
-    "dailyReflection": "ದೈನಿಕ ಪ್ರತಿಫಲನ",
-    "@dailyReflection": {
-        "description": "Section header for daily reflection settings"
-    },
-    "get9PmReminderToReflect": "ನಿಮ್ಮ ದಿನದ ಮೇಲೆ ಪ್ರತಿಫಲಿತ ಮಾಡಲು ರಾತ್ರಿ 9 ಬಾರಿ ಸ್ಮರಣೆ ಪಡೆಯಿರಿ",
-    "@get9PmReminderToReflect": {
-        "description": "Description for daily reflection"
-    },
     "actionItemDescriptionCannotBeEmpty": "ಕ್ರಿಯೆ ಪದ ವಿವರಣೆ ಖಾಲಿ ಇರಬಾರದು",
     "@actionItemDescriptionCannotBeEmpty": {
         "description": "Error message when action item description is empty"
@@ -4421,7 +4413,6 @@
     "noAPIKeys": "API ಕೀಲಿಗಳು ಇಲ್ಲ. ಪ್ರಾರಂಭಿಸಲು ಒಂದು ರಚಿಸಿ.",
     "autoCreateWhenDetected": "ಹೆಸರನ್ನು ಪತ್ತೆ ಮಾಡಿದಾಗ ಸ್ವಯಂ-ರಚಿಸಿ",
     "trackPersonalGoals": "ಮುಖ್ಯ ಪುಟದಲ್ಲಿ ವ್ಯಕ್ತಿಗತ ಲಕ್ಷ್ಯಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ",
-    "dailyReflectionDescription": "ನಿಮ್ಮ ದಿನವನ್ನು ಪ್ರತಿಫಲಿತ ಮಾಡಲು ಮತ್ತು ನಿಮ್ಮ ಆಲೋಚನೆಗಳನ್ನು ಹಿಡಿದುಕೊಳ್ಳಲು ರಾತ್ರಿ 9 ಗಂಟೆಗೆ ಸ್ಮರಣೀಯ ಪಡೆಯಿರಿ.",
     "endpointURL": "ಸಮಾಪ್ತಿ URL",
     "links": "ಲಿಂಕ್‌ಗಳು",
     "discordMemberCount": "Discord ಮಲ್ಲಸದಲ್ಲಿ 8000+ ಸದಸ್ಯರು",
@@ -5317,11 +5308,11 @@
     "@alreadyBestValuePlan": {
         "description": "Message when user already has best plan"
     },
-    "unableToLoadPlans": "ಯೋಜನೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ",
+    "unableToLoadPlans": "ಯೋಜನೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ",
     "@unableToLoadPlans": {
         "description": "Error message when plans cannot load"
     },
-    "checkConnectionTryAgain": "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+    "checkConnectionTryAgain": "ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
     "@checkConnectionTryAgain": {
         "description": "Message to check connection"
     },
@@ -6042,7 +6033,7 @@
     "@additionalSpeechSampleRemoved": {
         "description": "Confirmation message when an additional speech sample is deleted"
     },
-    "consentDataMessage": "ಮುಂದುವರಿಸುವ ಮೂಲಕ, ನೀವು ಈ ಅಪ್ಲಿಕೇಶನ ಜೊತೆ ಹಂಚಿಕೊಂಡ ಎಲ್ಲಾ ಡೇಟಾ (ನಿಮ್ಮ ಸಂಭಾಷಣೆಗಳು, ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ಲೋಕಪ್ರಿಯ ಮಾಹಿತಿ ಸೇರಿದಂತೆ) ನಮ್ಮ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹ ಮಾಡಲಾಗುತ್ತದೆ ಮತ್ತು ನಿಮಗೆ AI-ಚಾಲಿತ ಒಳನೋಟಗಳನ್ನು ಒದಗಿಸಲು ಮತ್ತು ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಕ್ರಿಯ ಮಾಡಲು ಬಳಸಲಾಗುತ್ತದೆ.",
+    "consentDataMessage": "ಮುಂದುವರಿಯುವ ಮೂಲಕ, ನಿಮ್ಮ ಸಂಭಾಷಣೆಗಳು, ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ನಮ್ಮ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಆಡಿಯೋ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್‌ಗಳನ್ನು ಮೂರನೇ ವ್ಯಕ್ತಿಯ AI ಸೇವೆಗಳಿಂದ ಸಂಸ್ಕರಿಸಲಾಗುತ್ತದೆ (ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಷನ್‌ಗಾಗಿ Deepgram ಮತ್ತು ವಿಶ್ಲೇಷಣೆಗಾಗಿ OpenAI ಸೇರಿದಂತೆ) AI-ಚಾಲಿತ ಒಳನೋಟಗಳನ್ನು ಒದಗಿಸಲು ಮತ್ತು ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು.",
     "@consentDataMessage": {
         "description": "Consent message explaining how user data will be stored and used"
     },
@@ -6840,9 +6831,6 @@
     "notificationFrequencyDescription": "Omi ನಿಮಗೆ ಕಳುಹಿಸುವ ಪ್ರೋಯಾಕ್ಟಿವ್ ಅಧಿಸೂಚನೆಗಳು ಮತ್ತು ಜ್ಞಾಪನೆಗಳ ಆವೃತ್ತಿಯನ್ನು ನಿಯಂತ್ರಿಸಿ.",
     "@notificationFrequencyDescription": {
         "description": "Description text for notification frequency section"
-    },
-    "@dailyReflectionDescription": {
-        "description": "Description text for daily reflection section"
     },
     "sliderOff": "ಆಫ್",
     "@sliderOff": {
@@ -8899,14 +8887,6 @@
             }
         }
     },
-    "dailyReflectionNotificationTitle": "ದೈನಿಕ ಪ್ರತಿಫಲನದ ಸಮಯ",
-    "@dailyReflectionNotificationTitle": {
-        "description": "Title for the daily reflection notification shown at 9 PM"
-    },
-    "dailyReflectionNotificationBody": "ನಿಮ್ಮ ದಿನದ ಬಗ್ಗೆ ನನಗೆ ಹೇಳಿ",
-    "@dailyReflectionNotificationBody": {
-        "description": "Body text for the daily reflection notification"
-    },
     "actionItemReminderTitle": "Omi ಜ್ಞಾಪಕ",
     "@actionItemReminderTitle": {
         "description": "Title for action item reminder notifications"
@@ -10637,5 +10617,73 @@
     "appleHealthFeatureSecureTitle": "ಸುರಕ್ಷಿತ ಸಿಂಕ್",
     "appleHealthFeatureSecureDesc": "ನಿಮ್ಮ Apple Health ಡೇಟಾ ಖಾಸಗಿಯಾಗಿ ನಿಮ್ಮ Omi ಖಾತೆಗೆ ಸಿಂಕ್ ಆಗುತ್ತದೆ.",
     "appleHealthDeniedTitle": "Apple Health ಪ್ರವೇಶ ನಿರಾಕರಿಸಲಾಗಿದೆ",
-    "appleHealthDeniedBody": "Omi ಗೆ ನಿಮ್ಮ Apple Health ಡೇಟಾವನ್ನು ಓದುವ ಅನುಮತಿ ಇಲ್ಲ. iOS ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ಮತ್ತು ಭದ್ರತೆ → Health → Omi ನಲ್ಲಿ ಇದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ."
+    "appleHealthDeniedBody": "Omi ಗೆ ನಿಮ್ಮ Apple Health ಡೇಟಾವನ್ನು ಓದುವ ಅನುಮತಿ ಇಲ್ಲ. iOS ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ಮತ್ತು ಭದ್ರತೆ → Health → Omi ನಲ್ಲಿ ಇದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.",
+    "deleteFlowReasonTitle": "ನೀವೇಕೆ ಹೋಗುತ್ತಿದ್ದೀರಿ?",
+    "deleteFlowReasonSubtitle": "ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆ ಎಲ್ಲರಿಗೂ Omi ಅನ್ನು ಸುಧಾರಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
+    "deleteReasonPrivacy": "ಗೌಪ್ಯತೆ ಕಾಳಜಿಗಳು",
+    "deleteReasonNotUsing": "ಸಾಕಷ್ಟು ಬಳಸುತ್ತಿಲ್ಲ",
+    "deleteReasonMissingFeatures": "ನನಗೆ ಬೇಕಾದ ವೈಶಿಷ್ಟ್ಯಗಳಿಲ್ಲ",
+    "deleteReasonTechnicalIssues": "ಅನೇಕ ತಾಂತ್ರಿಕ ಸಮಸ್ಯೆಗಳು",
+    "deleteReasonFoundAlternative": "ಬೇರೆ ಯಾವುದನ್ನೋ ಬಳಸುತ್ತಿದ್ದೇನೆ",
+    "deleteReasonTakingBreak": "ಕೇವಲ ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದೇನೆ",
+    "deleteReasonOther": "ಇತರೆ",
+    "deleteFlowFeedbackTitle": "ಹೆಚ್ಚು ಹೇಳಿ",
+    "deleteFlowFeedbackSubtitle": "Omi ನಿಮಗೆ ಹೇಗೆ ಉಪಯುಕ್ತವಾಗುತ್ತಿತ್ತು?",
+    "deleteFlowFeedbackHint": "ಐಚ್ಛಿಕ — ನಿಮ್ಮ ಆಲೋಚನೆಗಳು ಉತ್ತಮ ಉತ್ಪನ್ನವನ್ನು ನಿರ್ಮಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತವೆ.",
+    "deleteFlowConfirmTitle": "ಇದು ಶಾಶ್ವತ",
+    "deleteFlowConfirmSubtitle": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಿದ ನಂತರ, ಅದನ್ನು ಮರುಪಡೆಯಲು ಯಾವುದೇ ಮಾರ್ಗವಿಲ್ಲ.",
+    "deleteConsequenceSubscription": "ಯಾವುದೇ ಸಕ್ರಿಯ ಚಂದಾದಾರಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗುತ್ತದೆ.",
+    "deleteConsequenceNoRecovery": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ — ಬೆಂಬಲದಿಂದಲೂ ಸಾಧ್ಯವಿಲ್ಲ.",
+    "deleteTypeToConfirm": "ದೃಢೀಕರಿಸಲು DELETE ಟೈಪ್ ಮಾಡಿ",
+    "deleteConfirmationWord": "DELETE",
+    "deleteAccountPermanently": "ಖಾತೆಯನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ",
+    "keepMyAccount": "ನನ್ನ ಖಾತೆಯನ್ನು ಇರಿಸಿ",
+    "deleteAccountFailed": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "planUpdate": "ಯೋಜನೆ ನವೀಕರಣ",
+    "@planUpdate": {
+        "description": "Header for plan deprecation notice"
+    },
+    "planDeprecationMessage": "ನಿಮ್ಮ Unlimited ಯೋಜನೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗುತ್ತಿದೆ. Operator ಯೋಜನೆಗೆ ಬದಲಾಯಿಸಿ — ಅದೇ ಅದ್ಭುತ ವೈಶಿಷ್ಟ್ಯಗಳು $49/ತಿಂಗಳಿಗೆ. ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಯೋಜನೆ ಈ ಮಧ್ಯೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಲೇ ಇರುತ್ತದೆ.",
+    "@planDeprecationMessage": {
+        "description": "Deprecation notice for legacy Unlimited subscribers"
+    },
+    "upgradeYourPlan": "ನಿಮ್ಮ ಯೋಜನೆಯನ್ನು ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ",
+    "@upgradeYourPlan": {
+        "description": "Header for plan upgrade screen for non-paid users"
+    },
+    "youAreOnAPaidPlan": "ನೀವು ಪಾವತಿಸಿದ ಯೋಜನೆಯಲ್ಲಿದ್ದೀರಿ.",
+    "@youAreOnAPaidPlan": {
+        "description": "Subtitle for paid plan users on plans sheet"
+    },
+    "chatTitle": "ಚಾಟ್",
+    "chatMessages": "ಸಂದೇಶಗಳು",
+    "unlimitedChatThisMonth": "ಈ ತಿಂಗಳು ಅನಿಯಮಿತ ಚಾಟ್ ಸಂದೇಶಗಳು",
+    "chatUsedOfLimitCompute": "{used} / {limit} ಗಣನ ಬಜೆಟ್ ಬಳಸಲಾಗಿದೆ",
+    "chatUsedOfLimitMessages": "ಈ ತಿಂಗಳು {used} / {limit} ಸಂದೇಶಗಳು ಬಳಸಲಾಗಿದೆ",
+    "chatUsageProgress": "{used} / {limit} ಬಳಸಲಾಗಿದೆ",
+    "chatLimitReachedUpgrade": "ಚಾಟ್ ಮಿತಿ ತಲುಪಿದೆ. ಹೆಚ್ಚಿನ ಸಂದೇಶಗಳಿಗಾಗಿ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ.",
+    "chatLimitReachedTitle": "ಚಾಟ್ ಮಿತಿ ತಲುಪಿದೆ",
+    "chatUsageDescription": "{plan} ಯೋಜನೆಯಲ್ಲಿ {limitDisplay} ನಲ್ಲಿ {used} ಬಳಸಿದ್ದೀರಿ.",
+    "resetsInDays": "{count} ದಿನಗಳಲ್ಲಿ ಮರುಹೊಂದಿಸಲಾಗುವುದು",
+    "resetsInHours": "{count} ಗಂಟೆಗಳಲ್ಲಿ ಮರುಹೊಂದಿಸಲಾಗುವುದು",
+    "resetsSoon": "ಶೀಘ್ರದಲ್ಲೇ ಮರುಹೊಂದಿಸಲಾಗುವುದು",
+    "upgradePlan": "ಯೋಜನೆ ಅಪ್‌ಗ್ರೇಡ್",
+    "billingMonthly": "ಮಾಸಿಕ",
+    "billingYearly": "ವಾರ್ಷಿಕ",
+    "savePercent": "~17% ಉಳಿಸಿ",
+    "popular": "ಜನಪ್ರಿಯ",
+    "currentPlan": "ಪ್ರಸ್ತುತ",
+    "neoSubtitle": "ತಿಂಗಳಿಗೆ {count} ಪ್ರಶ್ನೆಗಳು",
+    "operatorSubtitle": "ತಿಂಗಳಿಗೆ {count} ಪ್ರಶ್ನೆಗಳು",
+    "architectSubtitle": "ಪವರ್-ಯೂಸರ್ AI — ಸಾವಿರಾರು ಚಾಟ್‌ಗಳು + ಏಜೆಂಟಿಕ್ ಆಟೋಮೇಶನ್",
+    "chatUsageCost": "ಚಾಟ್: ${used} / ${limit} ಈ ತಿಂಗಳು ಬಳಸಲಾಗಿದೆ",
+    "chatUsageCostNoLimit": "ಚಾಟ್: ${used} ಈ ತಿಂಗಳು ಬಳಸಲಾಗಿದೆ",
+    "chatUsageMessages": "ಚಾಟ್: {used} / {limit} ಸಂದೇಶಗಳು ಈ ತಿಂಗಳು",
+    "chatUsageMessagesNoLimit": "ಚಾಟ್: {used} ಸಂದೇಶಗಳು ಈ ತಿಂಗಳು",
+    "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
+    "chatQuotaExceededReply": "ನೀವು ನಿಮ್ಮ ಮಾಸಿಕ ಮಿತಿಯನ್ನು ತಲುಪಿದ್ದೀರಿ. ನಿರ್ಬಂಧಗಳಿಲ್ಲದೆ Omi ಜೊತೆ ಚಾಟ್ ಮುಂದುವರಿಸಲು ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ.",
+    "batteryHistory": "ಬ್ಯಾಟರಿ",
+    "day": "ದಿನ",
+    "noBatteryDataYet": "ಇನ್ನೂ ಬ್ಯಾಟರಿ ಡೇಟಾ ಇಲ್ಲ",
+    "week": "ವಾರ"
 }

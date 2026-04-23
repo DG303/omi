@@ -2497,12 +2497,6 @@ class AppLocalizationsEt extends AppLocalizations {
   String get trackPersonalGoalsOnHomepage => 'Jälgi oma isiklikke eesmärke avalehel';
 
   @override
-  String get dailyReflection => 'Igapäevane refleksioon';
-
-  @override
-  String get get9PmReminderToReflect => 'Saa kell 21 meeldetuletus oma päeva üle mõtisklemiseks';
-
-  @override
   String get actionItemDescriptionCannotBeEmpty => 'Toimingu kirjeldus ei tohi olla tühi';
 
   @override
@@ -3919,10 +3913,6 @@ class AppLocalizationsEt extends AppLocalizations {
   String get trackPersonalGoals => 'Jälgi isiklikke eesmärke avalehel';
 
   @override
-  String get dailyReflectionDescription =>
-      'Saa meeldetuletus kell 21, et mõtiskleda oma päeva üle ja jäädvustada oma mõtted.';
-
-  @override
   String get endpointURL => 'Lõpp-punkti URL';
 
   @override
@@ -4561,10 +4551,10 @@ class AppLocalizationsEt extends AppLocalizations {
   String get alreadyBestValuePlan => 'Teil on juba parima väärtusega plaan. Muudatusi pole vaja.';
 
   @override
-  String get unableToLoadPlans => 'Plaane ei saa laadida';
+  String get unableToLoadPlans => 'Plaanide laadimine ebaõnnestus';
 
   @override
-  String get checkConnectionTryAgain => 'Palun kontrollige ühendust ja proovige uuesti';
+  String get checkConnectionTryAgain => 'Kontrolli ühendust ja proovi uuesti';
 
   @override
   String get useFreePlan => 'Kasuta tasuta plaani';
@@ -5099,7 +5089,7 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Jätkates salvestatakse kõik selle rakendusega jagatud andmed (sealhulgas teie vestlused, salvestised ja isiklikud andmed) turvaliselt meie serverites, et pakkuda teile tehisintellektil põhinevaid teadmisi ja võimaldada kõiki rakenduse funktsioone.';
+      'Jätkates salvestatakse teie vestlused, salvestised ja isikuandmed turvaliselt meie serverites. Teie helisalvestisi ja transkriptsioone töötlevad kolmandate osapoolte AI-teenused (sealhulgas Deepgram transkriptsiooni ja OpenAI analüüsi jaoks), et pakkuda teile AI-põhiseid ülevaateid ja võimaldada kõiki rakenduse funktsioone.';
 
   @override
   String get tasksEmptyStateMessage => 'Teie vestlustest pärit ülesanded ilmuvad siia.\nPuudutage + käsitsi loomiseks.';
@@ -7183,12 +7173,6 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Aeg igapäevaseks refleksiooniks';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Räägi mulle oma päevast';
-
-  @override
   String get actionItemReminderTitle => 'Omi meeldetuletus';
 
   @override
@@ -8827,6 +8811,18 @@ class AppLocalizationsEt extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Aku';
+
+  @override
+  String get noBatteryDataYet => 'Aku andmed puuduvad';
+
+  @override
+  String get day => 'Päev';
+
+  @override
+  String get week => 'Nädal';
+
+  @override
   String get rollbackToStableFirmware => 'Tagasi stabiilsele püsivarale';
 
   @override
@@ -8942,4 +8938,186 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get appleHealthDeniedBody =>
       'Omil pole luba teie Apple Health\'i andmete lugemiseks. Lubage see: iOS Seaded → Privaatsus ja turvalisus → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Miks sa lahkud?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Sinu tagasiside aitab meil Omi kõigi jaoks paremaks muuta.';
+
+  @override
+  String get deleteReasonPrivacy => 'Privaatsusprobleemid';
+
+  @override
+  String get deleteReasonNotUsing => 'Ei kasuta seda piisavalt';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Puuduvad funktsioonid, mida vajan';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Liiga palju tehnilisi probleeme';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Kasutan midagi muud';
+
+  @override
+  String get deleteReasonTakingBreak => 'Teen lihtsalt pausi';
+
+  @override
+  String get deleteReasonOther => 'Muu';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Räägi rohkem';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Mis oleks pannud Omi sinu jaoks toimima?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Valikuline — sinu mõtted aitavad meil paremat toodet ehitada.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'See on jäädav';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Kui kustutad oma konto, ei saa seda enam taastada.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Kõik aktiivsed tellimused tühistatakse.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Sinu kontot ei saa taastada — isegi mitte tugi.';
+
+  @override
+  String get deleteTypeToConfirm => 'Kinnitamiseks tipi DELETE';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Kustuta konto jäädavalt';
+
+  @override
+  String get keepMyAccount => 'Säilita minu konto';
+
+  @override
+  String get deleteAccountFailed => 'Sinu kontot ei õnnestunud kustutada. Palun proovi uuesti.';
+
+  @override
+  String get planUpdate => 'Plaani uuendus';
+
+  @override
+  String get planDeprecationMessage =>
+      'Teie Unlimited plaan lõpetatakse. Lülitage Operator plaanile — samad suurepärased funktsioonid hinnaga \$49/kuus. Teie praegune plaan jätkab vahepeal tööd.';
+
+  @override
+  String get upgradeYourPlan => 'Uuenda oma plaani';
+
+  @override
+  String get youAreOnAPaidPlan => 'Oled tasulisel plaanil.';
+
+  @override
+  String get chatTitle => 'Vestlus';
+
+  @override
+  String get chatMessages => 'sõnumit';
+
+  @override
+  String get unlimitedChatThisMonth => 'Piiramatu arv vestlussõnumeid sel kuul';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used / $limit arvutuseelarvet kasutatud';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used / $limit sõnumit kasutatud sel kuul';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit kasutatud';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Vestluse limiit täis. Uuenda rohkemate sõnumite jaoks.';
+
+  @override
+  String get chatLimitReachedTitle => 'Vestluse limiit täis';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Oled kasutanud $used oma $limitDisplay plaanist $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Lähtestub $count päeva pärast';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Lähtestub $count tunni pärast';
+  }
+
+  @override
+  String get resetsSoon => 'Lähtestub peagi';
+
+  @override
+  String get upgradePlan => 'Uuenda plaani';
+
+  @override
+  String get billingMonthly => 'Kuine';
+
+  @override
+  String get billingYearly => 'Aastane';
+
+  @override
+  String get savePercent => 'Säästa ~17%';
+
+  @override
+  String get popular => 'Populaarne';
+
+  @override
+  String get currentPlan => 'Praegune';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count küsimust kuus';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count küsimust kuus';
+  }
+
+  @override
+  String get architectSubtitle => 'Võimas AI — tuhanded vestlused + agentne automatiseerimine';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Vestlus: \$$used / \$$limit kasutatud sel kuul';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Vestlus: \$$used kasutatud sel kuul';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Vestlus: $used / $limit sõnumit sel kuul';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Vestlus: $used sõnumit sel kuul';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Olete saavutanud oma igakuise limiidi. Uuendage, et jätkata Omiga piiranguteta vestlemist.';
 }

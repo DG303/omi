@@ -2502,12 +2502,6 @@ class AppLocalizationsLv extends AppLocalizations {
   String get trackPersonalGoalsOnHomepage => 'Izsekojiet savus personīgos mērķus sākumlapā';
 
   @override
-  String get dailyReflection => 'Ikdienas pārdomu';
-
-  @override
-  String get get9PmReminderToReflect => 'Saņemiet atgādinājumu plkst. 21, lai pārdomātu savu dienu';
-
-  @override
   String get actionItemDescriptionCannotBeEmpty => 'Darbības vienuma apraksts nevar būt tukšs';
 
   @override
@@ -3924,10 +3918,6 @@ class AppLocalizationsLv extends AppLocalizations {
   String get trackPersonalGoals => 'Izsekot personīgos mērķus sākumlapā';
 
   @override
-  String get dailyReflectionDescription =>
-      'Saņemiet atgādinājumu plkst. 21, lai pārdomātu savu dienu un piefiksētu domas.';
-
-  @override
   String get endpointURL => 'Galapunkta URL';
 
   @override
@@ -4570,10 +4560,10 @@ class AppLocalizationsLv extends AppLocalizations {
   String get alreadyBestValuePlan => 'Jums jau ir vislabākās vērtības plāns. Nav nepieciešamas izmaiņas.';
 
   @override
-  String get unableToLoadPlans => 'Nevar ielādēt plānus';
+  String get unableToLoadPlans => 'Neizdevās ielādēt plānus';
 
   @override
-  String get checkConnectionTryAgain => 'Lūdzu, pārbaudiet savienojumu un mēģiniet vēlreiz';
+  String get checkConnectionTryAgain => 'Pārbaudiet savienojumu un mēģiniet vēlreiz';
 
   @override
   String get useFreePlan => 'Izmantot bezmaksas plānu';
@@ -5107,7 +5097,7 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Turpinot, visi dati, ko kopīgojat ar šo lietotni (tostarp jūsu sarunas, ierakstus un personisko informāciju), tiks droši glabāti mūsu serveros, lai sniegtu jums AI balstītas atziņas un iespējotu visas lietotnes funkcijas.';
+      'Turpinot, jūsu sarunas, ieraksti un personiskā informācija tiks droši glabāta mūsu serveros. Jūsu audio ieraksti un transkripcijas tiek apstrādātas ar trešo pušu AI pakalpojumiem (ieskaitot Deepgram transkripcijai un OpenAI analīzei), lai sniegtu jums AI vadītus ieskatus un iespējotu visas lietotnes funkcijas.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7197,12 +7187,6 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Laiks ikdienas pārdomām';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Pastāsti man par savu dienu';
-
-  @override
   String get actionItemReminderTitle => 'Omi atgādinājums';
 
   @override
@@ -8847,6 +8831,18 @@ class AppLocalizationsLv extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Akumulators';
+
+  @override
+  String get noBatteryDataYet => 'Pagaidām nav akumulatora datu';
+
+  @override
+  String get day => 'Diena';
+
+  @override
+  String get week => 'Nedēļa';
+
+  @override
   String get rollbackToStableFirmware => 'Atgriezties uz stabilo programmaparatūru';
 
   @override
@@ -8963,4 +8959,186 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get appleHealthDeniedBody =>
       'Omi nav atļaujas lasīt jūsu Apple Health datus. Iespējojiet: iOS Iestatījumi → Privātums un drošība → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Kāpēc tu aizej?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Tava atsauksme palīdz mums uzlabot Omi visiem.';
+
+  @override
+  String get deleteReasonPrivacy => 'Privātuma bažas';
+
+  @override
+  String get deleteReasonNotUsing => 'Nelietoju pietiekami bieži';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Trūkst funkciju, kas man vajadzīgas';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Pārāk daudz tehnisku problēmu';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Lietoju kaut ko citu';
+
+  @override
+  String get deleteReasonTakingBreak => 'Vienkārši paņemu pārtraukumu';
+
+  @override
+  String get deleteReasonOther => 'Cits';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Pastāsti vairāk';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Kas būtu licis Omi strādāt tev?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Neobligāti — tavas domas palīdz mums veidot labāku produktu.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Tas ir neatgriezenisks';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Kad esi izdzēsis savu kontu, to nav iespējams atjaunot.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Visi aktīvie abonementi tiks atcelti.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Tavu kontu nevar atjaunot — pat ne atbalsts.';
+
+  @override
+  String get deleteTypeToConfirm => 'Lai apstiprinātu, ieraksti DELETE';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Neatgriezeniski dzēst kontu';
+
+  @override
+  String get keepMyAccount => 'Paturēt manu kontu';
+
+  @override
+  String get deleteAccountFailed => 'Tavu kontu nevarēja izdzēst. Lūdzu, mēģini vēlreiz.';
+
+  @override
+  String get planUpdate => 'Plāna atjauninājums';
+
+  @override
+  String get planDeprecationMessage =>
+      'Jūsu Unlimited plāns tiek pārtraukts. Pārejiet uz Operator plānu — tās pašas lieliskās funkcijas par \$49/mēnesī. Jūsu pašreizējais plāns turpinās darboties pa to laiku.';
+
+  @override
+  String get upgradeYourPlan => 'Uzlabojiet savu plānu';
+
+  @override
+  String get youAreOnAPaidPlan => 'Jums ir maksas plāns.';
+
+  @override
+  String get chatTitle => 'Tērzēšana';
+
+  @override
+  String get chatMessages => 'ziņas';
+
+  @override
+  String get unlimitedChatThisMonth => 'Neierobežotas tērzēšanas ziņas šomēnes';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used no $limit skaitļošanas budžeta izmantots';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used no $limit ziņām izmantots šomēnes';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit izmantots';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Tērzēšanas limits sasniegts. Jauniniet vairāk ziņām.';
+
+  @override
+  String get chatLimitReachedTitle => 'Tērzēšanas limits sasniegts';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Esat izmantojis $used no $limitDisplay plānā $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Atiestatīsies pēc $count dienām';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Atiestatīsies pēc $count stundām';
+  }
+
+  @override
+  String get resetsSoon => 'Drīz atiestatīsies';
+
+  @override
+  String get upgradePlan => 'Jaunināt plānu';
+
+  @override
+  String get billingMonthly => 'Mēnesī';
+
+  @override
+  String get billingYearly => 'Gadā';
+
+  @override
+  String get savePercent => 'Ietaupiet ~17%';
+
+  @override
+  String get popular => 'Populārs';
+
+  @override
+  String get currentPlan => 'Pašreizējais';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count jautājumi mēnesī';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count jautājumi mēnesī';
+  }
+
+  @override
+  String get architectSubtitle => 'Jaudīgs AI — tūkstošiem sarunu + aģentu automatizācija';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Tērzēšana: \$$used / \$$limit izmantots šomēnes';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Tērzēšana: \$$used izmantots šomēnes';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Tērzēšana: $used / $limit ziņojumi šomēnes';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Tērzēšana: $used ziņojumi šomēnes';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Jūs esat sasniedzis savu mēneša limitu. Jauniniet, lai turpinātu tērzēt ar Omi bez ierobežojumiem.';
 }

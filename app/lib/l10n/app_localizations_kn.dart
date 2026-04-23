@@ -2509,12 +2509,6 @@ class AppLocalizationsKn extends AppLocalizations {
   String get trackPersonalGoalsOnHomepage => 'ಹೋಮ್‌ಪೇಜ್‌ನಲ್ಲಿ ನಿಮ್ಮ ವ್ಯಕ್ತಿಗತ ಲಕ್ಷ್ಯಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ';
 
   @override
-  String get dailyReflection => 'ದೈನಿಕ ಪ್ರತಿಫಲನ';
-
-  @override
-  String get get9PmReminderToReflect => 'ನಿಮ್ಮ ದಿನದ ಮೇಲೆ ಪ್ರತಿಫಲಿತ ಮಾಡಲು ರಾತ್ರಿ 9 ಬಾರಿ ಸ್ಮರಣೆ ಪಡೆಯಿರಿ';
-
-  @override
   String get actionItemDescriptionCannotBeEmpty => 'ಕ್ರಿಯೆ ಪದ ವಿವರಣೆ ಖಾಲಿ ಇರಬಾರದು';
 
   @override
@@ -3932,10 +3926,6 @@ class AppLocalizationsKn extends AppLocalizations {
   String get trackPersonalGoals => 'ಮುಖ್ಯ ಪುಟದಲ್ಲಿ ವ್ಯಕ್ತಿಗತ ಲಕ್ಷ್ಯಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ';
 
   @override
-  String get dailyReflectionDescription =>
-      'ನಿಮ್ಮ ದಿನವನ್ನು ಪ್ರತಿಫಲಿತ ಮಾಡಲು ಮತ್ತು ನಿಮ್ಮ ಆಲೋಚನೆಗಳನ್ನು ಹಿಡಿದುಕೊಳ್ಳಲು ರಾತ್ರಿ 9 ಗಂಟೆಗೆ ಸ್ಮರಣೀಯ ಪಡೆಯಿರಿ.';
-
-  @override
   String get endpointURL => 'ಸಮಾಪ್ತಿ URL';
 
   @override
@@ -4581,10 +4571,10 @@ class AppLocalizationsKn extends AppLocalizations {
   String get alreadyBestValuePlan => 'ನೀವು ಈಗಾಗಲೇ ಸರ್ವೋತ್ತಮ ಮೌಲ್ಯ ಯೋಜನೆ ಹೊಂದಿದ್ದೀರಿ. ಯಾವುದೇ ಬದಲಾವಣೆ ಅಗತ್ಯವಿಲ್ಲ.';
 
   @override
-  String get unableToLoadPlans => 'ಯೋಜನೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ';
+  String get unableToLoadPlans => 'ಯೋಜನೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ';
 
   @override
-  String get checkConnectionTryAgain => 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
+  String get checkConnectionTryAgain => 'ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ';
 
   @override
   String get useFreePlan => 'ಉಚಿತ ಯೋಜನೆ ಬಳಸಿ';
@@ -5120,7 +5110,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'ಮುಂದುವರಿಸುವ ಮೂಲಕ, ನೀವು ಈ ಅಪ್ಲಿಕೇಶನ ಜೊತೆ ಹಂಚಿಕೊಂಡ ಎಲ್ಲಾ ಡೇಟಾ (ನಿಮ್ಮ ಸಂಭಾಷಣೆಗಳು, ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ಲೋಕಪ್ರಿಯ ಮಾಹಿತಿ ಸೇರಿದಂತೆ) ನಮ್ಮ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹ ಮಾಡಲಾಗುತ್ತದೆ ಮತ್ತು ನಿಮಗೆ AI-ಚಾಲಿತ ಒಳನೋಟಗಳನ್ನು ಒದಗಿಸಲು ಮತ್ತು ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಕ್ರಿಯ ಮಾಡಲು ಬಳಸಲಾಗುತ್ತದೆ.';
+      'ಮುಂದುವರಿಯುವ ಮೂಲಕ, ನಿಮ್ಮ ಸಂಭಾಷಣೆಗಳು, ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ನಮ್ಮ ಸರ್ವರ್‌ಗಳಲ್ಲಿ ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಆಡಿಯೋ ರೆಕಾರ್ಡಿಂಗ್‌ಗಳು ಮತ್ತು ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಟ್‌ಗಳನ್ನು ಮೂರನೇ ವ್ಯಕ್ತಿಯ AI ಸೇವೆಗಳಿಂದ ಸಂಸ್ಕರಿಸಲಾಗುತ್ತದೆ (ಟ್ರಾನ್ಸ್‌ಕ್ರಿಪ್ಷನ್‌ಗಾಗಿ Deepgram ಮತ್ತು ವಿಶ್ಲೇಷಣೆಗಾಗಿ OpenAI ಸೇರಿದಂತೆ) AI-ಚಾಲಿತ ಒಳನೋಟಗಳನ್ನು ಒದಗಿಸಲು ಮತ್ತು ಎಲ್ಲಾ ಅಪ್ಲಿಕೇಶನ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7210,12 +7200,6 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'ದೈನಿಕ ಪ್ರತಿಫಲನದ ಸಮಯ';
-
-  @override
-  String get dailyReflectionNotificationBody => 'ನಿಮ್ಮ ದಿನದ ಬಗ್ಗೆ ನನಗೆ ಹೇಳಿ';
-
-  @override
   String get actionItemReminderTitle => 'Omi ಜ್ಞಾಪಕ';
 
   @override
@@ -8861,6 +8845,18 @@ class AppLocalizationsKn extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'ಬ್ಯಾಟರಿ';
+
+  @override
+  String get noBatteryDataYet => 'ಇನ್ನೂ ಬ್ಯಾಟರಿ ಡೇಟಾ ಇಲ್ಲ';
+
+  @override
+  String get day => 'ದಿನ';
+
+  @override
+  String get week => 'ವಾರ';
+
+  @override
   String get rollbackToStableFirmware => 'ಸ್ಥಿರ ಫರ್ಮ್‌ವೇರ್ ಹಿಂದಕ್ಕೆ ರೆಟರ್ನ್';
 
   @override
@@ -8977,4 +8973,186 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get appleHealthDeniedBody =>
       'Omi ಗೆ ನಿಮ್ಮ Apple Health ಡೇಟಾವನ್ನು ಓದುವ ಅನುಮತಿ ಇಲ್ಲ. iOS ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ಮತ್ತು ಭದ್ರತೆ → Health → Omi ನಲ್ಲಿ ಇದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.';
+
+  @override
+  String get deleteFlowReasonTitle => 'ನೀವೇಕೆ ಹೋಗುತ್ತಿದ್ದೀರಿ?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆ ಎಲ್ಲರಿಗೂ Omi ಅನ್ನು ಸುಧಾರಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ.';
+
+  @override
+  String get deleteReasonPrivacy => 'ಗೌಪ್ಯತೆ ಕಾಳಜಿಗಳು';
+
+  @override
+  String get deleteReasonNotUsing => 'ಸಾಕಷ್ಟು ಬಳಸುತ್ತಿಲ್ಲ';
+
+  @override
+  String get deleteReasonMissingFeatures => 'ನನಗೆ ಬೇಕಾದ ವೈಶಿಷ್ಟ್ಯಗಳಿಲ್ಲ';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'ಅನೇಕ ತಾಂತ್ರಿಕ ಸಮಸ್ಯೆಗಳು';
+
+  @override
+  String get deleteReasonFoundAlternative => 'ಬೇರೆ ಯಾವುದನ್ನೋ ಬಳಸುತ್ತಿದ್ದೇನೆ';
+
+  @override
+  String get deleteReasonTakingBreak => 'ಕೇವಲ ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದ್ದೇನೆ';
+
+  @override
+  String get deleteReasonOther => 'ಇತರೆ';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'ಹೆಚ್ಚು ಹೇಳಿ';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Omi ನಿಮಗೆ ಹೇಗೆ ಉಪಯುಕ್ತವಾಗುತ್ತಿತ್ತು?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'ಐಚ್ಛಿಕ — ನಿಮ್ಮ ಆಲೋಚನೆಗಳು ಉತ್ತಮ ಉತ್ಪನ್ನವನ್ನು ನಿರ್ಮಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತವೆ.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'ಇದು ಶಾಶ್ವತ';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಿದ ನಂತರ, ಅದನ್ನು ಮರುಪಡೆಯಲು ಯಾವುದೇ ಮಾರ್ಗವಿಲ್ಲ.';
+
+  @override
+  String get deleteConsequenceSubscription => 'ಯಾವುದೇ ಸಕ್ರಿಯ ಚಂದಾದಾರಿಕೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗುತ್ತದೆ.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ — ಬೆಂಬಲದಿಂದಲೂ ಸಾಧ್ಯವಿಲ್ಲ.';
+
+  @override
+  String get deleteTypeToConfirm => 'ದೃಢೀಕರಿಸಲು DELETE ಟೈಪ್ ಮಾಡಿ';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'ಖಾತೆಯನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ';
+
+  @override
+  String get keepMyAccount => 'ನನ್ನ ಖಾತೆಯನ್ನು ಇರಿಸಿ';
+
+  @override
+  String get deleteAccountFailed => 'ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+
+  @override
+  String get planUpdate => 'ಯೋಜನೆ ನವೀಕರಣ';
+
+  @override
+  String get planDeprecationMessage =>
+      'ನಿಮ್ಮ Unlimited ಯೋಜನೆಯನ್ನು ನಿಲ್ಲಿಸಲಾಗುತ್ತಿದೆ. Operator ಯೋಜನೆಗೆ ಬದಲಾಯಿಸಿ — ಅದೇ ಅದ್ಭುತ ವೈಶಿಷ್ಟ್ಯಗಳು \$49/ತಿಂಗಳಿಗೆ. ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಯೋಜನೆ ಈ ಮಧ್ಯೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಲೇ ಇರುತ್ತದೆ.';
+
+  @override
+  String get upgradeYourPlan => 'ನಿಮ್ಮ ಯೋಜನೆಯನ್ನು ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ';
+
+  @override
+  String get youAreOnAPaidPlan => 'ನೀವು ಪಾವತಿಸಿದ ಯೋಜನೆಯಲ್ಲಿದ್ದೀರಿ.';
+
+  @override
+  String get chatTitle => 'ಚಾಟ್';
+
+  @override
+  String get chatMessages => 'ಸಂದೇಶಗಳು';
+
+  @override
+  String get unlimitedChatThisMonth => 'ಈ ತಿಂಗಳು ಅನಿಯಮಿತ ಚಾಟ್ ಸಂದೇಶಗಳು';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used / $limit ಗಣನ ಬಜೆಟ್ ಬಳಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return 'ಈ ತಿಂಗಳು $used / $limit ಸಂದೇಶಗಳು ಬಳಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit ಬಳಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'ಚಾಟ್ ಮಿತಿ ತಲುಪಿದೆ. ಹೆಚ್ಚಿನ ಸಂದೇಶಗಳಿಗಾಗಿ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ.';
+
+  @override
+  String get chatLimitReachedTitle => 'ಚಾಟ್ ಮಿತಿ ತಲುಪಿದೆ';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return '$plan ಯೋಜನೆಯಲ್ಲಿ $limitDisplay ನಲ್ಲಿ $used ಬಳಸಿದ್ದೀರಿ.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return '$count ದಿನಗಳಲ್ಲಿ ಮರುಹೊಂದಿಸಲಾಗುವುದು';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return '$count ಗಂಟೆಗಳಲ್ಲಿ ಮರುಹೊಂದಿಸಲಾಗುವುದು';
+  }
+
+  @override
+  String get resetsSoon => 'ಶೀಘ್ರದಲ್ಲೇ ಮರುಹೊಂದಿಸಲಾಗುವುದು';
+
+  @override
+  String get upgradePlan => 'ಯೋಜನೆ ಅಪ್‌ಗ್ರೇಡ್';
+
+  @override
+  String get billingMonthly => 'ಮಾಸಿಕ';
+
+  @override
+  String get billingYearly => 'ವಾರ್ಷಿಕ';
+
+  @override
+  String get savePercent => '~17% ಉಳಿಸಿ';
+
+  @override
+  String get popular => 'ಜನಪ್ರಿಯ';
+
+  @override
+  String get currentPlan => 'ಪ್ರಸ್ತುತ';
+
+  @override
+  String neoSubtitle(int count) {
+    return 'ತಿಂಗಳಿಗೆ $count ಪ್ರಶ್ನೆಗಳು';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return 'ತಿಂಗಳಿಗೆ $count ಪ್ರಶ್ನೆಗಳು';
+  }
+
+  @override
+  String get architectSubtitle => 'ಪವರ್-ಯೂಸರ್ AI — ಸಾವಿರಾರು ಚಾಟ್‌ಗಳು + ಏಜೆಂಟಿಕ್ ಆಟೋಮೇಶನ್';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'ಚಾಟ್: \$$used / \$$limit ಈ ತಿಂಗಳು ಬಳಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'ಚಾಟ್: \$$used ಈ ತಿಂಗಳು ಬಳಸಲಾಗಿದೆ';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'ಚಾಟ್: $used / $limit ಸಂದೇಶಗಳು ಈ ತಿಂಗಳು';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'ಚಾಟ್: $used ಸಂದೇಶಗಳು ಈ ತಿಂಗಳು';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'ನೀವು ನಿಮ್ಮ ಮಾಸಿಕ ಮಿತಿಯನ್ನು ತಲುಪಿದ್ದೀರಿ. ನಿರ್ಬಂಧಗಳಿಲ್ಲದೆ Omi ಜೊತೆ ಚಾಟ್ ಮುಂದುವರಿಸಲು ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ.';
 }

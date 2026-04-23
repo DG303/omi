@@ -1721,7 +1721,7 @@
     "@rateOnGooglePlay": {
         "description": "Button text to rate on Google Play Store"
     },
-    "maybeLater": "బహుశా తరువాత",
+    "maybeLater": "బహుశా తర్వాత",
     "@maybeLater": {
         "description": "Button text to defer action"
     },
@@ -2778,14 +2778,6 @@
     "trackPersonalGoalsOnHomepage": "హోమ్‌పేజ్‌లో వ్యక్తిగత లక్ష్యాలను ట్రాక్ చేయండి",
     "@trackPersonalGoalsOnHomepage": {
         "description": "Description for goal tracker"
-    },
-    "dailyReflection": "రోజువారీ ఆలోచన",
-    "@dailyReflection": {
-        "description": "Section header for daily reflection settings"
-    },
-    "get9PmReminderToReflect": "మీ రోజుపై ఆలోచించడానికి సాయంత్రం 9 గంటలకు రిమైండర్ పొందండి",
-    "@get9PmReminderToReflect": {
-        "description": "Description for daily reflection"
     },
     "actionItemDescriptionCannotBeEmpty": "కార్యాచరణ అంశం వివరణ ఖాళీగా ఉండకూడదు",
     "@actionItemDescriptionCannotBeEmpty": {
@@ -4421,7 +4413,6 @@
     "noAPIKeys": "API కీలు లేనివి. ప్రారంభించడానికి ఒకటి సృష్టించండి.",
     "autoCreateWhenDetected": "పేరు గుర్తించినప్పుడు స్వయంచాలకంగా సృష్టించండి",
     "trackPersonalGoals": "హోమ్‌పేజీలో వ్యక్తిగత లక్ష్యాలను ట్రాక్ చేయండి",
-    "dailyReflectionDescription": "రాత్రి 9:00 కు మీ దిన్ను ఆలోచించుకోవటానికి మరియు మీ ఆలోచనలను కేటుకోవటానికి రిమైండర్ పొందండి.",
     "endpointURL": "ఎండ్‌పాయింట్ URL",
     "links": "లింకులు",
     "discordMemberCount": "Discord లో 8000+ సభ్యులు",
@@ -5317,11 +5308,11 @@
     "@alreadyBestValuePlan": {
         "description": "Message when user already has best plan"
     },
-    "unableToLoadPlans": "ప్లాన్‌లను లోడ్ చేయలేకపోయాను",
+    "unableToLoadPlans": "ప్లాన్‌లు లోడ్ చేయలేకపోయాము",
     "@unableToLoadPlans": {
         "description": "Error message when plans cannot load"
     },
-    "checkConnectionTryAgain": "దయచేసి మీ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి",
+    "checkConnectionTryAgain": "కనెక్షన్ తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి",
     "@checkConnectionTryAgain": {
         "description": "Message to check connection"
     },
@@ -6042,7 +6033,7 @@
     "@additionalSpeechSampleRemoved": {
         "description": "Confirmation message when an additional speech sample is deleted"
     },
-    "consentDataMessage": "కొనసాగించడం ద్వారా, ఈ అనువర్తనకు మీరు భాగస్వామ్యం చేసిన అన్ని డేటా (మీ సంభాషణలు, రికార్డింగ్‌లు మరియు వ్యక్తిగత సమాచారం సహా) AI-శక్తిచేసిన సమాచారం అందించడానికి మరియు అన్ని అనువర్తన లక్షణాలను ప్రారంభించడానికి మా సర్వర్‌లలో సురక్షితంగా నిల్వ చేయబడుతుంది.",
+    "consentDataMessage": "కొనసాగించడం ద్వారా, మీ సంభాషణలు, రికార్డింగ్‌లు మరియు వ్యక్తిగత సమాచారం మా సర్వర్‌లలో సురక్షితంగా నిల్వ చేయబడతాయి. మీ ఆడియో రికార్డింగ్‌లు మరియు ట్రాన్‌స్క్రిప్ట్‌లు థర్డ్-పార్టీ AI సేవల ద్వారా ప్రాసెస్ చేయబడతాయి (ట్రాన్‌స్క్రిప్షన్ కోసం Deepgram మరియు విశ్లేషణ కోసం OpenAI సహా) AI-ఆధారిత అంతర్దృష్టులను అందించడానికి మరియు అన్ని యాప్ ఫీచర్‌లను ప్రారంభించడానికి.",
     "@consentDataMessage": {
         "description": "Consent message explaining how user data will be stored and used"
     },
@@ -6840,9 +6831,6 @@
     "notificationFrequencyDescription": "Omi మీకు సక్రియ నోటిఫికేషన్‌లు మరియు రిమైండర్‌లను ఎంత తరచుగా పంపుతుందో నియంత్రించండి.",
     "@notificationFrequencyDescription": {
         "description": "Description text for notification frequency section"
-    },
-    "@dailyReflectionDescription": {
-        "description": "Description text for daily reflection section"
     },
     "sliderOff": "ఆఫ్",
     "@sliderOff": {
@@ -8899,14 +8887,6 @@
             }
         }
     },
-    "dailyReflectionNotificationTitle": "రోజువారీ ప్రతిబింబ సమయం",
-    "@dailyReflectionNotificationTitle": {
-        "description": "Title for the daily reflection notification shown at 9 PM"
-    },
-    "dailyReflectionNotificationBody": "మీ రోజు గురించి నాకు చెప్పండి",
-    "@dailyReflectionNotificationBody": {
-        "description": "Body text for the daily reflection notification"
-    },
     "actionItemReminderTitle": "Omi రిమైండర్",
     "@actionItemReminderTitle": {
         "description": "Title for action item reminder notifications"
@@ -10637,5 +10617,73 @@
     "appleHealthFeatureSecureTitle": "సురక్షిత సమకాలీకరణ",
     "appleHealthFeatureSecureDesc": "మీ Apple Health డేటా ప్రైవేట్‌గా మీ Omi ఖాతాకు సమకాలీకరించబడుతుంది.",
     "appleHealthDeniedTitle": "Apple Health యాక్సెస్ తిరస్కరించబడింది",
-    "appleHealthDeniedBody": "Omi కి మీ Apple Health డేటాను చదవడానికి అనుమతి లేదు. iOS సెట్టింగ్‌లు → గోప్యత & భద్రత → Health → Omi లో దీన్ని ప్రారంభించండి."
+    "appleHealthDeniedBody": "Omi కి మీ Apple Health డేటాను చదవడానికి అనుమతి లేదు. iOS సెట్టింగ్‌లు → గోప్యత & భద్రత → Health → Omi లో దీన్ని ప్రారంభించండి.",
+    "deleteFlowReasonTitle": "మీరు ఎందుకు వెళ్తున్నారు?",
+    "deleteFlowReasonSubtitle": "మీ అభిప్రాయం అందరికీ Omi-ని మెరుగుపరచడంలో మాకు సహాయపడుతుంది.",
+    "deleteReasonPrivacy": "గోప్యత ఆందోళనలు",
+    "deleteReasonNotUsing": "తగినంతగా ఉపయోగించడం లేదు",
+    "deleteReasonMissingFeatures": "నాకు కావలసిన ఫీచర్లు లేవు",
+    "deleteReasonTechnicalIssues": "చాలా సాంకేతిక సమస్యలు",
+    "deleteReasonFoundAlternative": "మరొకటి ఉపయోగిస్తున్నాను",
+    "deleteReasonTakingBreak": "కేవలం విరామం తీసుకుంటున్నాను",
+    "deleteReasonOther": "ఇతరత్రా",
+    "deleteFlowFeedbackTitle": "మరింత చెప్పండి",
+    "deleteFlowFeedbackSubtitle": "Omi మీకు ఎలా పని చేసేది?",
+    "deleteFlowFeedbackHint": "ఐచ్ఛికం — మీ ఆలోచనలు మెరుగైన ఉత్పత్తిని తయారు చేయడంలో మాకు సహాయపడతాయి.",
+    "deleteFlowConfirmTitle": "ఇది శాశ్వతం",
+    "deleteFlowConfirmSubtitle": "మీరు ఖాతాను తొలగించిన తర్వాత, దాన్ని పునరుద్ధరించే మార్గం లేదు.",
+    "deleteConsequenceSubscription": "ఏదైనా క్రియాశీల సబ్‌స్క్రిప్షన్ రద్దు చేయబడుతుంది.",
+    "deleteConsequenceNoRecovery": "మీ ఖాతాను పునరుద్ధరించలేరు — సపోర్ట్ కూడా చేయలేదు.",
+    "deleteTypeToConfirm": "నిర్ధారించడానికి DELETE టైప్ చేయండి",
+    "deleteConfirmationWord": "DELETE",
+    "deleteAccountPermanently": "ఖాతాను శాశ్వతంగా తొలగించండి",
+    "keepMyAccount": "నా ఖాతాను ఉంచండి",
+    "deleteAccountFailed": "మీ ఖాతాను తొలగించలేకపోయాము. దయచేసి మళ్ళీ ప్రయత్నించండి.",
+    "planUpdate": "ప్లాన్ అప్‌డేట్",
+    "@planUpdate": {
+        "description": "Header for plan deprecation notice"
+    },
+    "planDeprecationMessage": "మీ Unlimited ప్లాన్ ఆపివేయబడుతోంది. Operator ప్లాన్‌కి మారండి — అదే అద్భుతమైన ఫీచర్లు $49/నెలకు. మీ ప్రస్తుత ప్లాన్ ఈలోగా పని చేస్తూనే ఉంటుంది.",
+    "@planDeprecationMessage": {
+        "description": "Deprecation notice for legacy Unlimited subscribers"
+    },
+    "upgradeYourPlan": "మీ ప్లాన్‌ను అప్‌గ్రేడ్ చేయండి",
+    "@upgradeYourPlan": {
+        "description": "Header for plan upgrade screen for non-paid users"
+    },
+    "youAreOnAPaidPlan": "మీరు చెల్లింపు ప్లాన్‌లో ఉన్నారు.",
+    "@youAreOnAPaidPlan": {
+        "description": "Subtitle for paid plan users on plans sheet"
+    },
+    "chatTitle": "చాట్",
+    "chatMessages": "సందేశాలు",
+    "unlimitedChatThisMonth": "ఈ నెల అపరిమిత చాట్ సందేశాలు",
+    "chatUsedOfLimitCompute": "{used} / {limit} కంప్యూట్ బడ్జెట్ వాడారు",
+    "chatUsedOfLimitMessages": "ఈ నెల {used} / {limit} సందేశాలు వాడారు",
+    "chatUsageProgress": "{used} / {limit} వాడారు",
+    "chatLimitReachedUpgrade": "చాట్ పరిమితి చేరుకుంది. మరిన్ని సందేశాల కోసం అప్‌గ్రేడ్ చేయండి.",
+    "chatLimitReachedTitle": "చాట్ పరిమితి చేరుకుంది",
+    "chatUsageDescription": "{plan} ప్లాన్‌లో {limitDisplay} నుండి {used} వాడారు.",
+    "resetsInDays": "{count} రోజుల్లో రీసెట్ అవుతుంది",
+    "resetsInHours": "{count} గంటల్లో రీసెట్ అవుతుంది",
+    "resetsSoon": "త్వరలో రీసెట్ అవుతుంది",
+    "upgradePlan": "ప్లాన్ అప్‌గ్రేడ్",
+    "billingMonthly": "నెలవారీ",
+    "billingYearly": "సంవత్సరానికి",
+    "savePercent": "~17% ఆదా చేయండి",
+    "popular": "ప్రజాదరణ",
+    "currentPlan": "ప్రస్తుత",
+    "neoSubtitle": "నెలకు {count} ప్రశ్నలు",
+    "operatorSubtitle": "నెలకు {count} ప్రశ్నలు",
+    "architectSubtitle": "పవర్-యూజర్ AI — వేల చాట్‌లు + ఏజెంటిక్ ఆటోమేషన్",
+    "chatUsageCost": "చాట్: ${used} / ${limit} ఈ నెల ఉపయోగించబడింది",
+    "chatUsageCostNoLimit": "చాట్: ${used} ఈ నెల ఉపయోగించబడింది",
+    "chatUsageMessages": "చాట్: {used} / {limit} సందేశాలు ఈ నెల",
+    "chatUsageMessagesNoLimit": "చాట్: {used} సందేశాలు ఈ నెల",
+    "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
+    "chatQuotaExceededReply": "మీరు మీ నెలవారీ పరిమితిని చేరుకున్నారు. పరిమితులు లేకుండా Omi తో చాట్ కొనసాగించడానికి అప్‌గ్రేడ్ చేయండి.",
+    "batteryHistory": "బ్యాటరీ",
+    "day": "రోజు",
+    "noBatteryDataYet": "ఇంకా బ్యాటరీ డేటా లేదు",
+    "week": "వారం"
 }

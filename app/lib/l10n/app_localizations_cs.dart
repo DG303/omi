@@ -2499,12 +2499,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get trackPersonalGoalsOnHomepage => 'Sledujte své osobní cíle na domovské stránce';
 
   @override
-  String get dailyReflection => 'Denní reflexe';
-
-  @override
-  String get get9PmReminderToReflect => 'Získejte připomínku v 21:00 k zamyšlení nad svým dnem';
-
-  @override
   String get actionItemDescriptionCannotBeEmpty => 'Popis úkolu nesmí být prázdný';
 
   @override
@@ -3916,10 +3910,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get trackPersonalGoals => 'Sledovat osobní cíle na domovské stránce';
 
   @override
-  String get dailyReflectionDescription =>
-      'Získejte připomínku ve 21:00, abyste se zamysleli nad svým dnem a zachytili své myšlenky.';
-
-  @override
   String get endpointURL => 'URL koncového bodu';
 
   @override
@@ -4556,7 +4546,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get alreadyBestValuePlan => 'Již máte plán s nejlepší hodnotou. Nejsou potřeba žádné změny.';
 
   @override
-  String get unableToLoadPlans => 'Nelze načíst plány';
+  String get unableToLoadPlans => 'Nepodařilo se načíst plány';
 
   @override
   String get checkConnectionTryAgain => 'Zkontrolujte připojení a zkuste to znovu';
@@ -5092,7 +5082,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Pokračováním budou všechna data, která s touto aplikací sdílíte (včetně vašich konverzací, nahrávek a osobních informací), bezpečně uložena na našich serverech, abychom vám mohli poskytovat poznatky založené na AI a umožnit všechny funkce aplikace.';
+      'Pokračováním budou vaše konverzace, nahrávky a osobní údaje bezpečně uloženy na našich serverech. Vaše audio nahrávky a přepisy jsou zpracovávány AI službami třetích stran (včetně Deepgram pro přepis a OpenAI pro analýzu), aby vám poskytly poznatky založené na AI a umožnily všechny funkce aplikace.';
 
   @override
   String get tasksEmptyStateMessage => 'Úkoly z vašich konverzací se zobrazí zde.\nKlepněte na + pro ruční vytvoření.';
@@ -7174,12 +7164,6 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Čas na denní reflexi';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Pověz mi o svém dni';
-
-  @override
   String get actionItemReminderTitle => 'Připomínka Omi';
 
   @override
@@ -8826,6 +8810,18 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Baterie';
+
+  @override
+  String get noBatteryDataYet => 'Zatím žádná data o baterii';
+
+  @override
+  String get day => 'Den';
+
+  @override
+  String get week => 'Týden';
+
+  @override
   String get rollbackToStableFirmware => 'Vrátit se na stabilní firmware';
 
   @override
@@ -8941,4 +8937,186 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get appleHealthDeniedBody =>
       'Omi nemá oprávnění číst vaše data z Apple Health. Povolte ho v Nastavení iOS → Soukromí a zabezpečení → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Proč odcházíte?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Vaše zpětná vazba nám pomáhá zlepšovat Omi pro všechny.';
+
+  @override
+  String get deleteReasonPrivacy => 'Obavy o soukromí';
+
+  @override
+  String get deleteReasonNotUsing => 'Nepoužívám to dost často';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Chybí funkce, které potřebuji';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Příliš mnoho technických problémů';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Používám něco jiného';
+
+  @override
+  String get deleteReasonTakingBreak => 'Jen si dávám pauzu';
+
+  @override
+  String get deleteReasonOther => 'Jiné';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Řekněte nám více';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Co by udělalo Omi pro vás použitelným?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Nepovinné — vaše myšlenky nám pomáhají vytvořit lepší produkt.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Toto je trvalé';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Po smazání účtu jej nelze obnovit.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Jakékoli aktivní předplatné bude zrušeno.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Váš účet nelze obnovit — ani podporou.';
+
+  @override
+  String get deleteTypeToConfirm => 'Pro potvrzení napište DELETE';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Trvale smazat účet';
+
+  @override
+  String get keepMyAccount => 'Ponechat můj účet';
+
+  @override
+  String get deleteAccountFailed => 'Váš účet se nepodařilo smazat. Zkuste to znovu.';
+
+  @override
+  String get planUpdate => 'Aktualizace plánu';
+
+  @override
+  String get planDeprecationMessage =>
+      'Váš plán Unlimited je rušen. Přejděte na plán Operator — stejné skvělé funkce za \$49/měs. Váš stávající plán bude zatím nadále fungovat.';
+
+  @override
+  String get upgradeYourPlan => 'Upgradujte svůj plán';
+
+  @override
+  String get youAreOnAPaidPlan => 'Máte placený plán.';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get chatMessages => 'zpráv';
+
+  @override
+  String get unlimitedChatThisMonth => 'Neomezené chatové zprávy tento měsíc';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used z $limit výpočetního rozpočtu využito';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used z $limit zpráv využito tento měsíc';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit využito';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Dosažen limit chatu. Upgradujte pro více zpráv.';
+
+  @override
+  String get chatLimitReachedTitle => 'Dosažen limit chatu';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Využili jste $used z $limitDisplay na plánu $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Obnoví se za $count dní';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Obnoví se za $count hodin';
+  }
+
+  @override
+  String get resetsSoon => 'Brzy se obnoví';
+
+  @override
+  String get upgradePlan => 'Upgradovat plán';
+
+  @override
+  String get billingMonthly => 'Měsíční';
+
+  @override
+  String get billingYearly => 'Roční';
+
+  @override
+  String get savePercent => 'Ušetřete ~17%';
+
+  @override
+  String get popular => 'Oblíbené';
+
+  @override
+  String get currentPlan => 'Aktuální';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count dotazů měsíčně';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count dotazů měsíčně';
+  }
+
+  @override
+  String get architectSubtitle => 'AI pro pokročilé — tisíce chatů + agentní automatizace';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Chat: \$$used / \$$limit využito tento měsíc';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Chat: \$$used využito tento měsíc';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Chat: $used / $limit zpráv tento měsíc';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Chat: $used zpráv tento měsíc';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Dosáhli jste svého měsíčního limitu. Upgradujte, abyste mohli pokračovat v chatu s Omi bez omezení.';
 }

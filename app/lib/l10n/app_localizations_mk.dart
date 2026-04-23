@@ -2512,12 +2512,6 @@ class AppLocalizationsMk extends AppLocalizations {
   String get trackPersonalGoalsOnHomepage => 'Прати твои лични цели на почетната страница';
 
   @override
-  String get dailyReflection => 'Дневна рефлексија';
-
-  @override
-  String get get9PmReminderToReflect => 'Добивај потсетник во 21:00 да се размислиш за твојот ден';
-
-  @override
   String get actionItemDescriptionCannotBeEmpty => 'Описот на активниот предмет не може да буде празан';
 
   @override
@@ -3938,10 +3932,6 @@ class AppLocalizationsMk extends AppLocalizations {
   String get trackPersonalGoals => 'Праток лични цели на почетна страница';
 
   @override
-  String get dailyReflectionDescription =>
-      'Добиј потсетник во 21:00 за да размислиш на твоиот ден и да го напишеш твое размислување.';
-
-  @override
   String get endpointURL => 'URL на крајна точка';
 
   @override
@@ -4586,10 +4576,10 @@ class AppLocalizationsMk extends AppLocalizations {
   String get alreadyBestValuePlan => 'Веќе имате план со најдобра вредност. Не се потребни промени.';
 
   @override
-  String get unableToLoadPlans => 'Не може да се вчитаат планови';
+  String get unableToLoadPlans => 'Не можат да се вчитаат плановите';
 
   @override
-  String get checkConnectionTryAgain => 'Проверете ја вашата врска и обидете се повторно';
+  String get checkConnectionTryAgain => 'Проверете ја врската и обидете се повторно';
 
   @override
   String get useFreePlan => 'Користи бесплатен план';
@@ -5126,7 +5116,7 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Со продолжување, сите податоци што ги делите со оваа апликација (вклучувајќи ги вашите разговори, снимки и лични информации) ќе бидат безбедно складирани на нашите сервери за да вам обезбедиме AI-powered insights и да ги овозможиме сите функции на апликацијата.';
+      'Со продолжување, вашите разговори, снимки и лични информации ќе бидат безбедно зачувани на нашите сервери. Вашите аудио снимки и транскрипти се обработуваат од AI услуги на трети страни (вклучувајќи Deepgram за транскрипција и OpenAI за анализа) за да ви обезбедат увиди базирани на AI и да ги овозможат сите функции на апликацијата.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7223,12 +7213,6 @@ class AppLocalizationsMk extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Време за Дневно Размислување';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Кажи ми за твојот ден';
-
-  @override
   String get actionItemReminderTitle => 'Omi Потсетник';
 
   @override
@@ -8878,6 +8862,18 @@ class AppLocalizationsMk extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Батерија';
+
+  @override
+  String get noBatteryDataYet => 'Сè уште нема податоци за батеријата';
+
+  @override
+  String get day => 'Ден';
+
+  @override
+  String get week => 'Седмица';
+
+  @override
   String get rollbackToStableFirmware => 'Врати се на стабилен фирмвер';
 
   @override
@@ -8994,4 +8990,186 @@ class AppLocalizationsMk extends AppLocalizations {
   @override
   String get appleHealthDeniedBody =>
       'Omi нема дозвола да ги чита вашите Apple Health податоци. Овозможете го во iOS Поставки → Приватност и безбедност → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Зошто си одите?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Вашите повратни информации ни помагаат да го подобриме Omi за сите.';
+
+  @override
+  String get deleteReasonPrivacy => 'Грижи за приватноста';
+
+  @override
+  String get deleteReasonNotUsing => 'Не го користам доволно често';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Недостасуваат функции што ми се потребни';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Премногу технички проблеми';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Користам нешто друго';
+
+  @override
+  String get deleteReasonTakingBreak => 'Само правам пауза';
+
+  @override
+  String get deleteReasonOther => 'Друго';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Кажете ни повеќе';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Што би направило Omi да работи за вас?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Опционално — вашите мисли ни помагаат да изградиме подобар производ.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Ова е трајно';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Откако ќе ја избришете сметката, не може да се врати.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Секоја активна претплата ќе биде откажана.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Вашата сметка не може да се обнови — ниту од поддршката.';
+
+  @override
+  String get deleteTypeToConfirm => 'Внесете DELETE за потврда';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Трајно избриши ја сметката';
+
+  @override
+  String get keepMyAccount => 'Задржи ја мојата сметка';
+
+  @override
+  String get deleteAccountFailed => 'Не успеавме да ја избришеме вашата сметка. Обидете се повторно.';
+
+  @override
+  String get planUpdate => 'Ажурирање на планот';
+
+  @override
+  String get planDeprecationMessage =>
+      'Вашиот Unlimited план се укинува. Преминете на Operator план — истите одлични функции за \$49/мес. Вашиот тековен план ќе продолжи да работи во меѓувреме.';
+
+  @override
+  String get upgradeYourPlan => 'Надградете го вашиот план';
+
+  @override
+  String get youAreOnAPaidPlan => 'Вие сте на платен план.';
+
+  @override
+  String get chatTitle => 'Чат';
+
+  @override
+  String get chatMessages => 'пораки';
+
+  @override
+  String get unlimitedChatThisMonth => 'Неограничени пораки овој месец';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used од $limit буџет за пресметка искористен';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used од $limit пораки искористени овој месец';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit искористено';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Лимитот за чат е достигнат. Надградете за повеќе пораки.';
+
+  @override
+  String get chatLimitReachedTitle => 'Лимитот за чат е достигнат';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Искористивте $used од $limitDisplay на планот $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Се ресетира за $count дена';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Се ресетира за $count часа';
+  }
+
+  @override
+  String get resetsSoon => 'Наскоро се ресетира';
+
+  @override
+  String get upgradePlan => 'Надгради план';
+
+  @override
+  String get billingMonthly => 'Месечно';
+
+  @override
+  String get billingYearly => 'Годишно';
+
+  @override
+  String get savePercent => 'Заштедете ~17%';
+
+  @override
+  String get popular => 'Популарно';
+
+  @override
+  String get currentPlan => 'Тековен';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count прашања месечно';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count прашања месечно';
+  }
+
+  @override
+  String get architectSubtitle => 'Напреден AI — илјадници разговори + агентна автоматизација';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Разговор: \$$used / \$$limit искористено овој месец';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Разговор: \$$used искористено овој месец';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Разговор: $used / $limit пораки овој месец';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Разговор: $used пораки овој месец';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Го достигнавте вашиот месечен лимит. Надградете за да продолжите да разговарате со Omi без ограничувања.';
 }
