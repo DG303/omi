@@ -124,13 +124,15 @@ function resolveBundledPi(): string {
   // this file compiles to agent/dist/adapters/pi-mono.js
   // Prefer the direct package path — .bin/pi is a symlink that ditto resolves
   // into a flat copy, breaking its relative import of ./main.js
-  const direct = new URL(
+  // Note: URL.pathname percent-encodes spaces (%20) which breaks existsSync
+  // for app bundles with spaces in their name (e.g. "Omi Beta.app").
+  const direct = decodeURIComponent(new URL(
     "../../node_modules/@mariozechner/pi-coding-agent/dist/cli.js",
     import.meta.url
-  ).pathname;
+  ).pathname);
   if (existsSync(direct)) return direct;
-  const binFallback = new URL("../../node_modules/.bin/pi", import.meta.url)
-    .pathname;
+  const binFallback = decodeURIComponent(new URL("../../node_modules/.bin/pi", import.meta.url)
+    .pathname);
   if (existsSync(binFallback)) return binFallback;
   return "pi";
 }
@@ -141,10 +143,10 @@ function resolveBundledPi(): string {
  *  Shipped: <App>.app/Contents/Resources/agent/dist/adapters/../../.. → <App>.app/Contents/Resources/pi-mono-extension/index.ts
  */
 function resolveBundledExtension(): string {
-  return new URL(
+  return decodeURIComponent(new URL(
     "../../../pi-mono-extension/index.ts",
     import.meta.url
-  ).pathname;
+  ).pathname);
 }
 
 export class PiMonoAdapter implements HarnessAdapter {
