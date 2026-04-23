@@ -8310,6 +8310,12 @@ class AppLocalizationsSl extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Nastavitve telefonskih klicev';
 
   @override
+  String get showPhoneCallButtonTitle => 'Pokaži gumb za klic';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Prikaži gumb za telefonski klic na domačem zaslonu';
+
+  @override
   String get yourVerifiedNumbers => 'Tvoje preverjene številke';
 
   @override

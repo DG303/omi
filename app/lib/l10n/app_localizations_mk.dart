@@ -8333,6 +8333,12 @@ class AppLocalizationsMk extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Поставки за телефонски разговор';
 
   @override
+  String get showPhoneCallButtonTitle => 'Прикажи копче за повик';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Прикажи копче за телефонски повик на почетниот екран';
+
+  @override
   String get yourVerifiedNumbers => 'Твоите потврдени броеви';
 
   @override

@@ -8347,6 +8347,12 @@ class AppLocalizationsTa extends AppLocalizations {
   String get phoneCallSettingsTitle => 'தொலைபேசி அழைப்பு அமைப்பாடுகள்';
 
   @override
+  String get showPhoneCallButtonTitle => 'ஃபோன் அழைப்பு பொத்தானை காட்டு';
+
+  @override
+  String get showPhoneCallButtonDesc => 'முகப்பு திரையில் ஃபோன் அழைப்பு பொத்தானை காட்டு';
+
+  @override
   String get yourVerifiedNumbers => 'உங்கள் சரிபார்க்கப்பட்ட எண்கள்';
 
   @override

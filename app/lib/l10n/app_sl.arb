@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "Zvočnik",
     "phoneEndCall": "Konec",
     "phoneCallSettingsTitle": "Nastavitve telefonskih klicev",
+    "showPhoneCallButtonTitle": "Pokaži gumb za klic",
+    "showPhoneCallButtonDesc": "Prikaži gumb za telefonski klic na domačem zaslonu",
     "yourVerifiedNumbers": "Tvoje preverjene številke",
     "verifiedNumbersDescription": "Ko nekoga pokličeš, bo videl to številko na svojem telefonu",
     "noVerifiedNumbers": "Nima preverjenih številk",

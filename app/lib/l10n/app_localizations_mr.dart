@@ -8298,6 +8298,12 @@ class AppLocalizationsMr extends AppLocalizations {
   String get phoneCallSettingsTitle => 'फोन कॉल सेटिंग्ज';
 
   @override
+  String get showPhoneCallButtonTitle => 'फोन कॉल बटण दाखवा';
+
+  @override
+  String get showPhoneCallButtonDesc => 'मुख्य स्क्रीनवर फोन कॉल बटण प्रदर्शित करा';
+
+  @override
   String get yourVerifiedNumbers => 'तुमचे सत्यापित नंबर';
 
   @override

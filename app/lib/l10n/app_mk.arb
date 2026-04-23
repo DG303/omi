@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "Глас",
     "phoneEndCall": "Завршена",
     "phoneCallSettingsTitle": "Поставки за телефонски разговор",
+    "showPhoneCallButtonTitle": "Прикажи копче за повик",
+    "showPhoneCallButtonDesc": "Прикажи копче за телефонски повик на почетниот екран",
     "yourVerifiedNumbers": "Твоите потврдени броеви",
     "verifiedNumbersDescription": "Кога ќе повикаш некој, тие ќе видат овој број на нивниот телефон",
     "noVerifiedNumbers": "Нема потврдени броеви",

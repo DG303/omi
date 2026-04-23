@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "Speaker",
     "phoneEndCall": "Tapos",
     "phoneCallSettingsTitle": "Phone Call Settings",
+    "showPhoneCallButtonTitle": "Ipakita ang button ng tawag",
+    "showPhoneCallButtonDesc": "Ipakita ang button ng tawag sa home screen",
     "yourVerifiedNumbers": "Ang Iyong Na-verify na Mga Numero",
     "verifiedNumbersDescription": "Kapag tumatawag ka sa isang tao, makikita nila ang numerong ito sa kanilang phone",
     "noVerifiedNumbers": "Walang na-verify na mga numero",

@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "స్పీకర్",
     "phoneEndCall": "ముగించు",
     "phoneCallSettingsTitle": "ఫోన్ కాల్ సెట్టింగ్‌లు",
+    "showPhoneCallButtonTitle": "ఫోన్ కాల్ బటన్ చూపించు",
+    "showPhoneCallButtonDesc": "హోమ్ స్క్రీన్‌లో ఫోన్ కాల్ బటన్ చూపించు",
     "yourVerifiedNumbers": "మీ ధృవీకరించిన సంఖ్యలు",
     "verifiedNumbersDescription": "మీరు ఎవరికైనా కాల్ చేసినప్పుడు, వారు తమ ఫోన్‌లో ఈ నంబర్‌ను చూస్తారు",
     "noVerifiedNumbers": "ధృవీకరించిన సంఖ్యలు లేవు",

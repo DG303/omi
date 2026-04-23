@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "स्पीकर",
     "phoneEndCall": "संपला",
     "phoneCallSettingsTitle": "फोन कॉल सेटिंग्ज",
+    "showPhoneCallButtonTitle": "फोन कॉल बटण दाखवा",
+    "showPhoneCallButtonDesc": "मुख्य स्क्रीनवर फोन कॉल बटण प्रदर्शित करा",
     "yourVerifiedNumbers": "तुमचे सत्यापित नंबर",
     "verifiedNumbersDescription": "तू कोणाला कॉल करतोस तेव्हा त्यांना त्यांच्या फोनवर हा नंबर दिसेल",
     "noVerifiedNumbers": "कोणतेही सत्यापित नंबर नाही",

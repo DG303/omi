@@ -8316,6 +8316,12 @@ class AppLocalizationsHr extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Postavke telefonskih poziva';
 
   @override
+  String get showPhoneCallButtonTitle => 'Prikaži gumb za poziv';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Prikaži gumb za telefonski poziv na početnom zaslonu';
+
+  @override
   String get yourVerifiedNumbers => 'Vaši potvrđeni brojevi';
 
   @override

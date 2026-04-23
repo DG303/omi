@@ -8318,6 +8318,12 @@ class AppLocalizationsKn extends AppLocalizations {
   String get phoneCallSettingsTitle => 'ಫೋನ್ ಕರೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು';
 
   @override
+  String get showPhoneCallButtonTitle => 'ಫೋನ್ ಕಾಲ್ ಬಟನ್ ತೋರಿಸಿ';
+
+  @override
+  String get showPhoneCallButtonDesc => 'ಮುಖ್ಯ ಪರದೆಯಲ್ಲಿ ಫೋನ್ ಕಾಲ್ ಬಟನ್ ಪ್ರದರ್ಶಿಸಿ';
+
+  @override
   String get yourVerifiedNumbers => 'ನಿಮ್ಮ ಪರಿಶೀಲಿತ ಸಂಖ್ಯೆಗಳು';
 
   @override

@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "Zvučnik",
     "phoneEndCall": "Završi",
     "phoneCallSettingsTitle": "Podešavanja telefonskih poziva",
+    "showPhoneCallButtonTitle": "Prikaži dugme za pozive",
+    "showPhoneCallButtonDesc": "Prikaži dugme za pozive na početnom ekranu",
     "yourVerifiedNumbers": "Tvoji verifikovani brojevi",
     "verifiedNumbersDescription": "Kada pozoveš nekoga, oni će videti ovaj broj na svom telefonu",
     "noVerifiedNumbers": "Nema verifikovanih brojeva",

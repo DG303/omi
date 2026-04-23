@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "بلندگو",
     "phoneEndCall": "پایان",
     "phoneCallSettingsTitle": "تنظیمات تماس تلفنی",
+    "showPhoneCallButtonTitle": "نمایش دکمه تماس",
+    "showPhoneCallButtonDesc": "نمایش دکمه تماس تلفنی در صفحه اصلی",
     "yourVerifiedNumbers": "شماره‌های تأیید شده شما",
     "verifiedNumbersDescription": "هنگامی که شما تماس می‌گیرید، طرف مقابل این شماره را روی تلفن خود خواهد دید",
     "noVerifiedNumbers": "بدون شماره تأیید شده",

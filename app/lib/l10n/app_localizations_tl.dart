@@ -8363,6 +8363,12 @@ class AppLocalizationsTl extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Phone Call Settings';
 
   @override
+  String get showPhoneCallButtonTitle => 'Ipakita ang button ng tawag';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Ipakita ang button ng tawag sa home screen';
+
+  @override
   String get yourVerifiedNumbers => 'Ang Iyong Na-verify na Mga Numero';
 
   @override

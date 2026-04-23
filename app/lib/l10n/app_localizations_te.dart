@@ -8337,6 +8337,12 @@ class AppLocalizationsTe extends AppLocalizations {
   String get phoneCallSettingsTitle => 'ఫోన్ కాల్ సెట్టింగ్‌లు';
 
   @override
+  String get showPhoneCallButtonTitle => 'ఫోన్ కాల్ బటన్ చూపించు';
+
+  @override
+  String get showPhoneCallButtonDesc => 'హోమ్ స్క్రీన్‌లో ఫోన్ కాల్ బటన్ చూపించు';
+
+  @override
   String get yourVerifiedNumbers => 'మీ ధృవీకరించిన సంఖ్యలు';
 
   @override

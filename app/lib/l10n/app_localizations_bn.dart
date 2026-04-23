@@ -8295,6 +8295,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phoneCallSettingsTitle => 'ফোন কল সেটিংস';
 
   @override
+  String get showPhoneCallButtonTitle => 'ফোন কল বাটন দেখান';
+
+  @override
+  String get showPhoneCallButtonDesc => 'হোম স্ক্রিনে ফোন কল বাটন প্রদর্শন করুন';
+
+  @override
   String get yourVerifiedNumbers => 'আপনার যাচাইকৃত নম্বর';
 
   @override

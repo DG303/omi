@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "רמקול",
     "phoneEndCall": "סיים",
     "phoneCallSettingsTitle": "הגדרות שיחות טלפון",
+    "showPhoneCallButtonTitle": "הצג כפתור שיחת טלפון",
+    "showPhoneCallButtonDesc": "הצג כפתור שיחת טלפון במסך הבית",
     "yourVerifiedNumbers": "המספרים המאומתים שלך",
     "verifiedNumbersDescription": "כאשר אתה מתקשר למישהו, הם יראו את המספר הזה בטלפון שלהם",
     "noVerifiedNumbers": "אין מספרים מאומתים",

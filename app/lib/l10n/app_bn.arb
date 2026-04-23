@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "স্পিকার",
     "phoneEndCall": "শেষ করুন",
     "phoneCallSettingsTitle": "ফোন কল সেটিংস",
+    "showPhoneCallButtonTitle": "ফোন কল বাটন দেখান",
+    "showPhoneCallButtonDesc": "হোম স্ক্রিনে ফোন কল বাটন প্রদর্শন করুন",
     "yourVerifiedNumbers": "আপনার যাচাইকৃত নম্বর",
     "verifiedNumbersDescription": "যখন আপনি কাউকে কল করেন, তারা তাদের ফোনে এই নম্বর দেখবেন",
     "noVerifiedNumbers": "কোনো যাচাইকৃত নম্বর নেই",

@@ -8313,6 +8313,12 @@ class AppLocalizationsBe extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Параметры тэлефонных вызваў';
 
   @override
+  String get showPhoneCallButtonTitle => 'Паказаць кнопку тэлефоннага выкліку';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Адлюстраваць кнопку тэлефоннага выкліку на галоўным экране';
+
+  @override
   String get yourVerifiedNumbers => 'Ваш параўныя нумары';
 
   @override

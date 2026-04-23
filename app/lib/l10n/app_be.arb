@@ -9995,6 +9995,8 @@
     "phoneSpeaker": "Спікер",
     "phoneEndCall": "Завершыць",
     "phoneCallSettingsTitle": "Параметры тэлефонных вызваў",
+    "showPhoneCallButtonTitle": "Паказаць кнопку тэлефоннага выкліку",
+    "showPhoneCallButtonDesc": "Адлюстраваць кнопку тэлефоннага выкліку на галоўным экране",
     "yourVerifiedNumbers": "Ваш параўныя нумары",
     "verifiedNumbersDescription": "Калі вы звяжэцца з кім-небудзь, яны паўідяць гэты нумар на сваім тэлефоне",
     "noVerifiedNumbers": "Няма параўныш нумараў",

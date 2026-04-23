@@ -8300,6 +8300,12 @@ class AppLocalizationsSr extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Подешавања телефонског позива';
 
   @override
+  String get showPhoneCallButtonTitle => 'Прикажи дугме за позив';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Прикажи дугме за телефонски позив на почетном екрану';
+
+  @override
   String get yourVerifiedNumbers => 'Твоји потврђени бројеви';
 
   @override
