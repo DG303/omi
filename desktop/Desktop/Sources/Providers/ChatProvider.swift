@@ -694,6 +694,10 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                         log("ChatProvider: system woke but query in progress — skipping bridge restart")
                         return
                     }
+                    guard !self.modeSwitchInProgress else {
+                        log("ChatProvider: system woke but mode switch in progress — skipping bridge restart")
+                        return
+                    }
                     log("ChatProvider: system woke — restarting agent bridge to clear stale session")
                     self.agentBridgeStarted = false
                     do {
@@ -722,6 +726,10 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                     guard let self = self else { return }
                     guard !self.isSending else {
                         log("ChatProvider: Skipping bridge restart — query in progress")
+                        return
+                    }
+                    guard !self.modeSwitchInProgress else {
+                        log("ChatProvider: Playwright setting changed but mode switch in progress — skipping bridge restart")
                         return
                     }
                     guard self.agentBridgeStarted else { return }
@@ -775,6 +783,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// Ensures the bridge is started (restarting if needed to pick up new token),
     /// then sends a lightweight test query that triggers a browser_snapshot tool call.
     func testPlaywrightConnection() async throws -> Bool {
+        // Don't restart bridge during a mode switch — caller should retry after switch completes
+        guard !modeSwitchInProgress else {
+            log("ChatProvider: testPlaywrightConnection skipped — mode switch in progress")
+            return false
+        }
         // Restart bridge to pick up new extension token
         agentBridgeStarted = false
         do {
