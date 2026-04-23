@@ -528,9 +528,9 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// True while switchBridgeMode is in the critical section between stopping the old
     /// bridge and starting the new one.  sendMessage checks this to avoid racing.
     private var modeSwitchInProgress = false
-    /// Continuation used to serialize overlapping switchBridgeMode calls. Only one
-    /// switch runs at a time; a new call waits for the in-flight switch to finish.
-    private var modeSwitchContinuation: CheckedContinuation<Void, Never>?
+    /// Continuations for callers waiting on an in-flight mode switch. Supports
+    /// arbitrary overlap (A→B→A→B) without losing waiters.
+    private var modeSwitchWaiters: [CheckedContinuation<Void, Never>] = []
 
     enum BridgeMode: String {
         case omiAI = "agentSDK"     // Legacy, auto-migrated to piMono
@@ -880,13 +880,13 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         guard newHarness != previousHarness else { return }
 
         // Serialize overlapping switches. The SettingsPage picker fires onChange
-        // in a new Task on each toggle, so rapid A→B→A can overlap two calls.
-        // Without serialization, the second call could overwrite agentBridge and
-        // leak the intermediate process that the first call created.
+        // in a new Task on each toggle, so rapid A→B→A→B can overlap multiple calls.
+        // Without serialization, overlapping calls could overwrite agentBridge and
+        // leak intermediate bridge processes.
         if modeSwitchInProgress {
             log("ChatProvider: switchBridgeMode waiting for in-flight switch to finish")
             await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
-                modeSwitchContinuation = c
+                modeSwitchWaiters.append(c)
             }
         }
 
@@ -921,10 +921,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             checkClaudeConnectionStatus()
         }
 
-        // Unblock queries and wake any waiting switch.
+        // Unblock queries and wake all waiting switches.
         modeSwitchInProgress = false
-        modeSwitchContinuation?.resume()
-        modeSwitchContinuation = nil
+        let waiters = modeSwitchWaiters
+        modeSwitchWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
 
         // Warm up the new bridge
         let started = await ensureBridgeStarted()
