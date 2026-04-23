@@ -22,8 +22,13 @@ import os
 import argparse
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dotenv import load_dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Load backend/.env before importing modules that read env at import time
+# (vector_db.py and utils.llm.clients build Pinecone/OpenAI clients eagerly)
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 from database.vector_db import upsert_action_item_vectors_batch
 import logging
