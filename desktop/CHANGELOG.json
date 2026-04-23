@@ -1,8 +1,13 @@
 {
-  "unreleased": [
-    "Fixed AI provider switch not restarting the agent bridge session"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.358",
+      "date": "2026-04-23",
+      "changes": [
+        "Fixed AI provider switch not restarting the agent bridge session"
+      ]
+    },
     {
       "version": "0.11.357",
       "date": "2026-04-23",
