@@ -597,6 +597,9 @@ fi
 auth_debug "BEFORE signing: $(defaults read "$BUNDLE_ID" auth_isSignedIn 2>&1 || true)"
 
 step "Removing extended attributes (xattr -cr)..."
+# SwiftPM copies some dylibs (libsharpyuv, libwebp) with read-only perms,
+# which makes `xattr -cr` fail with EACCES. Make the bundle writable first.
+chmod -R u+w "$APP_BUNDLE"
 xattr -cr "$APP_BUNDLE"
 
 step "Signing app with hardened runtime..."
@@ -690,6 +693,7 @@ else
 fi
 
 step "Removing quarantine attributes..."
+chmod -R u+w "$APP_BUNDLE"
 xattr -cr "$APP_BUNDLE"
 
 step "Installing to /Applications/..."
