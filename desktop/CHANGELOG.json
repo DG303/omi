@@ -1,5 +1,7 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Fixed AI provider switch not restarting the agent bridge session"
+  ],
   "releases": [
     {
       "version": "0.11.357",

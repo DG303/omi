@@ -525,6 +525,12 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// @AppStorage("chatBridgeMode") can be updated by other views sharing the same key,
     /// so comparing against it in switchBridgeMode() would always match → no-op.
     private var activeBridgeHarness: String = "piMono"
+    /// True while switchBridgeMode is in the critical section between stopping the old
+    /// bridge and starting the new one.  sendMessage checks this to avoid racing.
+    private var modeSwitchInProgress = false
+    /// Continuations for callers waiting on an in-flight mode switch. Supports
+    /// arbitrary overlap (A→B→A→B) without losing waiters.
+    private var modeSwitchWaiters: [CheckedContinuation<Void, Never>] = []
 
     enum BridgeMode: String {
         case omiAI = "agentSDK"     // Legacy, auto-migrated to piMono
@@ -688,6 +694,10 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                         log("ChatProvider: system woke but query in progress — skipping bridge restart")
                         return
                     }
+                    guard !self.modeSwitchInProgress else {
+                        log("ChatProvider: system woke but mode switch in progress — skipping bridge restart")
+                        return
+                    }
                     log("ChatProvider: system woke — restarting agent bridge to clear stale session")
                     self.agentBridgeStarted = false
                     do {
@@ -716,6 +726,10 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                     guard let self = self else { return }
                     guard !self.isSending else {
                         log("ChatProvider: Skipping bridge restart — query in progress")
+                        return
+                    }
+                    guard !self.modeSwitchInProgress else {
+                        log("ChatProvider: Playwright setting changed but mode switch in progress — skipping bridge restart")
                         return
                     }
                     guard self.agentBridgeStarted else { return }
@@ -769,6 +783,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// Ensures the bridge is started (restarting if needed to pick up new token),
     /// then sends a lightweight test query that triggers a browser_snapshot tool call.
     func testPlaywrightConnection() async throws -> Bool {
+        // Don't restart bridge during a mode switch — caller should retry after switch completes
+        guard !modeSwitchInProgress else {
+            log("ChatProvider: testPlaywrightConnection skipped — mode switch in progress")
+            return false
+        }
         // Restart bridge to pick up new extension token
         agentBridgeStarted = false
         do {
@@ -786,8 +805,22 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         bridgeMode == BridgeMode.userClaude.rawValue
     }
 
-    /// Ensure the agent bridge is started (restarts if the process died)
-    private func ensureBridgeStarted() async -> Bool {
+    /// Ensure the agent bridge is started (restarts if the process died).
+    /// - Parameter fromModeSwitch: true when called from within switchBridgeMode,
+    ///   which already holds modeSwitchInProgress. External callers (sendMessage)
+    ///   pass false (the default) and will wait for any in-flight switch.
+    private func ensureBridgeStarted(fromModeSwitch: Bool = false) async -> Bool {
+        // Wait for any in-flight mode switch to finish before touching the bridge.
+        // Without this, a query arriving mid-switch could restart the OLD bridge
+        // with the wrong harness mode. Skipped when called from switchBridgeMode
+        // itself (which holds the flag). External callers join the waiters array
+        // and are woken when the switch (including warmup) completes — no timeout.
+        while !fromModeSwitch && modeSwitchInProgress {
+            log("ChatProvider: ensureBridgeStarted waiting for mode switch to complete")
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                modeSwitchWaiters.append(c)
+            }
+        }
         if agentBridgeStarted {
             let alive = await agentBridge.isAlive
             if !alive {
@@ -859,15 +892,42 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         // Compare against the actual running harness, NOT @AppStorage (which may
         // already reflect the new value because another view wrote the same key).
         guard newHarness != previousHarness else { return }
-        log("ChatProvider: Switching bridge mode from \(previousHarness) to \(resolvedMode.rawValue)")
 
-        // Stop the current bridge
-        await agentBridge.stop()
+        // Serialize overlapping switches. The SettingsPage picker fires onChange
+        // in a new Task on each toggle, so rapid A→B→A→B can overlap multiple calls.
+        // Without serialization, overlapping calls could overwrite agentBridge and
+        // leak intermediate bridge processes. Loop re-checks after waking because
+        // another waiter may have started a new switch before this one resumes.
+        while modeSwitchInProgress {
+            log("ChatProvider: switchBridgeMode waiting for in-flight switch to finish")
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                modeSwitchWaiters.append(c)
+            }
+        }
+
+        // Re-check after waiting — the in-flight switch may have already reached
+        // the same target mode we wanted.
+        guard newHarness != activeBridgeHarness else { return }
+
+        log("ChatProvider: Switching bridge mode from \(activeBridgeHarness) to \(resolvedMode.rawValue)")
+
+        // Update activeBridgeHarness immediately so a rapid second flip (e.g. user
+        // toggles back before the first switch finishes) sees the correct target
+        // mode in the guard above and doesn't no-op incorrectly.
+        activeBridgeHarness = newHarness
+
+        // Block queries during the transition so sendMessage doesn't race and
+        // restart the OLD bridge while we're replacing it.
+        modeSwitchInProgress = true
+
+        // Stop the current bridge and wait for the subprocess to fully terminate.
+        // This is critical: without the wait, the old Node.js process can still be
+        // alive when the new one starts, causing log confusion and session reuse.
+        await agentBridge.stopAndWaitForExit()
         agentBridgeStarted = false
 
         // Switch mode and recreate bridge
         bridgeMode = resolvedMode.rawValue
-        activeBridgeHarness = newHarness
         agentBridge = AgentBridge(harnessMode: newHarness)
         AnalyticsManager.shared.chatBridgeModeChanged(from: previousHarness, to: resolvedMode.rawValue)
 
@@ -876,8 +936,18 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             checkClaudeConnectionStatus()
         }
 
-        // Warm up the new bridge
-        _ = await ensureBridgeStarted()
+        // Warm up the new bridge. Keep modeSwitchInProgress = true so external
+        // callers (sendMessage) block until warmup completes. Pass fromModeSwitch
+        // so ensureBridgeStarted skips its own mode-switch wait.
+        let started = await ensureBridgeStarted(fromModeSwitch: true)
+        log("ChatProvider: Bridge mode switch complete — \(resolvedMode.rawValue) started=\(started)")
+
+        // Unblock queries and wake all waiting switches now that the bridge
+        // is fully started and warmed.
+        modeSwitchInProgress = false
+        let waiters = modeSwitchWaiters
+        modeSwitchWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
     }
 
     /// Start Claude OAuth authentication (Mode B)
@@ -923,15 +993,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         }
     }
 
-    /// Disconnect from Claude: stop bridge, clear OAuth token, switch back to free mode
+    /// Disconnect from Claude: clear OAuth token, switch back to free mode via serialized path
     func disconnectClaude() async {
         log("ChatProvider: Disconnecting Claude account")
 
-        // 1. Stop the agent bridge
-        await agentBridge.stop()
-        agentBridgeStarted = false
-
-        // 2. Clear the OAuth token from config file
+        // 1. Clear the OAuth token from config file
         let configPath = NSString(string: "~/Library/Application Support/Claude/config.json").expandingTildeInPath
         if let data = FileManager.default.contents(atPath: configPath),
            var json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
@@ -941,7 +1007,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             }
         }
 
-        // 3. Clear OAuth credentials from macOS Keychain
+        // 2. Clear OAuth credentials from macOS Keychain
         //    The Keychain item is owned by Claude Desktop/CLI, so SecItemDelete fails
         //    with errSecInvalidOwnerEdit. Use the `security` CLI which runs as the user.
         let secProcess = Process()
@@ -961,12 +1027,13 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             log("ChatProvider: Failed to run security command: \(error.localizedDescription)")
         }
 
-        // 4. Update state
+        // 3. Update state
         isClaudeConnected = false
 
-        // 5. Switch back to the default Omi harness (pi-mono) and recreate the bridge.
-        bridgeMode = BridgeMode.piMono.rawValue
-        agentBridge = AgentBridge(harnessMode: "piMono")
+        // 4. Switch back to piMono through the serialized switchBridgeMode path
+        //    so all bridge lifecycle state (activeBridgeHarness, modeSwitchInProgress,
+        //    waiters) stays consistent.
+        await switchBridgeMode(to: .piMono)
     }
 
     // MARK: - Session Management
