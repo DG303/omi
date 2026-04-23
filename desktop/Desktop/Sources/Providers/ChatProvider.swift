@@ -802,7 +802,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         // with the wrong harness mode. Skipped when called from switchBridgeMode
         // itself (which holds the flag). External callers join the waiters array
         // and are woken when the switch (including warmup) completes — no timeout.
-        if !fromModeSwitch && modeSwitchInProgress {
+        while !fromModeSwitch && modeSwitchInProgress {
             log("ChatProvider: ensureBridgeStarted waiting for mode switch to complete")
             await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
                 modeSwitchWaiters.append(c)
@@ -883,8 +883,9 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         // Serialize overlapping switches. The SettingsPage picker fires onChange
         // in a new Task on each toggle, so rapid A→B→A→B can overlap multiple calls.
         // Without serialization, overlapping calls could overwrite agentBridge and
-        // leak intermediate bridge processes.
-        if modeSwitchInProgress {
+        // leak intermediate bridge processes. Loop re-checks after waking because
+        // another waiter may have started a new switch before this one resumes.
+        while modeSwitchInProgress {
             log("ChatProvider: switchBridgeMode waiting for in-flight switch to finish")
             await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
                 modeSwitchWaiters.append(c)
