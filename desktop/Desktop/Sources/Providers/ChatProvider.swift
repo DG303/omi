@@ -800,15 +800,12 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         // Wait for any in-flight mode switch to finish before touching the bridge.
         // Without this, a query arriving mid-switch could restart the OLD bridge
         // with the wrong harness mode. Skipped when called from switchBridgeMode
-        // itself (which holds the flag).
+        // itself (which holds the flag). External callers join the waiters array
+        // and are woken when the switch (including warmup) completes — no timeout.
         if !fromModeSwitch && modeSwitchInProgress {
             log("ChatProvider: ensureBridgeStarted waiting for mode switch to complete")
-            let waitStart = Date()
-            while modeSwitchInProgress && Date().timeIntervalSince(waitStart) < 10.0 {
-                try? await Task.sleep(nanoseconds: 50_000_000)  // 50ms
-            }
-            if modeSwitchInProgress {
-                log("ChatProvider: mode switch still in progress after 10s, proceeding anyway")
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                modeSwitchWaiters.append(c)
             }
         }
         if agentBridgeStarted {
