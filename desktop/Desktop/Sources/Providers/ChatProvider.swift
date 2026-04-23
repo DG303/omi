@@ -993,15 +993,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         }
     }
 
-    /// Disconnect from Claude: stop bridge, clear OAuth token, switch back to free mode
+    /// Disconnect from Claude: clear OAuth token, switch back to free mode via serialized path
     func disconnectClaude() async {
         log("ChatProvider: Disconnecting Claude account")
 
-        // 1. Stop the agent bridge
-        await agentBridge.stop()
-        agentBridgeStarted = false
-
-        // 2. Clear the OAuth token from config file
+        // 1. Clear the OAuth token from config file
         let configPath = NSString(string: "~/Library/Application Support/Claude/config.json").expandingTildeInPath
         if let data = FileManager.default.contents(atPath: configPath),
            var json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
@@ -1011,7 +1007,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             }
         }
 
-        // 3. Clear OAuth credentials from macOS Keychain
+        // 2. Clear OAuth credentials from macOS Keychain
         //    The Keychain item is owned by Claude Desktop/CLI, so SecItemDelete fails
         //    with errSecInvalidOwnerEdit. Use the `security` CLI which runs as the user.
         let secProcess = Process()
@@ -1031,12 +1027,13 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             log("ChatProvider: Failed to run security command: \(error.localizedDescription)")
         }
 
-        // 4. Update state
+        // 3. Update state
         isClaudeConnected = false
 
-        // 5. Switch back to the default Omi harness (pi-mono) and recreate the bridge.
-        bridgeMode = BridgeMode.piMono.rawValue
-        agentBridge = AgentBridge(harnessMode: "piMono")
+        // 4. Switch back to piMono through the serialized switchBridgeMode path
+        //    so all bridge lifecycle state (activeBridgeHarness, modeSwitchInProgress,
+        //    waiters) stays consistent.
+        await switchBridgeMode(to: .piMono)
     }
 
     // MARK: - Session Management
