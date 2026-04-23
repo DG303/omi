@@ -445,7 +445,7 @@ def upsert_action_item_vectors_batch(uid: str, items: List[dict]) -> int:
     return len(payload)
 
 
-def search_action_items_by_vector(uid: str, query: str, limit: int = 10) -> List[str]:
+def search_action_items_by_vector(uid: str, query: str, limit: int = 10, min_score: float = 0.3) -> List[str]:
     if index is None:
         logger.warning('Pinecone index not initialized, skipping action item search')
         return []
@@ -457,7 +457,14 @@ def search_action_items_by_vector(uid: str, query: str, limit: int = 10) -> List
         vector=vector, top_k=limit, include_metadata=True, filter=filter_data, namespace=ACTION_ITEMS_NAMESPACE
     )
 
-    return [match['metadata'].get('action_item_id') for match in xc.get('matches', [])]
+    matches = xc.get('matches', [])
+    top_score = matches[0]['score'] if matches else None
+    kept = [m for m in matches if m.get('score', 0.0) >= min_score]
+    logger.info(
+        f'search_action_items_by_vector uid={uid} matches={len(matches)} kept={len(kept)} '
+        f'top_score={top_score} min_score={min_score}'
+    )
+    return [m['metadata'].get('action_item_id') for m in kept]
 
 
 def delete_action_item_vector(uid: str, action_item_id: str):
