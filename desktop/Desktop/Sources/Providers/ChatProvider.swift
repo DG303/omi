@@ -525,6 +525,9 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// @AppStorage("chatBridgeMode") can be updated by other views sharing the same key,
     /// so comparing against it in switchBridgeMode() would always match → no-op.
     private var activeBridgeHarness: String = "piMono"
+    /// True while switchBridgeMode is in the critical section between stopping the old
+    /// bridge and starting the new one.  sendMessage checks this to avoid racing.
+    private var modeSwitchInProgress = false
 
     enum BridgeMode: String {
         case omiAI = "agentSDK"     // Legacy, auto-migrated to piMono
@@ -788,6 +791,19 @@ A screenshot may be attached — use it silently only if relevant. Never mention
 
     /// Ensure the agent bridge is started (restarts if the process died)
     private func ensureBridgeStarted() async -> Bool {
+        // Wait for any in-flight mode switch to finish before touching the bridge.
+        // Without this, a query arriving mid-switch could restart the OLD bridge
+        // with the wrong harness mode.
+        if modeSwitchInProgress {
+            log("ChatProvider: ensureBridgeStarted waiting for mode switch to complete")
+            let waitStart = Date()
+            while modeSwitchInProgress && Date().timeIntervalSince(waitStart) < 10.0 {
+                try? await Task.sleep(nanoseconds: 50_000_000)  // 50ms
+            }
+            if modeSwitchInProgress {
+                log("ChatProvider: mode switch still in progress after 10s, proceeding anyway")
+            }
+        }
         if agentBridgeStarted {
             let alive = await agentBridge.isAlive
             if !alive {
@@ -861,8 +877,14 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         guard newHarness != previousHarness else { return }
         log("ChatProvider: Switching bridge mode from \(previousHarness) to \(resolvedMode.rawValue)")
 
-        // Stop the current bridge
-        await agentBridge.stop()
+        // Block queries during the transition so sendMessage doesn't race and
+        // restart the OLD bridge while we're replacing it.
+        modeSwitchInProgress = true
+
+        // Stop the current bridge and wait for the subprocess to fully terminate.
+        // This is critical: without the wait, the old Node.js process can still be
+        // alive when the new one starts, causing log confusion and session reuse.
+        await agentBridge.stopAndWaitForExit()
         agentBridgeStarted = false
 
         // Switch mode and recreate bridge
@@ -876,8 +898,13 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             checkClaudeConnectionStatus()
         }
 
+        // Unblock queries before starting the new bridge (ensureBridgeStarted
+        // will set agentBridgeStarted = true on success).
+        modeSwitchInProgress = false
+
         // Warm up the new bridge
-        _ = await ensureBridgeStarted()
+        let started = await ensureBridgeStarted()
+        log("ChatProvider: Bridge mode switch complete — \(resolvedMode.rawValue) started=\(started)")
     }
 
     /// Start Claude OAuth authentication (Mode B)
