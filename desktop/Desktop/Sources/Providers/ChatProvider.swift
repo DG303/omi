@@ -792,12 +792,16 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         bridgeMode == BridgeMode.userClaude.rawValue
     }
 
-    /// Ensure the agent bridge is started (restarts if the process died)
-    private func ensureBridgeStarted() async -> Bool {
+    /// Ensure the agent bridge is started (restarts if the process died).
+    /// - Parameter fromModeSwitch: true when called from within switchBridgeMode,
+    ///   which already holds modeSwitchInProgress. External callers (sendMessage)
+    ///   pass false (the default) and will wait for any in-flight switch.
+    private func ensureBridgeStarted(fromModeSwitch: Bool = false) async -> Bool {
         // Wait for any in-flight mode switch to finish before touching the bridge.
         // Without this, a query arriving mid-switch could restart the OLD bridge
-        // with the wrong harness mode.
-        if modeSwitchInProgress {
+        // with the wrong harness mode. Skipped when called from switchBridgeMode
+        // itself (which holds the flag).
+        if !fromModeSwitch && modeSwitchInProgress {
             log("ChatProvider: ensureBridgeStarted waiting for mode switch to complete")
             let waitStart = Date()
             while modeSwitchInProgress && Date().timeIntervalSince(waitStart) < 10.0 {
@@ -921,16 +925,15 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             checkClaudeConnectionStatus()
         }
 
-        // Unblock queries (sendMessage's ensureBridgeStarted waits on this flag).
-        // Keep modeSwitchInProgress true through warmup so a resumed waiter can't
-        // race the ensureBridgeStarted below and replace agentBridge mid-start.
-        modeSwitchInProgress = false
-
-        // Warm up the new bridge
-        let started = await ensureBridgeStarted()
+        // Warm up the new bridge. Keep modeSwitchInProgress = true so external
+        // callers (sendMessage) block until warmup completes. Pass fromModeSwitch
+        // so ensureBridgeStarted skips its own mode-switch wait.
+        let started = await ensureBridgeStarted(fromModeSwitch: true)
         log("ChatProvider: Bridge mode switch complete — \(resolvedMode.rawValue) started=\(started)")
 
-        // Wake all waiting switches now that the bridge is fully started.
+        // Unblock queries and wake all waiting switches now that the bridge
+        // is fully started and warmed.
+        modeSwitchInProgress = false
         let waiters = modeSwitchWaiters
         modeSwitchWaiters.removeAll()
         for waiter in waiters { waiter.resume() }
