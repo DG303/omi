@@ -273,13 +273,34 @@ actor AgentBridge {
 
   /// Restart the bridge process (stop then start)
   func restart() async throws {
-    stop()
+    await stopAndWaitForExit()
     try await start()
+  }
+
+  /// Stop the bridge process and wait for the subprocess to fully terminate.
+  /// This prevents race conditions where the old process is still alive when
+  /// a new bridge is started (e.g. during provider switching).
+  func stopAndWaitForExit() async {
+    let proc = process
+    stop()
+    // Wait for the subprocess to fully exit (up to 3s).
+    // This is important during provider switches: the old Node.js process must
+    // be dead before the new one starts to avoid log confusion and resource overlap.
+    if let proc = proc {
+      let start = Date()
+      while proc.isRunning && Date().timeIntervalSince(start) < 3.0 {
+        try? await Task.sleep(nanoseconds: 50_000_000)  // 50ms
+      }
+      if proc.isRunning {
+        log("AgentBridge: process still alive after 3s, force-killing")
+        proc.terminate()
+      }
+    }
   }
 
   /// Stop the bridge process
   func stop() {
-    log("AgentBridge: stopping")
+    log("AgentBridge: stopping (harness=\(harnessMode))")
     tokenRefreshTask?.cancel()
     tokenRefreshTask = nil
     readTask?.cancel()
