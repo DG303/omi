@@ -877,6 +877,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         guard newHarness != previousHarness else { return }
         log("ChatProvider: Switching bridge mode from \(previousHarness) to \(resolvedMode.rawValue)")
 
+        // Update activeBridgeHarness immediately so a rapid second flip (e.g. user
+        // toggles back before the first switch finishes) sees the correct target
+        // mode in the guard above and doesn't no-op incorrectly.
+        activeBridgeHarness = newHarness
+
         // Block queries during the transition so sendMessage doesn't race and
         // restart the OLD bridge while we're replacing it.
         modeSwitchInProgress = true
@@ -889,7 +894,6 @@ A screenshot may be attached — use it silently only if relevant. Never mention
 
         // Switch mode and recreate bridge
         bridgeMode = resolvedMode.rawValue
-        activeBridgeHarness = newHarness
         agentBridge = AgentBridge(harnessMode: newHarness)
         AnalyticsManager.shared.chatBridgeModeChanged(from: previousHarness, to: resolvedMode.rawValue)
 
