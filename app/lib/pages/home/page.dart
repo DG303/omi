@@ -35,7 +35,6 @@ import 'package:omi/pages/memories/page.dart';
 import 'package:omi/pages/phone_calls/active_call_banner.dart';
 import 'package:omi/pages/phone_calls/phone_calls_page.dart';
 import 'package:omi/pages/phone_calls/phone_calls_upsell_sheet.dart';
-import 'package:omi/models/subscription.dart';
 import 'package:omi/providers/usage_provider.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
 import 'package:omi/pages/settings/data_privacy_page.dart';
@@ -668,7 +667,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                                 },
                               ),
                               // Phone calls button - bottom left.
-                              if (home.selectedIndex == 0 && context.watch<UsageProvider>().showSubscriptionUI)
+                              if (home.selectedIndex == 0 && context.watch<UsageProvider>().shouldShowPhoneCallsEntry)
                                 Positioned(
                                   left: 20,
                                   bottom: 100,
@@ -680,10 +679,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                                       if (usageProvider.subscription == null) {
                                         await usageProvider.fetchSubscription();
                                       }
-                                      final p = usageProvider.subscription?.subscription.plan;
-                                      var isUnlimited =
-                                          p == PlanType.unlimited || p == PlanType.operator || p == PlanType.architect;
-                                      if (!isUnlimited) {
+                                      if (!usageProvider.canAccessPhoneCalls) {
+                                        // Quota exhausted or feature disabled. Only surface the
+                                        // upsell when the paywall is allowed to appear; on
+                                        // hidden-paywall builds we silently swallow the tap.
+                                        if (!usageProvider.showSubscriptionUI) return;
                                         MixpanelManager().phoneCallUpsellShown(source: 'home');
                                         if (!context.mounted) return;
                                         showPhoneCallsUpsell(context);
