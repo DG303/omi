@@ -139,6 +139,12 @@ def delete_daily_summary(uid: str, summary_id: str) -> bool:
     return True
 
 
+def set_daily_summary_visibility(uid: str, summary_id: str, visibility: str):
+    user_ref = db.collection('users').document(uid)
+    summary_ref = user_ref.collection(DAILY_SUMMARIES_COLLECTION).document(summary_id)
+    summary_ref.update({'visibility': visibility})
+
+
 def get_summaries_count(uid: str) -> int:
     """
     Get total count of daily summaries for a user.

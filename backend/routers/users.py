@@ -35,6 +35,7 @@ from database.redis_db import (
     set_generic_cache,
     get_daily_summary_uid,
     store_daily_summary_to_uid,
+    remove_daily_summary_to_uid,
 )
 
 from database.users import (
@@ -1047,10 +1048,23 @@ def get_daily_summary(summary_id: str, uid: str = Depends(auth.get_current_user_
     summary = daily_summaries_db.get_daily_summary(uid, summary_id)
     if not summary:
         raise HTTPException(status_code=404, detail='Daily summary not found')
-    # Lazy backfill: ensure Redis has the uid mapping so the share link works
-    if not get_daily_summary_uid(summary_id):
-        store_daily_summary_to_uid(summary_id, uid)
     return summary
+
+
+@router.patch('/v1/users/daily-summaries/{summary_id}/visibility', tags=['v1'])
+def set_daily_summary_visibility(summary_id: str, value: str, uid: str = Depends(auth.get_current_user_uid)):
+    """
+    Set the visibility of a daily summary. Use value='shared' to make it shareable.
+    """
+    summary = daily_summaries_db.get_daily_summary(uid, summary_id)
+    if not summary:
+        raise HTTPException(status_code=404, detail='Daily summary not found')
+    daily_summaries_db.set_daily_summary_visibility(uid, summary_id, value)
+    if value == 'private':
+        remove_daily_summary_to_uid(summary_id)
+    else:
+        store_daily_summary_to_uid(summary_id, uid)
+    return {'status': 'Ok'}
 
 
 @router.delete('/v1/users/daily-summaries/{summary_id}', tags=['v1'])
@@ -1058,7 +1072,6 @@ def delete_daily_summary(summary_id: str, uid: str = Depends(auth.get_current_us
     """
     Delete a daily summary by ID.
     """
-    # Verify it exists first
     summary = daily_summaries_db.get_daily_summary(uid, summary_id)
     if not summary:
         raise HTTPException(status_code=404, detail='Daily summary not found')
@@ -1077,7 +1090,7 @@ def get_shared_daily_summary(summary_id: str):
         raise HTTPException(status_code=404, detail='Daily summary not found')
 
     summary = daily_summaries_db.get_daily_summary(uid, summary_id)
-    if not summary:
+    if not summary or summary.get('visibility') != 'shared':
         raise HTTPException(status_code=404, detail='Daily summary not found')
 
     return summary
