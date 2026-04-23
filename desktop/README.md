@@ -20,11 +20,11 @@ Requires macOS 14.0+, Rust toolchain, and code signing with an Apple Developer I
 # Run (builds Swift app, starts Rust backend, launches app)
 ./run.sh
 
-# Run with clean slate (resets onboarding, permissions, UserDefaults)
-./reset-and-run.sh
+# Run with the prod backend (skips local Rust + tunnel)
+./run.sh --yolo
 ```
 
-The app is signed with `Developer ID Application: Matthew Diakonov (S6DP5HF77G)`. You need access to this signing identity to build and run.
+`run.sh` auto-detects an `Apple Development` or `Developer ID Application` signing identity from your login keychain. Override with `OMI_SIGN_IDENTITY="..." ./run.sh`.
 
 ## License
 
