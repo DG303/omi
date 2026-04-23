@@ -282,6 +282,7 @@ actor AgentBridge {
   /// a new bridge is started (e.g. during provider switching).
   func stopAndWaitForExit() async {
     let proc = process
+    let pid = proc?.processIdentifier ?? 0
     stop()
     // Wait for the subprocess to fully exit (up to 3s).
     // This is important during provider switches: the old Node.js process must
@@ -291,9 +292,11 @@ actor AgentBridge {
       while proc.isRunning && Date().timeIntervalSince(start) < 3.0 {
         try? await Task.sleep(nanoseconds: 50_000_000)  // 50ms
       }
-      if proc.isRunning {
-        log("AgentBridge: process still alive after 3s, force-killing")
-        proc.terminate()
+      if proc.isRunning && pid > 0 {
+        log("AgentBridge: process \(pid) still alive after 3s, sending SIGKILL")
+        kill(pid, SIGKILL)
+        // Brief wait for SIGKILL to take effect
+        try? await Task.sleep(nanoseconds: 200_000_000)  // 200ms
       }
     }
   }
