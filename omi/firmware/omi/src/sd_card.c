@@ -29,7 +29,7 @@
 
 #include "rtc.h"
 
-LOG_MODULE_REGISTER(sd_card, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(sd_card, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define DISK_DRIVE_NAME CONFIG_SDMMC_VOLUME_NAME
 #define SD_REQ_QUEUE_MSGS 100
@@ -229,7 +229,6 @@ static uint32_t pending_time_synced_utc = 0;
 static bool is_mounted = false;
 static bool sd_enabled = false;
 static bool sd_shutdown_in_progress = false;
-static atomic_t sd_write_paused = ATOMIC_INIT(0);
 static atomic_t sd_io_low_power = ATOMIC_INIT(0);
 /* 1: supported/unknown, 0: unsupported (ENOSYS/ENOTSUP observed) */
 static atomic_t sd_dev_pm_supported = ATOMIC_INIT(1);
@@ -1716,49 +1715,6 @@ bool is_sd_on(void)
     return sd_enabled;
 }
 
-void sd_write_pause(bool pause)
-{
-    if (pause) {
-        atomic_set(&sd_write_paused, 1);
-        bool flush_ok = true;
-
-        /* Flush buffered data synchronously before entering low-power I/O mode. */
-        if (is_mounted && sd_worker_tid) {
-            struct read_resp resp;
-            k_sem_init(&resp.sem, 0, 1);
-            resp.res = 0;
-
-            sd_req_t req = {0};
-            req.type = REQ_FLUSH_FILE;
-            req.u.create_file.resp = &resp;
-
-            int qret = k_msgq_put(&sd_prio_msgq, &req, K_MSEC(500));
-            if (qret) {
-                LOG_WRN("Pause flush request queue failed: %d", qret);
-                flush_ok = false;
-            } else if (k_sem_take(&resp.sem, K_MSEC(10000)) != 0) {
-                LOG_WRN("Pause flush timeout; keep SD I/O active");
-                flush_ok = false;
-            } else if (resp.res < 0) {
-                LOG_WRN("Pause flush failed: %d", resp.res);
-                flush_ok = false;
-            }
-        }
-
-        if (flush_ok) {
-            sd_set_io_low_power(true);
-        }
-        LOG_INF("SD writes paused");
-    } else {
-        /* Don't resume SPI here — the write path's own SPI gating
-         * will wake it only when a batch flush actually needs I/O.
-         * This avoids ~20s of unnecessary SPI active current between
-         * resume and the first flush. */
-        atomic_set(&sd_write_paused, 0);
-        LOG_INF("SD writes resumed");
-    }
-}
-
 uint32_t get_file_size(void)
 {
     return current_file_size;
@@ -1851,7 +1807,7 @@ uint32_t write_to_file(uint8_t *data, uint32_t length)
         return 0;
     }
 
-    if (sd_shutdown_in_progress || atomic_get(&sd_write_paused)) {
+    if (sd_shutdown_in_progress) {
         int64_t now = k_uptime_get();
         if (now - last_shutdown_drop_log_ms > 1000) {
             LOG_WRN("write_to_file dropped: SD %s",
