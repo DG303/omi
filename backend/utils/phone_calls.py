@@ -10,7 +10,7 @@ again (same behavior as before this module existed); the quota snapshot
 returned to the client in that case reports ``has_access = False``.
 """
 
-from typing import Optional
+from typing import FrozenSet, Optional
 
 from fastapi import HTTPException
 
@@ -20,41 +20,67 @@ from database.phone_call_config import get_config_for_plan
 from utils.subscription import is_paid_plan
 
 # Minimal E.164 prefix → ISO-2 mapping. Intentionally covers the cheap/common
-# destinations; anything not on the list falls through to
-# ``None`` and is treated as "unknown country" — the allowlist check then
-# rejects it (fail-safe against toll-fraud on high-cost international routes).
-_E164_PREFIX_TO_ISO2 = [
-    ('+1', 'US'),  # US + CA share +1; Twilio bills similarly
-    ('+44', 'GB'),
-    ('+61', 'AU'),
-    ('+64', 'NZ'),
-    ('+33', 'FR'),
-    ('+49', 'DE'),
-    ('+34', 'ES'),
-    ('+39', 'IT'),
-    ('+31', 'NL'),
-    ('+46', 'SE'),
-    ('+47', 'NO'),
-    ('+45', 'DK'),
-    ('+358', 'FI'),
-    ('+353', 'IE'),
-    ('+41', 'CH'),
-    ('+43', 'AT'),
-    ('+32', 'BE'),
-    ('+351', 'PT'),
-    ('+81', 'JP'),
-    ('+82', 'KR'),
+# destinations; anything not on the list falls through to an empty match and
+# is treated as "unknown country" — the allowlist check then rejects it
+# (fail-safe against toll-fraud on high-cost international routes).
+#
+# A prefix maps to one-or-more ISO codes because the NANP pool (+1) is shared
+# by US and Canada (plus other territories we intentionally don't allowlist).
+# Without a proper libphonenumber parse we can't distinguish US from CA by
+# area code here, so the allowlist check treats +1 as matching if *either*
+# code is allowed. Ops who want to separate US and CA should run the check
+# outside this module.
+_E164_PREFIX_TO_ISO2: list[tuple[str, FrozenSet[str]]] = [
+    ('+1', frozenset({'US', 'CA'})),  # NANP: US and CA share +1
+    ('+44', frozenset({'GB'})),
+    ('+61', frozenset({'AU'})),
+    ('+64', frozenset({'NZ'})),
+    ('+33', frozenset({'FR'})),
+    ('+49', frozenset({'DE'})),
+    ('+34', frozenset({'ES'})),
+    ('+39', frozenset({'IT'})),
+    ('+31', frozenset({'NL'})),
+    ('+46', frozenset({'SE'})),
+    ('+47', frozenset({'NO'})),
+    ('+45', frozenset({'DK'})),
+    ('+358', frozenset({'FI'})),
+    ('+353', frozenset({'IE'})),
+    ('+41', frozenset({'CH'})),
+    ('+43', frozenset({'AT'})),
+    ('+32', frozenset({'BE'})),
+    ('+351', frozenset({'PT'})),
+    ('+81', frozenset({'JP'})),
+    ('+82', frozenset({'KR'})),
 ]
 
 
-def country_from_e164(number: str) -> Optional[str]:
-    """Best-effort ISO-2 lookup from an E.164 number. Returns None if unknown."""
+def countries_from_e164(number: str) -> FrozenSet[str]:
+    """Best-effort ISO-2 lookup from an E.164 number.
+
+    Returns the set of ISO-2 codes that share the matched dial prefix. The
+    number passes an allowlist check if any element of that set is allowed.
+    Empty set means "unknown" — fail-safe, always blocked when an allowlist
+    is configured.
+    """
     if not number or not number.startswith('+'):
-        return None
-    for prefix, iso in _E164_PREFIX_TO_ISO2:
+        return frozenset()
+    for prefix, iso_codes in _E164_PREFIX_TO_ISO2:
         if number.startswith(prefix):
-            return iso
-    return None
+            return iso_codes
+    return frozenset()
+
+
+def country_from_e164(number: str) -> Optional[str]:
+    """Back-compat: return a representative ISO-2 for ``number`` if known.
+
+    Prefer ``countries_from_e164`` when checking allowlists — it returns the
+    full set so shared dial prefixes (notably +1 for US + CA) don't silently
+    pick one country over another.
+    """
+    matches = countries_from_e164(number)
+    if not matches:
+        return None
+    return next(iter(matches))
 
 
 class QuotaSnapshot:
@@ -167,8 +193,9 @@ def check_destination_allowed(snapshot: QuotaSnapshot, to_number: str) -> None:
     allowed = snapshot.allowed_countries
     if not allowed:
         return
-    iso = country_from_e164(to_number)
-    if iso is None or iso not in allowed:
+    allowed_set = {c.upper() for c in allowed}
+    matches = countries_from_e164(to_number)
+    if not matches or matches.isdisjoint(allowed_set):
         raise HTTPException(
             status_code=403,
             detail="This destination is not available on the free plan",
