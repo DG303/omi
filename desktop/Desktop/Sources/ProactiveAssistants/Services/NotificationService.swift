@@ -243,8 +243,15 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             screenshotData: screenshotData
         )
 
-        // Keep the floating-bar preview, but still deliver the real macOS
-        // notification when authorization is available.
+        // The floating bar is the primary notification surface on macOS. We only
+        // fire a native system banner for the screen-capture reset flow, which
+        // needs the "Reset Now" action button to repair broken TCC permissions
+        // — there is no floating-bar equivalent for that action. All other
+        // proactive notifications are floating-bar only: users who disabled the
+        // floating bar reported clicking top-right banners and getting no
+        // conversation context, which was confusing.
+        guard title == Self.screenCaptureResetTitle else { return }
+
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             Task { @MainActor in
                 guard settings.authorizationStatus == .authorized else {
