@@ -206,13 +206,23 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         ScreenCaptureService.resetScreenCapturePermissionAndRestart()
     }
 
+    /// Send a notification via the floating bar, and optionally as a native macOS system banner.
+    ///
+    /// `deliverSystemBanner` defaults to `false` because proactive AI notifications are
+    /// floating-bar only — users who disabled the floating bar reported clicking the
+    /// top-right system banner and getting no conversation context, which was confusing.
+    /// Functional notifications (Crisp support replies, screen-recording permission
+    /// prompts with a repair action) must pass `deliverSystemBanner: true` so they
+    /// still surface as a system banner — they either have no floating-bar equivalent
+    /// or must reach the user even when the floating bar is hidden/snoozed.
     func sendNotification(
         title: String,
         message: String,
         assistantId: String = "default",
         sound: NotificationSound = .default,
         context: FloatingBarNotificationContext? = nil,
-        screenshotData: Data? = nil
+        screenshotData: Data? = nil,
+        deliverSystemBanner: Bool = false
     ) {
         // Rate-limit the screen-capture reset notification to one per broken-capture
         // episode. The recovery loop in ProactiveAssistantsPlugin.attemptAutoReset
@@ -243,14 +253,9 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             screenshotData: screenshotData
         )
 
-        // The floating bar is the primary notification surface on macOS. We only
-        // fire a native system banner for the screen-capture reset flow, which
-        // needs the "Reset Now" action button to repair broken TCC permissions
-        // — there is no floating-bar equivalent for that action. All other
-        // proactive notifications are floating-bar only: users who disabled the
-        // floating bar reported clicking top-right banners and getting no
-        // conversation context, which was confusing.
-        guard title == Self.screenCaptureResetTitle else { return }
+        // Default path: floating-bar only. Functional callers opt-in via
+        // `deliverSystemBanner: true` (see the parameter doc above).
+        guard deliverSystemBanner else { return }
 
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             Task { @MainActor in
