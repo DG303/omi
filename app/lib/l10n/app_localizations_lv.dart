@@ -9146,5 +9146,17 @@ class AppLocalizationsLv extends AppLocalizations {
   String get voiceResponseAudio => 'Lasīt Omi atbildi skaļi';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Darbojas fonā pat klusajā režīmā';
+  String get voiceResponseMode => 'Balss atbilde';
+
+  @override
+  String get voiceResponseModeTitle => 'Kad atskaņot atbildes';
+
+  @override
+  String get voiceResponseOff => 'Izslēgts';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Tikai austiņās';
+
+  @override
+  String get voiceResponseAlways => 'Vienmēr';
 }

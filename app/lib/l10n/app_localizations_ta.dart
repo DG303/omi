@@ -9197,5 +9197,17 @@ class AppLocalizationsTa extends AppLocalizations {
   String get voiceResponseAudio => 'Omi பதிலை சத்தமாக படிக்கவும்';
 
   @override
-  String get voiceResponseAudioSubtitle => 'அமைதி முறையிலும் பின்னணியில் இயங்கும்';
+  String get voiceResponseMode => 'குரல் பதில்';
+
+  @override
+  String get voiceResponseModeTitle => 'பதில்களை எப்போது பேசுவது';
+
+  @override
+  String get voiceResponseOff => 'முடக்கம்';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'ஹெட்ஃபோன் மட்டும்';
+
+  @override
+  String get voiceResponseAlways => 'எப்போதும்';
 }

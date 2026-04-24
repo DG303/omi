@@ -9082,5 +9082,17 @@ class AppLocalizationsTh extends AppLocalizations {
   String get voiceResponseAudio => 'อ่านคำตอบของ Omi ออกเสียง';
 
   @override
-  String get voiceResponseAudioSubtitle => 'เล่นในพื้นหลังแม้ในโหมดเงียบ';
+  String get voiceResponseMode => 'ตอบกลับด้วยเสียง';
+
+  @override
+  String get voiceResponseModeTitle => 'เมื่อใดจึงจะอ่านคำตอบ';
+
+  @override
+  String get voiceResponseOff => 'ปิด';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'หูฟังเท่านั้น';
+
+  @override
+  String get voiceResponseAlways => 'เสมอ';
 }

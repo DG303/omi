@@ -9205,5 +9205,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get voiceResponseAudio => 'Omis Antwort laut vorlesen';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Läuft im Hintergrund auch im Lautlosmodus';
+  String get voiceResponseMode => 'Sprachantwort';
+
+  @override
+  String get voiceResponseModeTitle => 'Wann Antworten vorgelesen werden';
+
+  @override
+  String get voiceResponseOff => 'Aus';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Nur Kopfhörer';
+
+  @override
+  String get voiceResponseAlways => 'Immer';
 }

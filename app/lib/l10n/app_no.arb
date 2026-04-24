@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Ingen batteridata ennå",
   "week": "Uke",
   "voiceResponseAudio": "Les Omis svar høyt",
-  "voiceResponseAudioSubtitle": "Spiller i bakgrunnen selv i lydløs modus"
+  "voiceResponseMode": "Stemmesvar",
+  "voiceResponseModeTitle": "Når svar skal leses",
+  "voiceResponseOff": "Av",
+  "voiceResponseHeadphonesOnly": "Bare hodetelefoner",
+  "voiceResponseAlways": "Alltid"
 }

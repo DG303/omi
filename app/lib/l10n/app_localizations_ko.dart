@@ -8980,5 +8980,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get voiceResponseAudio => 'Omi의 응답 소리 내어 읽기';
 
   @override
-  String get voiceResponseAudioSubtitle => '무음 모드에서도 백그라운드에서 재생됩니다';
+  String get voiceResponseMode => '음성 응답';
+
+  @override
+  String get voiceResponseModeTitle => '응답을 말할 시점';
+
+  @override
+  String get voiceResponseOff => '끄기';
+
+  @override
+  String get voiceResponseHeadphonesOnly => '헤드폰만';
+
+  @override
+  String get voiceResponseAlways => '항상';
 }

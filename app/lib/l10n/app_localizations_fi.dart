@@ -9127,5 +9127,17 @@ class AppLocalizationsFi extends AppLocalizations {
   String get voiceResponseAudio => 'Lue Omin vastaus ääneen';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Toistaa taustalla myös äänettömässä tilassa';
+  String get voiceResponseMode => 'Äänivastaus';
+
+  @override
+  String get voiceResponseModeTitle => 'Milloin vastaukset luetaan';
+
+  @override
+  String get voiceResponseOff => 'Pois';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Vain kuulokkeet';
+
+  @override
+  String get voiceResponseAlways => 'Aina';
 }

@@ -9108,5 +9108,17 @@ class AppLocalizationsHi extends AppLocalizations {
   String get voiceResponseAudio => 'Omi का जवाब ज़ोर से पढ़ें';
 
   @override
-  String get voiceResponseAudioSubtitle => 'साइलेंट मोड में भी बैकग्राउंड में चलता है';
+  String get voiceResponseMode => 'वॉइस प्रतिक्रिया';
+
+  @override
+  String get voiceResponseModeTitle => 'उत्तर कब बोले जाएं';
+
+  @override
+  String get voiceResponseOff => 'बंद';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'केवल हेडफ़ोन';
+
+  @override
+  String get voiceResponseAlways => 'हमेशा';
 }

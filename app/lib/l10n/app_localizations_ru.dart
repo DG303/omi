@@ -9157,5 +9157,17 @@ class AppLocalizationsRu extends AppLocalizations {
   String get voiceResponseAudio => 'Читать ответ Omi вслух';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Воспроизводит в фоне даже в тихом режиме';
+  String get voiceResponseMode => 'Голосовой ответ';
+
+  @override
+  String get voiceResponseModeTitle => 'Когда озвучивать ответы';
+
+  @override
+  String get voiceResponseOff => 'Выкл';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Только наушники';
+
+  @override
+  String get voiceResponseAlways => 'Всегда';
 }

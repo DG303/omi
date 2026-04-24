@@ -10687,5 +10687,9 @@
   "noBatteryDataYet": "Још нема података о батерији",
   "week": "Недеља",
   "voiceResponseAudio": "Прочитај Omi одговор наглас",
-  "voiceResponseAudioSubtitle": "Ради у позадини и у тихом режиму"
+  "voiceResponseMode": "Гласовни одговор",
+  "voiceResponseModeTitle": "Када изговарати одговоре",
+  "voiceResponseOff": "Искључено",
+  "voiceResponseHeadphonesOnly": "Само слушалице",
+  "voiceResponseAlways": "Увек"
 }

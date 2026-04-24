@@ -8979,5 +8979,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voiceResponseAudio => 'Omiの応答を音声で再生';
 
   @override
-  String get voiceResponseAudioSubtitle => 'サイレントモードでもバックグラウンドで再生します';
+  String get voiceResponseMode => '音声応答';
+
+  @override
+  String get voiceResponseModeTitle => '応答を読み上げるタイミング';
+
+  @override
+  String get voiceResponseOff => 'オフ';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'ヘッドフォンのみ';
+
+  @override
+  String get voiceResponseAlways => '常に';
 }

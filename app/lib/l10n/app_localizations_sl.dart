@@ -9152,5 +9152,17 @@ class AppLocalizationsSl extends AppLocalizations {
   String get voiceResponseAudio => 'Preberi odgovor Omi na glas';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Deluje v ozadju tudi v tihem načinu';
+  String get voiceResponseMode => 'Glasovni odgovor';
+
+  @override
+  String get voiceResponseModeTitle => 'Kdaj prebrati odgovore';
+
+  @override
+  String get voiceResponseOff => 'Izklop';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Samo slušalke';
+
+  @override
+  String get voiceResponseAlways => 'Vedno';
 }

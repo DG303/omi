@@ -2980,5 +2980,9 @@
   "noBatteryDataYet": "अभी तक कोई बैटरी डेटा नहीं",
   "week": "सप्ताह",
   "voiceResponseAudio": "Omi का जवाब ज़ोर से पढ़ें",
-  "voiceResponseAudioSubtitle": "साइलेंट मोड में भी बैकग्राउंड में चलता है"
+  "voiceResponseMode": "वॉइस प्रतिक्रिया",
+  "voiceResponseModeTitle": "उत्तर कब बोले जाएं",
+  "voiceResponseOff": "बंद",
+  "voiceResponseHeadphonesOnly": "केवल हेडफ़ोन",
+  "voiceResponseAlways": "हमेशा"
 }

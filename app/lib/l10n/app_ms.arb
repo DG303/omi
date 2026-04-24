@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Tiada data bateri lagi",
   "week": "Minggu",
   "voiceResponseAudio": "Baca respons Omi dengan kuat",
-  "voiceResponseAudioSubtitle": "Berjalan di latar belakang walaupun dalam mod senyap"
+  "voiceResponseMode": "Respons suara",
+  "voiceResponseModeTitle": "Bila respons dituturkan",
+  "voiceResponseOff": "Mati",
+  "voiceResponseHeadphonesOnly": "Fon kepala sahaja",
+  "voiceResponseAlways": "Sentiasa"
 }

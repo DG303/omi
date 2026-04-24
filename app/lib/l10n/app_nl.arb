@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Nog geen batterijgegevens",
   "week": "Week",
   "voiceResponseAudio": "Lees Omi's antwoord voor",
-  "voiceResponseAudioSubtitle": "Speelt op de achtergrond zelfs in stille modus"
+  "voiceResponseMode": "Spraakantwoord",
+  "voiceResponseModeTitle": "Wanneer antwoorden worden voorgelezen",
+  "voiceResponseOff": "Uit",
+  "voiceResponseHeadphonesOnly": "Alleen koptelefoon",
+  "voiceResponseAlways": "Altijd"
 }

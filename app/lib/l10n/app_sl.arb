@@ -10687,5 +10687,9 @@
   "noBatteryDataYet": "Še ni podatkov o bateriji",
   "week": "Teden",
   "voiceResponseAudio": "Preberi odgovor Omi na glas",
-  "voiceResponseAudioSubtitle": "Deluje v ozadju tudi v tihem načinu"
+  "voiceResponseMode": "Glasovni odgovor",
+  "voiceResponseModeTitle": "Kdaj prebrati odgovore",
+  "voiceResponseOff": "Izklop",
+  "voiceResponseHeadphonesOnly": "Samo slušalke",
+  "voiceResponseAlways": "Vedno"
 }

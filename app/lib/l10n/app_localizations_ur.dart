@@ -9145,5 +9145,17 @@ class AppLocalizationsUr extends AppLocalizations {
   String get voiceResponseAudio => 'Omi کا جواب بلند آواز میں پڑھیں';
 
   @override
-  String get voiceResponseAudioSubtitle => 'خاموش موڈ میں بھی پس منظر میں چلتا ہے';
+  String get voiceResponseMode => 'آواز کا جواب';
+
+  @override
+  String get voiceResponseModeTitle => 'جواب کب پڑھے جائیں';
+
+  @override
+  String get voiceResponseOff => 'بند';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'صرف ہیڈ فون';
+
+  @override
+  String get voiceResponseAlways => 'ہمیشہ';
 }

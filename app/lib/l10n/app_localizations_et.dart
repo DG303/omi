@@ -9125,5 +9125,17 @@ class AppLocalizationsEt extends AppLocalizations {
   String get voiceResponseAudio => 'Loe Omi vastus ette';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Mängib taustal ka vaikses režiimis';
+  String get voiceResponseMode => 'Hääleline vastus';
+
+  @override
+  String get voiceResponseModeTitle => 'Millal vastuseid ette lugeda';
+
+  @override
+  String get voiceResponseOff => 'Väljas';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Ainult kõrvaklapid';
+
+  @override
+  String get voiceResponseAlways => 'Alati';
 }

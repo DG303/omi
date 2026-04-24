@@ -2947,5 +2947,9 @@
   "noBatteryDataYet": "Noch keine Batteriedaten",
   "week": "Woche",
   "voiceResponseAudio": "Omis Antwort laut vorlesen",
-  "voiceResponseAudioSubtitle": "Läuft im Hintergrund auch im Lautlosmodus"
+  "voiceResponseMode": "Sprachantwort",
+  "voiceResponseModeTitle": "Wann Antworten vorgelesen werden",
+  "voiceResponseOff": "Aus",
+  "voiceResponseHeadphonesOnly": "Nur Kopfhörer",
+  "voiceResponseAlways": "Immer"
 }

@@ -10687,5 +10687,9 @@
   "noBatteryDataYet": "এখনও কোনো ব্যাটারি ডেটা নেই",
   "week": "সপ্তাহ",
   "voiceResponseAudio": "Omi-র উত্তর জোরে পড়ুন",
-  "voiceResponseAudioSubtitle": "নীরব মোডেও ব্যাকগ্রাউন্ডে বাজে"
+  "voiceResponseMode": "ভয়েস প্রতিক্রিয়া",
+  "voiceResponseModeTitle": "কখন উত্তর বলা হবে",
+  "voiceResponseOff": "বন্ধ",
+  "voiceResponseHeadphonesOnly": "শুধু হেডফোন",
+  "voiceResponseAlways": "সর্বদা"
 }

@@ -10687,5 +10687,9 @@
   "noBatteryDataYet": "Wala pang datos ng baterya",
   "week": "Linggo",
   "voiceResponseAudio": "Basahin nang malakas ang sagot ng Omi",
-  "voiceResponseAudioSubtitle": "Tumutugtog sa background kahit sa silent mode"
+  "voiceResponseMode": "Tugon sa boses",
+  "voiceResponseModeTitle": "Kailan bibigkasin ang tugon",
+  "voiceResponseOff": "Naka-off",
+  "voiceResponseHeadphonesOnly": "Headphones lang",
+  "voiceResponseAlways": "Palagi"
 }

@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Δεν υπάρχουν δεδομένα μπαταρίας ακόμα",
   "week": "Εβδομάδα",
   "voiceResponseAudio": "Ανάγνωση απάντησης Omi φωναχτά",
-  "voiceResponseAudioSubtitle": "Παίζει στο παρασκήνιο ακόμα και σε σιωπηλή λειτουργία"
+  "voiceResponseMode": "Φωνητική απάντηση",
+  "voiceResponseModeTitle": "Πότε να εκφωνούνται οι απαντήσεις",
+  "voiceResponseOff": "Απενεργ.",
+  "voiceResponseHeadphonesOnly": "Μόνο ακουστικά",
+  "voiceResponseAlways": "Πάντα"
 }

@@ -2984,5 +2984,9 @@
   "noBatteryDataYet": "Chưa có dữ liệu pin",
   "week": "Tuần",
   "voiceResponseAudio": "Đọc to phản hồi của Omi",
-  "voiceResponseAudioSubtitle": "Phát ở chế độ nền ngay cả khi im lặng"
+  "voiceResponseMode": "Phản hồi bằng giọng nói",
+  "voiceResponseModeTitle": "Khi nào đọc phản hồi",
+  "voiceResponseOff": "Tắt",
+  "voiceResponseHeadphonesOnly": "Chỉ tai nghe",
+  "voiceResponseAlways": "Luôn luôn"
 }

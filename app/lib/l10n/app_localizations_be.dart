@@ -9154,5 +9154,17 @@ class AppLocalizationsBe extends AppLocalizations {
   String get voiceResponseAudio => 'Чытаць адказ Omi уголас';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Працуе ў фоне нават у цішыні';
+  String get voiceResponseMode => 'Галасавы адказ';
+
+  @override
+  String get voiceResponseModeTitle => 'Калі агучваць адказы';
+
+  @override
+  String get voiceResponseOff => 'Выкл';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Толькі навушнікі';
+
+  @override
+  String get voiceResponseAlways => 'Заўсёды';
 }

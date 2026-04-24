@@ -3075,5 +3075,9 @@
   "noBatteryDataYet": "Még nincsenek akkumulátor adatok",
   "week": "Hét",
   "voiceResponseAudio": "Omi válaszának felolvasása",
-  "voiceResponseAudioSubtitle": "Háttérben is szól, néma üzemmódban is"
+  "voiceResponseMode": "Hangválasz",
+  "voiceResponseModeTitle": "Mikor szólaljon meg a válasz",
+  "voiceResponseOff": "Ki",
+  "voiceResponseHeadphonesOnly": "Csak fülhallgató",
+  "voiceResponseAlways": "Mindig"
 }

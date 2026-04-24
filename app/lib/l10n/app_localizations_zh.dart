@@ -8965,5 +8965,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get voiceResponseAudio => '朗读 Omi 的回复';
 
   @override
-  String get voiceResponseAudioSubtitle => '即使在静音模式下也能在后台播放';
+  String get voiceResponseMode => '语音回复';
+
+  @override
+  String get voiceResponseModeTitle => '何时朗读回复';
+
+  @override
+  String get voiceResponseOff => '关闭';
+
+  @override
+  String get voiceResponseHeadphonesOnly => '仅耳机';
+
+  @override
+  String get voiceResponseAlways => '始终';
 }

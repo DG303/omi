@@ -10687,5 +10687,9 @@
   "noBatteryDataYet": "ఇంకా బ్యాటరీ డేటా లేదు",
   "week": "వారం",
   "voiceResponseAudio": "Omi ప్రతిస్పందనను బిగ్గరగా చదవండి",
-  "voiceResponseAudioSubtitle": "నిశ్శబ్ద మోడ్‌లోనూ నేపథ్యంలో ప్లే అవుతుంది"
+  "voiceResponseMode": "వాయిస్ ప్రతిస్పందన",
+  "voiceResponseModeTitle": "ప్రతిస్పందనలను ఎప్పుడు చదవాలి",
+  "voiceResponseOff": "ఆఫ్",
+  "voiceResponseHeadphonesOnly": "హెడ్‌ఫోన్‌లు మాత్రమే",
+  "voiceResponseAlways": "ఎల్లప్పుడూ"
 }

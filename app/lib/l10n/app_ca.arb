@@ -2948,5 +2948,9 @@
   "noBatteryDataYet": "Encara no hi ha dades de bateria",
   "week": "Setmana",
   "voiceResponseAudio": "Llegeix la resposta d'Omi en veu alta",
-  "voiceResponseAudioSubtitle": "Funciona en segon pla fins i tot en mode silenci"
+  "voiceResponseMode": "Resposta de veu",
+  "voiceResponseModeTitle": "Quan pronunciar les respostes",
+  "voiceResponseOff": "Desactivat",
+  "voiceResponseHeadphonesOnly": "Només auriculars",
+  "voiceResponseAlways": "Sempre"
 }

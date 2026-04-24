@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Inga batteridata ännu",
   "week": "Vecka",
   "voiceResponseAudio": "Läs upp Omis svar",
-  "voiceResponseAudioSubtitle": "Spelas i bakgrunden även i tyst läge"
+  "voiceResponseMode": "Röstsvar",
+  "voiceResponseModeTitle": "När svar ska läsas upp",
+  "voiceResponseOff": "Av",
+  "voiceResponseHeadphonesOnly": "Endast hörlurar",
+  "voiceResponseAlways": "Alltid"
 }

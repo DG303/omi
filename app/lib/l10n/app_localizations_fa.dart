@@ -9131,5 +9131,17 @@ class AppLocalizationsFa extends AppLocalizations {
   String get voiceResponseAudio => 'خواندن پاسخ Omi با صدای بلند';
 
   @override
-  String get voiceResponseAudioSubtitle => 'در پس‌زمینه حتی در حالت بی‌صدا پخش می‌شود';
+  String get voiceResponseMode => 'پاسخ صوتی';
+
+  @override
+  String get voiceResponseModeTitle => 'چه زمانی پاسخ‌ها خوانده شوند';
+
+  @override
+  String get voiceResponseOff => 'خاموش';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'فقط هدفون';
+
+  @override
+  String get voiceResponseAlways => 'همیشه';
 }

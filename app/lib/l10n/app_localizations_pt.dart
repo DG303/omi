@@ -9132,5 +9132,17 @@ class AppLocalizationsPt extends AppLocalizations {
   String get voiceResponseAudio => 'Ler resposta do Omi em voz alta';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Funciona em segundo plano mesmo no modo silencioso';
+  String get voiceResponseMode => 'Resposta por voz';
+
+  @override
+  String get voiceResponseModeTitle => 'Quando ler respostas';
+
+  @override
+  String get voiceResponseOff => 'Desligado';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Apenas fones';
+
+  @override
+  String get voiceResponseAlways => 'Sempre';
 }

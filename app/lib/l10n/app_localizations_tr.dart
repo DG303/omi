@@ -9141,5 +9141,17 @@ class AppLocalizationsTr extends AppLocalizations {
   String get voiceResponseAudio => 'Omi yanıtını sesli oku';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Sessiz modda bile arka planda çalar';
+  String get voiceResponseMode => 'Sesli yanıt';
+
+  @override
+  String get voiceResponseModeTitle => 'Yanıtlar ne zaman okunsun';
+
+  @override
+  String get voiceResponseOff => 'Kapalı';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Sadece kulaklık';
+
+  @override
+  String get voiceResponseAlways => 'Her zaman';
 }

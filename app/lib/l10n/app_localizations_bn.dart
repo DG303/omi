@@ -9137,5 +9137,17 @@ class AppLocalizationsBn extends AppLocalizations {
   String get voiceResponseAudio => 'Omi-র উত্তর জোরে পড়ুন';
 
   @override
-  String get voiceResponseAudioSubtitle => 'নীরব মোডেও ব্যাকগ্রাউন্ডে বাজে';
+  String get voiceResponseMode => 'ভয়েস প্রতিক্রিয়া';
+
+  @override
+  String get voiceResponseModeTitle => 'কখন উত্তর বলা হবে';
+
+  @override
+  String get voiceResponseOff => 'বন্ধ';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'শুধু হেডফোন';
+
+  @override
+  String get voiceResponseAlways => 'সর্বদা';
 }

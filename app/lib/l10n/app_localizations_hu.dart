@@ -9167,5 +9167,17 @@ class AppLocalizationsHu extends AppLocalizations {
   String get voiceResponseAudio => 'Omi válaszának felolvasása';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Háttérben is szól, néma üzemmódban is';
+  String get voiceResponseMode => 'Hangválasz';
+
+  @override
+  String get voiceResponseModeTitle => 'Mikor szólaljon meg a válasz';
+
+  @override
+  String get voiceResponseOff => 'Ki';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Csak fülhallgató';
+
+  @override
+  String get voiceResponseAlways => 'Mindig';
 }

@@ -9179,5 +9179,17 @@ class AppLocalizationsTe extends AppLocalizations {
   String get voiceResponseAudio => 'Omi ప్రతిస్పందనను బిగ్గరగా చదవండి';
 
   @override
-  String get voiceResponseAudioSubtitle => 'నిశ్శబ్ద మోడ్‌లోనూ నేపథ్యంలో ప్లే అవుతుంది';
+  String get voiceResponseMode => 'వాయిస్ ప్రతిస్పందన';
+
+  @override
+  String get voiceResponseModeTitle => 'ప్రతిస్పందనలను ఎప్పుడు చదవాలి';
+
+  @override
+  String get voiceResponseOff => 'ఆఫ్';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'హెడ్‌ఫోన్‌లు మాత్రమే';
+
+  @override
+  String get voiceResponseAlways => 'ఎల్లప్పుడూ';
 }

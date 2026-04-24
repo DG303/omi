@@ -9128,5 +9128,17 @@ class AppLocalizationsVi extends AppLocalizations {
   String get voiceResponseAudio => 'Đọc to phản hồi của Omi';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Phát ở chế độ nền ngay cả khi im lặng';
+  String get voiceResponseMode => 'Phản hồi bằng giọng nói';
+
+  @override
+  String get voiceResponseModeTitle => 'Khi nào đọc phản hồi';
+
+  @override
+  String get voiceResponseOff => 'Tắt';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Chỉ tai nghe';
+
+  @override
+  String get voiceResponseAlways => 'Luôn luôn';
 }

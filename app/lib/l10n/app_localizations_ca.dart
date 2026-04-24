@@ -9182,5 +9182,17 @@ class AppLocalizationsCa extends AppLocalizations {
   String get voiceResponseAudio => 'Llegeix la resposta d\'Omi en veu alta';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Funciona en segon pla fins i tot en mode silenci';
+  String get voiceResponseMode => 'Resposta de veu';
+
+  @override
+  String get voiceResponseModeTitle => 'Quan pronunciar les respostes';
+
+  @override
+  String get voiceResponseOff => 'Desactivat';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Només auriculars';
+
+  @override
+  String get voiceResponseAlways => 'Sempre';
 }

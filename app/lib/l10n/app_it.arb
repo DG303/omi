@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Nessun dato sulla batteria ancora",
   "week": "Settimana",
   "voiceResponseAudio": "Leggi la risposta di Omi ad alta voce",
-  "voiceResponseAudioSubtitle": "Funziona in background anche in modalità silenziosa"
+  "voiceResponseMode": "Risposta vocale",
+  "voiceResponseModeTitle": "Quando leggere le risposte",
+  "voiceResponseOff": "Off",
+  "voiceResponseHeadphonesOnly": "Solo cuffie",
+  "voiceResponseAlways": "Sempre"
 }

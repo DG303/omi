@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Kol kas nėra baterijos duomenų",
   "week": "Savaitė",
   "voiceResponseAudio": "Skaityti Omi atsakymą garsiai",
-  "voiceResponseAudioSubtitle": "Veikia fone net tyliuoju režimu"
+  "voiceResponseMode": "Balso atsakymas",
+  "voiceResponseModeTitle": "Kada įgarsinti atsakymus",
+  "voiceResponseOff": "Išjungta",
+  "voiceResponseHeadphonesOnly": "Tik ausinėmis",
+  "voiceResponseAlways": "Visada"
 }

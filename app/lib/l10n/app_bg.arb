@@ -2948,5 +2948,9 @@
   "noBatteryDataYet": "Все още няма данни за батерията",
   "week": "Седмица",
   "voiceResponseAudio": "Прочитай отговора на Omi на глас",
-  "voiceResponseAudioSubtitle": "Работи на заден план дори в тих режим"
+  "voiceResponseMode": "Гласов отговор",
+  "voiceResponseModeTitle": "Кога да се произнасят отговорите",
+  "voiceResponseOff": "Изкл",
+  "voiceResponseHeadphonesOnly": "Само слушалки",
+  "voiceResponseAlways": "Винаги"
 }

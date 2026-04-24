@@ -9138,5 +9138,17 @@ class AppLocalizationsId extends AppLocalizations {
   String get voiceResponseAudio => 'Bacakan respons Omi';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Berjalan di latar belakang bahkan di mode senyap';
+  String get voiceResponseMode => 'Respons suara';
+
+  @override
+  String get voiceResponseModeTitle => 'Kapan respons diucapkan';
+
+  @override
+  String get voiceResponseOff => 'Mati';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Hanya headphone';
+
+  @override
+  String get voiceResponseAlways => 'Selalu';
 }

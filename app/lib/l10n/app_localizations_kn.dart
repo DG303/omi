@@ -9160,5 +9160,17 @@ class AppLocalizationsKn extends AppLocalizations {
   String get voiceResponseAudio => 'Omi ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಜೋರಾಗಿ ಓದಿ';
 
   @override
-  String get voiceResponseAudioSubtitle => 'ಸೈಲೆಂಟ್ ಮೋಡ್‌ನಲ್ಲೂ ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಪ್ಲೇ ಆಗುತ್ತದೆ';
+  String get voiceResponseMode => 'ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆ';
+
+  @override
+  String get voiceResponseModeTitle => 'ಪ್ರತಿಕ್ರಿಯೆ ಯಾವಾಗ';
+
+  @override
+  String get voiceResponseOff => 'ಆಫ್';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'ಹೆಡ್‌ಫೋನ್‌ಗಳು ಮಾತ್ರ';
+
+  @override
+  String get voiceResponseAlways => 'ಯಾವಾಗಲೂ';
 }

@@ -2946,5 +2946,9 @@
   "noBatteryDataYet": "لا توجد بيانات بطارية بعد",
   "week": "أسبوع",
   "voiceResponseAudio": "قراءة رد Omi بصوت عالٍ",
-  "voiceResponseAudioSubtitle": "يعمل في الخلفية حتى في الوضع الصامت"
+  "voiceResponseMode": "استجابة صوتية",
+  "voiceResponseModeTitle": "متى تُقرأ الردود",
+  "voiceResponseOff": "إيقاف",
+  "voiceResponseHeadphonesOnly": "السماعات فقط",
+  "voiceResponseAlways": "دائماً"
 }

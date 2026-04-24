@@ -9156,5 +9156,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get voiceResponseAudio => 'Lees Omi\'s antwoord voor';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Speelt op de achtergrond zelfs in stille modus';
+  String get voiceResponseMode => 'Spraakantwoord';
+
+  @override
+  String get voiceResponseModeTitle => 'Wanneer antwoorden worden voorgelezen';
+
+  @override
+  String get voiceResponseOff => 'Uit';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Alleen koptelefoon';
+
+  @override
+  String get voiceResponseAlways => 'Altijd';
 }

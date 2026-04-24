@@ -9211,5 +9211,17 @@ class AppLocalizationsFr extends AppLocalizations {
   String get voiceResponseAudio => 'Lire la réponse d\'Omi à haute voix';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Fonctionne en arrière-plan même en mode silencieux';
+  String get voiceResponseMode => 'Réponse vocale';
+
+  @override
+  String get voiceResponseModeTitle => 'Quand énoncer les réponses';
+
+  @override
+  String get voiceResponseOff => 'Désactivé';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Casque uniquement';
+
+  @override
+  String get voiceResponseAlways => 'Toujours';
 }

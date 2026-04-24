@@ -3014,5 +3014,9 @@
   "noBatteryDataYet": "Brak danych o baterii",
   "week": "Tydzień",
   "voiceResponseAudio": "Odczytaj odpowiedź Omi na głos",
-  "voiceResponseAudioSubtitle": "Odtwarza w tle nawet w trybie cichym"
+  "voiceResponseMode": "Odpowiedź głosowa",
+  "voiceResponseModeTitle": "Kiedy odczytywać odpowiedzi",
+  "voiceResponseOff": "Wył.",
+  "voiceResponseHeadphonesOnly": "Tylko słuchawki",
+  "voiceResponseAlways": "Zawsze"
 }

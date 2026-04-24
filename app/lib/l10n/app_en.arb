@@ -10866,8 +10866,24 @@
   "@voiceResponseAudio": {
     "description": "Toggle label for voice response audio playback"
   },
-  "voiceResponseAudioSubtitle": "Plays in the background even in silent mode",
-  "@voiceResponseAudioSubtitle": {
-    "description": "Subtitle under the voice response audio toggle"
+  "voiceResponseMode": "Voice response",
+  "@voiceResponseMode": {
+    "description": "Voice response mode setting row title"
+  },
+  "voiceResponseModeTitle": "When to speak responses",
+  "@voiceResponseModeTitle": {
+    "description": "Bottom sheet title for voice response mode selector"
+  },
+  "voiceResponseOff": "Off",
+  "@voiceResponseOff": {
+    "description": "Voice response mode: off"
+  },
+  "voiceResponseHeadphonesOnly": "Headphones only",
+  "@voiceResponseHeadphonesOnly": {
+    "description": "Voice response mode: only when headphones connected"
+  },
+  "voiceResponseAlways": "Always",
+  "@voiceResponseAlways": {
+    "description": "Voice response mode: always, including phone speaker"
   }
 }

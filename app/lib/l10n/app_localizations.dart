@@ -17031,11 +17031,35 @@ abstract class AppLocalizations {
   /// **'Speak Omi\'s response aloud'**
   String get voiceResponseAudio;
 
-  /// Subtitle under the voice response audio toggle
+  /// Voice response mode setting row title
   ///
   /// In en, this message translates to:
-  /// **'Plays in the background even in silent mode'**
-  String get voiceResponseAudioSubtitle;
+  /// **'Voice response'**
+  String get voiceResponseMode;
+
+  /// Bottom sheet title for voice response mode selector
+  ///
+  /// In en, this message translates to:
+  /// **'When to speak responses'**
+  String get voiceResponseModeTitle;
+
+  /// Voice response mode: off
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get voiceResponseOff;
+
+  /// Voice response mode: only when headphones connected
+  ///
+  /// In en, this message translates to:
+  /// **'Headphones only'**
+  String get voiceResponseHeadphonesOnly;
+
+  /// Voice response mode: always, including phone speaker
+  ///
+  /// In en, this message translates to:
+  /// **'Always'**
+  String get voiceResponseAlways;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

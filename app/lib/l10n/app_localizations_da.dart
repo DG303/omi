@@ -9114,5 +9114,17 @@ class AppLocalizationsDa extends AppLocalizations {
   String get voiceResponseAudio => 'Læs Omis svar højt';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Afspilles i baggrunden selv i lydløs tilstand';
+  String get voiceResponseMode => 'Stemmesvar';
+
+  @override
+  String get voiceResponseModeTitle => 'Hvornår svar skal læses';
+
+  @override
+  String get voiceResponseOff => 'Fra';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Kun hovedtelefoner';
+
+  @override
+  String get voiceResponseAlways => 'Altid';
 }

@@ -9067,5 +9067,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get voiceResponseAudio => 'قراءة رد Omi بصوت عالٍ';
 
   @override
-  String get voiceResponseAudioSubtitle => 'يعمل في الخلفية حتى في الوضع الصامت';
+  String get voiceResponseMode => 'استجابة صوتية';
+
+  @override
+  String get voiceResponseModeTitle => 'متى تُقرأ الردود';
+
+  @override
+  String get voiceResponseOff => 'إيقاف';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'السماعات فقط';
+
+  @override
+  String get voiceResponseAlways => 'دائماً';
 }

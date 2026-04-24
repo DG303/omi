@@ -2988,5 +2988,9 @@
   "noBatteryDataYet": "Ingen batteridata endnu",
   "week": "Uge",
   "voiceResponseAudio": "Læs Omis svar højt",
-  "voiceResponseAudioSubtitle": "Afspilles i baggrunden selv i lydløs tilstand"
+  "voiceResponseMode": "Stemmesvar",
+  "voiceResponseModeTitle": "Hvornår svar skal læses",
+  "voiceResponseOff": "Fra",
+  "voiceResponseHeadphonesOnly": "Kun hovedtelefoner",
+  "voiceResponseAlways": "Altid"
 }

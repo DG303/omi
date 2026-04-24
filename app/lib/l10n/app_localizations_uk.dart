@@ -9142,5 +9142,17 @@ class AppLocalizationsUk extends AppLocalizations {
   String get voiceResponseAudio => 'Читати відповідь Omi вголос';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Працює у фоні навіть у тихому режимі';
+  String get voiceResponseMode => 'Голосова відповідь';
+
+  @override
+  String get voiceResponseModeTitle => 'Коли озвучувати відповіді';
+
+  @override
+  String get voiceResponseOff => 'Вимк';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Лише навушники';
+
+  @override
+  String get voiceResponseAlways => 'Завжди';
 }

@@ -3014,5 +3014,9 @@
   "noBatteryDataYet": "Pas encore de données de batterie",
   "week": "Semaine",
   "voiceResponseAudio": "Lire la réponse d'Omi à haute voix",
-  "voiceResponseAudioSubtitle": "Fonctionne en arrière-plan même en mode silencieux"
+  "voiceResponseMode": "Réponse vocale",
+  "voiceResponseModeTitle": "Quand énoncer les réponses",
+  "voiceResponseOff": "Désactivé",
+  "voiceResponseHeadphonesOnly": "Casque uniquement",
+  "voiceResponseAlways": "Toujours"
 }

@@ -9125,5 +9125,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceResponseAudio => 'Speak Omi\'s response aloud';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Plays in the background even in silent mode';
+  String get voiceResponseMode => 'Voice response';
+
+  @override
+  String get voiceResponseModeTitle => 'When to speak responses';
+
+  @override
+  String get voiceResponseOff => 'Off';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Headphones only';
+
+  @override
+  String get voiceResponseAlways => 'Always';
 }

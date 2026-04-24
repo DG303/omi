@@ -2984,5 +2984,9 @@
   "noBatteryDataYet": "Zatiaľ žiadne údaje o batérii",
   "week": "Týždeň",
   "voiceResponseAudio": "Prečítať odpoveď Omi nahlas",
-  "voiceResponseAudioSubtitle": "Funguje na pozadí aj v tichom režime"
+  "voiceResponseMode": "Hlasová odpoveď",
+  "voiceResponseModeTitle": "Kedy vysloviť odpovede",
+  "voiceResponseOff": "Vypnuté",
+  "voiceResponseHeadphonesOnly": "Len slúchadlá",
+  "voiceResponseAlways": "Vždy"
 }

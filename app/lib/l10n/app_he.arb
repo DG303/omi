@@ -10687,5 +10687,9 @@
   "noBatteryDataYet": "אין עדיין נתוני סוללה",
   "week": "שבוע",
   "voiceResponseAudio": "קרא את תגובת Omi בקול",
-  "voiceResponseAudioSubtitle": "פועל ברקע גם במצב שקט"
+  "voiceResponseMode": "תגובה קולית",
+  "voiceResponseModeTitle": "מתי לקרוא תשובות",
+  "voiceResponseOff": "כבוי",
+  "voiceResponseHeadphonesOnly": "אוזניות בלבד",
+  "voiceResponseAlways": "תמיד"
 }

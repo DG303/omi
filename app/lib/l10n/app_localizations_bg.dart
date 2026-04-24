@@ -9163,5 +9163,17 @@ class AppLocalizationsBg extends AppLocalizations {
   String get voiceResponseAudio => 'Прочитай отговора на Omi на глас';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Работи на заден план дори в тих режим';
+  String get voiceResponseMode => 'Гласов отговор';
+
+  @override
+  String get voiceResponseModeTitle => 'Кога да се произнасят отговорите';
+
+  @override
+  String get voiceResponseOff => 'Изкл';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Само слушалки';
+
+  @override
+  String get voiceResponseAlways => 'Винаги';
 }

@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Ei vielä akkutietoja",
   "week": "Viikko",
   "voiceResponseAudio": "Lue Omin vastaus ääneen",
-  "voiceResponseAudioSubtitle": "Toistaa taustalla myös äänettömässä tilassa"
+  "voiceResponseMode": "Äänivastaus",
+  "voiceResponseModeTitle": "Milloin vastaukset luetaan",
+  "voiceResponseOff": "Pois",
+  "voiceResponseHeadphonesOnly": "Vain kuulokkeet",
+  "voiceResponseAlways": "Aina"
 }

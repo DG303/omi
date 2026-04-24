@@ -9193,5 +9193,17 @@ class AppLocalizationsEl extends AppLocalizations {
   String get voiceResponseAudio => 'Ανάγνωση απάντησης Omi φωναχτά';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Παίζει στο παρασκήνιο ακόμα και σε σιωπηλή λειτουργία';
+  String get voiceResponseMode => 'Φωνητική απάντηση';
+
+  @override
+  String get voiceResponseModeTitle => 'Πότε να εκφωνούνται οι απαντήσεις';
+
+  @override
+  String get voiceResponseOff => 'Απενεργ.';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Μόνο ακουστικά';
+
+  @override
+  String get voiceResponseAlways => 'Πάντα';
 }

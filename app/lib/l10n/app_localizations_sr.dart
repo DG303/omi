@@ -9141,5 +9141,17 @@ class AppLocalizationsSr extends AppLocalizations {
   String get voiceResponseAudio => 'Прочитај Omi одговор наглас';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Ради у позадини и у тихом режиму';
+  String get voiceResponseMode => 'Гласовни одговор';
+
+  @override
+  String get voiceResponseModeTitle => 'Када изговарати одговоре';
+
+  @override
+  String get voiceResponseOff => 'Искључено';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Само слушалице';
+
+  @override
+  String get voiceResponseAlways => 'Увек';
 }

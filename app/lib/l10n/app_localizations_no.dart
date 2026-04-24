@@ -9124,5 +9124,17 @@ class AppLocalizationsNo extends AppLocalizations {
   String get voiceResponseAudio => 'Les Omis svar høyt';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Spiller i bakgrunnen selv i lydløs modus';
+  String get voiceResponseMode => 'Stemmesvar';
+
+  @override
+  String get voiceResponseModeTitle => 'Når svar skal leses';
+
+  @override
+  String get voiceResponseOff => 'Av';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Bare hodetelefoner';
+
+  @override
+  String get voiceResponseAlways => 'Alltid';
 }

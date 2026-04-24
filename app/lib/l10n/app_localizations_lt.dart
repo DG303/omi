@@ -9137,5 +9137,17 @@ class AppLocalizationsLt extends AppLocalizations {
   String get voiceResponseAudio => 'Skaityti Omi atsakymą garsiai';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Veikia fone net tyliuoju režimu';
+  String get voiceResponseMode => 'Balso atsakymas';
+
+  @override
+  String get voiceResponseModeTitle => 'Kada įgarsinti atsakymus';
+
+  @override
+  String get voiceResponseOff => 'Išjungta';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Tik ausinėmis';
+
+  @override
+  String get voiceResponseAlways => 'Visada';
 }

@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "아직 배터리 데이터가 없습니다",
   "week": "주",
   "voiceResponseAudio": "Omi의 응답 소리 내어 읽기",
-  "voiceResponseAudioSubtitle": "무음 모드에서도 백그라운드에서 재생됩니다"
+  "voiceResponseMode": "음성 응답",
+  "voiceResponseModeTitle": "응답을 말할 시점",
+  "voiceResponseOff": "끄기",
+  "voiceResponseHeadphonesOnly": "헤드폰만",
+  "voiceResponseAlways": "항상"
 }

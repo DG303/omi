@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Даних про батарею ще немає",
   "week": "Тиждень",
   "voiceResponseAudio": "Читати відповідь Omi вголос",
-  "voiceResponseAudioSubtitle": "Працює у фоні навіть у тихому режимі"
+  "voiceResponseMode": "Голосова відповідь",
+  "voiceResponseModeTitle": "Коли озвучувати відповіді",
+  "voiceResponseOff": "Вимк",
+  "voiceResponseHeadphonesOnly": "Лише навушники",
+  "voiceResponseAlways": "Завжди"
 }

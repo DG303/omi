@@ -9139,5 +9139,17 @@ class AppLocalizationsMr extends AppLocalizations {
   String get voiceResponseAudio => 'Omi चे उत्तर मोठ्याने वाचा';
 
   @override
-  String get voiceResponseAudioSubtitle => 'सायलेंट मोडमध्येही बॅकग्राउंडमध्ये वाजते';
+  String get voiceResponseMode => 'व्हॉइस प्रतिसाद';
+
+  @override
+  String get voiceResponseModeTitle => 'प्रतिसाद केव्हा बोलायचा';
+
+  @override
+  String get voiceResponseOff => 'बंद';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'फक्त हेडफोन';
+
+  @override
+  String get voiceResponseAlways => 'नेहमी';
 }

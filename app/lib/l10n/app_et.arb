@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Aku andmed puuduvad",
   "week": "Nädal",
   "voiceResponseAudio": "Loe Omi vastus ette",
-  "voiceResponseAudioSubtitle": "Mängib taustal ka vaikses režiimis"
+  "voiceResponseMode": "Hääleline vastus",
+  "voiceResponseModeTitle": "Millal vastuseid ette lugeda",
+  "voiceResponseOff": "Väljas",
+  "voiceResponseHeadphonesOnly": "Ainult kõrvaklapid",
+  "voiceResponseAlways": "Alati"
 }

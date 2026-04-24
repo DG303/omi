@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "ยังไม่มีข้อมูลแบตเตอรี่",
   "week": "สัปดาห์",
   "voiceResponseAudio": "อ่านคำตอบของ Omi ออกเสียง",
-  "voiceResponseAudioSubtitle": "เล่นในพื้นหลังแม้ในโหมดเงียบ"
+  "voiceResponseMode": "ตอบกลับด้วยเสียง",
+  "voiceResponseModeTitle": "เมื่อใดจึงจะอ่านคำตอบ",
+  "voiceResponseOff": "ปิด",
+  "voiceResponseHeadphonesOnly": "หูฟังเท่านั้น",
+  "voiceResponseAlways": "เสมอ"
 }

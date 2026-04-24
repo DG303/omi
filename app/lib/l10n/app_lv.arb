@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Pagaidām nav akumulatora datu",
   "week": "Nedēļa",
   "voiceResponseAudio": "Lasīt Omi atbildi skaļi",
-  "voiceResponseAudioSubtitle": "Darbojas fonā pat klusajā režīmā"
+  "voiceResponseMode": "Balss atbilde",
+  "voiceResponseModeTitle": "Kad atskaņot atbildes",
+  "voiceResponseOff": "Izslēgts",
+  "voiceResponseHeadphonesOnly": "Tikai austiņās",
+  "voiceResponseAlways": "Vienmēr"
 }

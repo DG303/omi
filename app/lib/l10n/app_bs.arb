@@ -10687,5 +10687,9 @@
   "noBatteryDataYet": "Još nema podataka o bateriji",
   "week": "Sedmica",
   "voiceResponseAudio": "Pročitaj Omi odgovor naglas",
-  "voiceResponseAudioSubtitle": "Radi u pozadini i u tihom modu"
+  "voiceResponseMode": "Glasovni odgovor",
+  "voiceResponseModeTitle": "Kada izgovarati odgovore",
+  "voiceResponseOff": "Isključeno",
+  "voiceResponseHeadphonesOnly": "Samo slušalice",
+  "voiceResponseAlways": "Uvijek"
 }

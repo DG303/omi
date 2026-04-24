@@ -2979,5 +2979,9 @@
   "noBatteryDataYet": "Încă nu există date despre baterie",
   "week": "Săptămână",
   "voiceResponseAudio": "Citește răspunsul Omi cu voce tare",
-  "voiceResponseAudioSubtitle": "Funcționează în fundal chiar și în modul silențios"
+  "voiceResponseMode": "Răspuns vocal",
+  "voiceResponseModeTitle": "Când să rostească răspunsurile",
+  "voiceResponseOff": "Oprit",
+  "voiceResponseHeadphonesOnly": "Doar căști",
+  "voiceResponseAlways": "Întotdeauna"
 }

@@ -9132,5 +9132,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get voiceResponseAudio => 'Läs upp Omis svar';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Spelas i bakgrunden även i tyst läge';
+  String get voiceResponseMode => 'Röstsvar';
+
+  @override
+  String get voiceResponseModeTitle => 'När svar ska läsas upp';
+
+  @override
+  String get voiceResponseOff => 'Av';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Endast hörlurar';
+
+  @override
+  String get voiceResponseAlways => 'Alltid';
 }

@@ -9152,5 +9152,17 @@ class AppLocalizationsMs extends AppLocalizations {
   String get voiceResponseAudio => 'Baca respons Omi dengan kuat';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Berjalan di latar belakang walaupun dalam mod senyap';
+  String get voiceResponseMode => 'Respons suara';
+
+  @override
+  String get voiceResponseModeTitle => 'Bila respons dituturkan';
+
+  @override
+  String get voiceResponseOff => 'Mati';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Fon kepala sahaja';
+
+  @override
+  String get voiceResponseAlways => 'Sentiasa';
 }

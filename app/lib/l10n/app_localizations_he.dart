@@ -9056,5 +9056,17 @@ class AppLocalizationsHe extends AppLocalizations {
   String get voiceResponseAudio => 'קרא את תגובת Omi בקול';
 
   @override
-  String get voiceResponseAudioSubtitle => 'פועל ברקע גם במצב שקט';
+  String get voiceResponseMode => 'תגובה קולית';
+
+  @override
+  String get voiceResponseModeTitle => 'מתי לקרוא תשובות';
+
+  @override
+  String get voiceResponseOff => 'כבוי';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'אוזניות בלבד';
+
+  @override
+  String get voiceResponseAlways => 'תמיד';
 }

@@ -9213,5 +9213,17 @@ class AppLocalizationsTl extends AppLocalizations {
   String get voiceResponseAudio => 'Basahin nang malakas ang sagot ng Omi';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Tumutugtog sa background kahit sa silent mode';
+  String get voiceResponseMode => 'Tugon sa boses';
+
+  @override
+  String get voiceResponseModeTitle => 'Kailan bibigkasin ang tugon';
+
+  @override
+  String get voiceResponseOff => 'Naka-off';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Headphones lang';
+
+  @override
+  String get voiceResponseAlways => 'Palagi';
 }

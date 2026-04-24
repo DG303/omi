@@ -9116,5 +9116,17 @@ class AppLocalizationsSk extends AppLocalizations {
   String get voiceResponseAudio => 'Prečítať odpoveď Omi nahlas';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Funguje na pozadí aj v tichom režime';
+  String get voiceResponseMode => 'Hlasová odpoveď';
+
+  @override
+  String get voiceResponseModeTitle => 'Kedy vysloviť odpovede';
+
+  @override
+  String get voiceResponseOff => 'Vypnuté';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Len slúchadlá';
+
+  @override
+  String get voiceResponseAlways => 'Vždy';
 }

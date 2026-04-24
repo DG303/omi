@@ -9183,5 +9183,17 @@ class AppLocalizationsIt extends AppLocalizations {
   String get voiceResponseAudio => 'Leggi la risposta di Omi ad alta voce';
 
   @override
-  String get voiceResponseAudioSubtitle => 'Funziona in background anche in modalità silenziosa';
+  String get voiceResponseMode => 'Risposta vocale';
+
+  @override
+  String get voiceResponseModeTitle => 'Quando leggere le risposte';
+
+  @override
+  String get voiceResponseOff => 'Off';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Solo cuffie';
+
+  @override
+  String get voiceResponseAlways => 'Sempre';
 }
