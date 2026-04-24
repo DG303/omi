@@ -271,6 +271,34 @@ final class FloatingBarVoicePlaybackService: NSObject, AVAudioPlayerDelegate {
     }
   }
 
+  /// Synthesize and play a single short phrase via ElevenLabs (or fall back to
+  /// the system voice). Used by agent pills to speak a short acknowledgement
+  /// like "On it" before the agent kicks off.
+  func speakOneShot(_ text: String) {
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return }
+    let mode = currentMode ?? resolvePlaybackMode()
+    currentMode = mode
+    switch mode {
+    case .elevenLabs(let voiceID):
+      Task { [weak self] in
+        do {
+          let audio = try await Self.synthesizeSpeech(text: trimmed, voiceID: voiceID)
+          await MainActor.run {
+            self?.startPlayback(audio)
+          }
+        } catch {
+          // Network/API error — fall back to system voice on the main thread.
+          await MainActor.run {
+            self?.enqueueSystemSpeech(trimmed)
+          }
+        }
+      }
+    case .systemFallback:
+      enqueueSystemSpeech(trimmed)
+    }
+  }
+
   func interruptCurrentResponse() {
     if let currentResponseID {
       interruptedResponseID = currentResponseID

@@ -35,9 +35,7 @@ struct AgentPillView: View {
     @ObservedObject var pill: AgentPill
     @ObservedObject var manager: AgentPillsManager
     @State private var rotationAngle: Double = 0
-    @State private var pulse: Bool = false
     @State private var isHovering: Bool = false
-    @State private var rotationTimer: Timer?
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -59,10 +57,6 @@ struct AgentPillView: View {
         }
         .onAppear { startRotationIfRunning() }
         .onChange(of: pill.status) { startRotationIfRunning() }
-        .onDisappear {
-            rotationTimer?.invalidate()
-            rotationTimer = nil
-        }
         .accessibilityLabel("\(pill.title) — \(pill.status.displayLabel)")
     }
 
@@ -118,71 +112,71 @@ struct AgentPillView: View {
             }
         }
         .rotationEffect(.degrees(rotationAngle))
-        .animation(.easeInOut(duration: 1.2), value: rotationAngle)
+        .animation(isRotating ? .linear(duration: 4.0).repeatForever(autoreverses: false) : .default, value: rotationAngle)
     }
 
     @ViewBuilder
     private var statusDot: some View {
-        ZStack {
-            Circle()
-                .fill(Color(nsColor: NSColor(white: 0.05, alpha: 1.0)))
-                .frame(width: 9, height: 9)
-            Circle()
-                .fill(statusColor)
-                .frame(width: 7, height: 7)
-                .scaleEffect(shouldPulse && pulse ? 1.18 : 1.0)
-                .opacity(shouldPulse && pulse ? 0.65 : 1.0)
-                .animation(
-                    shouldPulse
-                        ? .easeInOut(duration: 1.0).repeatForever(autoreverses: true)
-                        : .default,
-                    value: pulse
-                )
-                .onAppear {
-                    if shouldPulse { pulse = true }
-                }
-                .onChange(of: pill.status) {
-                    pulse = shouldPulse ? true : false
-                }
+        // Only render a status dot when the agent has finished. While running
+        // the rotating logo itself signals activity — the dot would be
+        // redundant noise on top of that.
+        if showStatusDot {
+            ZStack {
+                Circle()
+                    .fill(Color(nsColor: NSColor(white: 0.05, alpha: 1.0)))
+                    .frame(width: 10, height: 10)
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 8, height: 8)
+            }
+            .offset(x: 3, y: -3)
+            .transition(.scale.combined(with: .opacity))
         }
-        .offset(x: 3, y: -3)
     }
 
-    private var shouldPulse: Bool {
+    /// Show the dot only on terminal states. While running we rely on the
+    /// rotating logo as the activity signal.
+    private var showStatusDot: Bool {
         switch pill.status {
-        case .running, .starting: return true
+        case .done, .failed: return true
         default: return false
         }
     }
 
     private var statusColor: Color {
         switch pill.status {
+        case .queued: return Color(red: 0.85, green: 0.78, blue: 0.30)
         case .starting, .running: return Color(red: 0.27, green: 0.92, blue: 0.46)
-        case .done: return Color(red: 0.45, green: 0.85, blue: 1.0)
+        case .done: return Color(red: 0.27, green: 0.92, blue: 0.46)  // green
         case .failed: return Color(red: 1.0, green: 0.42, blue: 0.42)
         }
     }
 
+    private var isRotating: Bool {
+        switch pill.status {
+        case .starting, .running: return true
+        default: return false
+        }
+    }
+
     private func startRotationIfRunning() {
-        rotationTimer?.invalidate()
-        rotationTimer = nil
         switch pill.status {
         case .starting, .running:
-            // Subtle: a single 360° rotation every ~3s with easing — not annoying.
+            // Continuous slow rotation — set a single faraway target and let
+            // SwiftUI's repeatForever animation drive it. Avoids the timer
+            // wakeups and the "pause between revolutions" feel of the old
+            // implementation.
             rotationAngle = 0
-            let timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
-                Task { @MainActor in
-                    withAnimation(.easeInOut(duration: 1.2)) {
-                        rotationAngle += 360
-                    }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                withAnimation(.linear(duration: 4.0).repeatForever(autoreverses: false)) {
+                    rotationAngle = 360
                 }
             }
-            timer.fire()
-            rotationTimer = timer
         default:
-            // Settle to upright on completion.
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.78)) {
-                rotationAngle = 0
+            // Stop where we are — no snap-back, that would feel jerky after
+            // a long-running task.
+            withAnimation(.easeOut(duration: 0.4)) {
+                rotationAngle = floor(rotationAngle / 360) * 360
             }
         }
     }
@@ -208,9 +202,6 @@ struct AgentPillPopover: View {
     var onDismiss: () -> Void
     var onOpenInChat: () -> Void
     var onSendFollowUp: (String) -> Void
-
-    @State private var followUpText: String = ""
-    @FocusState private var followUpFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -273,6 +264,7 @@ struct AgentPillPopover: View {
 
     private var statusBadgeForeground: Color {
         switch pill.status {
+        case .queued: return Color(red: 0.0, green: 0.0, blue: 0.0)
         case .starting, .running: return Color(red: 0.18, green: 0.10, blue: 0.0)
         case .done: return Color(red: 0.07, green: 0.18, blue: 0.10)
         case .failed: return .white
@@ -281,6 +273,7 @@ struct AgentPillPopover: View {
 
     private var statusBadgeBackground: Color {
         switch pill.status {
+        case .queued: return Color(red: 0.85, green: 0.85, blue: 0.85)
         case .starting, .running: return Color(red: 1.0, green: 0.78, blue: 0.30)
         case .done: return Color(red: 0.45, green: 0.92, blue: 0.55)
         case .failed: return Color(red: 0.78, green: 0.32, blue: 0.32)
@@ -345,47 +338,22 @@ struct AgentPillPopover: View {
                 }
             }
 
-            HStack(spacing: 6) {
-                TextField("Follow up", text: $followUpText)
-                    .textFieldStyle(.plain)
-                    .scaledFont(size: 12)
-                    .foregroundColor(.white)
-                    .focused($followUpFocused)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
-                    .background(Color.white.opacity(0.06))
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    .onSubmit { submitFollowUp() }
-
-                Button {
-                    submitFollowUp()
-                } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(followUpText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .white.opacity(0.35) : .white)
-                }
-                .buttonStyle(.plain)
-                .disabled(followUpText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-
-                Button(action: onOpenInChat) {
+            Button(action: onOpenInChat) {
+                HStack(spacing: 6) {
                     Image(systemName: "bubble.left.and.bubble.right.fill")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.7))
-                        .frame(width: 26, height: 26)
-                        .background(Color.white.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .font(.system(size: 11))
+                    Text("Open in chat")
+                        .scaledFont(size: 11, weight: .medium)
                 }
-                .buttonStyle(.plain)
-                .help("Open in chat")
+                .foregroundColor(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .frame(maxWidth: .infinity)
+                .background(Color.white.opacity(0.10))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
+            .buttonStyle(.plain)
         }
-    }
-
-    private func submitFollowUp() {
-        let trimmed = followUpText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        onSendFollowUp(trimmed)
-        followUpText = ""
     }
 }
 

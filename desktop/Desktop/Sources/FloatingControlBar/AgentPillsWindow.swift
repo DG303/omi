@@ -170,7 +170,7 @@ final class AgentPillsWindow: NSPanel, NSWindowDelegate {
     }
 
     private func spawnFollowUp(from pill: AgentPill, text: String) {
-        manager.spawn(query: text, model: pill.model)
+        manager.spawnFromUserQuery(text, model: pill.model)
     }
 
     private func openPillInChat(_ pill: AgentPill) {

@@ -996,7 +996,7 @@ class FloatingControlBarManager {
                 let model = ShortcutSettings.shared.selectedModel.isEmpty
                     ? "claude-sonnet-4-6"
                     : ShortcutSettings.shared.selectedModel
-                _ = AgentPillsManager.shared.spawn(query: message, model: model)
+                _ = AgentPillsManager.shared.spawnFromUserQuery(message, model: model)
                 // Collapse the input so the pill is the only visible result.
                 barWindow.state.aiInputText = ""
                 barWindow.closeAIConversation()
@@ -1292,7 +1292,7 @@ class FloatingControlBarManager {
                 let model = ShortcutSettings.shared.selectedModel.isEmpty
                     ? "claude-sonnet-4-6"
                     : ShortcutSettings.shared.selectedModel
-                _ = AgentPillsManager.shared.spawn(query: message, model: model)
+                _ = AgentPillsManager.shared.spawnFromUserQuery(message, model: model)
                 window.state.aiInputText = ""
                 window.closeAIConversation()
                 return
@@ -1322,7 +1322,17 @@ class FloatingControlBarManager {
         window.state.currentQueryFromVoice = fromVoice
         window.orderFrontRegardless()
 
-        // Auto-send the query
+        // Auto-send the query. PTT bypasses the typed onSendQuery closure, so
+        // we need to apply the same pill-routing rule here ourselves.
+        if AgentPillsManager.looksLikeAction(query) {
+            let model = ShortcutSettings.shared.selectedModel.isEmpty
+                ? "claude-sonnet-4-6"
+                : ShortcutSettings.shared.selectedModel
+            _ = AgentPillsManager.shared.spawnFromUserQuery(query, model: model, fromVoice: fromVoice)
+            window.state.aiInputText = ""
+            window.closeAIConversation()
+            return
+        }
         Task { @MainActor in
             await self.sendAIQuery(query, barWindow: window, provider: provider)
         }
