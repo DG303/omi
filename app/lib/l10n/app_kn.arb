@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "ಬ್ಯಾಟರಿ ಸ್ತರ",
+    "charging": "ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -10687,5 +10688,11 @@
     "batteryHistory": "ಬ್ಯಾಟರಿ",
     "day": "ದಿನ",
     "noBatteryDataYet": "ಇನ್ನೂ ಬ್ಯಾಟರಿ ಡೇಟಾ ಇಲ್ಲ",
-    "week": "ವಾರ"
+    "week": "ವಾರ",
+    "voiceResponseAudio": "Omi ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಜೋರಾಗಿ ಓದಿ",
+    "voiceResponseMode": "ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆ",
+    "voiceResponseModeTitle": "ಪ್ರತಿಕ್ರಿಯೆ ಯಾವಾಗ",
+    "voiceResponseOff": "ಆಫ್",
+    "voiceResponseHeadphonesOnly": "ಹೆಡ್‌ಫೋನ್‌ಗಳು ಮಾತ್ರ",
+    "voiceResponseAlways": "ಯಾವಾಗಲೂ"
 }

@@ -2375,6 +2375,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get batteryLevel => 'ব্যাটারি স্তর';
 
   @override
+  String get charging => 'চার্জ হচ্ছে';
+
+  @override
   String get productUpdate => 'পণ্য আপডেট';
 
   @override
@@ -9138,4 +9141,22 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'আপনি আপনার মাসিক সীমায় পৌঁছেছেন। বিনা সীমাবদ্ধতায় Omi-এর সাথে চ্যাট চালিয়ে যেতে আপগ্রেড করুন।';
+
+  @override
+  String get voiceResponseAudio => 'Omi-র উত্তর জোরে পড়ুন';
+
+  @override
+  String get voiceResponseMode => 'ভয়েস প্রতিক্রিয়া';
+
+  @override
+  String get voiceResponseModeTitle => 'কখন উত্তর বলা হবে';
+
+  @override
+  String get voiceResponseOff => 'বন্ধ';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'শুধু হেডফোন';
+
+  @override
+  String get voiceResponseAlways => 'সর্বদা';
 }

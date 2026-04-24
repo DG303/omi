@@ -2380,6 +2380,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get batteryLevel => 'Nivel baterie';
 
   @override
+  String get charging => 'Se încarcă';
+
+  @override
   String get productUpdate => 'Actualizare produs';
 
   @override
@@ -9172,4 +9175,22 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Ai atins limita lunară. Fă upgrade pentru a continua să discuți cu Omi fără restricții.';
+
+  @override
+  String get voiceResponseAudio => 'Citește răspunsul Omi cu voce tare';
+
+  @override
+  String get voiceResponseMode => 'Răspuns vocal';
+
+  @override
+  String get voiceResponseModeTitle => 'Când să rostească răspunsurile';
+
+  @override
+  String get voiceResponseOff => 'Oprit';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Doar căști';
+
+  @override
+  String get voiceResponseAlways => 'Întotdeauna';
 }

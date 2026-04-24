@@ -732,6 +732,7 @@
     "slideToUpdate": "Schuif om bij te werken",
     "copiedToClipboard": "{title} gekopieerd naar klembord",
     "batteryLevel": "Batterijniveau",
+    "charging": "Opladen",
     "productUpdate": "Productupdate",
     "offline": "Offline",
     "available": "Beschikbaar",
@@ -2979,5 +2980,11 @@
     "batteryHistory": "Batterij",
     "day": "Dag",
     "noBatteryDataYet": "Nog geen batterijgegevens",
-    "week": "Week"
+    "week": "Week",
+    "voiceResponseAudio": "Lees Omi's antwoord voor",
+    "voiceResponseMode": "Spraakantwoord",
+    "voiceResponseModeTitle": "Wanneer antwoorden worden voorgelezen",
+    "voiceResponseOff": "Uit",
+    "voiceResponseHeadphonesOnly": "Alleen koptelefoon",
+    "voiceResponseAlways": "Altijd"
 }

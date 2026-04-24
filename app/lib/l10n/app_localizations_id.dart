@@ -2375,6 +2375,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get batteryLevel => 'Level Baterai';
 
   @override
+  String get charging => 'Mengisi daya';
+
+  @override
   String get productUpdate => 'Pembaruan Produk';
 
   @override
@@ -9139,4 +9142,22 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Anda telah mencapai batas bulanan. Upgrade untuk terus mengobrol dengan Omi tanpa batasan.';
+
+  @override
+  String get voiceResponseAudio => 'Bacakan respons Omi';
+
+  @override
+  String get voiceResponseMode => 'Respons suara';
+
+  @override
+  String get voiceResponseModeTitle => 'Kapan respons diucapkan';
+
+  @override
+  String get voiceResponseOff => 'Mati';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Hanya headphone';
+
+  @override
+  String get voiceResponseAlways => 'Selalu';
 }

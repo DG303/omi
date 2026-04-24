@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "Antas ng Baterya",
+    "charging": "Nagcha-charge",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -10687,5 +10688,11 @@
     "batteryHistory": "Baterya",
     "day": "Araw",
     "noBatteryDataYet": "Wala pang datos ng baterya",
-    "week": "Linggo"
+    "week": "Linggo",
+    "voiceResponseAudio": "Basahin nang malakas ang sagot ng Omi",
+    "voiceResponseMode": "Tugon sa boses",
+    "voiceResponseModeTitle": "Kailan bibigkasin ang tugon",
+    "voiceResponseOff": "Naka-off",
+    "voiceResponseHeadphonesOnly": "Headphones lang",
+    "voiceResponseAlways": "Palagi"
 }

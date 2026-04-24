@@ -732,6 +732,7 @@
     "slideToUpdate": "Csúsztassa a frissítéshez",
     "copiedToClipboard": "{title} a vágólapra másolva",
     "batteryLevel": "Akkumulátor szint",
+    "charging": "Töltés",
     "productUpdate": "Termékfrissítés",
     "offline": "Offline",
     "available": "Elérhető",
@@ -3075,5 +3076,11 @@
     "batteryHistory": "Akkumulátor",
     "day": "Nap",
     "noBatteryDataYet": "Még nincsenek akkumulátor adatok",
-    "week": "Hét"
+    "week": "Hét",
+    "voiceResponseAudio": "Omi válaszának felolvasása",
+    "voiceResponseMode": "Hangválasz",
+    "voiceResponseModeTitle": "Mikor szólaljon meg a válasz",
+    "voiceResponseOff": "Ki",
+    "voiceResponseHeadphonesOnly": "Csak fülhallgató",
+    "voiceResponseAlways": "Mindig"
 }

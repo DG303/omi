@@ -2378,6 +2378,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get batteryLevel => 'Livello batteria';
 
   @override
+  String get charging => 'In carica';
+
+  @override
   String get productUpdate => 'Aggiornamento prodotto';
 
   @override
@@ -9184,4 +9187,22 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Hai raggiunto il tuo limite mensile. Aggiorna per continuare a chattare con Omi senza restrizioni.';
+
+  @override
+  String get voiceResponseAudio => 'Leggi la risposta di Omi ad alta voce';
+
+  @override
+  String get voiceResponseMode => 'Risposta vocale';
+
+  @override
+  String get voiceResponseModeTitle => 'Quando leggere le risposte';
+
+  @override
+  String get voiceResponseOff => 'Off';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Solo cuffie';
+
+  @override
+  String get voiceResponseAlways => 'Sempre';
 }

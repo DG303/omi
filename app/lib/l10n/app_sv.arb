@@ -732,6 +732,7 @@
     "slideToUpdate": "Dra för att uppdatera",
     "copiedToClipboard": "{title} kopierat till urklipp",
     "batteryLevel": "Batterinivå",
+    "charging": "Laddar",
     "productUpdate": "Produktuppdatering",
     "offline": "Offline",
     "available": "Tillgänglig",
@@ -2979,5 +2980,11 @@
     "batteryHistory": "Batteri",
     "day": "Dag",
     "noBatteryDataYet": "Inga batteridata ännu",
-    "week": "Vecka"
+    "week": "Vecka",
+    "voiceResponseAudio": "Läs upp Omis svar",
+    "voiceResponseMode": "Röstsvar",
+    "voiceResponseModeTitle": "När svar ska läsas upp",
+    "voiceResponseOff": "Av",
+    "voiceResponseHeadphonesOnly": "Endast hörlurar",
+    "voiceResponseAlways": "Alltid"
 }

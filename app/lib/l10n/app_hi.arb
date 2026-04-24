@@ -733,6 +733,7 @@
     "slideToUpdate": "अपडेट के लिए स्लाइड करें",
     "copiedToClipboard": "{title} क्लिपबोर्ड में कॉपी किया गया",
     "batteryLevel": "बैटरी स्तर",
+    "charging": "चार्ज हो रहा है",
     "productUpdate": "उत्पाद अपडेट",
     "offline": "ऑफ़लाइन",
     "available": "उपलब्ध",
@@ -2980,5 +2981,11 @@
     "batteryHistory": "बैटरी",
     "day": "दिन",
     "noBatteryDataYet": "अभी तक कोई बैटरी डेटा नहीं",
-    "week": "सप्ताह"
+    "week": "सप्ताह",
+    "voiceResponseAudio": "Omi का जवाब ज़ोर से पढ़ें",
+    "voiceResponseMode": "वॉइस प्रतिक्रिया",
+    "voiceResponseModeTitle": "उत्तर कब बोले जाएं",
+    "voiceResponseOff": "बंद",
+    "voiceResponseHeadphonesOnly": "केवल हेडफ़ोन",
+    "voiceResponseAlways": "हमेशा"
 }

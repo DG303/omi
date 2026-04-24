@@ -732,6 +732,7 @@
     "slideToUpdate": "Llisca per actualitzar",
     "copiedToClipboard": "{title} copiat al portapapers",
     "batteryLevel": "Nivell de bateria",
+    "charging": "Carregant",
     "productUpdate": "Actualització del producte",
     "offline": "Fora de línia",
     "available": "Disponible",
@@ -2948,5 +2949,11 @@
     "batteryHistory": "Bateria",
     "day": "Dia",
     "noBatteryDataYet": "Encara no hi ha dades de bateria",
-    "week": "Setmana"
+    "week": "Setmana",
+    "voiceResponseAudio": "Llegeix la resposta d'Omi en veu alta",
+    "voiceResponseMode": "Resposta de veu",
+    "voiceResponseModeTitle": "Quan pronunciar les respostes",
+    "voiceResponseOff": "Desactivat",
+    "voiceResponseHeadphonesOnly": "Només auriculars",
+    "voiceResponseAlways": "Sempre"
 }

@@ -733,6 +733,7 @@
     "slideToUpdate": "Zum Aktualisieren wischen",
     "copiedToClipboard": "{title} in Zwischenablage kopiert",
     "batteryLevel": "Batteriestand",
+    "charging": "Wird geladen",
     "productUpdate": "Produktaktualisierung",
     "offline": "Offline",
     "available": "Verfügbar",
@@ -2947,5 +2948,11 @@
     "batteryHistory": "Batterie",
     "day": "Tag",
     "noBatteryDataYet": "Noch keine Batteriedaten",
-    "week": "Woche"
+    "week": "Woche",
+    "voiceResponseAudio": "Omis Antwort laut vorlesen",
+    "voiceResponseMode": "Sprachantwort",
+    "voiceResponseModeTitle": "Wann Antworten vorgelesen werden",
+    "voiceResponseOff": "Aus",
+    "voiceResponseHeadphonesOnly": "Nur Kopfhörer",
+    "voiceResponseAlways": "Immer"
 }

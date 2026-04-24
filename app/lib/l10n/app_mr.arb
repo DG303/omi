@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "बॅटरी स्तर",
+    "charging": "चार्ज होत आहे",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -10687,5 +10688,11 @@
     "batteryHistory": "बॅटरी",
     "day": "दिवस",
     "noBatteryDataYet": "अजून बॅटरी डेटा नाही",
-    "week": "आठवडा"
+    "week": "आठवडा",
+    "voiceResponseAudio": "Omi चे उत्तर मोठ्याने वाचा",
+    "voiceResponseMode": "व्हॉइस प्रतिसाद",
+    "voiceResponseModeTitle": "प्रतिसाद केव्हा बोलायचा",
+    "voiceResponseOff": "बंद",
+    "voiceResponseHeadphonesOnly": "फक्त हेडफोन",
+    "voiceResponseAlways": "नेहमी"
 }

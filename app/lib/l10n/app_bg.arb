@@ -732,6 +732,7 @@
     "slideToUpdate": "Плъзнете за актуализация",
     "copiedToClipboard": "{title} копирано в клипборда",
     "batteryLevel": "Ниво на батерията",
+    "charging": "Зареждане",
     "productUpdate": "Актуализация на продукта",
     "offline": "Офлайн",
     "available": "Наличен",
@@ -2948,5 +2949,11 @@
     "batteryHistory": "Батерия",
     "day": "Ден",
     "noBatteryDataYet": "Все още няма данни за батерията",
-    "week": "Седмица"
+    "week": "Седмица",
+    "voiceResponseAudio": "Прочитай отговора на Omi на глас",
+    "voiceResponseMode": "Гласов отговор",
+    "voiceResponseModeTitle": "Кога да се произнасят отговорите",
+    "voiceResponseOff": "Изкл",
+    "voiceResponseHeadphonesOnly": "Само слушалки",
+    "voiceResponseAlways": "Винаги"
 }

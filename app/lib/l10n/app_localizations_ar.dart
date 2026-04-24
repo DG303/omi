@@ -2352,6 +2352,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get batteryLevel => 'مستوى البطارية';
 
   @override
+  String get charging => 'شحن';
+
+  @override
   String get productUpdate => 'تحديث المنتج';
 
   @override
@@ -9068,4 +9071,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get chatQuotaExceededReply => 'لقد وصلت إلى حدك الشهري. قم بالترقية لمتابعة الدردشة مع Omi بدون قيود.';
+
+  @override
+  String get voiceResponseAudio => 'قراءة رد Omi بصوت عالٍ';
+
+  @override
+  String get voiceResponseMode => 'استجابة صوتية';
+
+  @override
+  String get voiceResponseModeTitle => 'متى تُقرأ الردود';
+
+  @override
+  String get voiceResponseOff => 'إيقاف';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'السماعات فقط';
+
+  @override
+  String get voiceResponseAlways => 'دائماً';
 }

@@ -2376,6 +2376,9 @@ class AppLocalizationsSr extends AppLocalizations {
   String get batteryLevel => 'Ниво батерије';
 
   @override
+  String get charging => 'Пуњење';
+
+  @override
   String get productUpdate => 'Ажурирање производа';
 
   @override
@@ -9142,4 +9145,22 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Достигли сте свој месечни лимит. Надоградите да наставите да разговарате са Omi без ограничења.';
+
+  @override
+  String get voiceResponseAudio => 'Прочитај Omi одговор наглас';
+
+  @override
+  String get voiceResponseMode => 'Гласовни одговор';
+
+  @override
+  String get voiceResponseModeTitle => 'Када изговарати одговоре';
+
+  @override
+  String get voiceResponseOff => 'Искључено';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Само слушалице';
+
+  @override
+  String get voiceResponseAlways => 'Увек';
 }

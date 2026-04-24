@@ -2384,6 +2384,9 @@ class AppLocalizationsMk extends AppLocalizations {
   String get batteryLevel => 'Ниво на батерија';
 
   @override
+  String get charging => 'Полнење';
+
+  @override
   String get productUpdate => 'Ажурирање на производ';
 
   @override
@@ -9178,4 +9181,22 @@ class AppLocalizationsMk extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Го достигнавте вашиот месечен лимит. Надградете за да продолжите да разговарате со Omi без ограничувања.';
+
+  @override
+  String get voiceResponseAudio => 'Прочитај го одговорот на Omi гласно';
+
+  @override
+  String get voiceResponseMode => 'Гласовен одговор';
+
+  @override
+  String get voiceResponseModeTitle => 'Кога да се изговараат одговорите';
+
+  @override
+  String get voiceResponseOff => 'Исклучено';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Само слушалки';
+
+  @override
+  String get voiceResponseAlways => 'Секогаш';
 }

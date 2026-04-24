@@ -2388,6 +2388,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get batteryLevel => 'பேட்டரி நிலை';
 
   @override
+  String get charging => 'சார்ஜ் ஆகிறது';
+
+  @override
   String get productUpdate => 'பொருள் புதுப்பிப்பு';
 
   @override
@@ -9198,4 +9201,22 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'நீங்கள் உங்கள் மாதாந்திர வரம்பை அடைந்துவிட்டீர்கள். கட்டுப்பாடுகள் இல்லாமல் Omi உடன் அரட்டையைத் தொடர மேம்படுத்தவும்.';
+
+  @override
+  String get voiceResponseAudio => 'Omi பதிலை சத்தமாக படிக்கவும்';
+
+  @override
+  String get voiceResponseMode => 'குரல் பதில்';
+
+  @override
+  String get voiceResponseModeTitle => 'பதில்களை எப்போது பேசுவது';
+
+  @override
+  String get voiceResponseOff => 'முடக்கம்';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'ஹெட்ஃபோன் மட்டும்';
+
+  @override
+  String get voiceResponseAlways => 'எப்போதும்';
 }

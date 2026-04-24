@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "Узровень батарэі",
+    "charging": "Зарадка",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -10687,5 +10688,11 @@
     "batteryHistory": "Батарэя",
     "day": "Дзень",
     "noBatteryDataYet": "Даных пра батарэю яшчэ няма",
-    "week": "Тыдзень"
+    "week": "Тыдзень",
+    "voiceResponseAudio": "Чытаць адказ Omi уголас",
+    "voiceResponseMode": "Галасавы адказ",
+    "voiceResponseModeTitle": "Калі агучваць адказы",
+    "voiceResponseOff": "Выкл",
+    "voiceResponseHeadphonesOnly": "Толькі навушнікі",
+    "voiceResponseAlways": "Заўсёды"
 }

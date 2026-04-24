@@ -732,6 +732,7 @@
     "slideToUpdate": "اسحب للتحديث",
     "copiedToClipboard": "تم نسخ {title} إلى الحافظة",
     "batteryLevel": "مستوى البطارية",
+    "charging": "شحن",
     "productUpdate": "تحديث المنتج",
     "offline": "غير متصل",
     "available": "متاح",
@@ -2946,5 +2947,11 @@
     "batteryHistory": "البطارية",
     "day": "يوم",
     "noBatteryDataYet": "لا توجد بيانات بطارية بعد",
-    "week": "أسبوع"
+    "week": "أسبوع",
+    "voiceResponseAudio": "قراءة رد Omi بصوت عالٍ",
+    "voiceResponseMode": "استجابة صوتية",
+    "voiceResponseModeTitle": "متى تُقرأ الردود",
+    "voiceResponseOff": "إيقاف",
+    "voiceResponseHeadphonesOnly": "السماعات فقط",
+    "voiceResponseAlways": "دائماً"
 }

@@ -732,6 +732,7 @@
     "slideToUpdate": "Luncurkan untuk kemas kini",
     "copiedToClipboard": "{title} disalin ke papan keratan",
     "batteryLevel": "Tahap Bateri",
+    "charging": "Mengecas",
     "productUpdate": "Kemas Kini Produk",
     "offline": "Luar Talian",
     "available": "Tersedia",
@@ -2979,5 +2980,11 @@
     "batteryHistory": "Bateri",
     "day": "Hari",
     "noBatteryDataYet": "Tiada data bateri lagi",
-    "week": "Minggu"
+    "week": "Minggu",
+    "voiceResponseAudio": "Baca respons Omi dengan kuat",
+    "voiceResponseMode": "Respons suara",
+    "voiceResponseModeTitle": "Bila respons dituturkan",
+    "voiceResponseOff": "Mati",
+    "voiceResponseHeadphonesOnly": "Fon kepala sahaja",
+    "voiceResponseAlways": "Sentiasa"
 }

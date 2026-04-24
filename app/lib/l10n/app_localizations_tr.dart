@@ -2375,6 +2375,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get batteryLevel => 'Pil Seviyesi';
 
   @override
+  String get charging => 'Şarj oluyor';
+
+  @override
   String get productUpdate => 'Ürün Güncellemesi';
 
   @override
@@ -9142,4 +9145,22 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Aylık limitinize ulaştınız. Kısıtlama olmadan Omi ile sohbete devam etmek için yükseltin.';
+
+  @override
+  String get voiceResponseAudio => 'Omi yanıtını sesli oku';
+
+  @override
+  String get voiceResponseMode => 'Sesli yanıt';
+
+  @override
+  String get voiceResponseModeTitle => 'Yanıtlar ne zaman okunsun';
+
+  @override
+  String get voiceResponseOff => 'Kapalı';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Sadece kulaklık';
+
+  @override
+  String get voiceResponseAlways => 'Her zaman';
 }

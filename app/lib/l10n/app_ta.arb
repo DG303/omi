@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "பேட்டரி நிலை",
+    "charging": "சார்ஜ் ஆகிறது",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -10687,5 +10688,11 @@
     "batteryHistory": "பேட்டரி",
     "day": "நாள்",
     "noBatteryDataYet": "இன்னும் பேட்டரி தரவு இல்லை",
-    "week": "வாரம்"
+    "week": "வாரம்",
+    "voiceResponseAudio": "Omi பதிலை சத்தமாக படிக்கவும்",
+    "voiceResponseMode": "குரல் பதில்",
+    "voiceResponseModeTitle": "பதில்களை எப்போது பேசுவது",
+    "voiceResponseOff": "முடக்கம்",
+    "voiceResponseHeadphonesOnly": "ஹெட்ஃபோன் மட்டும்",
+    "voiceResponseAlways": "எப்போதும்"
 }

@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "רמת הסוללה",
+    "charging": "טוען",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -10687,5 +10688,11 @@
     "batteryHistory": "סוללה",
     "day": "יום",
     "noBatteryDataYet": "אין עדיין נתוני סוללה",
-    "week": "שבוע"
+    "week": "שבוע",
+    "voiceResponseAudio": "קרא את תגובת Omi בקול",
+    "voiceResponseMode": "תגובה קולית",
+    "voiceResponseModeTitle": "מתי לקרוא תשובות",
+    "voiceResponseOff": "כבוי",
+    "voiceResponseHeadphonesOnly": "אוזניות בלבד",
+    "voiceResponseAlways": "תמיד"
 }

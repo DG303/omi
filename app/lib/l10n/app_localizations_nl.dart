@@ -2376,6 +2376,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get batteryLevel => 'Batterijniveau';
 
   @override
+  String get charging => 'Opladen';
+
+  @override
   String get productUpdate => 'Productupdate';
 
   @override
@@ -9157,4 +9160,22 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Je hebt je maandelijkse limiet bereikt. Upgrade om zonder beperkingen met Omi te blijven chatten.';
+
+  @override
+  String get voiceResponseAudio => 'Lees Omi\'s antwoord voor';
+
+  @override
+  String get voiceResponseMode => 'Spraakantwoord';
+
+  @override
+  String get voiceResponseModeTitle => 'Wanneer antwoorden worden voorgelezen';
+
+  @override
+  String get voiceResponseOff => 'Uit';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Alleen koptelefoon';
+
+  @override
+  String get voiceResponseAlways => 'Altijd';
 }

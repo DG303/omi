@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "بیٹری کی سطح",
+    "charging": "چارج ہو رہا ہے",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -10687,5 +10688,11 @@
     "batteryHistory": "بیٹری",
     "day": "دن",
     "noBatteryDataYet": "ابھی تک کوئی بیٹری ڈیٹا نہیں",
-    "week": "ہفتہ"
+    "week": "ہفتہ",
+    "voiceResponseAudio": "Omi کا جواب بلند آواز میں پڑھیں",
+    "voiceResponseMode": "آواز کا جواب",
+    "voiceResponseModeTitle": "جواب کب پڑھے جائیں",
+    "voiceResponseOff": "بند",
+    "voiceResponseHeadphonesOnly": "صرف ہیڈ فون",
+    "voiceResponseAlways": "ہمیشہ"
 }
