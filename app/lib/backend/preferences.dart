@@ -162,11 +162,15 @@ class SharedPreferencesUtil {
 
   bool get showTasksEnabled => getBool('showTasksEnabled', defaultValue: true);
 
-  // Voice response playback — speak Omi's reply aloud after hardware-button
-  // voice messages. Default is true so the feature works out of the box.
-  set voiceResponseEnabled(bool value) => saveBool('voiceResponseEnabled', value);
+  // Voice response playback mode for hardware-button replies.
+  //   0 = off (never speak)
+  //   1 = headphones only — AirPods / wired / USB / AirPlay (default)
+  //   2 = always, including the phone speaker
+  // Default is 1 so Omi never blasts a private answer out of the speaker
+  // in public unless the user explicitly opts in.
+  set voiceResponseMode(int value) => saveInt('voiceResponseMode', value);
 
-  bool get voiceResponseEnabled => getBool('voiceResponseEnabled', defaultValue: true);
+  int get voiceResponseMode => getInt('voiceResponseMode', defaultValue: 1);
 
   // VAD Gate — server-side voice activity gating to save Deepgram costs (experimental)
   set vadGateEnabled(bool value) => saveBool('vadGateEnabled', value);

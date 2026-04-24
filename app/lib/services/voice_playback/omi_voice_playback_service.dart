@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -60,6 +60,12 @@ class OmiVoicePlaybackService {
           interrupt();
         }
       });
+      // Stop immediately when headphones are unplugged mid-playback so the
+      // reply doesn't suddenly blast out of the phone speaker in public.
+      session.becomingNoisyEventStream.listen((_) {
+        debugPrint('OmiVoicePlayback: headphones disconnected — interrupting');
+        interrupt();
+      });
     } catch (e) {
       Logger.debug('OmiVoicePlaybackService: audio_session configure failed: $e');
     }
@@ -80,8 +86,22 @@ class OmiVoicePlaybackService {
 
   /// Start a new response lifecycle. Cancels any prior in-flight playback.
   Future<void> beginResponse({required String messageId}) async {
-    if (!SharedPreferencesUtil().voiceResponseEnabled) return;
+    final mode = SharedPreferencesUtil().voiceResponseMode;
+    debugPrint('OmiVoicePlayback: beginResponse messageId=$messageId mode=$mode');
+    if (mode == 0) return; // Off
+
     await _ensureInitialized();
+
+    // Mode 1 (headphones only): skip if no private-listening output is
+    // connected so Omi never blasts a private answer out of the phone
+    // speaker in public. Mode 2 (always) bypasses this gate.
+    if (mode == 1) {
+      final headphones = await _hasHeadphonesConnected();
+      if (!headphones) {
+        debugPrint('OmiVoicePlayback: no headphones — skipping playback (mode=headphones)');
+        return;
+      }
+    }
 
     if (_activeMessageId == messageId) {
       // Same response already in-flight; no-op.
@@ -95,6 +115,35 @@ class OmiVoicePlaybackService {
     await _activateSession();
   }
 
+  /// True if at least one "private-listening" output is connected — AirPods
+  /// (Bluetooth A2DP/LE/SCO), wired 3.5mm / Lightning headphones, USB headset,
+  /// or AirPlay. False for the built-in speaker / earpiece alone.
+  Future<bool> _hasHeadphonesConnected() async {
+    try {
+      final session = await AudioSession.instance;
+      final devices = await session.getDevices(includeInputs: false);
+      const headphoneTypes = <AudioDeviceType>{
+        AudioDeviceType.bluetoothA2dp,
+        AudioDeviceType.bluetoothLe,
+        AudioDeviceType.bluetoothSco,
+        AudioDeviceType.wiredHeadphones,
+        AudioDeviceType.wiredHeadset,
+        AudioDeviceType.usbAudio,
+        AudioDeviceType.airPlay,
+        AudioDeviceType.lineAnalog,
+        AudioDeviceType.lineDigital,
+      };
+      final hit = devices.any((d) => headphoneTypes.contains(d.type));
+      debugPrint('OmiVoicePlayback: headphones=$hit (devices=${devices.map((d) => d.type).toList()})');
+      return hit;
+    } catch (e) {
+      debugPrint('OmiVoicePlayback: headphone check failed: $e — skipping playback');
+      // Fail closed: if we can't tell whether headphones are connected,
+      // we'd rather stay silent than blast audio from the speaker.
+      return false;
+    }
+  }
+
   /// Called on every streamed text update. [fullText] is the cumulative AI
   /// response so far. [isFinal] means this is the last chunk.
   void updateStreamingResponse({
@@ -102,8 +151,13 @@ class OmiVoicePlaybackService {
     required String fullText,
     required bool isFinal,
   }) {
-    if (!SharedPreferencesUtil().voiceResponseEnabled) return;
-    if (_activeMessageId != messageId) return;
+    if (SharedPreferencesUtil().voiceResponseMode == 0) return;
+    if (_activeMessageId != messageId) {
+      Logger.log(
+          'OmiVoicePlayback: updateStreamingResponse skipped — activeId=$_activeMessageId != incoming=$messageId');
+      return;
+    }
+    Logger.log('OmiVoicePlayback: updateStreamingResponse len=${fullText.length} isFinal=$isFinal spoken=$_spoken');
 
     final cleaned = _cleanedPlaybackText(fullText);
     if (_spoken >= cleaned.length && !isFinal) return;
@@ -171,13 +225,15 @@ class OmiVoicePlaybackService {
     _synthesizing = true;
 
     while (_synthesisQueue.isNotEmpty) {
-      if (!SharedPreferencesUtil().voiceResponseEnabled) {
+      if (SharedPreferencesUtil().voiceResponseMode == 0) {
         await interrupt();
         break;
       }
       final pending = _synthesisQueue.removeAt(0);
+      debugPrint('OmiVoicePlayback: synthesizing "${pending.text}"');
       try {
         final bytes = await synthesizeSpeech(text: pending.text);
+        debugPrint('OmiVoicePlayback: got ${bytes?.length ?? 0} MP3 bytes');
         if (bytes != null && bytes.isNotEmpty) {
           _audioQueue.add(bytes);
           _tryStartPlayback();
