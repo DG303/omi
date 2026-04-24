@@ -8978,4 +8978,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chatQuotaExceededReply => '월간 한도에 도달했습니다. 제한 없이 Omi와 계속 채팅하려면 업그레이드하세요.';
+
+  @override
+  String get voiceResponseAudio => 'Omi의 응답 소리 내어 읽기';
+
+  @override
+  String get voiceResponseMode => '음성 응답';
+
+  @override
+  String get voiceResponseModeTitle => '응답을 말할 시점';
+
+  @override
+  String get voiceResponseOff => '끄기';
+
+  @override
+  String get voiceResponseHeadphonesOnly => '헤드폰만';
+
+  @override
+  String get voiceResponseAlways => '항상';
 }

@@ -3074,5 +3074,11 @@
     "batteryHistory": "Akkumulátor",
     "day": "Nap",
     "noBatteryDataYet": "Még nincsenek akkumulátor adatok",
-    "week": "Hét"
+    "week": "Hét",
+    "voiceResponseAudio": "Omi válaszának felolvasása",
+    "voiceResponseMode": "Hangválasz",
+    "voiceResponseModeTitle": "Mikor szólaljon meg a válasz",
+    "voiceResponseOff": "Ki",
+    "voiceResponseHeadphonesOnly": "Csak fülhallgató",
+    "voiceResponseAlways": "Mindig"
 }

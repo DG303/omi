@@ -9130,4 +9130,22 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Du har nått din månatliga gräns. Uppgradera för att fortsätta chatta med Omi utan begränsningar.';
+
+  @override
+  String get voiceResponseAudio => 'Läs upp Omis svar';
+
+  @override
+  String get voiceResponseMode => 'Röstsvar';
+
+  @override
+  String get voiceResponseModeTitle => 'När svar ska läsas upp';
+
+  @override
+  String get voiceResponseOff => 'Av';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Endast hörlurar';
+
+  @override
+  String get voiceResponseAlways => 'Alltid';
 }

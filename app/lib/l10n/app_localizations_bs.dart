@@ -9150,4 +9150,22 @@ class AppLocalizationsBs extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Dosegli ste svoj mjesečni limit. Nadogradite da nastavite razgovarati s Omi bez ograničenja.';
+
+  @override
+  String get voiceResponseAudio => 'Pročitaj Omi odgovor naglas';
+
+  @override
+  String get voiceResponseMode => 'Glasovni odgovor';
+
+  @override
+  String get voiceResponseModeTitle => 'Kada izgovarati odgovore';
+
+  @override
+  String get voiceResponseOff => 'Isključeno';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Samo slušalice';
+
+  @override
+  String get voiceResponseAlways => 'Uvijek';
 }

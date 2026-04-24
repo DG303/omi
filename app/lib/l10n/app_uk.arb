@@ -2978,5 +2978,11 @@
     "batteryHistory": "Батарея",
     "day": "День",
     "noBatteryDataYet": "Даних про батарею ще немає",
-    "week": "Тиждень"
+    "week": "Тиждень",
+    "voiceResponseAudio": "Читати відповідь Omi вголос",
+    "voiceResponseMode": "Голосова відповідь",
+    "voiceResponseModeTitle": "Коли озвучувати відповіді",
+    "voiceResponseOff": "Вимк",
+    "voiceResponseHeadphonesOnly": "Лише навушники",
+    "voiceResponseAlways": "Завжди"
 }

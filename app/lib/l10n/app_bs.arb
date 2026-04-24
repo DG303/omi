@@ -10686,5 +10686,11 @@
     "batteryHistory": "Baterija",
     "day": "Dan",
     "noBatteryDataYet": "Još nema podataka o bateriji",
-    "week": "Sedmica"
+    "week": "Sedmica",
+    "voiceResponseAudio": "Pročitaj Omi odgovor naglas",
+    "voiceResponseMode": "Glasovni odgovor",
+    "voiceResponseModeTitle": "Kada izgovarati odgovore",
+    "voiceResponseOff": "Isključeno",
+    "voiceResponseHeadphonesOnly": "Samo slušalice",
+    "voiceResponseAlways": "Uvijek"
 }

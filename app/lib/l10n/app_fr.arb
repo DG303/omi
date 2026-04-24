@@ -3013,5 +3013,11 @@
     "batteryHistory": "Batterie",
     "day": "Jour",
     "noBatteryDataYet": "Pas encore de données de batterie",
-    "week": "Semaine"
+    "week": "Semaine",
+    "voiceResponseAudio": "Lire la réponse d'Omi à haute voix",
+    "voiceResponseMode": "Réponse vocale",
+    "voiceResponseModeTitle": "Quand énoncer les réponses",
+    "voiceResponseOff": "Désactivé",
+    "voiceResponseHeadphonesOnly": "Casque uniquement",
+    "voiceResponseAlways": "Toujours"
 }

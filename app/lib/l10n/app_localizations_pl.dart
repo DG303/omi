@@ -9146,4 +9146,22 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Osiągnąłeś miesięczny limit. Ulepsz, aby kontynuować czatowanie z Omi bez ograniczeń.';
+
+  @override
+  String get voiceResponseAudio => 'Odczytaj odpowiedź Omi na głos';
+
+  @override
+  String get voiceResponseMode => 'Odpowiedź głosowa';
+
+  @override
+  String get voiceResponseModeTitle => 'Kiedy odczytywać odpowiedzi';
+
+  @override
+  String get voiceResponseOff => 'Wył.';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Tylko słuchawki';
+
+  @override
+  String get voiceResponseAlways => 'Zawsze';
 }

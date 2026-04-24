@@ -9152,4 +9152,22 @@ class AppLocalizationsBe extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Вы дасягнулі свайго месячнага ліміту. Абнавіце, каб працягваць размаўляць з Omi без абмежаванняў.';
+
+  @override
+  String get voiceResponseAudio => 'Чытаць адказ Omi уголас';
+
+  @override
+  String get voiceResponseMode => 'Галасавы адказ';
+
+  @override
+  String get voiceResponseModeTitle => 'Калі агучваць адказы';
+
+  @override
+  String get voiceResponseOff => 'Выкл';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Толькі навушнікі';
+
+  @override
+  String get voiceResponseAlways => 'Заўсёды';
 }

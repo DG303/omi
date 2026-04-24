@@ -2978,5 +2978,11 @@
     "batteryHistory": "Batteri",
     "day": "Dag",
     "noBatteryDataYet": "Ingen batteridata ennå",
-    "week": "Uke"
+    "week": "Uke",
+    "voiceResponseAudio": "Les Omis svar høyt",
+    "voiceResponseMode": "Stemmesvar",
+    "voiceResponseModeTitle": "Når svar skal leses",
+    "voiceResponseOff": "Av",
+    "voiceResponseHeadphonesOnly": "Bare hodetelefoner",
+    "voiceResponseAlways": "Alltid"
 }

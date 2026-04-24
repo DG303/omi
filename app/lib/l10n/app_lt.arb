@@ -2978,5 +2978,11 @@
     "batteryHistory": "Baterija",
     "day": "Diena",
     "noBatteryDataYet": "Kol kas nėra baterijos duomenų",
-    "week": "Savaitė"
+    "week": "Savaitė",
+    "voiceResponseAudio": "Skaityti Omi atsakymą garsiai",
+    "voiceResponseMode": "Balso atsakymas",
+    "voiceResponseModeTitle": "Kada įgarsinti atsakymus",
+    "voiceResponseOff": "Išjungta",
+    "voiceResponseHeadphonesOnly": "Tik ausinėmis",
+    "voiceResponseAlways": "Visada"
 }

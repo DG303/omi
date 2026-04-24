@@ -2946,5 +2946,11 @@
     "batteryHistory": "Batterie",
     "day": "Tag",
     "noBatteryDataYet": "Noch keine Batteriedaten",
-    "week": "Woche"
+    "week": "Woche",
+    "voiceResponseAudio": "Omis Antwort laut vorlesen",
+    "voiceResponseMode": "Sprachantwort",
+    "voiceResponseModeTitle": "Wann Antworten vorgelesen werden",
+    "voiceResponseOff": "Aus",
+    "voiceResponseHeadphonesOnly": "Nur Kopfhörer",
+    "voiceResponseAlways": "Immer"
 }

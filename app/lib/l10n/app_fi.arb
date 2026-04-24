@@ -2978,5 +2978,11 @@
     "batteryHistory": "Akku",
     "day": "Päivä",
     "noBatteryDataYet": "Ei vielä akkutietoja",
-    "week": "Viikko"
+    "week": "Viikko",
+    "voiceResponseAudio": "Lue Omin vastaus ääneen",
+    "voiceResponseMode": "Äänivastaus",
+    "voiceResponseModeTitle": "Milloin vastaukset luetaan",
+    "voiceResponseOff": "Pois",
+    "voiceResponseHeadphonesOnly": "Vain kuulokkeet",
+    "voiceResponseAlways": "Aina"
 }

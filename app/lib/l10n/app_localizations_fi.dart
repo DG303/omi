@@ -9125,4 +9125,22 @@ class AppLocalizationsFi extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Olet saavuttanut kuukausittaisen rajasi. Päivitä jatkaaksesi keskustelua Omin kanssa ilman rajoituksia.';
+
+  @override
+  String get voiceResponseAudio => 'Lue Omin vastaus ääneen';
+
+  @override
+  String get voiceResponseMode => 'Äänivastaus';
+
+  @override
+  String get voiceResponseModeTitle => 'Milloin vastaukset luetaan';
+
+  @override
+  String get voiceResponseOff => 'Pois';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Vain kuulokkeet';
+
+  @override
+  String get voiceResponseAlways => 'Aina';
 }

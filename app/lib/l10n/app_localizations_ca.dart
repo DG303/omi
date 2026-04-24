@@ -9180,4 +9180,22 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Has assolit el teu límit mensual. Actualitza per continuar xatejant amb Omi sense restriccions.';
+
+  @override
+  String get voiceResponseAudio => 'Llegeix la resposta d\'Omi en veu alta';
+
+  @override
+  String get voiceResponseMode => 'Resposta de veu';
+
+  @override
+  String get voiceResponseModeTitle => 'Quan pronunciar les respostes';
+
+  @override
+  String get voiceResponseOff => 'Desactivat';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Només auriculars';
+
+  @override
+  String get voiceResponseAlways => 'Sempre';
 }

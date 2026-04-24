@@ -2978,5 +2978,11 @@
     "batteryHistory": "Μπαταρία",
     "day": "Ημέρα",
     "noBatteryDataYet": "Δεν υπάρχουν δεδομένα μπαταρίας ακόμα",
-    "week": "Εβδομάδα"
+    "week": "Εβδομάδα",
+    "voiceResponseAudio": "Ανάγνωση απάντησης Omi φωναχτά",
+    "voiceResponseMode": "Φωνητική απάντηση",
+    "voiceResponseModeTitle": "Πότε να εκφωνούνται οι απαντήσεις",
+    "voiceResponseOff": "Απενεργ.",
+    "voiceResponseHeadphonesOnly": "Μόνο ακουστικά",
+    "voiceResponseAlways": "Πάντα"
 }

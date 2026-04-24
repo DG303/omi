@@ -2987,5 +2987,11 @@
     "batteryHistory": "Batteri",
     "day": "Dag",
     "noBatteryDataYet": "Ingen batteridata endnu",
-    "week": "Uge"
+    "week": "Uge",
+    "voiceResponseAudio": "Læs Omis svar højt",
+    "voiceResponseMode": "Stemmesvar",
+    "voiceResponseModeTitle": "Hvornår svar skal læses",
+    "voiceResponseOff": "Fra",
+    "voiceResponseHeadphonesOnly": "Kun hovedtelefoner",
+    "voiceResponseAlways": "Altid"
 }

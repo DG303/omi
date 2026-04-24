@@ -10686,5 +10686,11 @@
     "batteryHistory": "Батерија",
     "day": "Дан",
     "noBatteryDataYet": "Још нема података о батерији",
-    "week": "Недеља"
+    "week": "Недеља",
+    "voiceResponseAudio": "Прочитај Omi одговор наглас",
+    "voiceResponseMode": "Гласовни одговор",
+    "voiceResponseModeTitle": "Када изговарати одговоре",
+    "voiceResponseOff": "Искључено",
+    "voiceResponseHeadphonesOnly": "Само слушалице",
+    "voiceResponseAlways": "Увек"
 }

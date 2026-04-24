@@ -2979,5 +2979,11 @@
     "batteryHistory": "バッテリー",
     "day": "日",
     "noBatteryDataYet": "バッテリーデータはまだありません",
-    "week": "週"
+    "week": "週",
+    "voiceResponseAudio": "Omiの応答を音声で再生",
+    "voiceResponseMode": "音声応答",
+    "voiceResponseModeTitle": "応答を読み上げるタイミング",
+    "voiceResponseOff": "オフ",
+    "voiceResponseHeadphonesOnly": "ヘッドフォンのみ",
+    "voiceResponseAlways": "常に"
 }

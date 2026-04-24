@@ -2983,5 +2983,11 @@
     "batteryHistory": "Pin",
     "day": "Ngày",
     "noBatteryDataYet": "Chưa có dữ liệu pin",
-    "week": "Tuần"
+    "week": "Tuần",
+    "voiceResponseAudio": "Đọc to phản hồi của Omi",
+    "voiceResponseMode": "Phản hồi bằng giọng nói",
+    "voiceResponseModeTitle": "Khi nào đọc phản hồi",
+    "voiceResponseOff": "Tắt",
+    "voiceResponseHeadphonesOnly": "Chỉ tai nghe",
+    "voiceResponseAlways": "Luôn luôn"
 }

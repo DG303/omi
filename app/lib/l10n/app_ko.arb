@@ -2978,5 +2978,11 @@
     "batteryHistory": "배터리",
     "day": "일",
     "noBatteryDataYet": "아직 배터리 데이터가 없습니다",
-    "week": "주"
+    "week": "주",
+    "voiceResponseAudio": "Omi의 응답 소리 내어 읽기",
+    "voiceResponseMode": "음성 응답",
+    "voiceResponseModeTitle": "응답을 말할 시점",
+    "voiceResponseOff": "끄기",
+    "voiceResponseHeadphonesOnly": "헤드폰만",
+    "voiceResponseAlways": "항상"
 }

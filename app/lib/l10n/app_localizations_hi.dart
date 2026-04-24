@@ -9106,4 +9106,22 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'आपने अपनी मासिक सीमा पूरी कर ली है। बिना प्रतिबंध के Omi से चैट जारी रखने के लिए अपग्रेड करें।';
+
+  @override
+  String get voiceResponseAudio => 'Omi का जवाब ज़ोर से पढ़ें';
+
+  @override
+  String get voiceResponseMode => 'वॉइस प्रतिक्रिया';
+
+  @override
+  String get voiceResponseModeTitle => 'उत्तर कब बोले जाएं';
+
+  @override
+  String get voiceResponseOff => 'बंद';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'केवल हेडफ़ोन';
+
+  @override
+  String get voiceResponseAlways => 'हमेशा';
 }

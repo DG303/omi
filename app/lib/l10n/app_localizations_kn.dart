@@ -9158,4 +9158,22 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'ನೀವು ನಿಮ್ಮ ಮಾಸಿಕ ಮಿತಿಯನ್ನು ತಲುಪಿದ್ದೀರಿ. ನಿರ್ಬಂಧಗಳಿಲ್ಲದೆ Omi ಜೊತೆ ಚಾಟ್ ಮುಂದುವರಿಸಲು ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ.';
+
+  @override
+  String get voiceResponseAudio => 'Omi ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಜೋರಾಗಿ ಓದಿ';
+
+  @override
+  String get voiceResponseMode => 'ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆ';
+
+  @override
+  String get voiceResponseModeTitle => 'ಪ್ರತಿಕ್ರಿಯೆ ಯಾವಾಗ';
+
+  @override
+  String get voiceResponseOff => 'ಆಫ್';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'ಹೆಡ್‌ಫೋನ್‌ಗಳು ಮಾತ್ರ';
+
+  @override
+  String get voiceResponseAlways => 'ಯಾವಾಗಲೂ';
 }

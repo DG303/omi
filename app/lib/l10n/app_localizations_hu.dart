@@ -9165,4 +9165,22 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Elérted a havi limitedet. Frissíts, hogy korlátozás nélkül folytasd a csevegést az Omival.';
+
+  @override
+  String get voiceResponseAudio => 'Omi válaszának felolvasása';
+
+  @override
+  String get voiceResponseMode => 'Hangválasz';
+
+  @override
+  String get voiceResponseModeTitle => 'Mikor szólaljon meg a válasz';
+
+  @override
+  String get voiceResponseOff => 'Ki';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Csak fülhallgató';
+
+  @override
+  String get voiceResponseAlways => 'Mindig';
 }

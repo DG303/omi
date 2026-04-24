@@ -2983,5 +2983,11 @@
     "batteryHistory": "Batéria",
     "day": "Deň",
     "noBatteryDataYet": "Zatiaľ žiadne údaje o batérii",
-    "week": "Týždeň"
+    "week": "Týždeň",
+    "voiceResponseAudio": "Prečítať odpoveď Omi nahlas",
+    "voiceResponseMode": "Hlasová odpoveď",
+    "voiceResponseModeTitle": "Kedy vysloviť odpovede",
+    "voiceResponseOff": "Vypnuté",
+    "voiceResponseHeadphonesOnly": "Len slúchadlá",
+    "voiceResponseAlways": "Vždy"
 }

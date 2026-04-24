@@ -9122,4 +9122,22 @@ class AppLocalizationsNo extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Du har nådd din månedlige grense. Oppgrader for å fortsette å chatte med Omi uten begrensninger.';
+
+  @override
+  String get voiceResponseAudio => 'Les Omis svar høyt';
+
+  @override
+  String get voiceResponseMode => 'Stemmesvar';
+
+  @override
+  String get voiceResponseModeTitle => 'Når svar skal leses';
+
+  @override
+  String get voiceResponseOff => 'Av';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Bare hodetelefoner';
+
+  @override
+  String get voiceResponseAlways => 'Alltid';
 }

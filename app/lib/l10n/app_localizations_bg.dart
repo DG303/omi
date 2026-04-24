@@ -9161,4 +9161,22 @@ class AppLocalizationsBg extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Достигнахте месечния си лимит. Надградете, за да продължите да чатите с Omi без ограничения.';
+
+  @override
+  String get voiceResponseAudio => 'Прочитай отговора на Omi на глас';
+
+  @override
+  String get voiceResponseMode => 'Гласов отговор';
+
+  @override
+  String get voiceResponseModeTitle => 'Кога да се произнасят отговорите';
+
+  @override
+  String get voiceResponseOff => 'Изкл';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Само слушалки';
+
+  @override
+  String get voiceResponseAlways => 'Винаги';
 }

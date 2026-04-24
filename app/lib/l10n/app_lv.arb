@@ -2978,5 +2978,11 @@
     "batteryHistory": "Akumulators",
     "day": "Diena",
     "noBatteryDataYet": "Pagaidām nav akumulatora datu",
-    "week": "Nedēļa"
+    "week": "Nedēļa",
+    "voiceResponseAudio": "Lasīt Omi atbildi skaļi",
+    "voiceResponseMode": "Balss atbilde",
+    "voiceResponseModeTitle": "Kad atskaņot atbildes",
+    "voiceResponseOff": "Izslēgts",
+    "voiceResponseHeadphonesOnly": "Tikai austiņās",
+    "voiceResponseAlways": "Vienmēr"
 }

@@ -2978,5 +2978,11 @@
     "batteryHistory": "Aku",
     "day": "Päev",
     "noBatteryDataYet": "Aku andmed puuduvad",
-    "week": "Nädal"
+    "week": "Nädal",
+    "voiceResponseAudio": "Loe Omi vastus ette",
+    "voiceResponseMode": "Hääleline vastus",
+    "voiceResponseModeTitle": "Millal vastuseid ette lugeda",
+    "voiceResponseOff": "Väljas",
+    "voiceResponseHeadphonesOnly": "Ainult kõrvaklapid",
+    "voiceResponseAlways": "Alati"
 }

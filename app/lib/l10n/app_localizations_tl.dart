@@ -9211,4 +9211,22 @@ class AppLocalizationsTl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Naabot mo na ang iyong buwanang limitasyon. Mag-upgrade para magpatuloy ng chat sa Omi nang walang limitasyon.';
+
+  @override
+  String get voiceResponseAudio => 'Basahin nang malakas ang sagot ng Omi';
+
+  @override
+  String get voiceResponseMode => 'Tugon sa boses';
+
+  @override
+  String get voiceResponseModeTitle => 'Kailan bibigkasin ang tugon';
+
+  @override
+  String get voiceResponseOff => 'Naka-off';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Headphones lang';
+
+  @override
+  String get voiceResponseAlways => 'Palagi';
 }

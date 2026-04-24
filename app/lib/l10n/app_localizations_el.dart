@@ -9191,4 +9191,22 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Φτάσατε το μηνιαίο σας όριο. Αναβαθμίστε για να συνεχίσετε να συνομιλείτε με το Omi χωρίς περιορισμούς.';
+
+  @override
+  String get voiceResponseAudio => 'Ανάγνωση απάντησης Omi φωναχτά';
+
+  @override
+  String get voiceResponseMode => 'Φωνητική απάντηση';
+
+  @override
+  String get voiceResponseModeTitle => 'Πότε να εκφωνούνται οι απαντήσεις';
+
+  @override
+  String get voiceResponseOff => 'Απενεργ.';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Μόνο ακουστικά';
+
+  @override
+  String get voiceResponseAlways => 'Πάντα';
 }

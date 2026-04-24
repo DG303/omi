@@ -2978,5 +2978,11 @@
     "batteryHistory": "Batterij",
     "day": "Dag",
     "noBatteryDataYet": "Nog geen batterijgegevens",
-    "week": "Week"
+    "week": "Week",
+    "voiceResponseAudio": "Lees Omi's antwoord voor",
+    "voiceResponseMode": "Spraakantwoord",
+    "voiceResponseModeTitle": "Wanneer antwoorden worden voorgelezen",
+    "voiceResponseOff": "Uit",
+    "voiceResponseHeadphonesOnly": "Alleen koptelefoon",
+    "voiceResponseAlways": "Altijd"
 }

@@ -9135,4 +9135,22 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Pasiekėte savo mėnesinį limitą. Atnaujinkite, kad galėtumėte toliau bendrauti su Omi be apribojimų.';
+
+  @override
+  String get voiceResponseAudio => 'Skaityti Omi atsakymą garsiai';
+
+  @override
+  String get voiceResponseMode => 'Balso atsakymas';
+
+  @override
+  String get voiceResponseModeTitle => 'Kada įgarsinti atsakymus';
+
+  @override
+  String get voiceResponseOff => 'Išjungta';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Tik ausinėmis';
+
+  @override
+  String get voiceResponseAlways => 'Visada';
 }

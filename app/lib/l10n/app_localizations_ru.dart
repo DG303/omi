@@ -9155,4 +9155,22 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Вы достигли месячного лимита. Обновите план, чтобы продолжить общение с Omi без ограничений.';
+
+  @override
+  String get voiceResponseAudio => 'Читать ответ Omi вслух';
+
+  @override
+  String get voiceResponseMode => 'Голосовой ответ';
+
+  @override
+  String get voiceResponseModeTitle => 'Когда озвучивать ответы';
+
+  @override
+  String get voiceResponseOff => 'Выкл';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Только наушники';
+
+  @override
+  String get voiceResponseAlways => 'Всегда';
 }

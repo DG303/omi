@@ -3013,5 +3013,11 @@
     "batteryHistory": "Pil",
     "day": "Gün",
     "noBatteryDataYet": "Henüz pil verisi yok",
-    "week": "Hafta"
+    "week": "Hafta",
+    "voiceResponseAudio": "Omi yanıtını sesli oku",
+    "voiceResponseMode": "Sesli yanıt",
+    "voiceResponseModeTitle": "Yanıtlar ne zaman okunsun",
+    "voiceResponseOff": "Kapalı",
+    "voiceResponseHeadphonesOnly": "Sadece kulaklık",
+    "voiceResponseAlways": "Her zaman"
 }
