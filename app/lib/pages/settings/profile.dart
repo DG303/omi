@@ -118,6 +118,50 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildProfileToggle({
+    required String title,
+    String? subtitle,
+    required Widget icon,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(color: const Color(0xFF1C1C1E), borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            SizedBox(width: 24, height: 24, child: icon),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w400),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 13),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeColor: Colors.deepPurple,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,9 +204,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 const Divider(height: 1, color: Color(0xFF3C3C43)),
                 _buildProfileItem(
                   title: context.l10n.email,
-                  chipValue: SharedPreferencesUtil().email.isEmpty
-                      ? context.l10n.notSet
-                      : SharedPreferencesUtil().email,
+                  chipValue:
+                      SharedPreferencesUtil().email.isEmpty ? context.l10n.notSet : SharedPreferencesUtil().email,
                   icon: const FaIcon(FontAwesomeIcons.solidEnvelope, color: Color(0xFF8E8E93), size: 20),
                   onTap: () {},
                   showChevron: false,
@@ -206,6 +249,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     routeToPage(context, const UserPeoplePage());
                   },
                 ),
+                const Divider(height: 1, color: Color(0xFF3C3C43)),
+                _buildProfileToggle(
+                  title: context.l10n.voiceResponseAudio,
+                  subtitle: context.l10n.voiceResponseAudioSubtitle,
+                  icon: const FaIcon(FontAwesomeIcons.volumeHigh, color: Color(0xFF8E8E93), size: 20),
+                  value: SharedPreferencesUtil().voiceResponseEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      SharedPreferencesUtil().voiceResponseEnabled = value;
+                    });
+                    MixpanelManager().voiceResponseToggled(value);
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -246,9 +302,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 Builder(
                   builder: (context) {
                     final uid = SharedPreferencesUtil().uid;
-                    final truncatedUid = uid.length > 6
-                        ? '${uid.substring(0, 3)}•••••${uid.substring(uid.length - 3)}'
-                        : uid;
+                    final truncatedUid =
+                        uid.length > 6 ? '${uid.substring(0, 3)}•••••${uid.substring(uid.length - 3)}' : uid;
                     return _buildProfileItem(
                       title: context.l10n.userId,
                       chipValue: truncatedUid,
