@@ -2378,6 +2378,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get batteryLevel => 'Livello batteria';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Aggiornamento prodotto';
 
   @override

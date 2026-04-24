@@ -2375,6 +2375,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get batteryLevel => 'بیٹری کی سطح';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'مصنوع کی اپ ڈیٹ';
 
   @override

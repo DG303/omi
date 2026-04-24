@@ -2377,6 +2377,9 @@ class AppLocalizationsBs extends AppLocalizations {
   String get batteryLevel => 'Nivo baterije';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Ažuriranje proizvoda';
 
   @override

@@ -2352,6 +2352,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get batteryLevel => 'مستوى البطارية';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'تحديث المنتج';
 
   @override

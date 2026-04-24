@@ -2378,6 +2378,9 @@ class AppLocalizationsHr extends AppLocalizations {
   String get batteryLevel => 'Razina baterije';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Ažuriranje proizvoda';
 
   @override

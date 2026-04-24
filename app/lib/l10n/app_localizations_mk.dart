@@ -2384,6 +2384,9 @@ class AppLocalizationsMk extends AppLocalizations {
   String get batteryLevel => 'Ниво на батерија';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Ажурирање на производ';
 
   @override

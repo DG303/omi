@@ -2356,6 +2356,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get batteryLevel => 'ระดับแบตเตอรี่';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'การอัปเดตผลิตภัณฑ์';
 
   @override

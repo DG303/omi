@@ -2389,6 +2389,9 @@ class AppLocalizationsTl extends AppLocalizations {
   String get batteryLevel => 'Antas ng Baterya';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Product Update';
 
   @override

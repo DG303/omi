@@ -2371,6 +2371,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get batteryLevel => 'Stav baterie';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Aktualizace produktu';
 
   @override

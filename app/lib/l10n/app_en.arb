@@ -2515,6 +2515,7 @@
     "@batteryLevel": {
         "description": "Battery level label"
     },
+    "charging": "Charging",
     "productUpdate": "Product Update",
     "@productUpdate": {
         "description": "Menu item for product/firmware update"

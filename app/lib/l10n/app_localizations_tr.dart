@@ -2375,6 +2375,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get batteryLevel => 'Pil Seviyesi';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Ürün Güncellemesi';
 
   @override

@@ -2373,6 +2373,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get batteryLevel => 'Рівень заряду';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Оновлення продукту';
 
   @override

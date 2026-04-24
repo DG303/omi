@@ -2375,6 +2375,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get batteryLevel => 'Level Baterai';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Pembaruan Produk';
 
   @override

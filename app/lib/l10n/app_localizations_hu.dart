@@ -2383,6 +2383,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get batteryLevel => 'Akkumulátor szint';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Termékfrissítés';
 
   @override

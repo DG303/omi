@@ -2371,6 +2371,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get batteryLevel => 'Batterinivå';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Produktuppdatering';
 
   @override
