@@ -2375,6 +2375,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get batteryLevel => 'ব্যাটারি স্তর';
 
   @override
+  String get charging => 'চার্জ হচ্ছে';
+
+  @override
   String get productUpdate => 'পণ্য আপডেট';
 
   @override

@@ -2376,6 +2376,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get batteryLevel => 'Уровень заряда';
 
   @override
+  String get charging => 'Зарядка';
+
+  @override
   String get productUpdate => 'Обновление продукта';
 
   @override

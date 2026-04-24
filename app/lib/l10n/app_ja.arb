@@ -733,6 +733,7 @@
     "slideToUpdate": "スライドして更新",
     "copiedToClipboard": "{title}をクリップボードにコピーしました",
     "batteryLevel": "バッテリー残量",
+    "charging": "充電中",
     "productUpdate": "製品アップデート",
     "offline": "オフライン",
     "available": "利用可能",

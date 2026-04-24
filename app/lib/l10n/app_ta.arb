@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "பேட்டரி நிலை",
+    "charging": "சார்ஜ் ஆகிறது",
     "@batteryLevel": {
         "description": "Battery level label"
     },

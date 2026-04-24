@@ -2374,6 +2374,9 @@ class AppLocalizationsLv extends AppLocalizations {
   String get batteryLevel => 'Akumulatora līmenis';
 
   @override
+  String get charging => 'Uzlāde';
+
+  @override
   String get productUpdate => 'Produkta atjauninājums';
 
   @override

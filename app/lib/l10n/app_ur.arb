@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "بیٹری کی سطح",
+    "charging": "چارج ہو رہا ہے",
     "@batteryLevel": {
         "description": "Battery level label"
     },

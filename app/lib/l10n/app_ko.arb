@@ -732,6 +732,7 @@
     "slideToUpdate": "업데이트하려면 밀기",
     "copiedToClipboard": "{title}이(가) 클립보드에 복사되었습니다",
     "batteryLevel": "배터리 수준",
+    "charging": "충전 중",
     "productUpdate": "제품 업데이트",
     "offline": "오프라인",
     "available": "사용 가능",

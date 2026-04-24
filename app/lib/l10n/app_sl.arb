@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "Raven baterije",
+    "charging": "Polnjenje",
     "@batteryLevel": {
         "description": "Battery level label"
     },

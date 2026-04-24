@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "ಬ್ಯಾಟರಿ ಸ್ತರ",
+    "charging": "ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ",
     "@batteryLevel": {
         "description": "Battery level label"
     },

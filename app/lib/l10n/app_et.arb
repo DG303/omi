@@ -732,6 +732,7 @@
     "slideToUpdate": "Värskendamiseks libistage",
     "copiedToClipboard": "{title} kopeeritud lõikelauale",
     "batteryLevel": "Aku tase",
+    "charging": "Laadimine",
     "productUpdate": "Toote värskendus",
     "offline": "Ühenduseta",
     "available": "Saadaval",

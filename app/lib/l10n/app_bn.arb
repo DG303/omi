@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "ব্যাটারি স্তর",
+    "charging": "চার্জ হচ্ছে",
     "@batteryLevel": {
         "description": "Battery level label"
     },
