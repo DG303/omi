@@ -1282,6 +1282,8 @@ def set_daily_summary_visibility(summary_id: str, value: str, uid: str = Depends
     """
     Set the visibility of a daily summary. Use value='shared' to make it shareable.
     """
+    if value not in ('shared', 'private'):
+        raise HTTPException(status_code=400, detail="Invalid visibility value. Must be 'shared' or 'private'")
     summary = daily_summaries_db.get_daily_summary(uid, summary_id)
     if not summary:
         raise HTTPException(status_code=404, detail='Daily summary not found')
