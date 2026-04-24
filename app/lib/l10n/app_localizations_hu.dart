@@ -9162,4 +9162,10 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Elérted a havi limitedet. Frissíts, hogy korlátozás nélkül folytasd a csevegést az Omival.';
+
+  @override
+  String get voiceResponseAudio => 'Omi válaszának felolvasása';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Háttérben is szól, néma üzemmódban is';
 }

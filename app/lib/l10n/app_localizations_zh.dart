@@ -8960,4 +8960,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatQuotaExceededReply => '您已达到每月限额。升级以无限制地继续与Omi聊天。';
+
+  @override
+  String get voiceResponseAudio => '朗读 Omi 的回复';
+
+  @override
+  String get voiceResponseAudioSubtitle => '即使在静音模式下也能在后台播放';
 }

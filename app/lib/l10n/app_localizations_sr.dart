@@ -9136,4 +9136,10 @@ class AppLocalizationsSr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Достигли сте свој месечни лимит. Надоградите да наставите да разговарате са Omi без ограничења.';
+
+  @override
+  String get voiceResponseAudio => 'Прочитај Omi одговор наглас';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Ради у позадини и у тихом режиму';
 }

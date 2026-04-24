@@ -9077,4 +9077,10 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get chatQuotaExceededReply => 'คุณถึงขีดจำกัดรายเดือนแล้ว อัปเกรดเพื่อแชทกับ Omi ต่อโดยไม่มีข้อจำกัด';
+
+  @override
+  String get voiceResponseAudio => 'อ่านคำตอบของ Omi ออกเสียง';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'เล่นในพื้นหลังแม้ในโหมดเงียบ';
 }

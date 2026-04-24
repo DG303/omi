@@ -9132,4 +9132,10 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'আপনি আপনার মাসিক সীমায় পৌঁছেছেন। বিনা সীমাবদ্ধতায় Omi-এর সাথে চ্যাট চালিয়ে যেতে আপগ্রেড করুন।';
+
+  @override
+  String get voiceResponseAudio => 'Omi-র উত্তর জোরে পড়ুন';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'নীরব মোডেও ব্যাকগ্রাউন্ডে বাজে';
 }

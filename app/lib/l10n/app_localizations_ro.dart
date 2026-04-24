@@ -9166,4 +9166,10 @@ class AppLocalizationsRo extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Ai atins limita lunară. Fă upgrade pentru a continua să discuți cu Omi fără restricții.';
+
+  @override
+  String get voiceResponseAudio => 'Citește răspunsul Omi cu voce tare';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Funcționează în fundal chiar și în modul silențios';
 }

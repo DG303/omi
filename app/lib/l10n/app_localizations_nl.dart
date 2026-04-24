@@ -9151,4 +9151,10 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Je hebt je maandelijkse limiet bereikt. Upgrade om zonder beperkingen met Omi te blijven chatten.';
+
+  @override
+  String get voiceResponseAudio => 'Lees Omi\'s antwoord voor';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Speelt op de achtergrond zelfs in stille modus';
 }

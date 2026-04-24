@@ -9136,4 +9136,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Aylık limitinize ulaştınız. Kısıtlama olmadan Omi ile sohbete devam etmek için yükseltin.';
+
+  @override
+  String get voiceResponseAudio => 'Omi yanıtını sesli oku';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Sessiz modda bile arka planda çalar';
 }

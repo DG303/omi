@@ -9119,4 +9119,10 @@ class AppLocalizationsNo extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Du har nådd din månedlige grense. Oppgrader for å fortsette å chatte med Omi uten begrensninger.';
+
+  @override
+  String get voiceResponseAudio => 'Les Omis svar høyt';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Spiller i bakgrunnen selv i lydløs modus';
 }

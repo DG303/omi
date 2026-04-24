@@ -9177,4 +9177,10 @@ class AppLocalizationsCa extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Has assolit el teu límit mensual. Actualitza per continuar xatejant amb Omi sense restriccions.';
+
+  @override
+  String get voiceResponseAudio => 'Llegeix la resposta d\'Omi en veu alta';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Funciona en segon pla fins i tot en mode silenci';
 }

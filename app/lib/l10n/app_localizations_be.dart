@@ -9149,4 +9149,10 @@ class AppLocalizationsBe extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Вы дасягнулі свайго месячнага ліміту. Абнавіце, каб працягваць размаўляць з Omi без абмежаванняў.';
+
+  @override
+  String get voiceResponseAudio => 'Чытаць адказ Omi уголас';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Працуе ў фоне нават у цішыні';
 }

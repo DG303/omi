@@ -8974,4 +8974,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chatQuotaExceededReply => '月間制限に達しました。制限なくOmiとチャットを続けるにはアップグレードしてください。';
+
+  @override
+  String get voiceResponseAudio => 'Omiの応答を音声で再生';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'サイレントモードでもバックグラウンドで再生します';
 }

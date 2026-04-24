@@ -9147,4 +9147,10 @@ class AppLocalizationsSl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Dosegli ste svojo mesečno omejitev. Nadgradite, da nadaljujete pogovor z Omi brez omejitev.';
+
+  @override
+  String get voiceResponseAudio => 'Preberi odgovor Omi na glas';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Deluje v ozadju tudi v tihem načinu';
 }

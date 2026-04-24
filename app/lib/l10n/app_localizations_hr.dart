@@ -9153,4 +9153,10 @@ class AppLocalizationsHr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Dosegli ste svoj mjesečni limit. Nadogradite da nastavite razgovarati s Omi bez ograničenja.';
+
+  @override
+  String get voiceResponseAudio => 'Pročitaj Omijev odgovor naglas';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Radi u pozadini i u tihom načinu rada';
 }

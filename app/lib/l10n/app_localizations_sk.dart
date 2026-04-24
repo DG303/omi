@@ -9111,4 +9111,10 @@ class AppLocalizationsSk extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Dosiahli ste svoj mesačný limit. Inovujte, aby ste mohli pokračovať v chate s Omi bez obmedzení.';
+
+  @override
+  String get voiceResponseAudio => 'Prečítať odpoveď Omi nahlas';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Funguje na pozadí aj v tichom režime';
 }

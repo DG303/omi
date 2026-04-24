@@ -9140,4 +9140,10 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'آپ اپنی ماہانہ حد تک پہنچ گئے ہیں۔ بغیر کسی پابندی کے Omi کے ساتھ چیٹ جاری رکھنے کے لیے اپ گریڈ کریں۔';
+
+  @override
+  String get voiceResponseAudio => 'Omi کا جواب بلند آواز میں پڑھیں';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'خاموش موڈ میں بھی پس منظر میں چلتا ہے';
 }

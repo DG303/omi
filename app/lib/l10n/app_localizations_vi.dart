@@ -9123,4 +9123,10 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Bạn đã đạt giới hạn hàng tháng. Nâng cấp để tiếp tục trò chuyện với Omi không giới hạn.';
+
+  @override
+  String get voiceResponseAudio => 'Đọc to phản hồi của Omi';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Phát ở chế độ nền ngay cả khi im lặng';
 }

@@ -9051,4 +9051,10 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get chatQuotaExceededReply => 'הגעת למגבלה החודשית שלך. שדרג כדי להמשיך לשוחח עם Omi ללא הגבלות.';
+
+  @override
+  String get voiceResponseAudio => 'קרא את תגובת Omi בקול';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'פועל ברקע גם במצב שקט';
 }

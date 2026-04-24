@@ -9158,4 +9158,10 @@ class AppLocalizationsBg extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Достигнахте месечния си лимит. Надградете, за да продължите да чатите с Omi без ограничения.';
+
+  @override
+  String get voiceResponseAudio => 'Прочитай отговора на Omi на глас';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Работи на заден план дори в тих режим';
 }

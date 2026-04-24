@@ -9134,4 +9134,10 @@ class AppLocalizationsMr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'तुम्ही तुमची मासिक मर्यादा गाठली आहे. निर्बंधांशिवाय Omi सोबत चॅट सुरू ठेवण्यासाठी अपग्रेड करा.';
+
+  @override
+  String get voiceResponseAudio => 'Omi चे उत्तर मोठ्याने वाचा';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'सायलेंट मोडमध्येही बॅकग्राउंडमध्ये वाजते';
 }

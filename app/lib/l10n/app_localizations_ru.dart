@@ -9152,4 +9152,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Вы достигли месячного лимита. Обновите план, чтобы продолжить общение с Omi без ограничений.';
+
+  @override
+  String get voiceResponseAudio => 'Читать ответ Omi вслух';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Воспроизводит в фоне даже в тихом режиме';
 }

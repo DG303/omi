@@ -9120,4 +9120,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'You\'ve hit your monthly limit. Upgrade to keep chatting with Omi without restrictions.';
+
+  @override
+  String get voiceResponseAudio => 'Speak Omi\'s response aloud';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Plays in the background even in silent mode';
 }

@@ -9120,4 +9120,10 @@ class AppLocalizationsEt extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Olete saavutanud oma igakuise limiidi. Uuendage, et jätkata Omiga piiranguteta vestlemist.';
+
+  @override
+  String get voiceResponseAudio => 'Loe Omi vastus ette';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Mängib taustal ka vaikses režiimis';
 }

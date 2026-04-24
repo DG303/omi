@@ -9119,4 +9119,10 @@ class AppLocalizationsCs extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Dosáhli jste svého měsíčního limitu. Upgradujte, abyste mohli pokračovat v chatu s Omi bez omezení.';
+
+  @override
+  String get voiceResponseAudio => 'Přečíst odpověď Omi nahlas';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Funguje na pozadí i v tichém režimu';
 }

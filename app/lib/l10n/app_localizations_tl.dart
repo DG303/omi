@@ -9208,4 +9208,10 @@ class AppLocalizationsTl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Naabot mo na ang iyong buwanang limitasyon. Mag-upgrade para magpatuloy ng chat sa Omi nang walang limitasyon.';
+
+  @override
+  String get voiceResponseAudio => 'Basahin nang malakas ang sagot ng Omi';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Tumutugtog sa background kahit sa silent mode';
 }

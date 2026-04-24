@@ -9188,4 +9188,10 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Φτάσατε το μηνιαίο σας όριο. Αναβαθμίστε για να συνεχίσετε να συνομιλείτε με το Omi χωρίς περιορισμούς.';
+
+  @override
+  String get voiceResponseAudio => 'Ανάγνωση απάντησης Omi φωναχτά';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Παίζει στο παρασκήνιο ακόμα και σε σιωπηλή λειτουργία';
 }

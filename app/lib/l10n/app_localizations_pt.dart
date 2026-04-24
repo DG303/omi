@@ -9127,4 +9127,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Você atingiu seu limite mensal. Atualize para continuar conversando com Omi sem restrições.';
+
+  @override
+  String get voiceResponseAudio => 'Ler resposta do Omi em voz alta';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Funciona em segundo plano mesmo no modo silencioso';
 }

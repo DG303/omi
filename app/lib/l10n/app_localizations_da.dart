@@ -9109,4 +9109,10 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Du har nået din månedlige grænse. Opgrader for at fortsætte med at chatte med Omi uden begrænsninger.';
+
+  @override
+  String get voiceResponseAudio => 'Læs Omis svar højt';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Afspilles i baggrunden selv i lydløs tilstand';
 }

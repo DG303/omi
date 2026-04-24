@@ -9200,4 +9200,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Du hast dein monatliches Limit erreicht. Upgrade, um ohne Einschränkungen mit Omi weiterzuchatten.';
+
+  @override
+  String get voiceResponseAudio => 'Omis Antwort laut vorlesen';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Läuft im Hintergrund auch im Lautlosmodus';
 }

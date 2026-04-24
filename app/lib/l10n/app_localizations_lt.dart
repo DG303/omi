@@ -9132,4 +9132,10 @@ class AppLocalizationsLt extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Pasiekėte savo mėnesinį limitą. Atnaujinkite, kad galėtumėte toliau bendrauti su Omi be apribojimų.';
+
+  @override
+  String get voiceResponseAudio => 'Skaityti Omi atsakymą garsiai';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Veikia fone net tyliuoju režimu';
 }

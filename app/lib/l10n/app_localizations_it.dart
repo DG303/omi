@@ -9178,4 +9178,10 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Hai raggiunto il tuo limite mensile. Aggiorna per continuare a chattare con Omi senza restrizioni.';
+
+  @override
+  String get voiceResponseAudio => 'Leggi la risposta di Omi ad alta voce';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Funziona in background anche in modalità silenziosa';
 }

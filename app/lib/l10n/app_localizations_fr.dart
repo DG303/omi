@@ -9206,4 +9206,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Vous avez atteint votre limite mensuelle. Passez à un plan supérieur pour continuer à discuter avec Omi sans restrictions.';
+
+  @override
+  String get voiceResponseAudio => 'Lire la réponse d\'Omi à haute voix';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Fonctionne en arrière-plan même en mode silencieux';
 }

@@ -9137,4 +9137,10 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Ви досягли місячного ліміту. Оновіть, щоб продовжити спілкування з Omi без обмежень.';
+
+  @override
+  String get voiceResponseAudio => 'Читати відповідь Omi вголос';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Працює у фоні навіть у тихому режимі';
 }

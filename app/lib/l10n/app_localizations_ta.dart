@@ -9192,4 +9192,10 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'நீங்கள் உங்கள் மாதாந்திர வரம்பை அடைந்துவிட்டீர்கள். கட்டுப்பாடுகள் இல்லாமல் Omi உடன் அரட்டையைத் தொடர மேம்படுத்தவும்.';
+
+  @override
+  String get voiceResponseAudio => 'Omi பதிலை சத்தமாக படிக்கவும்';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'அமைதி முறையிலும் பின்னணியில் இயங்கும்';
 }

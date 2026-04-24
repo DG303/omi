@@ -9133,4 +9133,10 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Anda telah mencapai batas bulanan. Upgrade untuk terus mengobrol dengan Omi tanpa batasan.';
+
+  @override
+  String get voiceResponseAudio => 'Bacakan respons Omi';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Berjalan di latar belakang bahkan di mode senyap';
 }

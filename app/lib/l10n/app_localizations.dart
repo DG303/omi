@@ -17024,6 +17024,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'ve hit your monthly limit. Upgrade to keep chatting with Omi without restrictions.'**
   String get chatQuotaExceededReply;
+
+  /// Toggle label for voice response audio playback
+  ///
+  /// In en, this message translates to:
+  /// **'Speak Omi\'s response aloud'**
+  String get voiceResponseAudio;
+
+  /// Subtitle under the voice response audio toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Plays in the background even in silent mode'**
+  String get voiceResponseAudioSubtitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

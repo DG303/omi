@@ -9147,4 +9147,10 @@ class AppLocalizationsMs extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Anda telah mencapai had bulanan. Naik taraf untuk terus bersembang dengan Omi tanpa sekatan.';
+
+  @override
+  String get voiceResponseAudio => 'Baca respons Omi dengan kuat';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Berjalan di latar belakang walaupun dalam mod senyap';
 }

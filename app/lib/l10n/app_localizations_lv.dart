@@ -9141,4 +9141,10 @@ class AppLocalizationsLv extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'Jūs esat sasniedzis savu mēneša limitu. Jauniniet, lai turpinātu tērzēt ar Omi bez ierobežojumiem.';
+
+  @override
+  String get voiceResponseAudio => 'Lasīt Omi atbildi skaļi';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'Darbojas fonā pat klusajā režīmā';
 }

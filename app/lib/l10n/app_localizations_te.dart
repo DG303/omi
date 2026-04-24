@@ -9174,4 +9174,10 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get chatQuotaExceededReply =>
       'మీరు మీ నెలవారీ పరిమితిని చేరుకున్నారు. పరిమితులు లేకుండా Omi తో చాట్ కొనసాగించడానికి అప్‌గ్రేడ్ చేయండి.';
+
+  @override
+  String get voiceResponseAudio => 'Omi ప్రతిస్పందనను బిగ్గరగా చదవండి';
+
+  @override
+  String get voiceResponseAudioSubtitle => 'నిశ్శబ్ద మోడ్‌లోనూ నేపథ్యంలో ప్లే అవుతుంది';
 }
