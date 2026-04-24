@@ -185,7 +185,7 @@ class _ConnectedDeviceState extends State<ConnectedDevice> {
             const SizedBox(width: 16),
             Expanded(
               child: Text(
-                context.l10n.batteryLevel,
+                charging ? context.l10n.charging : context.l10n.batteryLevel,
                 style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w400),
               ),
             ),
@@ -193,7 +193,7 @@ class _ConnectedDeviceState extends State<ConnectedDevice> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: const Color(0xFF2A2A2E), borderRadius: BorderRadius.circular(100)),
               child: Text(
-                charging ? context.l10n.charging : '${provider.batteryLevel}%',
+                '${provider.batteryLevel}%',
                 style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
               ),
             ),
