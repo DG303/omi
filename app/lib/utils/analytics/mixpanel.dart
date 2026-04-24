@@ -407,6 +407,8 @@ class MixpanelManager {
         properties: {'threshold_seconds': thresholdSeconds, 'threshold_minutes': thresholdSeconds ~/ 60},
       );
 
+  void voiceResponseToggled(bool enabled) => track('Voice Response Audio Toggled', properties: {'enabled': enabled});
+
   // Conversation Merge Events
   void conversationMergeSelectionModeEntered() => track('Conversation Merge Selection Mode Entered');
 
