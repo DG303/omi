@@ -2379,7 +2379,7 @@ class AppLocalizationsBe extends AppLocalizations {
   String get batteryLevel => 'Узровень батарэі';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Зарадка';
 
   @override
   String get productUpdate => 'Абнаўленне прадукту';

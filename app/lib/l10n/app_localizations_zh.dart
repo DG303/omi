@@ -2323,7 +2323,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get batteryLevel => '电池电量';
 
   @override
-  String get charging => 'Charging';
+  String get charging => '充电中';
 
   @override
   String get productUpdate => '产品更新';

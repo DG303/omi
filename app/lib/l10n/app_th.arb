@@ -732,6 +732,7 @@
     "slideToUpdate": "เลื่อนเพื่ออัปเดต",
     "copiedToClipboard": "คัดลอก {title} ไปยังคลิปบอร์ดแล้ว",
     "batteryLevel": "ระดับแบตเตอรี่",
+    "charging": "กำลังชาร์จ",
     "productUpdate": "การอัปเดตผลิตภัณฑ์",
     "offline": "ออฟไลน์",
     "available": "พร้อมใช้งาน",

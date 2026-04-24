@@ -2373,7 +2373,7 @@ class AppLocalizationsBg extends AppLocalizations {
   String get batteryLevel => 'Ниво на батерията';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Зареждане';
 
   @override
   String get productUpdate => 'Актуализация на продукта';

@@ -732,6 +732,7 @@
     "slideToUpdate": "اسحب للتحديث",
     "copiedToClipboard": "تم نسخ {title} إلى الحافظة",
     "batteryLevel": "مستوى البطارية",
+    "charging": "شحن",
     "productUpdate": "تحديث المنتج",
     "offline": "غير متصل",
     "available": "متاح",

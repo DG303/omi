@@ -2389,7 +2389,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get batteryLevel => 'Batteriestand';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Wird geladen';
 
   @override
   String get productUpdate => 'Produktaktualisierung';

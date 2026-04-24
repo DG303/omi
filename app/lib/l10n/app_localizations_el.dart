@@ -2387,7 +2387,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get batteryLevel => 'Επίπεδο μπαταρίας';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Φόρτιση';
 
   @override
   String get productUpdate => 'Ενημέρωση προϊόντος';

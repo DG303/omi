@@ -2369,7 +2369,7 @@ class AppLocalizationsEt extends AppLocalizations {
   String get batteryLevel => 'Aku tase';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Laadimine';
 
   @override
   String get productUpdate => 'Toote värskendus';

@@ -2388,7 +2388,7 @@ class AppLocalizationsTa extends AppLocalizations {
   String get batteryLevel => 'பேட்டரி நிலை';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'சார்ஜ் ஆகிறது';
 
   @override
   String get productUpdate => 'பொருள் புதுப்பிப்பு';

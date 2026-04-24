@@ -2385,7 +2385,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get batteryLevel => 'బ్యాటరీ స్థాయి';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'ఛార్జ్ అవుతోంది';
 
   @override
   String get productUpdate => 'ఉత్పత్తి అపడేట్';

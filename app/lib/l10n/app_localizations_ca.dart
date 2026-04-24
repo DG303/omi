@@ -2381,7 +2381,7 @@ class AppLocalizationsCa extends AppLocalizations {
   String get batteryLevel => 'Nivell de bateria';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Carregant';
 
   @override
   String get productUpdate => 'Actualització del producte';

@@ -296,6 +296,7 @@
     "basicPlanDescription": "1 200 premium minučių + neribota įrenginyje",
     "batteryDrainSignificantly": "Baterijos išsikrovimas žymiai padidės.",
     "batteryLevel": "Baterijos lygis",
+    "charging": "Kraunama",
     "batteryUsageHigher": "Baterijos naudojimas bus didesnis nei debesies transkripcijos.",
     "beforeUpdateMakeSure": "Prieš atnaujinant įsitikinkite:",
     "bestInClassTranscription": "Geriausia klasės transkripcija be jokio nustatymo",

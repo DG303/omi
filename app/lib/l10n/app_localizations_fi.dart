@@ -2367,7 +2367,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get batteryLevel => 'Akun taso';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Lataa';
 
   @override
   String get productUpdate => 'Tuotepäivitys';

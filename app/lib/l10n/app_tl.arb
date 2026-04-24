@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "Antas ng Baterya",
+    "charging": "Nagcha-charge",
     "@batteryLevel": {
         "description": "Battery level label"
     },

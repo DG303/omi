@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "Ниво на батерија",
+    "charging": "Полнење",
     "@batteryLevel": {
         "description": "Battery level label"
     },

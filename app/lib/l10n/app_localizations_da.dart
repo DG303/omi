@@ -2350,7 +2350,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String get batteryLevel => 'Batteriniveau';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Oplader';
 
   @override
   String get productUpdate => 'Produktopdatering';

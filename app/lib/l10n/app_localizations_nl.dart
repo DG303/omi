@@ -2376,7 +2376,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get batteryLevel => 'Batterijniveau';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Opladen';
 
   @override
   String get productUpdate => 'Productupdate';

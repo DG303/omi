@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "רמת הסוללה",
+    "charging": "טוען",
     "@batteryLevel": {
         "description": "Battery level label"
     },

@@ -2377,7 +2377,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get batteryLevel => 'Tahap Bateri';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Mengecas';
 
   @override
   String get productUpdate => 'Kemas Kini Produk';

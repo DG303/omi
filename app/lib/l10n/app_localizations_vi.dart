@@ -2372,7 +2372,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get batteryLevel => 'Mức Pin';
 
   @override
-  String get charging => 'Charging';
+  String get charging => 'Đang sạc';
 
   @override
   String get productUpdate => 'Cập Nhật Sản Phẩm';

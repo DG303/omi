@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "سطح باتری",
+    "charging": "در حال شارژ",
     "@batteryLevel": {
         "description": "Battery level label"
     },
