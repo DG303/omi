@@ -730,6 +730,19 @@ class OmiDeviceConnection extends DeviceConnection {
     }
   }
 
+  Future<bool> readChargingStatus() async {
+    try {
+      final value = await transport.readCharacteristic(
+        settingsServiceUuid,
+        settingsChargingStatusCharacteristicUuid,
+      );
+      return value.isNotEmpty && value[0] == 1;
+    } catch (e) {
+      Logger.debug('OmiDeviceConnection: Error reading charging status: $e');
+      return false;
+    }
+  }
+
   Future<StreamSubscription?> getChargingStatusListener({
     required void Function(bool isCharging) onChargingStatusChange,
   }) async {

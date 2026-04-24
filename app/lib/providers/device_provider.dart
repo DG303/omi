@@ -204,6 +204,12 @@ class DeviceProvider extends ChangeNotifier implements IDeviceServiceSubsciption
     if (connection == null) return;
     if (connection is! OmiDeviceConnection) return;
 
+    final currentStatus = await connection.readChargingStatus();
+    if (isCharging != currentStatus) {
+      isCharging = currentStatus;
+      notifyListeners();
+    }
+
     _bleChargingStatusListener = await connection.getChargingStatusListener(
       onChargingStatusChange: (bool charging) {
         if (isCharging != charging) {
