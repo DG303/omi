@@ -2368,6 +2368,9 @@ class AppLocalizationsLt extends AppLocalizations {
   String get batteryLevel => 'Baterijos lygis';
 
   @override
+  String get charging => 'Kraunama';
+
+  @override
   String get productUpdate => 'Produkto atnaujinimas';
 
   @override

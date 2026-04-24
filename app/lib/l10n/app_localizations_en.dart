@@ -2373,6 +2373,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get batteryLevel => 'Battery Level';
 
   @override
+  String get charging => 'Charging';
+
+  @override
   String get productUpdate => 'Product Update';
 
   @override
@@ -9122,7 +9125,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You\'ve hit your monthly limit. Upgrade to keep chatting with Omi without restrictions.';
 
   @override
-  String get voiceResponseAudio => 'Speak Omi\'s response aloud';
+  String get voiceResponseAudio => 'Speak Omi responses aloud';
 
   @override
   String get voiceResponseMode => 'Voice response';

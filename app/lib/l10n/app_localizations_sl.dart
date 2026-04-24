@@ -2377,6 +2377,9 @@ class AppLocalizationsSl extends AppLocalizations {
   String get batteryLevel => 'Raven baterije';
 
   @override
+  String get charging => 'Polnjenje';
+
+  @override
   String get productUpdate => 'Posodobitev proizvoda';
 
   @override

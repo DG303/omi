@@ -2374,6 +2374,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get batteryLevel => 'سطح باتری';
 
   @override
+  String get charging => 'در حال شارژ';
+
+  @override
   String get productUpdate => 'بروزرسانی محصول';
 
   @override

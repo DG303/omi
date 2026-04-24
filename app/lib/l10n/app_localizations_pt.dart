@@ -2343,6 +2343,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get batteryLevel => 'Nível da Bateria';
 
   @override
+  String get charging => 'Carregando';
+
+  @override
   String get productUpdate => 'Atualização do Produto';
 
   @override

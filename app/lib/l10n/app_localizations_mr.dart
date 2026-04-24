@@ -2377,6 +2377,9 @@ class AppLocalizationsMr extends AppLocalizations {
   String get batteryLevel => 'बॅटरी स्तर';
 
   @override
+  String get charging => 'चार्ज होत आहे';
+
+  @override
   String get productUpdate => 'उत्पादन अपडेट';
 
   @override

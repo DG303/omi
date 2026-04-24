@@ -2381,6 +2381,9 @@ class AppLocalizationsKn extends AppLocalizations {
   String get batteryLevel => 'ಬ್ಯಾಟರಿ ಸ್ತರ';
 
   @override
+  String get charging => 'ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ';
+
+  @override
   String get productUpdate => 'ಉತ್ಪನ್ನ ನವೀಕರಣ';
 
   @override

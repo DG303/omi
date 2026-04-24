@@ -2374,6 +2374,9 @@ class AppLocalizationsSk extends AppLocalizations {
   String get batteryLevel => 'Úroveň batérie';
 
   @override
+  String get charging => 'Nabíjanie';
+
+  @override
   String get productUpdate => 'Aktualizácia produktu';
 
   @override

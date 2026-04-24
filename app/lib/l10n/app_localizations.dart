@@ -4581,6 +4581,12 @@ abstract class AppLocalizations {
   /// **'Battery Level'**
   String get batteryLevel;
 
+  /// No description provided for @charging.
+  ///
+  /// In en, this message translates to:
+  /// **'Charging'**
+  String get charging;
+
   /// Menu item for product/firmware update
   ///
   /// In en, this message translates to:
@@ -17025,10 +17031,10 @@ abstract class AppLocalizations {
   /// **'You\'ve hit your monthly limit. Upgrade to keep chatting with Omi without restrictions.'**
   String get chatQuotaExceededReply;
 
-  /// Toggle label for voice response audio playback
+  /// Voice response audio feature title
   ///
   /// In en, this message translates to:
-  /// **'Speak Omi\'s response aloud'**
+  /// **'Speak Omi responses aloud'**
   String get voiceResponseAudio;
 
   /// Voice response mode setting row title
