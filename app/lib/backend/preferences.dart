@@ -162,6 +162,11 @@ class SharedPreferencesUtil {
 
   bool get showTasksEnabled => getBool('showTasksEnabled', defaultValue: true);
 
+  // Phone call floating button on home screen - default is true
+  set showPhoneCallButton(bool value) => saveBool('showPhoneCallButton', value);
+
+  bool get showPhoneCallButton => getBool('showPhoneCallButton', defaultValue: true);
+
   // Voice response playback mode for hardware-button replies.
   //   0 = off (never speak)
   //   1 = headphones only — AirPods / wired / USB / AirPlay (default)

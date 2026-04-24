@@ -8289,6 +8289,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Puheluasetukset';
 
   @override
+  String get showPhoneCallButtonTitle => 'Näytä puhelupainike';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Näytä puhelupainike aloitusnäytöllä';
+
+  @override
   String get yourVerifiedNumbers => 'Vahvistetut numerosi';
 
   @override

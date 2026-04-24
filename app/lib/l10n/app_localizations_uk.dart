@@ -8303,6 +8303,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Налаштування дзвінків';
 
   @override
+  String get showPhoneCallButtonTitle => 'Показати кнопку дзвінка';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Відображати кнопку телефонного дзвінка на головному екрані';
+
+  @override
   String get yourVerifiedNumbers => 'Ваші підтверджені номери';
 
   @override

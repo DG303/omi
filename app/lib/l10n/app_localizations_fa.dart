@@ -8294,6 +8294,12 @@ class AppLocalizationsFa extends AppLocalizations {
   String get phoneCallSettingsTitle => 'تنظیمات تماس تلفنی';
 
   @override
+  String get showPhoneCallButtonTitle => 'نمایش دکمه تماس';
+
+  @override
+  String get showPhoneCallButtonDesc => 'نمایش دکمه تماس تلفنی در صفحه اصلی';
+
+  @override
   String get yourVerifiedNumbers => 'شماره‌های تأیید شده شما';
 
   @override

@@ -8303,6 +8303,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Arama ayarlari';
 
   @override
+  String get showPhoneCallButtonTitle => 'Arama Düğmesini Göster';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Ana ekranda telefon arama düğmesini göster';
+
+  @override
   String get yourVerifiedNumbers => 'Dogrulanmis numaralariniz';
 
   @override

@@ -8308,6 +8308,12 @@ class AppLocalizationsLv extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Zvanu iestatijumi';
 
   @override
+  String get showPhoneCallButtonTitle => 'Rādīt zvana pogu';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Rādīt tālruņa zvana pogu sākuma ekrānā';
+
+  @override
   String get yourVerifiedNumbers => 'Jusu verificetie numuri';
 
   @override

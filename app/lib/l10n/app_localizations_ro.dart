@@ -8332,6 +8332,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Setari apeluri';
 
   @override
+  String get showPhoneCallButtonTitle => 'Afișați butonul de apel';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Afișați butonul de apel telefonic pe ecranul de pornire';
+
+  @override
   String get yourVerifiedNumbers => 'Numerele dvs. verificate';
 
   @override
