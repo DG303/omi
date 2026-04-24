@@ -307,6 +307,7 @@ class OmiVoicePlaybackService {
       final session = await AudioSession.instance;
       await session.setActive(true);
     } catch (e) {
+      _sessionActive = false;
       Logger.debug('OmiVoicePlaybackService: setActive(true) failed: $e');
     }
   }
