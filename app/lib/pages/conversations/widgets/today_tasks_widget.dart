@@ -90,6 +90,7 @@ class TodayTasksWidget extends StatelessWidget {
                 Transform.translate(
                   offset: const Offset(-8, 0),
                   child: Container(
+                    margin: const EdgeInsets.only(top: 4),
                     decoration: BoxDecoration(color: const Color(0xFF1F1F25), borderRadius: BorderRadius.circular(24)),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Column(

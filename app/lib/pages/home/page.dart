@@ -691,7 +691,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: const Color(0xFF35343B), width: 1),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 20, offset: const Offset(0, 6)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.75), blurRadius: 40, spreadRadius: 8, offset: const Offset(0, 8)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 16, offset: const Offset(0, 4)),
           ],
         ),
         child: Row(
@@ -708,7 +709,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
               onTap: () {
                 HapticFeedback.lightImpact();
                 MixpanelManager().bottomNavigationTabClicked('Chat Voice');
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false)));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false, autoStartVoice: true)));
               },
               child: Container(
                 width: 42,
@@ -812,7 +813,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                             },
                           ),
                         ),
-                      if (shouldShowSearchButton) const SizedBox(width: 8),
                       // Calendar button - only show when date filter is active
                       if (convoProvider.selectedDate != null) ...[
                         const SizedBox(width: 8),

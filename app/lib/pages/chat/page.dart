@@ -40,8 +40,9 @@ import 'package:omi/widgets/bottom_nav_bar.dart';
 class ChatPage extends StatefulWidget {
   final bool isPivotBottom;
   final String? autoMessage;
+  final bool autoStartVoice;
 
-  const ChatPage({super.key, this.isPivotBottom = false, this.autoMessage});
+  const ChatPage({super.key, this.isPivotBottom = false, this.autoMessage, this.autoStartVoice = false});
 
   @override
   State<ChatPage> createState() => ChatPageState();
@@ -54,6 +55,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
 
   bool _isInitialLoad = true;
   bool _hasInitialScrolled = false;
+  MessageProvider? _messageProvider;
 
   var prefs = SharedPreferencesUtil();
   late List<App> apps;
@@ -88,6 +90,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       var provider = context.read<MessageProvider>();
+      _messageProvider = provider;
       // Listen for quota exceeded from any send path (text or voice)
       provider.addListener(_onMessageProviderChanged);
       if (provider.messages.isEmpty) {
@@ -100,8 +103,15 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
       // Chat quota is checked via 402 error when sending messages
       // Sync Apple Health data if connected (ensures fresh data for health queries)
       _syncAppleHealthIfConnected();
-      // Auto-focus the text field only on initial load, not on app switches
-      if (_isInitialLoad) {
+      // Auto-start voice recording if requested (e.g., from home chat bar mic button)
+      if (widget.autoStartVoice && _isInitialLoad) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            context.read<VoiceRecorderProvider>().startRecording();
+          }
+        });
+      } else if (_isInitialLoad) {
+        // Auto-focus the text field only on initial load, not on app switches
         Future.delayed(const Duration(milliseconds: 300), () {
           final voiceRecorderProvider = context.read<VoiceRecorderProvider>();
           if (mounted && !voiceRecorderProvider.isActive && _isInitialLoad) {
@@ -157,7 +167,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
 
   @override
   void dispose() {
-    context.read<MessageProvider>().removeListener(_onMessageProviderChanged);
+    _messageProvider?.removeListener(_onMessageProviderChanged);
     textController.dispose();
     scrollController.dispose();
     textFieldFocusNode.dispose();

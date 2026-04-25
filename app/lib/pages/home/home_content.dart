@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import 'package:omi/backend/http/api/users.dart';
-import 'package:omi/backend/schema/conversation.dart';
 import 'package:omi/backend/schema/daily_summary.dart';
-import 'package:omi/pages/conversations/widgets/conversations_group_widget.dart';
+import 'package:omi/pages/conversations/widgets/conversation_list_item.dart';
+import 'package:omi/pages/conversations/widgets/processing_capture.dart';
 import 'package:omi/pages/conversations/widgets/today_tasks_widget.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
 import 'package:omi/providers/conversation_provider.dart';
@@ -78,8 +79,10 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // Today section
-              SliverToBoxAdapter(child: _buildSectionHeader(context, context.l10n.today)),
+              // Live capture widget — shows when device or phone mic is recording
+              const SliverToBoxAdapter(child: ConversationCaptureWidget()),
+
+              // Today section — TodayTasksWidget has its own header
               const SliverToBoxAdapter(child: TodayTasksWidget()),
 
               // Daily Recaps section
@@ -124,9 +127,16 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
           if (onViewAll != null)
             GestureDetector(
               onTap: onViewAll,
-              child: Text(
-                context.l10n.viewAll,
-                style: const TextStyle(color: Colors.deepPurpleAccent, fontSize: 14, fontWeight: FontWeight.w500),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  context.l10n.viewAll,
+                  style: TextStyle(color: Colors.grey[400], fontSize: 12, fontWeight: FontWeight.w500),
+                ),
               ),
             ),
         ],
@@ -135,23 +145,24 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
   }
 
   Widget _buildDailyRecapsPreview(BuildContext context) {
+    final cardHeight = 220.0;
     if (_loadingSummaries) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: List.generate(
-            2,
-            (_) => Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: ShimmerWithTimeout(
-                baseColor: AppStyles.backgroundSecondary,
-                highlightColor: AppStyles.backgroundTertiary,
-                child: Container(
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppStyles.backgroundSecondary,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
+      return SizedBox(
+        height: cardHeight,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(left: 16),
+          itemCount: 3,
+          itemBuilder: (_, __) => Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ShimmerWithTimeout(
+              baseColor: AppStyles.backgroundSecondary,
+              highlightColor: AppStyles.backgroundTertiary,
+              child: Container(
+                width: 260,
+                decoration: BoxDecoration(
+                  color: AppStyles.backgroundSecondary,
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
             ),
@@ -162,10 +173,23 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
 
     if (_recentSummaries.isEmpty) return const SizedBox.shrink();
 
-    return Column(children: _recentSummaries.map((s) => _buildSummaryCard(context, s)).toList());
+    return SizedBox(
+      height: cardHeight,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(left: 16),
+        itemCount: _recentSummaries.length,
+        itemBuilder: (context, index) => _buildSummaryCard(context, _recentSummaries[index], cardHeight),
+      ),
+    );
   }
 
-  Widget _buildSummaryCard(BuildContext context, DailySummary summary) {
+  static const double _cardWidth = 260.0;
+  static const double _mapHeight = 120.0;
+
+  Widget _buildSummaryCard(BuildContext context, DailySummary summary, double cardHeight) {
+    final hasMap = summary.locations.isNotEmpty;
+
     return GestureDetector(
       onTap: () {
         MixpanelManager().dailySummaryDetailViewed(summaryId: summary.id, date: summary.date);
@@ -174,67 +198,107 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
           MaterialPageRoute(builder: (context) => DailySummaryDetailPage(summaryId: summary.id, summary: summary)),
         );
       },
-      child: Padding(
-        padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
-        child: Container(
-          width: double.maxFinite,
-          decoration: BoxDecoration(color: const Color(0xFF1F1F25), borderRadius: BorderRadius.circular(24.0)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(color: const Color(0xFF35343B), borderRadius: BorderRadius.circular(12)),
-                  alignment: Alignment.center,
-                  child: Text(summary.dayEmoji, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
+      child: Container(
+        width: _cardWidth,
+        height: cardHeight,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(color: const Color(0xFF1F1F25), borderRadius: BorderRadius.circular(20)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              // Map at bottom
+              if (hasMap)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: _mapHeight,
+                  child: _buildCardMap(summary),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
+              // Text content at top
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: hasMap ? _mapHeight : 0,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        summary.headline,
-                        style: Theme.of(context).textTheme.titleMedium,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
                       Row(
                         children: [
+                          Text(summary.dayEmoji, style: const TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
                           Text(
                             _formatDate(summary.date),
-                            style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 14),
+                            style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 12),
                           ),
-                          if (summary.stats.totalConversations > 0) ...[
-                            const Text(' • ', style: TextStyle(color: Color(0xFF9A9BA1), fontSize: 14)),
-                            const FaIcon(FontAwesomeIcons.solidComments, size: 10, color: Color(0xFF9A9BA1)),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${summary.stats.totalConversations}',
-                              style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 14),
-                            ),
-                          ],
-                          if (summary.stats.actionItemsCount > 0) ...[
-                            const Text(' • ', style: TextStyle(color: Color(0xFF9A9BA1), fontSize: 14)),
-                            const FaIcon(FontAwesomeIcons.listCheck, size: 11, color: Color(0xFF9A9BA1)),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${summary.stats.actionItemsCount}',
-                              style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 14),
-                            ),
-                          ],
                         ],
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Text(
+                          summary.headline,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            height: 1.35,
+                          ),
+                          maxLines: hasMap ? 3 : 5,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardMap(DailySummary summary) {
+    final centerLat = summary.locations.map((l) => l.latitude).reduce((a, b) => a + b) / summary.locations.length;
+    final centerLng = summary.locations.map((l) => l.longitude).reduce((a, b) => a + b) / summary.locations.length;
+
+    final markers = summary.locations
+        .map((loc) => Marker(
+              point: LatLng(loc.latitude, loc.longitude),
+              width: 22,
+              height: 22,
+              child: Container(
+                decoration: const BoxDecoration(color: Colors.deepPurple, shape: BoxShape.circle),
+                child: const Icon(Icons.location_on, color: Colors.white, size: 13),
+              ),
+            ))
+        .toList();
+
+    return SizedBox(
+      width: _cardWidth,
+      height: _mapHeight,
+      child: IgnorePointer(
+        child: FlutterMap(
+          options: MapOptions(
+            initialCenter: LatLng(centerLat, centerLng),
+            initialZoom: 13,
+            interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+              subdomains: const ['a', 'b', 'c', 'd'],
+              userAgentPackageName: 'me.omi.app',
+              minNativeZoom: 0,
+              maxNativeZoom: 19,
+              retinaMode: true,
+            ),
+            MarkerLayer(markers: markers),
+          ],
         ),
       ),
     );
@@ -258,7 +322,7 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
   }
 
   Widget _buildConversationsPreview(ConversationProvider convoProvider) {
-    if (convoProvider.isLoadingConversations && convoProvider.groupedConversations.isEmpty) {
+    if (convoProvider.isLoadingConversations && convoProvider.conversations.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -285,19 +349,20 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
       );
     }
 
-    if (convoProvider.groupedConversations.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    final recent = convoProvider.conversations.take(3).toList();
+    if (recent.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
-    final keys = convoProvider.groupedConversations.keys.take(3).toList();
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        childCount: keys.length,
+        childCount: recent.length,
         (context, index) {
-          final date = keys[index];
-          return ConversationsGroupWidget(
-            key: ValueKey(date),
-            isFirst: index == 0,
-            conversations: convoProvider.groupedConversations[date]!,
-            date: date,
+          final c = recent[index];
+          final dateKey = DateTime(c.createdAt.year, c.createdAt.month, c.createdAt.day);
+          return ConversationListItem(
+            key: ValueKey(c.id),
+            conversation: c,
+            date: dateKey,
+            conversationIdx: index,
           );
         },
       ),

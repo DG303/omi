@@ -9654,7 +9654,7 @@
   "capabilityChat": "Chat",
   "capabilityConversations": "Conversations",
   "capabilityExternalIntegration": "External Integration",
-  "capabilityNotification": "Notification",
+  "capabilityNotification": "Smart Notifications",
   "triggerAudioBytes": "Audio Bytes",
   "triggerConversationCreation": "Conversation Creation",
   "triggerTranscriptProcessed": "Transcript Processed",
