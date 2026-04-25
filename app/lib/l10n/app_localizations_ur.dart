@@ -9167,4 +9167,7 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'ہمیشہ';
+
+  @override
+  String get agreeAndContinue => 'اتفاق اور جاری رکھیں';
 }

@@ -9154,4 +9154,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Alltid';
+
+  @override
+  String get agreeAndContinue => 'Godkänn och fortsätt';
 }

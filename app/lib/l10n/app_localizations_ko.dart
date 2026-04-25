@@ -9002,4 +9002,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => '항상';
+
+  @override
+  String get agreeAndContinue => '동의하고 계속';
 }

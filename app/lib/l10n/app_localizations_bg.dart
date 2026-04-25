@@ -9185,4 +9185,7 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Винаги';
+
+  @override
+  String get agreeAndContinue => 'Приемам и продължавам';
 }

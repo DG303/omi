@@ -9138,4 +9138,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Vždy';
+
+  @override
+  String get agreeAndContinue => 'Súhlasím a pokračovať';
 }

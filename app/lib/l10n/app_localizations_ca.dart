@@ -9204,4 +9204,7 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Sempre';
+
+  @override
+  String get agreeAndContinue => 'Accepto i continuo';
 }

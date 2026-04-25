@@ -9164,4 +9164,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Завжди';
+
+  @override
+  String get agreeAndContinue => 'Прийняти та продовжити';
 }

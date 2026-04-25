@@ -9159,4 +9159,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'সর্বদা';
+
+  @override
+  String get agreeAndContinue => 'সম্মত হই এবং চালিয়ে যান';
 }

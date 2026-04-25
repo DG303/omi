@@ -9174,4 +9174,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Sentiasa';
+
+  @override
+  String get agreeAndContinue => 'Setuju & Teruskan';
 }

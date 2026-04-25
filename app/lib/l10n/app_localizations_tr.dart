@@ -9163,4 +9163,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Her zaman';
+
+  @override
+  String get agreeAndContinue => 'Kabul Et ve Devam Et';
 }

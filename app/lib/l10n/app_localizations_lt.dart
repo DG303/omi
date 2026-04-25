@@ -9159,4 +9159,7 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Visada';
+
+  @override
+  String get agreeAndContinue => 'Sutinku ir tęsti';
 }

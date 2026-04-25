@@ -9130,4 +9130,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'हमेशा';
+
+  @override
+  String get agreeAndContinue => 'सहमत हूँ और जारी रखें';
 }

@@ -9136,4 +9136,7 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Altid';
+
+  @override
+  String get agreeAndContinue => 'Accepter og fortsæt';
 }

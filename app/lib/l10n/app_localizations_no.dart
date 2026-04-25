@@ -9146,4 +9146,7 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Alltid';
+
+  @override
+  String get agreeAndContinue => 'Godta og fortsett';
 }

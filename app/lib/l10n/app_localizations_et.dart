@@ -9147,4 +9147,7 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Alati';
+
+  @override
+  String get agreeAndContinue => 'Nõustun ja jätka';
 }

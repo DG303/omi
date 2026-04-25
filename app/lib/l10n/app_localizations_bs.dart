@@ -9174,4 +9174,7 @@ class AppLocalizationsBs extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Uvijek';
+
+  @override
+  String get agreeAndContinue => 'Slažem se i nastavi';
 }

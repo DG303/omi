@@ -9215,4 +9215,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Πάντα';
+
+  @override
+  String get agreeAndContinue => 'Συμφωνώ και Συνέχεια';
 }

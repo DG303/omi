@@ -9161,4 +9161,7 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'नेहमी';
+
+  @override
+  String get agreeAndContinue => 'सहमत व्हा आणि सुरू ठेवा';
 }

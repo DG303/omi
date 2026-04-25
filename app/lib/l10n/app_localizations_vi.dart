@@ -9150,4 +9150,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Luôn luôn';
+
+  @override
+  String get agreeAndContinue => 'Đồng ý và tiếp tục';
 }

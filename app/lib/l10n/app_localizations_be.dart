@@ -9176,4 +9176,7 @@ class AppLocalizationsBe extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Заўсёды';
+
+  @override
+  String get agreeAndContinue => 'Прыняць і працягнуць';
 }

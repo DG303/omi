@@ -9205,4 +9205,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Sempre';
+
+  @override
+  String get agreeAndContinue => 'Accetta e continua';
 }

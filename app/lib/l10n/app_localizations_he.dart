@@ -9078,4 +9078,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'תמיד';
+
+  @override
+  String get agreeAndContinue => 'אני מסכים והמשך';
 }

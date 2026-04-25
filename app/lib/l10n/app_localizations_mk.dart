@@ -9199,4 +9199,7 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Секогаш';
+
+  @override
+  String get agreeAndContinue => 'Се согласувам и продолжи';
 }

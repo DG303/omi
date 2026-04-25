@@ -9219,4 +9219,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'எப்போதும்';
+
+  @override
+  String get agreeAndContinue => 'ஒப்புக்கொள் & தொடரவும்';
 }
