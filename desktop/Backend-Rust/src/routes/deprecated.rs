@@ -1,7 +1,7 @@
 // Deprecated API routes — return 410 Gone for endpoints no longer served by the Rust backend.
 //
-// These endpoints had ZERO traffic over 7 days (Apr 18-25, 2026) and the current
-// desktop Swift app routes all data CRUD to the Python backend (OMI_PYTHON_API_URL).
+// The current desktop Swift app routes all data CRUD to the Python backend
+// (OMI_PYTHON_API_URL = api.omi.me). These endpoints are no longer needed on Rust.
 //
 // Clients should migrate to https://api.omi.me (the Python backend).
 
@@ -144,4 +144,133 @@ pub fn deprecated_routes() -> Router<AppState> {
         .route("/v1/apps/review", post(deprecated_handler))
         .route("/v1/app-categories", get(deprecated_handler))
         .route("/v1/app-capabilities", get(deprecated_handler))
+        // ── Conversations (legacy — current app uses Python) ─────────────────
+        .route("/v1/conversations", get(deprecated_handler))
+        .route("/v1/conversations/count", get(deprecated_handler))
+        .route("/v1/conversations/search", post(deprecated_handler))
+        .route("/v1/conversations/merge", post(deprecated_handler))
+        .route(
+            "/v1/conversations/from-segments",
+            post(deprecated_handler),
+        )
+        .route(
+            "/v1/conversations/:id/reprocess",
+            post(deprecated_handler),
+        )
+        .route(
+            "/v1/conversations/:id/starred",
+            patch(deprecated_handler),
+        )
+        .route(
+            "/v1/conversations/:id/visibility",
+            patch(deprecated_handler),
+        )
+        .route(
+            "/v1/conversations/:id/shared",
+            get(deprecated_handler),
+        )
+        .route(
+            "/v1/conversations/:id",
+            get(deprecated_handler)
+                .patch(deprecated_handler)
+                .delete(deprecated_handler),
+        )
+        // ── Messages (legacy — current app uses Python) ──────────────────────
+        .route(
+            "/v2/messages",
+            get(deprecated_handler)
+                .post(deprecated_handler)
+                .delete(deprecated_handler),
+        )
+        .route("/v2/messages/:id/rating", patch(deprecated_handler))
+        // ── Action items (legacy — current app uses Python) ──────────────────
+        .route(
+            "/v1/action-items",
+            get(deprecated_handler).post(deprecated_handler),
+        )
+        .route(
+            "/v1/action-items/batch",
+            post(deprecated_handler).patch(deprecated_handler),
+        )
+        .route("/v1/action-items/batch-scores", patch(deprecated_handler))
+        .route("/v1/action-items/share", post(deprecated_handler))
+        .route("/v1/action-items/shared/:token", get(deprecated_handler))
+        .route("/v1/action-items/accept", post(deprecated_handler))
+        .route(
+            "/v1/action-items/:id",
+            get(deprecated_handler)
+                .patch(deprecated_handler)
+                .delete(deprecated_handler),
+        )
+        .route(
+            "/v1/action-items/:id/soft-delete",
+            post(deprecated_handler),
+        )
+        // ── Memories (legacy — current app uses Python) ──────────────────────
+        .route(
+            "/v3/memories",
+            get(deprecated_handler)
+                .post(deprecated_handler)
+                .delete(deprecated_handler),
+        )
+        .route("/v3/memories/mark-all-read", post(deprecated_handler))
+        .route("/v3/memories/visibility", patch(deprecated_handler))
+        .route(
+            "/v3/memories/:id",
+            delete(deprecated_handler).patch(deprecated_handler),
+        )
+        .route("/v3/memories/:id/visibility", patch(deprecated_handler))
+        .route("/v3/memories/:id/review", post(deprecated_handler))
+        .route("/v3/memories/:id/read", patch(deprecated_handler))
+        // ── Staged tasks (legacy — current app uses Python) ──────────────────
+        .route(
+            "/v1/staged-tasks",
+            get(deprecated_handler).post(deprecated_handler),
+        )
+        .route("/v1/staged-tasks/batch-scores", patch(deprecated_handler))
+        .route("/v1/staged-tasks/promote", post(deprecated_handler))
+        .route("/v1/staged-tasks/migrate", post(deprecated_handler))
+        .route(
+            "/v1/staged-tasks/migrate-conversation-items",
+            post(deprecated_handler),
+        )
+        .route("/v1/staged-tasks/:id", delete(deprecated_handler))
+        // ── Users (legacy — current app uses Python) ─────────────────────────
+        .route(
+            "/v1/users/daily-summary-settings",
+            get(deprecated_handler).patch(deprecated_handler),
+        )
+        .route(
+            "/v1/users/transcription-preferences",
+            get(deprecated_handler).patch(deprecated_handler),
+        )
+        .route(
+            "/v1/users/language",
+            get(deprecated_handler).patch(deprecated_handler),
+        )
+        .route(
+            "/v1/users/store-recording-permission",
+            get(deprecated_handler).post(deprecated_handler),
+        )
+        .route(
+            "/v1/users/private-cloud-sync",
+            get(deprecated_handler).post(deprecated_handler),
+        )
+        .route(
+            "/v1/users/notification-settings",
+            get(deprecated_handler).patch(deprecated_handler),
+        )
+        .route(
+            "/v1/users/profile",
+            get(deprecated_handler).patch(deprecated_handler),
+        )
+        .route(
+            "/v1/users/ai-profile",
+            get(deprecated_handler).patch(deprecated_handler),
+        )
+        .route(
+            "/v1/users/assistant-settings",
+            get(deprecated_handler).patch(deprecated_handler),
+        )
+        .route("/v1/users/delete-account", delete(deprecated_handler))
 }
