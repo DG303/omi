@@ -76,6 +76,11 @@ pub fn deprecated_routes() -> Router<AppState> {
             "/v1/folders/{id}/conversations/bulk-move",
             post(deprecated_handler),
         )
+        // Move-to-folder was owned by folders.rs, not conversations.rs
+        .route(
+            "/v1/conversations/{id}/folder",
+            patch(deprecated_handler),
+        )
         // ── Goals (0 traffic) ─────────────────────────────────────────────────
         .route("/v1/goals", post(deprecated_handler))
         .route("/v1/goals/all", get(deprecated_handler))
@@ -97,6 +102,11 @@ pub fn deprecated_routes() -> Router<AppState> {
         .route("/v1/users/people/{person_id}", delete(deprecated_handler))
         .route(
             "/v1/users/people/{person_id}/name",
+            patch(deprecated_handler),
+        )
+        // Segment assignment was owned by people.rs
+        .route(
+            "/v1/conversations/{conversation_id}/segments/assign-bulk",
             patch(deprecated_handler),
         )
         // ── Personas (0 traffic) ──────────────────────────────────────────────
