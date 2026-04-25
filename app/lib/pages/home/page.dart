@@ -696,9 +696,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: const Color(0xFF35343B), width: 1),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.95), blurRadius: 80, spreadRadius: 24, offset: const Offset(0, -12)),
-            BoxShadow(color: Colors.black.withValues(alpha: 0.75), blurRadius: 40, spreadRadius: 12, offset: const Offset(0, -6)),
-            BoxShadow(color: Colors.black.withValues(alpha: 0.40), blurRadius: 16, offset: const Offset(0, 2)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.95), blurRadius: 90, spreadRadius: 28, offset: const Offset(0, -24)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.80), blurRadius: 50, spreadRadius: 16, offset: const Offset(0, -12)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
