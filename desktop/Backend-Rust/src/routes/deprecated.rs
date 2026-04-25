@@ -9,7 +9,7 @@ use axum::{
     extract::Request,
     http::StatusCode,
     response::{IntoResponse, Json, Response},
-    routing::{any, delete, get, patch, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 use serde_json::json;
