@@ -263,7 +263,7 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Text(
-                    _formatDate(summary.date),
+                    _formatDate(context, summary.date),
                     style: const TextStyle(color: Color(0xFFBBBCC2), fontSize: 11),
                   ),
                 ),
@@ -317,7 +317,7 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
     );
   }
 
-  String _formatDate(String dateStr) {
+  String _formatDate(BuildContext context, String dateStr) {
     final parts = dateStr.split('-');
     if (parts.length != 3) return dateStr;
     final year = int.tryParse(parts[0]) ?? 2024;
@@ -327,8 +327,8 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
-    if (date == today) return 'Today';
-    if (date == yesterday) return 'Yesterday';
+    if (date == today) return context.l10n.today;
+    if (date == yesterday) return context.l10n.yesterday;
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${weekdays[date.weekday - 1]}, ${months[month - 1]} $day';
