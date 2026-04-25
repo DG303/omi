@@ -943,7 +943,7 @@ class GraphPainter3D extends CustomPainter {
       final p2 = projectedMap[edge.targetId];
       if (p1 == null || p2 == null) continue;
 
-      final alpha = ((p1.alpha + p2.alpha) / 2.0 * 0.25).clamp(0.0, 1.0);
+      final alpha = ((p1.alpha + p2.alpha) / 2.0 * 0.10).clamp(0.0, 1.0);
       if (alpha < 0.05) continue;
 
       _edgePaint.color = Colors.white.withOpacity(alpha);
