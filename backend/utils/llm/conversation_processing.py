@@ -317,7 +317,10 @@ def extract_action_items(
         language_code: Language code for the conversation
         tz: User's timezone
         photos: Optional conversation photos
-        existing_action_items: Recent action items for deduplication (from past 2 days)
+        existing_action_items: Open action items semantically related to this
+            conversation (top vector matches, recently active). Caller is
+            expected to pre-filter to open items only; this function defends
+            in depth by skipping any item that arrives marked completed.
 
     Returns:
         List of extracted ActionItem objects
@@ -330,16 +333,21 @@ def extract_action_items(
     if existing_action_items:
         items_list = []
         for item in existing_action_items:
+            # Defensive: the rendered section is "OPEN TASKS"; a completed item
+            # leaking through (e.g. a future caller that doesn't pre-filter)
+            # would mislead the LLM into suppressing valid new tasks.
+            if item.get('completed', False):
+                continue
             desc = item.get('description', '')
             due = item.get('due_at')
             due_str = due.strftime('%Y-%m-%d %H:%M UTC') if due else 'No due date'
-            completed = '✓ Completed' if item.get('completed', False) else 'Pending'
-            items_list.append(f"  • {desc} (Due: {due_str}) [{completed}]")
+            items_list.append(f"  • {desc} (Due: {due_str})")
 
-        existing_items_context = (
-            f"\n\nPOTENTIALLY RELATED OPEN TASKS — recently active, semantically similar ({len(items_list)} items):\n"
-            + "\n".join(items_list)
-        )
+        if items_list:
+            existing_items_context = (
+                f"\n\nPOTENTIALLY RELATED OPEN TASKS — recently active, semantically similar ({len(items_list)} items):\n"
+                + "\n".join(items_list)
+            )
 
     # First system message: task-specific instructions (static prefix enables cross-conversation caching)
     # NOTE: {language_code} is in the context message, not here, to keep this prefix fully static across all languages.
