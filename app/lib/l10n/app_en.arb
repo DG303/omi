@@ -10896,5 +10896,9 @@
   "startVoiceRecording": "Start voice recording",
   "@startVoiceRecording": {},
   "startCallRecording": "Start call recording",
-  "@startCallRecording": {}
+  "@startCallRecording": {},
+  "mindMap": "Mind Map",
+  "@mindMap": {
+    "description": "Section header for memory knowledge graph on home page"
+  }
 }

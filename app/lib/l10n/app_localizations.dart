@@ -17096,6 +17096,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start call recording'**
   String get startCallRecording;
+
+  /// Section header for memory knowledge graph on home page
+  ///
+  /// In en, this message translates to:
+  /// **'Mind Map'**
+  String get mindMap;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

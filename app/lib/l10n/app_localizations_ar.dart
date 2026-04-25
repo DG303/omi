@@ -9098,4 +9098,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }
