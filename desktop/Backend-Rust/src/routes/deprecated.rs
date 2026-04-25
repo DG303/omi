@@ -25,7 +25,7 @@ async fn deprecated_handler(req: Request) -> Response {
         StatusCode::GONE,
         Json(json!({
             "error": "gone",
-            "message": format!("This endpoint ({} {}) is deprecated and no longer served by the desktop backend. Use https://api.omi.me{} instead.", method, path, path),
+            "message": format!("This endpoint ({} {}) is deprecated and no longer served by the desktop backend. See https://api.omi.me for supported endpoints.", method, path),
             "migration": "https://api.omi.me"
         })),
     )
@@ -134,8 +134,4 @@ pub fn deprecated_routes() -> Router<AppState> {
         .route("/v1/apps/review", post(deprecated_handler))
         .route("/v1/app-categories", get(deprecated_handler))
         .route("/v1/app-capabilities", get(deprecated_handler))
-        // ── Auth (0 traffic — handled by Auth-Python service) ─────────────────
-        // Note: Auth-Python (desktop-auth) handles OAuth via OMI_AUTH_URL.
-        // These Rust auth routes had 0 traffic in 7 days.
-        // Apple domain association kept because it may be hit by Apple verification.
 }
