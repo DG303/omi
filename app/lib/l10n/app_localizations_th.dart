@@ -9104,4 +9104,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'เสมอ';
+
+  @override
+  String get agreeAndContinue => 'ยอมรับและดำเนินการต่อ';
 }

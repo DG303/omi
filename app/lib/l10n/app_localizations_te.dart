@@ -9201,4 +9201,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'ఎల్లప్పుడూ';
+
+  @override
+  String get agreeAndContinue => 'అంగీకరించి కొనసాగించండి';
 }

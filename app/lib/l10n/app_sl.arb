@@ -10694,5 +10694,6 @@
     "voiceResponseModeTitle": "Kdaj prebrati odgovore",
     "voiceResponseOff": "Izklop",
     "voiceResponseHeadphonesOnly": "Samo slušalke",
-    "voiceResponseAlways": "Vedno"
+    "voiceResponseAlways": "Vedno",
+    "agreeAndContinue": "Strinjam se in nadaljuj"
 }

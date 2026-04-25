@@ -9235,4 +9235,7 @@ class AppLocalizationsTl extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Palagi';
+
+  @override
+  String get agreeAndContinue => 'Sumasang-ayon at Magpatuloy';
 }

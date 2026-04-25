@@ -2995,5 +2995,6 @@
     "voiceResponseModeTitle": "Hvornår svar skal læses",
     "voiceResponseOff": "Fra",
     "voiceResponseHeadphonesOnly": "Kun hovedtelefoner",
-    "voiceResponseAlways": "Altid"
+    "voiceResponseAlways": "Altid",
+    "agreeAndContinue": "Accepter og fortsæt"
 }

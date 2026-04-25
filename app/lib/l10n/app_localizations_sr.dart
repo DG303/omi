@@ -9163,4 +9163,7 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Увек';
+
+  @override
+  String get agreeAndContinue => 'Slažem se i nastavi';
 }

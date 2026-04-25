@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:omi/app_globals.dart';
 import 'package:omi/backend/preferences.dart';
 import 'package:omi/core/app_shell.dart';
 import 'package:omi/services/auth_service.dart';
@@ -479,8 +480,14 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                             Navigator.of(ctx).pop();
                             await SharedPreferencesUtil().clear();
                             await AuthService.instance.signOut();
-                            if (context.mounted) {
-                              routeToPage(context, const AppShell(), replace: true);
+                            // The drawer's context is unmounted by the time we
+                            // get here (we popped it before opening the
+                            // confirm dialog), so routing through it is a
+                            // silent no-op. Use the root navigator instead so
+                            // we always land back on the auth screen.
+                            final rootCtx = globalNavigatorKey.currentContext;
+                            if (rootCtx != null && rootCtx.mounted) {
+                              routeToPage(rootCtx, const AppShell(), replace: true);
                             }
                           },
                           context.l10n.signOutQuestion,

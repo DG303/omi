@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Milloin vastaukset luetaan",
     "voiceResponseOff": "Pois",
     "voiceResponseHeadphonesOnly": "Vain kuulokkeet",
-    "voiceResponseAlways": "Aina"
+    "voiceResponseAlways": "Aina",
+    "agreeAndContinue": "Hyväksy ja jatka"
 }

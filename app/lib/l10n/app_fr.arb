@@ -3021,5 +3021,6 @@
     "voiceResponseModeTitle": "Quand énoncer les réponses",
     "voiceResponseOff": "Désactivé",
     "voiceResponseHeadphonesOnly": "Casque uniquement",
-    "voiceResponseAlways": "Toujours"
+    "voiceResponseAlways": "Toujours",
+    "agreeAndContinue": "Accepter et continuer"
 }

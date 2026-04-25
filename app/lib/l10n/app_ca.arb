@@ -2955,5 +2955,6 @@
     "voiceResponseModeTitle": "Quan pronunciar les respostes",
     "voiceResponseOff": "Desactivat",
     "voiceResponseHeadphonesOnly": "Només auriculars",
-    "voiceResponseAlways": "Sempre"
+    "voiceResponseAlways": "Sempre",
+    "agreeAndContinue": "Accepto i continuo"
 }

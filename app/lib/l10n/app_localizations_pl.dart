@@ -9170,4 +9170,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Zawsze';
+
+  @override
+  String get agreeAndContinue => 'Akceptuję i kontynuuj';
 }

@@ -8987,4 +8987,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => '始终';
+
+  @override
+  String get agreeAndContinue => '同意并继续';
 }

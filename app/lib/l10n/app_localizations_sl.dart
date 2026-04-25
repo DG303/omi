@@ -9174,4 +9174,7 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Vedno';
+
+  @override
+  String get agreeAndContinue => 'Strinjam se in nadaljuj';
 }

@@ -9233,4 +9233,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Toujours';
+
+  @override
+  String get agreeAndContinue => 'Accepter et continuer';
 }

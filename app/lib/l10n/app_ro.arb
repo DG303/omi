@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Când să rostească răspunsurile",
     "voiceResponseOff": "Oprit",
     "voiceResponseHeadphonesOnly": "Doar căști",
-    "voiceResponseAlways": "Întotdeauna"
+    "voiceResponseAlways": "Întotdeauna",
+    "agreeAndContinue": "Accept și continuă"
 }

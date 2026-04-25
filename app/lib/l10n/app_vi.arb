@@ -2991,5 +2991,6 @@
     "voiceResponseModeTitle": "Khi nào đọc phản hồi",
     "voiceResponseOff": "Tắt",
     "voiceResponseHeadphonesOnly": "Chỉ tai nghe",
-    "voiceResponseAlways": "Luôn luôn"
+    "voiceResponseAlways": "Luôn luôn",
+    "agreeAndContinue": "Đồng ý và tiếp tục"
 }

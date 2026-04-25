@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Πότε να εκφωνούνται οι απαντήσεις",
     "voiceResponseOff": "Απενεργ.",
     "voiceResponseHeadphonesOnly": "Μόνο ακουστικά",
-    "voiceResponseAlways": "Πάντα"
+    "voiceResponseAlways": "Πάντα",
+    "agreeAndContinue": "Συμφωνώ και Συνέχεια"
 }

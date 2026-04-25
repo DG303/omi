@@ -9182,4 +9182,7 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'ಯಾವಾಗಲೂ';
+
+  @override
+  String get agreeAndContinue => 'ಒಪ್ಪಿಗೆ ಮತ್ತು ಮುಂದುವರಿಯಿರಿ';
 }

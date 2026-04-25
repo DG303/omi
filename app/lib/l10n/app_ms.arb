@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Bila respons dituturkan",
     "voiceResponseOff": "Mati",
     "voiceResponseHeadphonesOnly": "Fon kepala sahaja",
-    "voiceResponseAlways": "Sentiasa"
+    "voiceResponseAlways": "Sentiasa",
+    "agreeAndContinue": "Setuju & Teruskan"
 }

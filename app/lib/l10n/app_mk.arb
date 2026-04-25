@@ -10694,5 +10694,6 @@
     "voiceResponseModeTitle": "Кога да се изговараат одговорите",
     "voiceResponseOff": "Исклучено",
     "voiceResponseHeadphonesOnly": "Само слушалки",
-    "voiceResponseAlways": "Секогаш"
+    "voiceResponseAlways": "Секогаш",
+    "agreeAndContinue": "Се согласувам и продолжи"
 }

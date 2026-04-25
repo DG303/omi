@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Kada įgarsinti atsakymus",
     "voiceResponseOff": "Išjungta",
     "voiceResponseHeadphonesOnly": "Tik ausinėmis",
-    "voiceResponseAlways": "Visada"
+    "voiceResponseAlways": "Visada",
+    "agreeAndContinue": "Sutinku ir tęsti"
 }

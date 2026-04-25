@@ -9160,4 +9160,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Selalu';
+
+  @override
+  String get agreeAndContinue => 'Setuju & Lanjutkan';
 }

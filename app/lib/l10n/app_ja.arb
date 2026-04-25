@@ -2987,5 +2987,6 @@
     "voiceResponseModeTitle": "応答を読み上げるタイミング",
     "voiceResponseOff": "オフ",
     "voiceResponseHeadphonesOnly": "ヘッドフォンのみ",
-    "voiceResponseAlways": "常に"
+    "voiceResponseAlways": "常に",
+    "agreeAndContinue": "同意して続ける"
 }

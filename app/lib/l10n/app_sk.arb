@@ -2991,5 +2991,6 @@
     "voiceResponseModeTitle": "Kedy vysloviť odpovede",
     "voiceResponseOff": "Vypnuté",
     "voiceResponseHeadphonesOnly": "Len slúchadlá",
-    "voiceResponseAlways": "Vždy"
+    "voiceResponseAlways": "Vždy",
+    "agreeAndContinue": "Súhlasím a pokračovať"
 }

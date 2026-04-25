@@ -9146,4 +9146,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Vždy';
+
+  @override
+  String get agreeAndContinue => 'Souhlasím a pokračovat';
 }

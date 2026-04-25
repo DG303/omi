@@ -9179,4 +9179,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Всегда';
+
+  @override
+  String get agreeAndContinue => 'Принять и продолжить';
 }

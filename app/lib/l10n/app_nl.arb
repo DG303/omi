@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Wanneer antwoorden worden voorgelezen",
     "voiceResponseOff": "Uit",
     "voiceResponseHeadphonesOnly": "Alleen koptelefoon",
-    "voiceResponseAlways": "Altijd"
+    "voiceResponseAlways": "Altijd",
+    "agreeAndContinue": "Akkoord en doorgaan"
 }

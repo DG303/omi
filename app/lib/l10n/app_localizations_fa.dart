@@ -9153,4 +9153,7 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'همیشه';
+
+  @override
+  String get agreeAndContinue => 'موافقم و ادامه';
 }

@@ -9193,4 +9193,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Întotdeauna';
+
+  @override
+  String get agreeAndContinue => 'Accept și continuă';
 }

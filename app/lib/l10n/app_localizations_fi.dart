@@ -9149,4 +9149,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Aina';
+
+  @override
+  String get agreeAndContinue => 'Hyväksy ja jatka';
 }

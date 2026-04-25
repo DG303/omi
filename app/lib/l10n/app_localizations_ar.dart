@@ -9089,4 +9089,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'دائماً';
+
+  @override
+  String get agreeAndContinue => 'أوافق وأتابع';
 }

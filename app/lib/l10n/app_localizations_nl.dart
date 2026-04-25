@@ -9178,4 +9178,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get voiceResponseAlways => 'Altijd';
+
+  @override
+  String get agreeAndContinue => 'Akkoord en doorgaan';
 }

@@ -2987,5 +2987,6 @@
     "voiceResponseModeTitle": "Cuándo leer las respuestas",
     "voiceResponseOff": "Desactivado",
     "voiceResponseHeadphonesOnly": "Solo auriculares",
-    "voiceResponseAlways": "Siempre"
+    "voiceResponseAlways": "Siempre",
+    "agreeAndContinue": "Acepto y continuar"
 }
