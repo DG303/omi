@@ -106,7 +106,7 @@ class _AiConsentWidgetState extends State<AiConsentWidget> {
                       elevation: 0,
                     ),
                     child: Text(
-                      context.l10n.continueText,
+                      context.l10n.agreeAndContinue,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, fontFamily: 'Manrope'),
                     ),
                   ),
