@@ -287,6 +287,10 @@ class SharedPreferencesUtil {
 
   set permissionsCompleted(bool value) => saveBool('permissionsCompleted', value);
 
+  bool get aiConsentGiven => getBool('aiConsentGiven');
+
+  set aiConsentGiven(bool value) => saveBool('aiConsentGiven', value);
+
   String gptCompletionCache(String key) => getString('gptCompletionCache:$key');
 
   setGptCompletionCache(String key, String value) => saveString('gptCompletionCache:$key', value);
