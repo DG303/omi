@@ -10694,5 +10694,6 @@
     "voiceResponseModeTitle": "Калі агучваць адказы",
     "voiceResponseOff": "Выкл",
     "voiceResponseHeadphonesOnly": "Толькі навушнікі",
-    "voiceResponseAlways": "Заўсёды"
+    "voiceResponseAlways": "Заўсёды",
+    "agreeAndContinue": "Прыняць і працягнуць"
 }

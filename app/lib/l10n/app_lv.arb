@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Kad atskaņot atbildes",
     "voiceResponseOff": "Izslēgts",
     "voiceResponseHeadphonesOnly": "Tikai austiņās",
-    "voiceResponseAlways": "Vienmēr"
+    "voiceResponseAlways": "Vienmēr",
+    "agreeAndContinue": "Piekrītu un turpināt"
 }

@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Коли озвучувати відповіді",
     "voiceResponseOff": "Вимк",
     "voiceResponseHeadphonesOnly": "Лише навушники",
-    "voiceResponseAlways": "Завжди"
+    "voiceResponseAlways": "Завжди",
+    "agreeAndContinue": "Прийняти та продовжити"
 }

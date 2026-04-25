@@ -10694,5 +10694,6 @@
     "voiceResponseModeTitle": "কখন উত্তর বলা হবে",
     "voiceResponseOff": "বন্ধ",
     "voiceResponseHeadphonesOnly": "শুধু হেডফোন",
-    "voiceResponseAlways": "সর্বদা"
+    "voiceResponseAlways": "সর্বদা",
+    "agreeAndContinue": "সম্মত হই এবং চালিয়ে যান"
 }

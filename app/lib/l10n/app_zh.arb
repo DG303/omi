@@ -3008,5 +3008,6 @@
     "voiceResponseModeTitle": "何时朗读回复",
     "voiceResponseOff": "关闭",
     "voiceResponseHeadphonesOnly": "仅耳机",
-    "voiceResponseAlways": "始终"
+    "voiceResponseAlways": "始终",
+    "agreeAndContinue": "同意并继续"
 }

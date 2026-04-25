@@ -3028,5 +3028,6 @@
     "voiceResponseModeTitle": "Kapan respons diucapkan",
     "voiceResponseOff": "Mati",
     "voiceResponseHeadphonesOnly": "Hanya headphone",
-    "voiceResponseAlways": "Selalu"
+    "voiceResponseAlways": "Selalu",
+    "agreeAndContinue": "Setuju & Lanjutkan"
 }

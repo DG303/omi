@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "응답을 말할 시점",
     "voiceResponseOff": "끄기",
     "voiceResponseHeadphonesOnly": "헤드폰만",
-    "voiceResponseAlways": "항상"
+    "voiceResponseAlways": "항상",
+    "agreeAndContinue": "동의하고 계속"
 }

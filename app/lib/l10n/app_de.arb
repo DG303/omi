@@ -2954,5 +2954,6 @@
     "voiceResponseModeTitle": "Wann Antworten vorgelesen werden",
     "voiceResponseOff": "Aus",
     "voiceResponseHeadphonesOnly": "Nur Kopfhörer",
-    "voiceResponseAlways": "Immer"
+    "voiceResponseAlways": "Immer",
+    "agreeAndContinue": "Zustimmen und fortfahren"
 }

@@ -2987,5 +2987,6 @@
     "voiceResponseModeTitle": "उत्तर कब बोले जाएं",
     "voiceResponseOff": "बंद",
     "voiceResponseHeadphonesOnly": "केवल हेडफ़ोन",
-    "voiceResponseAlways": "हमेशा"
+    "voiceResponseAlways": "हमेशा",
+    "agreeAndContinue": "सहमत हूँ और जारी रखें"
 }

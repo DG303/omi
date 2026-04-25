@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Millal vastuseid ette lugeda",
     "voiceResponseOff": "Väljas",
     "voiceResponseHeadphonesOnly": "Ainult kõrvaklapid",
-    "voiceResponseAlways": "Alati"
+    "voiceResponseAlways": "Alati",
+    "agreeAndContinue": "Nõustun ja jätka"
 }

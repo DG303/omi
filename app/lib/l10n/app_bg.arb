@@ -2955,5 +2955,6 @@
     "voiceResponseModeTitle": "Кога да се произнасят отговорите",
     "voiceResponseOff": "Изкл",
     "voiceResponseHeadphonesOnly": "Само слушалки",
-    "voiceResponseAlways": "Винаги"
+    "voiceResponseAlways": "Винаги",
+    "agreeAndContinue": "Приемам и продължавам"
 }

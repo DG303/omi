@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "เมื่อใดจึงจะอ่านคำตอบ",
     "voiceResponseOff": "ปิด",
     "voiceResponseHeadphonesOnly": "หูฟังเท่านั้น",
-    "voiceResponseAlways": "เสมอ"
+    "voiceResponseAlways": "เสมอ",
+    "agreeAndContinue": "ยอมรับและดำเนินการต่อ"
 }

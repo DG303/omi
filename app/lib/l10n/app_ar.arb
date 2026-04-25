@@ -2953,5 +2953,6 @@
     "voiceResponseModeTitle": "متى تُقرأ الردود",
     "voiceResponseOff": "إيقاف",
     "voiceResponseHeadphonesOnly": "السماعات فقط",
-    "voiceResponseAlways": "دائماً"
+    "voiceResponseAlways": "دائماً",
+    "agreeAndContinue": "أوافق وأتابع"
 }

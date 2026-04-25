@@ -3021,5 +3021,6 @@
     "voiceResponseModeTitle": "Yanıtlar ne zaman okunsun",
     "voiceResponseOff": "Kapalı",
     "voiceResponseHeadphonesOnly": "Sadece kulaklık",
-    "voiceResponseAlways": "Her zaman"
+    "voiceResponseAlways": "Her zaman",
+    "agreeAndContinue": "Kabul Et ve Devam Et"
 }

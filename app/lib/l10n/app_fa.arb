@@ -10694,5 +10694,6 @@
     "voiceResponseModeTitle": "چه زمانی پاسخ‌ها خوانده شوند",
     "voiceResponseOff": "خاموش",
     "voiceResponseHeadphonesOnly": "فقط هدفون",
-    "voiceResponseAlways": "همیشه"
+    "voiceResponseAlways": "همیشه",
+    "agreeAndContinue": "موافقم و ادامه"
 }

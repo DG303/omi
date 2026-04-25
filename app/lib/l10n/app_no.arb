@@ -2986,5 +2986,6 @@
     "voiceResponseModeTitle": "Når svar skal leses",
     "voiceResponseOff": "Av",
     "voiceResponseHeadphonesOnly": "Bare hodetelefoner",
-    "voiceResponseAlways": "Alltid"
+    "voiceResponseAlways": "Alltid",
+    "agreeAndContinue": "Godta og fortsett"
 }

@@ -3021,5 +3021,6 @@
     "voiceResponseModeTitle": "Kiedy odczytywać odpowiedzi",
     "voiceResponseOff": "Wył.",
     "voiceResponseHeadphonesOnly": "Tylko słuchawki",
-    "voiceResponseAlways": "Zawsze"
+    "voiceResponseAlways": "Zawsze",
+    "agreeAndContinue": "Akceptuję i kontynuuj"
 }
