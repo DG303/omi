@@ -37,7 +37,7 @@ use routes::{
     agent_routes, auth_routes, chat_completions_routes, config_routes, crisp_routes,
     health_routes, proxy_routes, screen_activity_routes, tts_routes, updates_routes,
     webhook_routes,
-    // Legacy (declining traffic from old clients — kept functional with deprecation headers)
+    // Legacy (declining traffic from old clients — kept functional, pending removal)
     action_items_routes, conversations_routes, memories_routes, messages_routes,
     staged_tasks_routes, users_routes,
     // Deprecated stubs (0 traffic — return 410 Gone)
@@ -228,7 +228,7 @@ async fn main() {
         .merge(chat_completions_routes())
         .merge(updates_routes())
         .merge(webhook_routes())
-        // ── Legacy routes (declining traffic from old clients — kept functional) ──
+        // ── Legacy routes (declining traffic from old clients — kept functional, pending removal) ──
         // These endpoints have residual traffic from older app versions that still
         // point to the Rust backend. Current app routes to Python (api.omi.me).
         // TODO: Remove once old client traffic drops to zero.
