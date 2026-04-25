@@ -363,6 +363,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
             globalNavigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => const DataPrivacyPage()));
           }
           break;
+        case "memories":
         case "facts":
           globalNavigatorKey.currentState?.push(MaterialPageRoute(builder: (context) => const MemoriesPage()));
           break;
@@ -616,61 +617,57 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
               backgroundColor: Theme.of(context).colorScheme.primary,
               resizeToAvoidBottomInset: false,
               appBar: homeProvider.selectedIndex == 5 ? null : _buildAppBar(context),
-              body: DefaultTabController(
-                length: 4,
-                initialIndex: homeProvider.selectedIndex,
-                child: GestureDetector(
-                  onTap: () {
-                    primaryFocus?.unfocus();
-                    // context.read<HomeProvider>().memoryFieldFocusNode.unfocus();
-                    // context.read<HomeProvider>().chatFieldFocusNode.unfocus();
-                  },
-                  child: Stack(
-                    children: [
-                      Column(
-                        children: [
-                          // Show slim green call bar on non-home/conversations tabs when a call is active
-                          if (homeProvider.selectedIndex > 1) const ActiveCallTopBar(),
-                          Expanded(
-                            child: IndexedStack(index: context.watch<HomeProvider>().selectedIndex, children: _pages),
-                          ),
-                        ],
-                      ),
-                      Consumer<HomeProvider>(
-                        builder: (context, home, child) {
-                          if (home.isChatFieldFocused ||
-                              home.isAppsSearchFieldFocused ||
-                              home.isMemoriesSearchFieldFocused) {
-                            return const SizedBox.shrink();
-                          }
+              body: GestureDetector(
+                onTap: () {
+                  primaryFocus?.unfocus();
+                  // context.read<HomeProvider>().memoryFieldFocusNode.unfocus();
+                  // context.read<HomeProvider>().chatFieldFocusNode.unfocus();
+                },
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        // Show slim green call bar on non-home/conversations tabs when a call is active
+                        if (homeProvider.selectedIndex > 1) const ActiveCallTopBar(),
+                        Expanded(
+                          child: IndexedStack(index: context.watch<HomeProvider>().selectedIndex, children: _pages),
+                        ),
+                      ],
+                    ),
+                    Consumer<HomeProvider>(
+                      builder: (context, home, child) {
+                        if (home.isChatFieldFocused ||
+                            home.isAppsSearchFieldFocused ||
+                            home.isMemoriesSearchFieldFocused) {
+                          return const SizedBox.shrink();
+                        }
 
-                          return Stack(
-                            children: [
-                              BottomNavBar(
-                                onTabTap: (index, isRepeat) {
-                                  if (isRepeat) {
-                                    _scrollToTop(index);
-                                  } else {
-                                    home.setIndex(index);
-                                  }
-                                },
+                        return Stack(
+                          children: [
+                            BottomNavBar(
+                              onTabTap: (index, isRepeat) {
+                                if (isRepeat) {
+                                  _scrollToTop(index);
+                                } else {
+                                  home.setIndex(index);
+                                }
+                              },
+                            ),
+                            if (home.selectedIndex == 0)
+                              Positioned(
+                                left: 16,
+                                right: 16,
+                                bottom: 78,
+                                child: _buildChatBar(context),
                               ),
-                              if (home.selectedIndex == 0)
-                                Positioned(
-                                  left: 16,
-                                  right: 16,
-                                  bottom: 102,
-                                  child: _buildChatBar(context),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                      // Merge action bar - floats above bottom nav when in selection mode
-                      if (homeProvider.selectedIndex == 1)
-                        const Positioned(left: 0, right: 0, bottom: 0, child: MergeActionBar()),
-                    ],
-                  ),
+                          ],
+                        );
+                      },
+                    ),
+                    // Merge action bar - floats above bottom nav when in selection mode
+                    if (homeProvider.selectedIndex == 1)
+                      const Positioned(left: 0, right: 0, bottom: 0, child: MergeActionBar()),
+                  ],
                 ),
               ),
             );
@@ -688,20 +685,21 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
         Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false)));
       },
       child: Container(
-        height: 54,
+        height: 62,
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F25),
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: const Color(0xFF35343B), width: 1),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 20, offset: const Offset(0, 6)),
+          ],
         ),
         child: Row(
           children: [
             const SizedBox(width: 18),
-            const Icon(FontAwesomeIcons.solidComment, size: 16, color: Colors.deepPurpleAccent),
-            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                context.l10n.askOmiAnything,
+                'Ask Omi anything about your life...',
                 style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 15),
                 overflow: TextOverflow.ellipsis,
               ),

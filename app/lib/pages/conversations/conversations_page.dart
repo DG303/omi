@@ -28,6 +28,7 @@ import 'package:omi/utils/enums.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:omi/utils/ui_guidelines.dart';
+import 'package:omi/pages/phone_calls/phone_calls_page.dart';
 import 'widgets/conversations_group_widget.dart';
 import 'widgets/empty_conversations.dart';
 
@@ -91,22 +92,35 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
   Widget _buildStartRecordingButton(BuildContext context) {
     return Consumer<CaptureProvider>(
       builder: (context, captureProvider, _) {
+        final isRecording = captureProvider.recordingState == RecordingState.record;
+        final isInitialising = captureProvider.recordingState == RecordingState.initialising;
         return GestureDetector(
           onTap: () => _startVoiceRecording(context, captureProvider),
-          onLongPress: () => _showRecordingOptions(context, captureProvider),
-          child: Container(
+          onLongPress: isRecording ? null : () => _showRecordingOptions(context, captureProvider),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.deepPurple,
+              color: isRecording ? Colors.red.shade700 : Colors.deepPurple,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(FontAwesomeIcons.microphone, size: 13, color: Colors.white),
+                if (isRecording)
+                  const Icon(Icons.stop_rounded, size: 15, color: Colors.white)
+                else if (isInitialising)
+                  const SizedBox(
+                      width: 13, height: 13, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                else
+                  const Icon(FontAwesomeIcons.microphone, size: 13, color: Colors.white),
                 const SizedBox(width: 6),
                 Text(
-                  context.l10n.startRecording,
+                  isRecording
+                      ? 'Stop'
+                      : isInitialising
+                          ? 'Starting...'
+                          : context.l10n.startRecording,
                   style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ],
@@ -170,8 +184,8 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
                 title: Text(context.l10n.startCallRecording, style: const TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(ctx);
-                  // Navigate to phone calls
                   MixpanelManager().bottomNavigationTabClicked('Phone Calls');
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PhoneCallsPage()));
                 },
               ),
               const SizedBox(height: 8),
