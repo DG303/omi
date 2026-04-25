@@ -104,10 +104,15 @@ class _OnboardingWrapperState extends State<OnboardingWrapper> with TickerProvid
         // && !SharedPreferencesUtil().onboardingCompleted
         if (mounted) {
           context.read<HomeProvider>().setupHasSpeakerProfile();
-          if (SharedPreferencesUtil().onboardingCompleted) {
-            await _routeWithPermissionsCheck(context);
-          } else if (!SharedPreferencesUtil().aiConsentGiven) {
+          // The consent gate is checked first and is independent of the
+          // server-side onboardingCompleted flag. This ensures every user
+          // — including someone signing back into a previously-onboarded
+          // account on a fresh install — sees the consent screen at least
+          // once before any AI processing begins.
+          if (!SharedPreferencesUtil().aiConsentGiven) {
             _controller!.animateTo(kAiConsentPage);
+          } else if (SharedPreferencesUtil().onboardingCompleted) {
+            await _routeWithPermissionsCheck(context);
           } else {
             _controller!.animateTo(kNamePage);
           }
@@ -265,20 +270,30 @@ class _OnboardingWrapperState extends State<OnboardingWrapper> with TickerProvid
           MixpanelManager().onboardingStepCompleted('Auth');
           context.read<HomeProvider>().setupHasSpeakerProfile();
           IntercomManager.instance.loginIdentifiedUser(SharedPreferencesUtil().uid);
-          if (SharedPreferencesUtil().onboardingCompleted) {
-            await _routeWithPermissionsCheck(context);
-          } else if (!SharedPreferencesUtil().aiConsentGiven) {
+          // Consent is checked first regardless of server-side onboarding
+          // state so a returning user signing in on a fresh install still
+          // sees the consent screen before any AI processing begins.
+          if (!SharedPreferencesUtil().aiConsentGiven) {
             _controller!.animateTo(kAiConsentPage);
+          } else if (SharedPreferencesUtil().onboardingCompleted) {
+            await _routeWithPermissionsCheck(context);
           } else {
             _controller!.animateTo(kNamePage);
           }
         },
       ),
       AiConsentWidget(
-        onAgree: () {
+        onAgree: () async {
           SharedPreferencesUtil().aiConsentGiven = true;
           MixpanelManager().onboardingStepCompleted('AI Consent');
-          _controller!.animateTo(kNamePage);
+          // If the server says this user already completed onboarding, jump
+          // straight to home — their first-time onboarding ran in a previous
+          // session and we don't want to re-run it.
+          if (SharedPreferencesUtil().onboardingCompleted) {
+            await _routeWithPermissionsCheck(context);
+          } else {
+            _controller!.animateTo(kNamePage);
+          }
         },
       ),
       NameWidget(
