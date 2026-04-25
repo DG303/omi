@@ -25,16 +25,14 @@ import 'package:omi/pages/action_items/action_items_page.dart';
 import 'package:omi/pages/apps/app_detail/app_detail.dart';
 import 'package:omi/pages/apps/page.dart';
 import 'package:omi/pages/chat/page.dart';
-import 'package:omi/pages/conversation_capturing/page.dart';
 import 'package:omi/pages/conversation_detail/page.dart';
 import 'package:omi/pages/conversations/conversations_page.dart';
 import 'package:omi/pages/conversations/auto_sync_page.dart';
 import 'package:omi/pages/conversations/sync_page.dart';
 import 'package:omi/pages/conversations/widgets/merge_action_bar.dart';
+import 'package:omi/pages/home/home_content.dart';
 import 'package:omi/pages/memories/page.dart';
 import 'package:omi/pages/phone_calls/active_call_banner.dart';
-import 'package:omi/pages/phone_calls/phone_calls_page.dart';
-import 'package:omi/pages/phone_calls/phone_calls_upsell_sheet.dart';
 import 'package:omi/providers/usage_provider.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
 import 'package:omi/pages/settings/data_privacy_page.dart';
@@ -42,7 +40,6 @@ import 'package:omi/pages/settings/settings_drawer.dart';
 import 'package:omi/pages/settings/task_integrations_page.dart';
 import 'package:omi/pages/settings/wrapped_2025_page.dart';
 import 'package:omi/providers/action_items_provider.dart';
-import 'package:omi/providers/developer_mode_provider.dart';
 import 'package:omi/providers/app_provider.dart';
 import 'package:omi/providers/capture_provider.dart';
 import 'package:omi/providers/connectivity_provider.dart';
@@ -59,7 +56,6 @@ import 'package:omi/services/announcement_service.dart';
 import 'package:omi/services/notifications.dart';
 import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/utils/audio/foreground.dart';
-import 'package:omi/utils/enums.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:omi/utils/platform/platform_manager.dart';
@@ -122,9 +118,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
   bool scriptsInProgress = false;
   StreamSubscription? _notificationStreamSubscription;
 
+  final GlobalKey<HomeContentPageState> _homeContentPageKey = GlobalKey<HomeContentPageState>();
   final GlobalKey<State<ConversationsPage>> _conversationsPageKey = GlobalKey<State<ConversationsPage>>();
   final GlobalKey<State<ActionItemsPage>> _actionItemsPageKey = GlobalKey<State<ActionItemsPage>>();
-  final GlobalKey<State<MemoriesPage>> _memoriesPageKey = GlobalKey<State<MemoriesPage>>();
   final GlobalKey<AppsPageState> _appsPageKey = GlobalKey<AppsPageState>();
   late final List<Widget> _pages;
 
@@ -141,36 +137,28 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
   void _scrollToTop(int pageIndex) {
     switch (pageIndex) {
       case 0:
+        _homeContentPageKey.currentState?.scrollToTop();
+        break;
+      case 1:
         final conversationsState = _conversationsPageKey.currentState;
         if (conversationsState != null) {
           (conversationsState as dynamic).scrollToTop();
         }
         break;
-      case 1:
+      case 2:
         final actionItemsState = _actionItemsPageKey.currentState;
         if (actionItemsState != null) {
           (actionItemsState as dynamic).scrollToTop();
         }
         break;
-      case 2:
-        final memoriesState = _memoriesPageKey.currentState;
-        if (memoriesState != null) {
-          (memoriesState as dynamic).scrollToTop();
-        }
-        break;
       case 3:
-        final appsState = _appsPageKey.currentState;
-        if (appsState != null) {
-          appsState.scrollToTop();
-        }
+        _appsPageKey.currentState?.scrollToTop();
         break;
     }
   }
 
   void _addGoal() {
-    // Navigate to conversations page
-    context.read<HomeProvider>().setIndex(0);
-    // Trigger goal creation
+    context.read<HomeProvider>().setIndex(1);
     final conversationsState = _conversationsPageKey.currentState;
     if (conversationsState != null) {
       (conversationsState as dynamic).addGoal();
@@ -245,9 +233,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
   @override
   void initState() {
     _pages = [
+      HomeContentPage(key: _homeContentPageKey),
       ConversationsPage(key: _conversationsPageKey),
       ActionItemsPage(key: _actionItemsPageKey, onAddGoal: _addGoal),
-      MemoriesPage(key: _memoriesPageKey),
       AppsPage(key: _appsPageKey),
     ];
     SharedPreferencesUtil().onboardingCompleted = true;
@@ -275,11 +263,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
 
       switch (pageAlias) {
         case "action-items":
-          homePageIdx = 1;
+          homePageIdx = 2;
           break;
         case "memories":
         case "facts":
-          homePageIdx = 2;
+          homePageIdx = 0;
           break;
         case "apps":
           homePageIdx = 3;
@@ -430,7 +418,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
           });
           break;
         case "action-items":
-          // Tab index already set to 1 (ActionItemsPage) above
+          // Tab index already set to 2 (ActionItemsPage) above
           break;
         default:
       }
@@ -641,8 +629,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                     children: [
                       Column(
                         children: [
-                          // Show slim green call bar on non-home tabs when a call is active
-                          if (homeProvider.selectedIndex != 0) const ActiveCallTopBar(),
+                          // Show slim green call bar on non-home/conversations tabs when a call is active
+                          if (homeProvider.selectedIndex > 1) const ActiveCallTopBar(),
                           Expanded(
                             child: IndexedStack(index: context.watch<HomeProvider>().selectedIndex, children: _pages),
                           ),
@@ -656,101 +644,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                             return const SizedBox.shrink();
                           }
 
-                          return Stack(
-                            children: [
-                              BottomNavBar(
-                                onTabTap: (index, isRepeat) {
-                                  if (isRepeat) {
-                                    _scrollToTop(index);
-                                  } else {
-                                    home.setIndex(index);
-                                  }
-                                },
-                              ),
-                              // Phone calls button - bottom left
-                              if (home.selectedIndex == 0 && context.watch<UsageProvider>().shouldShowPhoneCallsEntry)
-                                Consumer<DeveloperModeProvider>(
-                                  builder: (context, devProvider, _) {
-                                    if (!devProvider.showPhoneCallButton) return const SizedBox.shrink();
-                                    return Positioned(
-                                      left: 20,
-                                      bottom: 100,
-                                      child: GestureDetector(
-                                        onTap: () async {
-                                          HapticFeedback.mediumImpact();
-                                          MixpanelManager().bottomNavigationTabClicked('Phone Calls');
-                                          var usageProvider = context.read<UsageProvider>();
-                                          if (usageProvider.subscription == null) {
-                                            await usageProvider.fetchSubscription();
-                                          }
-                                          if (!usageProvider.canAccessPhoneCalls) {
-                                            if (!usageProvider.showSubscriptionUI) return;
-                                            MixpanelManager().phoneCallUpsellShown(source: 'home');
-                                            if (!context.mounted) return;
-                                            showPhoneCallsUpsell(context);
-                                            return;
-                                          }
-                                          if (!context.mounted) return;
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => const PhoneCallsPage()),
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 56,
-                                          height: 56,
-                                          decoration:
-                                              const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF1F1F25)),
-                                          child: const Icon(FontAwesomeIcons.phone, size: 22, color: Colors.white70),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              // Ask Omi button - bottom right
-                              if (home.selectedIndex == 0)
-                                Positioned(
-                                  right: 20,
-                                  bottom: 100,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      HapticFeedback.mediumImpact();
-                                      MixpanelManager().bottomNavigationTabClicked('Chat');
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false)),
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(32),
-                                        color: Colors.deepPurple,
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(FontAwesomeIcons.solidComment, size: 22, color: Colors.white),
-                                          const SizedBox(width: 10),
-                                          Text(
-                                            context.l10n.askOmi,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
+                          return BottomNavBar(
+                            onTabTap: (index, isRepeat) {
+                              if (isRepeat) {
+                                _scrollToTop(index);
+                              } else {
+                                home.setIndex(index);
+                              }
+                            },
                           );
                         },
                       ),
                       // Merge action bar - floats above bottom nav when in selection mode
-                      if (homeProvider.selectedIndex == 0)
+                      if (homeProvider.selectedIndex == 1)
                         const Positioned(left: 0, right: 0, bottom: 0, child: MergeActionBar()),
                     ],
                   ),
@@ -761,35 +667,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
         ),
       ),
     );
-  }
-
-  Future<void> _handleRecordButtonPress(BuildContext context, CaptureProvider captureProvider) async {
-    var recordingState = captureProvider.recordingState;
-
-    if (recordingState == RecordingState.record) {
-      // Stop recording and summarize conversation
-      await captureProvider.stopStreamRecording();
-      captureProvider.forceProcessingCurrentConversation();
-      MixpanelManager().phoneMicRecordingStopped();
-    } else if (recordingState == RecordingState.initialising) {
-      // Already initializing, do nothing
-      Logger.debug('initialising, have to wait');
-    } else {
-      // Start recording directly without dialog
-      await captureProvider.streamRecording();
-      MixpanelManager().phoneMicRecordingStarted();
-
-      // Navigate to conversation capturing page
-      if (context.mounted) {
-        var topConvoId = (captureProvider.conversationProvider?.conversations ?? []).isNotEmpty
-            ? captureProvider.conversationProvider!.conversations.first.id
-            : null;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ConversationCapturingPage(topConversationId: topConvoId)),
-        );
-      }
-    }
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -813,8 +690,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                   final hasPendingOnDevice = syncProvider.missingWalsOnDevice.isNotEmpty;
                   final isSyncing = syncProvider.isSyncing;
 
-                  // Show sync icon only on home page and if there's a paired device OR if there are pending files on device
-                  if (homeProvider.selectedIndex == 0 && (device != null || hasPendingOnDevice)) {
+                  // Show sync icon only on Conversations tab and if there's a paired device OR if there are pending files on device
+                  if (homeProvider.selectedIndex == 1 && (device != null || hasPendingOnDevice)) {
                     return GestureDetector(
                       onTap: () {
                         HapticFeedback.mediumImpact();
@@ -851,8 +728,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
               // Search and Calendar buttons - only on home page
               Consumer2<HomeProvider, ConversationProvider>(
                 builder: (context, homeProvider, convoProvider, _) {
-                  // Only show search and calendar buttons on home page (index 0)
-                  if (homeProvider.selectedIndex != 0) {
+                  // Only show search and calendar buttons on Conversations tab (index 1)
+                  if (homeProvider.selectedIndex != 1) {
                     return const SizedBox.shrink();
                   }
 
@@ -876,38 +753,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                             icon: const Icon(Icons.search, size: 18, color: Colors.white70),
                             onPressed: () {
                               HapticFeedback.mediumImpact();
-                              // Toggle search bar visibility
                               homeProvider.toggleConvoSearchBar();
                             },
                           ),
                         ),
                       if (shouldShowSearchButton) const SizedBox(width: 8),
-                      // Daily Recaps toggle button
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: convoProvider.showDailySummaries
-                              ? Colors.deepPurple.withValues(alpha: 0.5)
-                              : const Color(0xFF1F1F25),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: Icon(
-                            FontAwesomeIcons.clockRotateLeft,
-                            size: 16,
-                            color: convoProvider.showDailySummaries ? Colors.white : Colors.white70,
-                          ),
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            if (!convoProvider.showDailySummaries) {
-                              MixpanelManager().recapTabOpened();
-                            }
-                            convoProvider.toggleDailySummaries();
-                          },
-                        ),
-                      ),
                       // Calendar button - only show when date filter is active
                       if (convoProvider.selectedDate != null) ...[
                         const SizedBox(width: 8),
@@ -1020,10 +870,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                   );
                 },
               ),
-              // Action items page buttons - export and completed toggle
+              // Tasks page buttons - export and completed toggle
               Consumer2<HomeProvider, ActionItemsProvider>(
                 builder: (context, homeProvider, actionItemsProvider, _) {
-                  if (homeProvider.selectedIndex != 1) {
+                  if (homeProvider.selectedIndex != 2) {
                     return const SizedBox.shrink();
                   }
                   final showCompleted = actionItemsProvider.showCompletedView;
