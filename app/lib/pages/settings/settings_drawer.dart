@@ -10,6 +10,7 @@ import 'package:omi/pages/settings/developer.dart';
 import 'package:omi/pages/settings/notifications_settings_page.dart';
 import 'package:omi/pages/settings/permissions_page.dart';
 import 'package:omi/pages/settings/profile.dart';
+import 'package:omi/pages/memories/page.dart';
 import 'package:omi/pages/settings/integrations_page.dart';
 import 'package:omi/pages/settings/usage_page.dart';
 import 'package:omi/pages/referral/referral_page.dart';
@@ -378,6 +379,14 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                   onTap: () {
                     MixpanelManager().permissionsSettingsOpened();
                     routeToPage(context, const PermissionsPage());
+                  },
+                ),
+                const Divider(height: 1, color: Color(0xFF3C3C43)),
+                _buildSettingsItem(
+                  title: context.l10n.memories,
+                  icon: const FaIcon(FontAwesomeIcons.brain, color: Color(0xFF8E8E93), size: 20),
+                  onTap: () {
+                    routeToPage(context, const MemoriesPage());
                   },
                 ),
               ],
