@@ -705,7 +705,7 @@ class _MemoryGraphPageState extends State<MemoryGraphPage> with SingleTickerProv
                     _panY += delta.dy;
                     if (details.scale != 1.0) {
                       _zoom = _baseZoom * details.scale;
-                      _zoom = _zoom.clamp(0.2, 5.0);
+                      _zoom = _zoom.clamp(0.05, 5.0);
                     }
                   } else {
                     _rotationY -= delta.dx * 0.005;
