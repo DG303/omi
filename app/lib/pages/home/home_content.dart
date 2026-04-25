@@ -10,6 +10,7 @@ import 'package:omi/backend/schema/daily_summary.dart';
 import 'package:omi/pages/conversations/widgets/conversation_list_item.dart';
 import 'package:omi/pages/conversations/widgets/processing_capture.dart';
 import 'package:omi/pages/conversations/widgets/today_tasks_widget.dart';
+import 'package:omi/pages/memories/widgets/memory_graph_page.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
 import 'package:omi/providers/conversation_provider.dart';
 import 'package:omi/providers/home_provider.dart';
@@ -108,6 +109,19 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
               ),
               _buildConversationsPreview(convoProvider),
 
+              // Mind Map section
+              SliverToBoxAdapter(
+                child: _buildSectionHeader(
+                  context,
+                  context.l10n.mindMap,
+                  onViewAll: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MemoryGraphPage(trackOpenEvent: false)),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(child: _buildMindMapPreview(context)),
+
               // Bottom padding so content isn't hidden behind chat bar + nav
               const SliverToBoxAdapter(child: SizedBox(height: 160)),
             ],
@@ -145,24 +159,27 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
   }
 
   Widget _buildDailyRecapsPreview(BuildContext context) {
-    final cardHeight = 220.0;
+    final cardHeight = 130.0;
     if (_loadingSummaries) {
-      return SizedBox(
-        height: cardHeight,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.only(left: 16),
-          itemCount: 3,
-          itemBuilder: (_, __) => Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ShimmerWithTimeout(
-              baseColor: AppStyles.backgroundSecondary,
-              highlightColor: AppStyles.backgroundTertiary,
-              child: Container(
-                width: 260,
-                decoration: BoxDecoration(
-                  color: AppStyles.backgroundSecondary,
-                  borderRadius: BorderRadius.circular(20),
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: SizedBox(
+          height: cardHeight,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(left: 16),
+            itemCount: 3,
+            itemBuilder: (_, __) => Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: ShimmerWithTimeout(
+                baseColor: AppStyles.backgroundSecondary,
+                highlightColor: AppStyles.backgroundTertiary,
+                child: Container(
+                  width: 260,
+                  decoration: BoxDecoration(
+                    color: AppStyles.backgroundSecondary,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
             ),
@@ -173,19 +190,22 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
 
     if (_recentSummaries.isEmpty) return const SizedBox.shrink();
 
-    return SizedBox(
-      height: cardHeight,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 16),
-        itemCount: _recentSummaries.length,
-        itemBuilder: (context, index) => _buildSummaryCard(context, _recentSummaries[index], cardHeight),
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 12),
+      child: SizedBox(
+        height: cardHeight,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(left: 16),
+          itemCount: _recentSummaries.length,
+          itemBuilder: (context, index) => _buildSummaryCard(context, _recentSummaries[index], cardHeight),
+        ),
       ),
     );
   }
 
   static const double _cardWidth = 260.0;
-  static const double _mapHeight = 120.0;
+  static const double _mapHeight = 60.0;
 
   Widget _buildSummaryCard(BuildContext context, DailySummary summary, double cardHeight) {
     final hasMap = summary.locations.isNotEmpty;
@@ -223,35 +243,28 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
                 right: 0,
                 bottom: hasMap ? _mapHeight : 0,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(summary.dayEmoji, style: const TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
-                          Text(
-                            _formatDate(summary.date),
-                            style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Text(
-                          summary.headline,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            height: 1.35,
-                          ),
-                          maxLines: hasMap ? 3 : 5,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+                  child: Text(
+                    summary.headline,
+                    style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.35),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              // Date chip overlaying the map at bottom-right
+              Positioned(
+                bottom: 10,
+                right: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Text(
+                    _formatDate(summary.date),
+                    style: const TextStyle(color: Color(0xFFBBBCC2), fontSize: 11),
                   ),
                 ),
               ),
@@ -319,6 +332,35 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${weekdays[date.weekday - 1]}, ${months[month - 1]} $day';
+  }
+
+  Widget _buildMindMapPreview(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const MemoryGraphPage(trackOpenEvent: false)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: SizedBox(
+            height: 180,
+            child: IgnorePointer(
+              child: MemoryGraphPage(
+                embedded: true,
+                showAppBar: false,
+                showShareButton: false,
+                trackOpenEvent: false,
+                autoRebuildIfEmpty: false,
+                hideRebuildButtonWhenEmpty: true,
+                initialZoom: 0.6,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildConversationsPreview(ConversationProvider convoProvider) {

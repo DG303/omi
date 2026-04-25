@@ -649,6 +649,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                                 if (isRepeat) {
                                   _scrollToTop(index);
                                 } else {
+                                  // When tapping Conversations directly, reset to conversations view
+                                  if (index == 1) {
+                                    final cp = context.read<ConversationProvider>();
+                                    if (cp.showDailySummaries) cp.toggleDailySummaries();
+                                  }
                                   home.setIndex(index);
                                 }
                               },
@@ -691,8 +696,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: const Color(0xFF35343B), width: 1),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.75), blurRadius: 40, spreadRadius: 8, offset: const Offset(0, 8)),
-            BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 16, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.95), blurRadius: 80, spreadRadius: 24, offset: const Offset(0, -12)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.75), blurRadius: 40, spreadRadius: 12, offset: const Offset(0, -6)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.40), blurRadius: 16, offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
