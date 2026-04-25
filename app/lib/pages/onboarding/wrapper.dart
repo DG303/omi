@@ -542,13 +542,13 @@ class _OnboardingWrapperState extends State<OnboardingWrapper> with TickerProvid
                               ),
                             ),
                           ),
-                        if (_controller!.index != kAuthPage)
+                        if (_controller!.index != kAuthPage && _controller!.index != kAiConsentPage)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 56, 16, 0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: List.generate(7, (index) {
-                                int pageIndex = index + 1; // Name=1, Lang=2, ..., Speech=7
+                                int pageIndex = index + 2; // Name=2, Lang=3, ..., Speech=8
                                 return Container(
                                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                                   width: pageIndex == _controller!.index ? 12.0 : 8.0,
