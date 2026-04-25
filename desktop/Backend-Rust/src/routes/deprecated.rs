@@ -43,7 +43,7 @@ pub fn deprecated_routes() -> Router<AppState> {
         // ── Chat sessions (0 traffic) ─────────────────────────────────────────
         .route("/v2/chat-sessions", get(deprecated_handler).post(deprecated_handler))
         .route(
-            "/v2/chat-sessions/{id}",
+            "/v2/chat-sessions/:id",
             get(deprecated_handler)
                 .patch(deprecated_handler)
                 .delete(deprecated_handler),
@@ -51,7 +51,7 @@ pub fn deprecated_routes() -> Router<AppState> {
         // ── Advice (0 traffic) ────────────────────────────────────────────────
         .route("/v1/advice", get(deprecated_handler).post(deprecated_handler))
         .route(
-            "/v1/advice/{id}",
+            "/v1/advice/:id",
             patch(deprecated_handler).delete(deprecated_handler),
         )
         .route("/v1/advice/mark-all-read", post(deprecated_handler))
@@ -60,7 +60,7 @@ pub fn deprecated_routes() -> Router<AppState> {
             "/v1/focus-sessions",
             get(deprecated_handler).post(deprecated_handler),
         )
-        .route("/v1/focus-sessions/{id}", delete(deprecated_handler))
+        .route("/v1/focus-sessions/:id", delete(deprecated_handler))
         .route("/v1/focus-stats", get(deprecated_handler))
         // ── Folders (0 traffic) ───────────────────────────────────────────────
         .route(
@@ -68,17 +68,17 @@ pub fn deprecated_routes() -> Router<AppState> {
             get(deprecated_handler).post(deprecated_handler),
         )
         .route(
-            "/v1/folders/{id}",
+            "/v1/folders/:id",
             patch(deprecated_handler).delete(deprecated_handler),
         )
         .route("/v1/folders/reorder", post(deprecated_handler))
         .route(
-            "/v1/folders/{id}/conversations/bulk-move",
+            "/v1/folders/:id/conversations/bulk-move",
             post(deprecated_handler),
         )
         // Move-to-folder was owned by folders.rs, not conversations.rs
         .route(
-            "/v1/conversations/{id}/folder",
+            "/v1/conversations/:id/folder",
             patch(deprecated_handler),
         )
         // ── Goals (0 traffic) ─────────────────────────────────────────────────
@@ -86,11 +86,11 @@ pub fn deprecated_routes() -> Router<AppState> {
         .route("/v1/goals/all", get(deprecated_handler))
         .route("/v1/goals/completed", get(deprecated_handler))
         .route(
-            "/v1/goals/{id}",
+            "/v1/goals/:id",
             patch(deprecated_handler).delete(deprecated_handler),
         )
-        .route("/v1/goals/{id}/progress", patch(deprecated_handler))
-        .route("/v1/goals/{id}/history", get(deprecated_handler))
+        .route("/v1/goals/:id/progress", patch(deprecated_handler))
+        .route("/v1/goals/:id/history", get(deprecated_handler))
         // ── Daily score (0 traffic) ───────────────────────────────────────────
         .route("/v1/daily-score", get(deprecated_handler))
         .route("/v1/scores", get(deprecated_handler))
@@ -99,14 +99,14 @@ pub fn deprecated_routes() -> Router<AppState> {
             "/v1/users/people",
             get(deprecated_handler).post(deprecated_handler),
         )
-        .route("/v1/users/people/{person_id}", delete(deprecated_handler))
+        .route("/v1/users/people/:person_id", delete(deprecated_handler))
         .route(
-            "/v1/users/people/{person_id}/name",
+            "/v1/users/people/:person_id/name",
             patch(deprecated_handler),
         )
         // Segment assignment was owned by people.rs
         .route(
-            "/v1/conversations/{conversation_id}/segments/assign-bulk",
+            "/v1/conversations/:conversation_id/segments/assign-bulk",
             patch(deprecated_handler),
         )
         // ── Personas (0 traffic) ──────────────────────────────────────────────
@@ -134,8 +134,8 @@ pub fn deprecated_routes() -> Router<AppState> {
         .route("/v1/apps", get(deprecated_handler))
         .route("/v1/approved-apps", get(deprecated_handler))
         .route("/v1/apps/popular", get(deprecated_handler))
-        .route("/v1/apps/{app_id}", get(deprecated_handler))
-        .route("/v1/apps/{app_id}/reviews", get(deprecated_handler))
+        .route("/v1/apps/:app_id", get(deprecated_handler))
+        .route("/v1/apps/:app_id/reviews", get(deprecated_handler))
         .route("/v2/apps", get(deprecated_handler))
         .route("/v2/apps/search", get(deprecated_handler))
         .route("/v1/apps/enable", post(deprecated_handler))
