@@ -6,10 +6,33 @@ import 'package:provider/provider.dart';
 import 'package:omi/providers/auth_provider.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 
-class AiConsentWidget extends StatelessWidget {
+class AiConsentWidget extends StatefulWidget {
   final VoidCallback onAgree;
 
   const AiConsentWidget({super.key, required this.onAgree});
+
+  @override
+  State<AiConsentWidget> createState() => _AiConsentWidgetState();
+}
+
+class _AiConsentWidgetState extends State<AiConsentWidget> {
+  final TapGestureRecognizer _privacyRecognizer = TapGestureRecognizer();
+  final TapGestureRecognizer _termsRecognizer = TapGestureRecognizer();
+
+  @override
+  void initState() {
+    super.initState();
+    final provider = context.read<AuthenticationProvider>();
+    _privacyRecognizer.onTap = provider.openPrivacyPolicy;
+    _termsRecognizer.onTap = provider.openTermsOfService;
+  }
+
+  @override
+  void dispose() {
+    _privacyRecognizer.dispose();
+    _termsRecognizer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,41 +68,37 @@ class AiConsentWidget extends StatelessWidget {
                   style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.5, fontFamily: 'Manrope'),
                 ),
                 const SizedBox(height: 16),
-                Consumer<AuthenticationProvider>(
-                  builder: (context, provider, _) {
-                    return RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 13,
-                          height: 1.4,
-                          fontFamily: 'Manrope',
-                        ),
-                        children: [
-                          TextSpan(text: context.l10n.yourDataIsProtected),
-                          TextSpan(
-                            text: context.l10n.privacyPolicy,
-                            style: const TextStyle(color: Colors.white, decoration: TextDecoration.underline),
-                            recognizer: TapGestureRecognizer()..onTap = provider.openPrivacyPolicy,
-                          ),
-                          TextSpan(text: context.l10n.and),
-                          TextSpan(
-                            text: context.l10n.termsOfService,
-                            style: const TextStyle(color: Colors.white, decoration: TextDecoration.underline),
-                            recognizer: TapGestureRecognizer()..onTap = provider.openTermsOfService,
-                          ),
-                          const TextSpan(text: '.'),
-                        ],
+                RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 13,
+                      height: 1.4,
+                      fontFamily: 'Manrope',
+                    ),
+                    children: [
+                      TextSpan(text: context.l10n.yourDataIsProtected),
+                      TextSpan(
+                        text: context.l10n.privacyPolicy,
+                        style: const TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                        recognizer: _privacyRecognizer,
                       ),
-                    );
-                  },
+                      TextSpan(text: context.l10n.and),
+                      TextSpan(
+                        text: context.l10n.termsOfService,
+                        style: const TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                        recognizer: _termsRecognizer,
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: onAgree,
+                    onPressed: widget.onAgree,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
