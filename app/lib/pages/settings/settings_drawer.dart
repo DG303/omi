@@ -33,6 +33,14 @@ import 'device_settings.dart';
 import '../conversations/auto_sync_page.dart';
 import '../conversations/sync_page.dart';
 
+class _SearchableItem {
+  final String title;
+  final Widget icon;
+  final VoidCallback onTap;
+
+  const _SearchableItem({required this.title, required this.icon, required this.onTap});
+}
+
 class SettingsDrawer extends StatefulWidget {
   const SettingsDrawer({super.key});
 
@@ -54,10 +62,24 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
   String? buildVersion;
   String? shortDeviceInfo;
 
+  bool _isSearching = false;
+  String _searchQuery = '';
+  late TextEditingController _searchController;
+  late FocusNode _searchFocusNode;
+
   @override
   void initState() {
     super.initState();
+    _searchController = TextEditingController();
+    _searchFocusNode = FocusNode();
     _loadAppAndDeviceInfo();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   Future<String> _getShortDeviceInfo() async {
@@ -256,6 +278,165 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
     Future.delayed(const Duration(seconds: 2), () {
       overlayEntry.remove();
     });
+  }
+
+  List<_SearchableItem> _buildSearchableItems(BuildContext context) {
+    final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+
+    final items = <_SearchableItem>[
+      _SearchableItem(
+        title: context.l10n.profile,
+        icon: const FaIcon(FontAwesomeIcons.solidUser, color: Color(0xFF8E8E93), size: 20),
+        onTap: () => routeToPage(context, const ProfilePage()),
+      ),
+      _SearchableItem(
+        title: context.l10n.notifications,
+        icon: const FaIcon(FontAwesomeIcons.solidBell, color: Color(0xFF8E8E93), size: 20),
+        onTap: () => routeToPage(context, const NotificationsSettingsPage()),
+      ),
+      _SearchableItem(
+        title: context.l10n.planAndUsage,
+        icon: const FaIcon(FontAwesomeIcons.chartLine, color: Color(0xFF8E8E93), size: 20),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const UsagePage())),
+      ),
+      _SearchableItem(
+        title: context.l10n.offlineSync,
+        icon: const FaIcon(FontAwesomeIcons.solidCloud, color: Color(0xFF8E8E93), size: 20),
+        onTap: () {
+          final page = SharedPreferencesUtil().deviceSupportsMultiFileSync ? const AutoSyncPage() : const SyncPage();
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => page));
+        },
+      ),
+      if (deviceProvider.isConnected)
+        _SearchableItem(
+          title: context.l10n.deviceSettings,
+          icon: const FaIcon(FontAwesomeIcons.bluetooth, color: Color(0xFF8E8E93), size: 20),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const DeviceSettings())),
+        ),
+      _SearchableItem(
+        title: context.l10n.integrations,
+        icon: const FaIcon(FontAwesomeIcons.networkWired, color: Color(0xFF8E8E93), size: 20),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const IntegrationsPage())),
+      ),
+      _SearchableItem(
+        title: context.l10n.permissions,
+        icon: const FaIcon(FontAwesomeIcons.shieldHalved, color: Color(0xFF8E8E93), size: 20),
+        onTap: () {
+          MixpanelManager().permissionsSettingsOpened();
+          routeToPage(context, const PermissionsPage());
+        },
+      ),
+      _SearchableItem(
+        title: context.l10n.memories,
+        icon: const FaIcon(FontAwesomeIcons.brain, color: Color(0xFF8E8E93), size: 20),
+        onTap: () => routeToPage(context, const MemoriesPage()),
+      ),
+      if (PlatformService.isIntercomSupported) ...[
+        _SearchableItem(
+          title: context.l10n.feedbackBug,
+          icon: const FaIcon(FontAwesomeIcons.solidEnvelope, color: Color(0xFF8E8E93), size: 20),
+          onTap: () async {
+            final Uri url = Uri.parse('https://feedback.omi.me/');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+            }
+          },
+        ),
+        _SearchableItem(
+          title: context.l10n.helpCenter,
+          icon: const FaIcon(FontAwesomeIcons.book, color: Color(0xFF8E8E93), size: 20),
+          onTap: () async {
+            final Uri url = Uri.parse('https://help.omi.me/en/');
+            if (await canLaunchUrl(url)) {
+              try {
+                await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+              } catch (e) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            }
+          },
+        ),
+      ],
+      _SearchableItem(
+        title: context.l10n.developerSettings,
+        icon: const FaIcon(FontAwesomeIcons.code, color: Color(0xFF8E8E93), size: 20),
+        onTap: () async => await routeToPage(context, const DeveloperSettingsPage()),
+      ),
+      _SearchableItem(
+        title: context.l10n.whatsNew,
+        icon: const FaIcon(FontAwesomeIcons.solidStar, color: Color(0xFF8E8E93), size: 20),
+        onTap: () {
+          MixpanelManager().whatsNewOpened();
+          ChangelogSheet.showWithLoading(context, () => getAppChangelogs(limit: 5));
+        },
+      ),
+      _SearchableItem(
+        title: context.l10n.getOmiForMac,
+        icon: const FaIcon(FontAwesomeIcons.desktop, color: Color(0xFF8E8E93), size: 20),
+        onTap: () async {
+          final Uri url = Uri.parse('https://apps.apple.com/us/app/omi-ai-scale-yourself/id6502156163');
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        },
+      ),
+      _SearchableItem(
+        title: context.l10n.referralProgram,
+        icon: const FaIcon(FontAwesomeIcons.gift, color: Color(0xFF8E8E93), size: 20),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ReferralPage())),
+      ),
+      _SearchableItem(
+        title: context.l10n.signOut,
+        icon: const FaIcon(FontAwesomeIcons.signOutAlt, color: Color(0xFF8E8E93), size: 20),
+        onTap: () async {
+          final navigator = Navigator.of(context);
+          navigator.pop();
+          await showDialog(
+            context: context,
+            builder: (ctx) {
+              return getDialog(
+                ctx,
+                () => Navigator.of(ctx).pop(),
+                () async {
+                  Navigator.of(ctx).pop();
+                  await SharedPreferencesUtil().clear();
+                  await AuthService.instance.signOut();
+                  final rootCtx = globalNavigatorKey.currentContext;
+                  if (rootCtx != null && rootCtx.mounted) {
+                    routeToPage(rootCtx, const AppShell(), replace: true);
+                  }
+                },
+                context.l10n.signOutQuestion,
+                context.l10n.signOutConfirmation,
+              );
+            },
+          );
+        },
+      ),
+    ];
+
+    return items;
+  }
+
+  Widget _buildSearchResults(BuildContext context) {
+    final allItems = _buildSearchableItems(context);
+    final query = _searchQuery.toLowerCase();
+    final filtered = allItems.where((item) => item.title.toLowerCase().contains(query)).toList();
+
+    if (filtered.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 48),
+          child: Text(
+            'No results',
+            style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 16, fontWeight: FontWeight.w400),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children:
+          filtered.map((item) => _buildSettingsItem(title: item.title, icon: item.icon, onTap: item.onTap)).toList(),
+    );
   }
 
   Widget _buildOmiModeContent(BuildContext context) {
@@ -539,27 +720,102 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
           // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Stack(
-              children: [
-                // Centered title
-                Center(
-                  child: Text(
-                    context.l10n.settings,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                // Done button positioned to the right
-                Positioned(
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Text(
-                      context.l10n.done,
-                      style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w400),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+              child: _isSearching
+                  ? Row(
+                      key: const ValueKey('search-header'),
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            autofocus: true,
+                            style: const TextStyle(color: Colors.white, fontSize: 16),
+                            cursorColor: Colors.white,
+                            decoration: InputDecoration(
+                              hintText: 'Search settings…',
+                              hintStyle: const TextStyle(color: Color(0xFF8E8E93), fontSize: 16),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                              enabledBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: Color(0xFF3C3C43)),
+                              ),
+                              focusedBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                          onPressed: () {
+                            setState(() {
+                              _isSearching = false;
+                              _searchQuery = '';
+                              _searchController.clear();
+                            });
+                            _searchFocusNode.unfocus();
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        ),
+                      ],
+                    )
+                  : Stack(
+                      key: const ValueKey('normal-header'),
+                      alignment: Alignment.center,
+                      children: [
+                        // Centered title
+                        Center(
+                          child: Text(
+                            context.l10n.settings,
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        // Search icon on the left
+                        Positioned(
+                          left: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isSearching = true;
+                              });
+                              Future.microtask(() => _searchFocusNode.requestFocus());
+                            },
+                            child: const Icon(Icons.search, color: Colors.white, size: 22),
+                          ),
+                        ),
+                        // Done pill button on the right
+                        Positioned(
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                context.l10n.done,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-              ],
             ),
           ),
           const SizedBox(height: 16),
@@ -567,7 +823,9 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _buildOmiModeContent(context),
+              child: _isSearching && _searchQuery.isNotEmpty
+                  ? _buildSearchResults(context)
+                  : _buildOmiModeContent(context),
             ),
           ),
         ],
