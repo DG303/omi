@@ -165,3 +165,23 @@ class TestFindSimilarActionItems:
         result = vector_db.find_similar_action_items('uid-abc', 'something')
 
         assert [r['action_item_id'] for r in result] == ['first', 'second', 'third']
+
+    def test_drops_matches_with_missing_action_item_id(self, monkeypatch):
+        """A malformed Pinecone match (missing/empty action_item_id metadata) must be
+        dropped per-match, not poison the whole dedup context. Returning None as an id
+        would crash get_action_items_by_ids downstream."""
+        response = {
+            'matches': [
+                {'metadata': {'action_item_id': 'good-1'}, 'score': 0.90},
+                {'metadata': {}, 'score': 0.85},  # missing action_item_id
+                {'metadata': {'action_item_id': None}, 'score': 0.80},  # explicit None
+                {'metadata': {'action_item_id': ''}, 'score': 0.75},  # empty string
+                {'metadata': {'action_item_id': 'good-2'}, 'score': 0.70},
+            ]
+        }
+        _setup_mocks(monkeypatch, query_response=response)
+
+        result = vector_db.find_similar_action_items('uid-abc', 'q')
+
+        assert [r['action_item_id'] for r in result] == ['good-1', 'good-2']
+        assert all(r['action_item_id'] for r in result)

@@ -492,13 +492,23 @@ def find_similar_action_items(uid: str, query: str, threshold: float = 0.6, limi
             namespace=ACTION_ITEMS_NAMESPACE,
         )
         matches = xc.get('matches', [])
-        kept = [m for m in matches if m.get('score', 0.0) >= threshold]
+        kept = []
+        dropped_no_id = 0
+        for m in matches:
+            if m.get('score', 0.0) < threshold:
+                continue
+            aid = m.get('metadata', {}).get('action_item_id')
+            if not aid:
+                dropped_no_id += 1
+                continue
+            kept.append({'action_item_id': aid, 'score': m.get('score', 0.0)})
         top_score = matches[0]['score'] if matches else None
         logger.info(
             f'find_similar_action_items uid={uid} matches={len(matches)} '
-            f'kept={len(kept)} top_score={top_score} threshold={threshold}'
+            f'kept={len(kept)} dropped_no_id={dropped_no_id} '
+            f'top_score={top_score} threshold={threshold}'
         )
-        return [{'action_item_id': m['metadata'].get('action_item_id'), 'score': m.get('score', 0.0)} for m in kept]
+        return kept
     except Exception as e:
         logger.exception(f'find_similar_action_items failed uid={uid}: {e}')
         return []
