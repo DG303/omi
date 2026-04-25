@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:omi/widgets/shimmer_with_timeout.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import 'package:omi/backend/schema/conversation.dart';
 import 'package:omi/pages/capture/widgets/widgets.dart';
+import 'package:omi/pages/conversation_capturing/page.dart';
 import 'package:omi/pages/conversations/widgets/daily_summaries_list.dart';
 import 'package:omi/pages/conversations/widgets/folder_tabs.dart';
 import 'package:omi/pages/conversations/widgets/goals_widget.dart';
@@ -21,6 +23,8 @@ import 'package:omi/providers/conversation_provider.dart';
 import 'package:omi/providers/folder_provider.dart';
 import 'package:omi/providers/home_provider.dart';
 import 'package:omi/services/app_review_service.dart';
+import 'package:omi/utils/analytics/mixpanel.dart';
+import 'package:omi/utils/enums.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:omi/utils/ui_guidelines.dart';
@@ -82,6 +86,100 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
     if (_scrollController.hasClients) {
       _scrollController.animateTo(0.0, duration: const Duration(milliseconds: 500), curve: Curves.easeOutCubic);
     }
+  }
+
+  Widget _buildStartRecordingButton(BuildContext context) {
+    return Consumer<CaptureProvider>(
+      builder: (context, captureProvider, _) {
+        return GestureDetector(
+          onTap: () => _startVoiceRecording(context, captureProvider),
+          onLongPress: () => _showRecordingOptions(context, captureProvider),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.deepPurple,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(FontAwesomeIcons.microphone, size: 13, color: Colors.white),
+                const SizedBox(width: 6),
+                Text(
+                  context.l10n.startRecording,
+                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _startVoiceRecording(BuildContext context, CaptureProvider captureProvider) async {
+    HapticFeedback.mediumImpact();
+    if (captureProvider.recordingState == RecordingState.initialising) return;
+    if (captureProvider.recordingState == RecordingState.record) {
+      await captureProvider.stopStreamRecording();
+      captureProvider.forceProcessingCurrentConversation();
+      MixpanelManager().phoneMicRecordingStopped();
+      return;
+    }
+    await captureProvider.streamRecording();
+    MixpanelManager().phoneMicRecordingStarted();
+    if (context.mounted) {
+      final topConvoId = (captureProvider.conversationProvider?.conversations ?? []).isNotEmpty
+          ? captureProvider.conversationProvider!.conversations.first.id
+          : null;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ConversationCapturingPage(topConversationId: topConvoId)),
+      );
+    }
+  }
+
+  void _showRecordingOptions(BuildContext context, CaptureProvider captureProvider) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1C1C1E),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                height: 4,
+                width: 36,
+                decoration: BoxDecoration(color: const Color(0xFF3C3C43), borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(FontAwesomeIcons.microphone, color: Colors.white, size: 20),
+                title: Text(context.l10n.startVoiceRecording, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _startVoiceRecording(context, captureProvider);
+                },
+              ),
+              ListTile(
+                leading: const Icon(FontAwesomeIcons.phone, color: Colors.white, size: 20),
+                title: Text(context.l10n.startCallRecording, style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  // Navigate to phone calls
+                  MixpanelManager().bottomNavigationTabClicked('Phone Calls');
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -224,14 +322,21 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
                 },
               ),
 
-              // Section header - show "Daily Recaps" or "Conversations"
+              // Section header - show "Daily Recaps" or "Conversations" with optional recording pill
               SliverToBoxAdapter(
                 child: Builder(
                   builder: (context) => Padding(
-                    padding: const EdgeInsets.only(left: 24, top: 16, bottom: 8),
-                    child: Text(
-                      convoProvider.showDailySummaries ? context.l10n.dailyRecaps : context.l10n.conversations,
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                    padding: const EdgeInsets.only(left: 24, right: 16, top: 16, bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          convoProvider.showDailySummaries ? context.l10n.dailyRecaps : context.l10n.conversations,
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                        ),
+                        if (!convoProvider.showDailySummaries) _buildStartRecordingButton(context),
+                      ],
                     ),
                   ),
                 ),
