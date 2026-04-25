@@ -37,10 +37,7 @@ use routes::{
     agent_routes, auth_routes, chat_completions_routes, config_routes, crisp_routes,
     health_routes, proxy_routes, screen_activity_routes, tts_routes, updates_routes,
     webhook_routes,
-    // Legacy (declining traffic from old clients — kept functional, pending removal)
-    action_items_routes, conversations_routes, memories_routes, messages_routes,
-    staged_tasks_routes, users_routes,
-    // Deprecated stubs (0 traffic — return 410 Gone)
+    // Deprecated stubs (return 410 Gone — current app uses Python for all data CRUD)
     deprecated_routes,
 };
 use services::{FirestoreService, IntegrationService, RedisService};
@@ -228,17 +225,8 @@ async fn main() {
         .merge(chat_completions_routes())
         .merge(updates_routes())
         .merge(webhook_routes())
-        // ── Legacy routes (declining traffic from old clients — kept functional, pending removal) ──
-        // These endpoints have residual traffic from older app versions that still
-        // point to the Rust backend. Current app routes to Python (api.omi.me).
-        // TODO: Remove once old client traffic drops to zero.
-        .merge(conversations_routes())
-        .merge(messages_routes())
-        .merge(action_items_routes())
-        .merge(memories_routes())
-        .merge(staged_tasks_routes())
-        .merge(users_routes())
-        // ── Deprecated stubs (0 traffic in 7 days — return 410 Gone) ──────
+        // ── Deprecated stubs (return 410 Gone) ───────────────────────────
+        // Current app uses Python (api.omi.me) for all data CRUD.
         .merge(deprecated_routes())
         .with_state(state);
 
