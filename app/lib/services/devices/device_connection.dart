@@ -587,5 +587,4 @@ abstract class DeviceConnection {
   }) async {
     return null;
   }
-
 }
