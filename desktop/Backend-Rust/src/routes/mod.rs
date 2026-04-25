@@ -14,7 +14,7 @@ pub mod tts;
 pub mod updates;
 pub mod webhooks;
 
-// ── Legacy routes (declining traffic from old clients, kept with deprecation headers) ──
+// ── Legacy routes (declining traffic from old clients, kept functional, pending removal) ──
 pub mod action_items;
 pub mod conversations;
 pub mod memories;
@@ -57,7 +57,7 @@ pub use tts::tts_routes;
 pub use updates::updates_routes;
 pub use webhooks::webhook_routes;
 
-// ── Legacy re-exports (declining traffic, kept functional) ────────────────────
+// ── Legacy re-exports (declining traffic, kept functional, pending removal) ─────
 pub use action_items::action_items_routes;
 pub use conversations::conversations_routes;
 pub use memories::memories_routes;
