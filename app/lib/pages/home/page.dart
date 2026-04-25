@@ -644,14 +644,25 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                             return const SizedBox.shrink();
                           }
 
-                          return BottomNavBar(
-                            onTabTap: (index, isRepeat) {
-                              if (isRepeat) {
-                                _scrollToTop(index);
-                              } else {
-                                home.setIndex(index);
-                              }
-                            },
+                          return Stack(
+                            children: [
+                              BottomNavBar(
+                                onTabTap: (index, isRepeat) {
+                                  if (isRepeat) {
+                                    _scrollToTop(index);
+                                  } else {
+                                    home.setIndex(index);
+                                  }
+                                },
+                              ),
+                              if (home.selectedIndex == 0)
+                                Positioned(
+                                  left: 16,
+                                  right: 16,
+                                  bottom: 102,
+                                  child: _buildChatBar(context),
+                                ),
+                            ],
                           );
                         },
                       ),
@@ -664,6 +675,52 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatBar(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        MixpanelManager().bottomNavigationTabClicked('Chat');
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false)));
+      },
+      child: Container(
+        height: 54,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F25),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: const Color(0xFF35343B), width: 1),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 18),
+            const Icon(FontAwesomeIcons.solidComment, size: 16, color: Colors.deepPurpleAccent),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                context.l10n.askOmiAnything,
+                style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 15),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                MixpanelManager().bottomNavigationTabClicked('Chat Voice');
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false)));
+              },
+              child: Container(
+                width: 42,
+                height: 42,
+                margin: const EdgeInsets.only(right: 6),
+                decoration: const BoxDecoration(color: Colors.deepPurple, shape: BoxShape.circle),
+                child: const Icon(FontAwesomeIcons.microphone, size: 15, color: Colors.white),
+              ),
+            ),
+          ],
         ),
       ),
     );

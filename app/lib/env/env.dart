@@ -20,8 +20,7 @@ abstract class Env {
 
   static String? get mixpanelProjectToken => _instance.mixpanelProjectToken;
 
-  // static String? get apiBaseUrl => 'https://omi-backend.ngrok.app/';
-  static String? get apiBaseUrl => _apiBaseUrlOverride ?? _instance.apiBaseUrl;
+  static String get apiBaseUrl => 'https://api.omi.me/';
 
   /// Staging API URL from STAGING_API_URL env var. Null when not configured.
   static String? get stagingApiUrl {

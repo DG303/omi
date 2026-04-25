@@ -5,11 +5,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'package:omi/backend/http/api/users.dart';
-import 'package:omi/backend/preferences.dart';
 import 'package:omi/backend/schema/conversation.dart';
 import 'package:omi/backend/schema/daily_summary.dart';
-import 'package:omi/pages/chat/page.dart';
-import 'package:omi/pages/conversations/widgets/daily_summaries_list.dart';
 import 'package:omi/pages/conversations/widgets/conversations_group_widget.dart';
 import 'package:omi/pages/conversations/widgets/today_tasks_widget.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
@@ -73,10 +70,7 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
         return RefreshIndicator(
           onRefresh: () async {
             HapticFeedback.mediumImpact();
-            await Future.wait([
-              convoProvider.getInitialConversations(),
-              _loadSummaries(),
-            ]);
+            await Future.wait([convoProvider.getInitialConversations(), _loadSummaries()]);
           },
           color: Colors.deepPurpleAccent,
           backgroundColor: Colors.white,
@@ -84,9 +78,6 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
             controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // Chat bar
-              SliverToBoxAdapter(child: _buildChatBar(context)),
-
               // Today section
               SliverToBoxAdapter(child: _buildSectionHeader(context, context.l10n.today)),
               const SliverToBoxAdapter(child: TodayTasksWidget()),
@@ -114,48 +105,12 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
               ),
               _buildConversationsPreview(convoProvider),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+              // Bottom padding so content isn't hidden behind chat bar + nav
+              const SliverToBoxAdapter(child: SizedBox(height: 160)),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildChatBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          MixpanelManager().bottomNavigationTabClicked('Chat');
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false)),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F25),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF35343B), width: 1),
-          ),
-          child: Row(
-            children: [
-              const Icon(FontAwesomeIcons.solidComment, size: 18, color: Colors.deepPurpleAccent),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  context.l10n.askOmiAnything,
-                  style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 16),
-                ),
-              ),
-              const Icon(Icons.send_rounded, size: 20, color: Color(0xFF8E8E93)),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -187,15 +142,15 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
           children: List.generate(
             2,
             (_) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(top: 12),
               child: ShimmerWithTimeout(
                 baseColor: AppStyles.backgroundSecondary,
                 highlightColor: AppStyles.backgroundTertiary,
                 child: Container(
-                  height: 72,
+                  height: 80,
                   decoration: BoxDecoration(
                     color: AppStyles.backgroundSecondary,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
               ),
@@ -205,29 +160,9 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
       );
     }
 
-    if (_recentSummaries.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F25),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Text(
-            'No daily recaps yet',
-            style: TextStyle(color: Color(0xFF8E8E93), fontSize: 14),
-          ),
-        ),
-      );
-    }
+    if (_recentSummaries.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: _recentSummaries.map((summary) => _buildSummaryCard(context, summary)).toList(),
-      ),
-    );
+    return Column(children: _recentSummaries.map((s) => _buildSummaryCard(context, s)).toList());
   }
 
   Widget _buildSummaryCard(BuildContext context, DailySummary summary) {
@@ -236,60 +171,90 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
         MixpanelManager().dailySummaryDetailViewed(summaryId: summary.id, date: summary.date);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => DailySummaryDetailPage(summaryId: summary.id)),
+          MaterialPageRoute(builder: (context) => DailySummaryDetailPage(summaryId: summary.id, summary: summary)),
         );
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F25),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            if (summary.dayEmoji.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Text(summary.dayEmoji, style: const TextStyle(fontSize: 24)),
-              ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    summary.headline.isNotEmpty ? summary.headline : summary.overview,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
+        child: Container(
+          width: double.maxFinite,
+          decoration: BoxDecoration(color: const Color(0xFF1F1F25), borderRadius: BorderRadius.circular(24.0)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: const Color(0xFF35343B), borderRadius: BorderRadius.circular(12)),
+                  alignment: Alignment.center,
+                  child: Text(summary.dayEmoji, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        summary.headline,
+                        style: Theme.of(context).textTheme.titleMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Text(
+                            _formatDate(summary.date),
+                            style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 14),
+                          ),
+                          if (summary.stats.totalConversations > 0) ...[
+                            const Text(' • ', style: TextStyle(color: Color(0xFF9A9BA1), fontSize: 14)),
+                            const FaIcon(FontAwesomeIcons.solidComments, size: 10, color: Color(0xFF9A9BA1)),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${summary.stats.totalConversations}',
+                              style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 14),
+                            ),
+                          ],
+                          if (summary.stats.actionItemsCount > 0) ...[
+                            const Text(' • ', style: TextStyle(color: Color(0xFF9A9BA1), fontSize: 14)),
+                            const FaIcon(FontAwesomeIcons.listCheck, size: 11, color: Color(0xFF9A9BA1)),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${summary.stats.actionItemsCount}',
+                              style: const TextStyle(color: Color(0xFF9A9BA1), fontSize: 14),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _formatSummaryDate(summary.date),
-                    style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 12),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF8E8E93), size: 18),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  String _formatSummaryDate(String dateStr) {
-    if (dateStr.isEmpty) return '';
-    try {
-      final date = DateTime.parse(dateStr);
-      final now = DateTime.now();
-      final diff = now.difference(date).inDays;
-      if (diff == 0) return 'Today';
-      if (diff == 1) return 'Yesterday';
-      return '${date.month}/${date.day}';
-    } catch (_) {
-      return dateStr;
-    }
+  String _formatDate(String dateStr) {
+    final parts = dateStr.split('-');
+    if (parts.length != 3) return dateStr;
+    final year = int.tryParse(parts[0]) ?? 2024;
+    final month = int.tryParse(parts[1]) ?? 1;
+    final day = int.tryParse(parts[2]) ?? 1;
+    final date = DateTime(year, month, day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    if (date == today) return 'Today';
+    if (date == yesterday) return 'Yesterday';
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${weekdays[date.weekday - 1]}, ${months[month - 1]} $day';
   }
 
   Widget _buildConversationsPreview(ConversationProvider convoProvider) {
@@ -301,7 +266,7 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
             children: List.generate(
               2,
               (_) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(top: 12),
                 child: ShimmerWithTimeout(
                   baseColor: AppStyles.backgroundSecondary,
                   highlightColor: AppStyles.backgroundTertiary,
@@ -309,7 +274,7 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
                     height: 80,
                     decoration: BoxDecoration(
                       color: AppStyles.backgroundSecondary,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                   ),
                 ),
@@ -320,22 +285,18 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
       );
     }
 
-    if (convoProvider.groupedConversations.isEmpty) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
+    if (convoProvider.groupedConversations.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
-    // Show up to 3 conversation groups
     final keys = convoProvider.groupedConversations.keys.take(3).toList();
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         childCount: keys.length,
         (context, index) {
           final date = keys[index];
-          final conversations = convoProvider.groupedConversations[date]!;
           return ConversationsGroupWidget(
             key: ValueKey(date),
             isFirst: index == 0,
-            conversations: conversations,
+            conversations: convoProvider.groupedConversations[date]!,
             date: date,
           );
         },
