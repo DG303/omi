@@ -101,3 +101,27 @@ def test_memory_unauthenticated_is_clear(config_path, cli_runner) -> None:
     result = cli_runner.invoke(app, ["memory", "list"])
     assert result.exit_code == 2  # EXIT_AUTH
     assert "auth login" in result.stderr.lower() or "not authenticated" in result.stderr.lower()
+
+
+def test_memory_get_missing_returns_not_found_exit_code(authed_profile, respx_mock, cli_runner) -> None:
+    """Client-side scan for a missing memory must surface as exit 5 (NotFoundError),
+    matching the documented agent contract — not exit 1 (UsageError)."""
+    respx_mock.get("/v1/dev/user/memories").respond(json=[])
+    result = cli_runner.invoke(app, ["memory", "get", "does-not-exist"])
+    assert result.exit_code == 5  # EXIT_NOT_FOUND
+    assert "not found" in result.stderr.lower()
+
+
+def test_memory_get_found_in_later_page(authed_profile, respx_mock, cli_runner) -> None:
+    """Confirm the paging loop still finds an item past the first page."""
+    page1 = [
+        {"id": f"m{i}", "content": "x", "category": "core", "visibility": "private", "tags": []} for i in range(100)
+    ]
+    page2 = [{"id": "target", "content": "found me", "category": "core", "visibility": "private", "tags": []}]
+    import httpx
+
+    respx_mock.get("/v1/dev/user/memories").mock(
+        side_effect=[httpx.Response(200, json=page1), httpx.Response(200, json=page2)]
+    )
+    result = cli_runner.invoke(app, ["--json", "memory", "get", "target"])
+    assert result.exit_code == 0
