@@ -223,12 +223,10 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
               // Hide keyboard when tapping outside textfield
               FocusScope.of(context).unfocus();
             },
-            child: Stack(
+            child: Column(
               children: [
-                // Messages area - fills the entire body so the chat bar's shadow
-                // can fall on actual content as it scrolls past, instead of on
-                // the scaffold's black background.
-                Positioned.fill(
+                // Messages area - takes up remaining space
+                Expanded(
                   child: provider.isLoadingMessages && !provider.hasCachedMessages
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -251,7 +249,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                           : (provider.messages.isEmpty)
                               ? Center(
                                   child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 200.0),
+                                    padding: const EdgeInsets.only(bottom: 32.0),
                                     child: Text(
                                       connectivityProvider.isConnected
                                           ? context.l10n.noMessagesYet
@@ -274,14 +272,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         shrinkWrap: false,
                                         reverse: false,
                                         controller: scrollController,
-                                        // Bottom padding reserves room for the floating input
-                                        // bar + nav bar so the last message isn't hidden under it.
-                                        padding: EdgeInsets.fromLTRB(
-                                          18,
-                                          16,
-                                          18,
-                                          textFieldFocusNode.hasFocus ? 96 : 200,
-                                        ),
+                                        padding: const EdgeInsets.fromLTRB(18, 16, 18, 10),
                                         itemCount: provider.messages.length,
                                         itemBuilder: (context, chatIndex) {
                                           if (!_hasInitialScrolled && provider.messages.isNotEmpty) {
@@ -356,172 +347,415 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                   },
                                 ),
                 ),
-                // Bottom nav bar — rendered BEFORE the input bar so the input
-                // bar's pill (rendered after) sits on top of the nav bar's
-                // shadow instead of getting covered by it.
-                if (!textFieldFocusNode.hasFocus)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: BottomNavBar(
-                      onTabTap: (index, isRepeat) {
-                        context.read<HomeProvider>().setIndex(index);
-                        Navigator.of(context).pop();
-                      },
-                    ),
+                // Send message area - fixed at bottom
+                Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(22), topRight: Radius.circular(22)),
                   ),
-                // Send message area — pinned to the bottom, overlapping the top
-                // of the nav bar the same way the home chat bar does (bottom: 78).
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: textFieldFocusNode.hasFocus ? 0 : 78,
-                  child: Container(
-                    margin: EdgeInsets.zero,
-                    decoration: const BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(22), topRight: Radius.circular(22)),
-                    ),
-                    child: Consumer2<HomeProvider, VoiceRecorderProvider>(
-                      builder: (context, home, voiceRecorderProvider, child) {
-                        bool shouldShowSendButton(MessageProvider p) {
-                          return !p.sendingMessage && !voiceRecorderProvider.isActive;
-                        }
+                  child: Consumer2<HomeProvider, VoiceRecorderProvider>(
+                    builder: (context, home, voiceRecorderProvider, child) {
+                      bool shouldShowSendButton(MessageProvider p) {
+                        return !p.sendingMessage && !voiceRecorderProvider.isActive;
+                      }
 
-                        bool shouldShowVoiceRecorderButton() {
-                          return !voiceRecorderProvider.isActive;
-                        }
+                      bool shouldShowVoiceRecorderButton() {
+                        return !voiceRecorderProvider.isActive;
+                      }
 
-                        bool shouldShowMenuButton() {
-                          return !voiceRecorderProvider.isActive;
-                        }
+                      bool shouldShowMenuButton() {
+                        return !voiceRecorderProvider.isActive;
+                      }
 
-                        return Column(
-                          children: [
-                            // Selected images display above the send bar
-                            Consumer<MessageProvider>(
-                              builder: (context, provider, child) {
-                                if (provider.selectedFiles.isNotEmpty) {
-                                  return Container(
-                                    margin: const EdgeInsets.only(top: 16, bottom: 8),
-                                    // Align with chat bar's left edge: outer Padding(8) + plus button (48) + gap (8).
-                                    padding: const EdgeInsets.only(left: 64, right: 8),
-                                    height: 70,
-                                    child: ListView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: provider.selectedFiles.length,
-                                      itemBuilder: (ctx, idx) {
-                                        return Container(
-                                          margin: const EdgeInsets.only(right: 8),
-                                          width: 60,
-                                          height: 60,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[800],
-                                            borderRadius: BorderRadius.circular(16),
-                                            image: provider.selectedFileTypes[idx] == 'image'
-                                                ? DecorationImage(
-                                                    image: FileImage(provider.selectedFiles[idx]),
-                                                    fit: BoxFit.cover,
-                                                  )
-                                                : null,
-                                          ),
-                                          child: Stack(
-                                            children: [
-                                              // File icon for non-images
-                                              if (provider.selectedFileTypes[idx] != 'image')
-                                                const Center(
-                                                  child: Icon(Icons.insert_drive_file, color: Colors.white, size: 24),
+                      return Column(
+                        children: [
+                          // Selected images display above the send bar
+                          Consumer<MessageProvider>(
+                            builder: (context, provider, child) {
+                              if (provider.selectedFiles.isNotEmpty) {
+                                return Container(
+                                  margin: const EdgeInsets.only(top: 16, bottom: 8),
+                                  // Align with chat bar's left edge: outer Padding(8) + plus button (48) + gap (8).
+                                  padding: const EdgeInsets.only(left: 64, right: 8),
+                                  height: 70,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: provider.selectedFiles.length,
+                                    itemBuilder: (ctx, idx) {
+                                      return Container(
+                                        margin: const EdgeInsets.only(right: 8),
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[800],
+                                          borderRadius: BorderRadius.circular(16),
+                                          image: provider.selectedFileTypes[idx] == 'image'
+                                              ? DecorationImage(
+                                                  image: FileImage(provider.selectedFiles[idx]),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : null,
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            // File icon for non-images
+                                            if (provider.selectedFileTypes[idx] != 'image')
+                                              const Center(
+                                                child: Icon(Icons.insert_drive_file, color: Colors.white, size: 24),
+                                              ),
+                                            // Loading indicator
+                                            if (provider.isFileUploading(provider.selectedFiles[idx].path))
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black.withOpacity(0.5),
+                                                  borderRadius: BorderRadius.circular(16),
                                                 ),
-                                              // Loading indicator
-                                              if (provider.isFileUploading(provider.selectedFiles[idx].path))
-                                                Container(
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.black.withOpacity(0.5),
-                                                    borderRadius: BorderRadius.circular(16),
-                                                  ),
-                                                  child: const Center(
-                                                    child: SizedBox(
-                                                      width: 16,
-                                                      height: 16,
-                                                      child: CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              // Close button
-                                              Positioned(
-                                                top: 4,
-                                                right: 4,
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    provider.clearSelectedFile(idx);
-                                                  },
-                                                  child: Container(
+                                                child: const Center(
+                                                  child: SizedBox(
                                                     width: 16,
                                                     height: 16,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    child: const Icon(
-                                                      FontAwesomeIcons.xmark,
-                                                      size: 10,
-                                                      color: Colors.black,
+                                                    child: CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
                                                     ),
                                                   ),
                                                 ),
                                               ),
+                                            // Close button
+                                            Positioned(
+                                              top: 4,
+                                              right: 4,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  provider.clearSelectedFile(idx);
+                                                },
+                                                child: Container(
+                                                  width: 16,
+                                                  height: 16,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                  child: const Icon(
+                                                    FontAwesomeIcons.xmark,
+                                                    size: 10,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            },
+                          ),
+                          // Send bar
+                          SafeArea(
+                            bottom: false,
+                            maintainBottomViewPadding: false,
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                left: 8,
+                                right: 8,
+                                top: provider.selectedFiles.isNotEmpty ? 0 : 8,
+                                bottom: widget.isPivotBottom
+                                    ? 6
+                                    : (textFieldFocusNode.hasFocus &&
+                                            (textController.text.length > 40 || textController.text.contains('\n'))
+                                        ? 0
+                                        : 2),
+                              ),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // Placeholder for the floating LEFT button so the pill
+                                      // sits at the right x-position. The actual button is
+                                      // rendered as a Positioned overlay below so the pill's
+                                      // shadow can't bleed onto it.
+                                      if ((voiceRecorderProvider.isActive &&
+                                              voiceRecorderProvider.state == VoiceRecorderState.recording) ||
+                                          (!voiceRecorderProvider.isActive && shouldShowMenuButton()))
+                                        const SizedBox(width: 56),
+                                      // CENTER pill — text field/waveform + right-side button stays inside.
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.only(left: 14, right: 8, top: 7, bottom: 7),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF1F1F25),
+                                            borderRadius: BorderRadius.circular(32),
+                                            border: Border.all(color: const Color(0xFF35343B), width: 1),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.65),
+                                                blurRadius: 60,
+                                                spreadRadius: 14,
+                                                offset: const Offset(0, -16),
+                                              ),
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.45),
+                                                blurRadius: 32,
+                                                spreadRadius: 6,
+                                                offset: const Offset(0, -8),
+                                              ),
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.25),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 2),
+                                              ),
                                             ],
                                           ),
-                                        );
-                                      },
-                                    ),
-                                  );
-                                } else {
-                                  return const SizedBox.shrink();
-                                }
-                              },
-                            ),
-                            // Send bar
-                            SafeArea(
-                              bottom: false,
-                              maintainBottomViewPadding: false,
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  left: 8,
-                                  right: 8,
-                                  top: provider.selectedFiles.isNotEmpty ? 0 : 8,
-                                  bottom: widget.isPivotBottom
-                                      ? 6
-                                      : (textFieldFocusNode.hasFocus &&
-                                              (textController.text.length > 40 || textController.text.contains('\n'))
-                                          ? 0
-                                          : 2),
-                                ),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        // Placeholder for the floating LEFT button so the pill
-                                        // sits at the right x-position. The actual button is
-                                        // rendered as a Positioned overlay below so the pill's
-                                        // shadow can't bleed onto it.
-                                        if ((voiceRecorderProvider.isActive &&
-                                                voiceRecorderProvider.state == VoiceRecorderState.recording) ||
-                                            (!voiceRecorderProvider.isActive && shouldShowMenuButton()))
-                                          const SizedBox(width: 56),
-                                        // CENTER pill — text field/waveform + right-side button stays inside.
-                                        Expanded(
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    if (_selectedContext != null && !voiceRecorderProvider.isActive)
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(bottom: 4, top: 4, left: 2),
+                                                        child: Container(
+                                                          decoration: BoxDecoration(
+                                                            color: const Color(0xFF1f1f25),
+                                                            borderRadius: BorderRadius.circular(16),
+                                                          ),
+                                                          padding:
+                                                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                          child: Row(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              const Padding(
+                                                                padding: EdgeInsets.only(top: 1),
+                                                                child: Icon(
+                                                                  Icons.subdirectory_arrow_right,
+                                                                  size: 14,
+                                                                  color: Colors.blue,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(width: 8),
+                                                              Flexible(
+                                                                child: Text(
+                                                                  _selectedContext!.length > 25
+                                                                      ? '${_selectedContext!.substring(0, 25)}...'
+                                                                      : _selectedContext!,
+                                                                  style: const TextStyle(
+                                                                    color: Colors.blue,
+                                                                    fontSize: 14,
+                                                                    fontWeight: FontWeight.w500,
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(width: 8),
+                                                              GestureDetector(
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    _selectedContext = null;
+                                                                  });
+                                                                },
+                                                                child: const Icon(Icons.close,
+                                                                    size: 14, color: Colors.blue),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    voiceRecorderProvider.isActive
+                                                        ? VoiceRecorderWidget(
+                                                            onTranscriptReady: (transcript, autoSend) {
+                                                              textController.text = transcript;
+                                                              voiceRecorderProvider.close();
+                                                              context
+                                                                  .read<MessageProvider>()
+                                                                  .setNextMessageOriginIsVoice(true);
+                                                              if (autoSend && transcript.trim().isNotEmpty) {
+                                                                _sendMessageUtil(transcript.trim());
+                                                              }
+                                                            },
+                                                            onClose: () {
+                                                              voiceRecorderProvider.close();
+                                                            },
+                                                          )
+                                                        : Theme(
+                                                            data: Theme.of(context).copyWith(
+                                                              textSelectionTheme: TextSelectionThemeData(
+                                                                selectionColor: Colors.grey.withOpacity(0.4),
+                                                                selectionHandleColor: Colors.white,
+                                                              ),
+                                                            ),
+                                                            child: TextField(
+                                                              enabled: true,
+                                                              controller: textController,
+                                                              focusNode: textFieldFocusNode,
+                                                              obscureText: false,
+                                                              textAlign: TextAlign.start,
+                                                              // y: -0.35 nudges glyphs up. Font line metrics
+                                                              // place the visual baseline below the line box
+                                                              // center, so plain `.center` reads slightly low.
+                                                              textAlignVertical: const TextAlignVertical(y: -0.35),
+                                                              decoration: InputDecoration(
+                                                                hintText: context.l10n.askAnything,
+                                                                hintStyle:
+                                                                    const TextStyle(fontSize: 16.0, color: Colors.grey),
+                                                                focusedBorder: InputBorder.none,
+                                                                enabledBorder: InputBorder.none,
+                                                                contentPadding: const EdgeInsets.symmetric(
+                                                                  horizontal: 4,
+                                                                  vertical: 10,
+                                                                ),
+                                                                isDense: true,
+                                                              ),
+                                                              minLines: 1,
+                                                              maxLines: 10,
+                                                              keyboardType: TextInputType.multiline,
+                                                              textCapitalization: TextCapitalization.sentences,
+                                                              style: const TextStyle(
+                                                                fontSize: 16.0,
+                                                                color: Colors.white,
+                                                                height: 1.2,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              // Right-side button — stays INSIDE the pill.
+                                              // Send button while recording — transcribes and sends in one tap.
+                                              if (voiceRecorderProvider.isActive)
+                                                GestureDetector(
+                                                  onTap: voiceRecorderProvider.state == VoiceRecorderState.recording
+                                                      ? () {
+                                                          HapticFeedback.mediumImpact();
+                                                          voiceRecorderProvider.requestAutoSendOnNextTranscript();
+                                                          voiceRecorderProvider.processRecording();
+                                                        }
+                                                      : null,
+                                                  child: Container(
+                                                    height: 38,
+                                                    width: 38,
+                                                    decoration: BoxDecoration(
+                                                      color: voiceRecorderProvider.state == VoiceRecorderState.recording
+                                                          ? Colors.white
+                                                          : const Color(0xFF4A4A4F),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Center(
+                                                      child: FaIcon(
+                                                        FontAwesomeIcons.arrowUp,
+                                                        color:
+                                                            voiceRecorderProvider.state == VoiceRecorderState.recording
+                                                                ? const Color(0xFF1f1f25)
+                                                                : Colors.grey.shade400,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              // Microphone button — round white pill matching the send button.
+                                              if (!voiceRecorderProvider.isActive &&
+                                                  shouldShowVoiceRecorderButton() &&
+                                                  textController.text.isEmpty)
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    HapticFeedback.lightImpact();
+                                                    FocusScope.of(context).unfocus();
+                                                    voiceRecorderProvider.startRecording();
+                                                  },
+                                                  child: Container(
+                                                    height: 38,
+                                                    width: 38,
+                                                    decoration: const BoxDecoration(
+                                                      color: Colors.white,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: const Center(
+                                                      child: FaIcon(
+                                                        FontAwesomeIcons.microphone,
+                                                        color: Color(0xFF1f1f25),
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              // Send button — only when there's text and not in voice mode
+                                              if (!voiceRecorderProvider.isActive && shouldShowSendButton(provider))
+                                                ValueListenableBuilder<TextEditingValue>(
+                                                  valueListenable: textController,
+                                                  builder: (context, value, child) {
+                                                    bool hasText = value.text.trim().isNotEmpty;
+                                                    if (!hasText) return const SizedBox.shrink();
+
+                                                    bool canSend = hasText &&
+                                                        !provider.sendingMessage &&
+                                                        !provider.isUploadingFiles &&
+                                                        connectivityProvider.isConnected;
+
+                                                    return GestureDetector(
+                                                      onTap: canSend
+                                                          ? () {
+                                                              HapticFeedback.mediumImpact();
+                                                              String message = textController.text.trim();
+                                                              if (message.isEmpty) return;
+                                                              _sendMessageUtil(message);
+                                                            }
+                                                          : null,
+                                                      child: Container(
+                                                        height: 38,
+                                                        width: 38,
+                                                        decoration: const BoxDecoration(
+                                                          color: Colors.white,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                        child: const Center(
+                                                          child: FaIcon(
+                                                            FontAwesomeIcons.arrowUp,
+                                                            color: Color(0xFF1f1f25),
+                                                            size: 16,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  // LEFT button — Stop (recording) or Plus (idle). Rendered AFTER
+                                  // the inner Row so it sits on top of the pill's shadow.
+                                  if (voiceRecorderProvider.isActive &&
+                                      voiceRecorderProvider.state == VoiceRecorderState.recording)
+                                    Positioned(
+                                      left: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Center(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            HapticFeedback.lightImpact();
+                                            voiceRecorderProvider.processRecording();
+                                          },
                                           child: Container(
-                                            padding: const EdgeInsets.only(left: 14, right: 8, top: 7, bottom: 7),
+                                            height: 48,
+                                            width: 48,
                                             decoration: BoxDecoration(
                                               color: const Color(0xFF1F1F25),
-                                              borderRadius: BorderRadius.circular(32),
+                                              shape: BoxShape.circle,
                                               border: Border.all(color: const Color(0xFF35343B), width: 1),
                                               boxShadow: [
                                                 BoxShadow(
@@ -543,242 +777,71 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                 ),
                                               ],
                                             ),
-                                            child: Row(
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
-                                                Expanded(
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      if (_selectedContext != null && !voiceRecorderProvider.isActive)
-                                                        Padding(
-                                                          padding: const EdgeInsets.only(bottom: 4, top: 4, left: 2),
-                                                          child: Container(
-                                                            decoration: BoxDecoration(
-                                                              color: const Color(0xFF1f1f25),
-                                                              borderRadius: BorderRadius.circular(16),
-                                                            ),
-                                                            padding:
-                                                                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                                            child: Row(
-                                                              mainAxisSize: MainAxisSize.min,
-                                                              children: [
-                                                                const Padding(
-                                                                  padding: EdgeInsets.only(top: 1),
-                                                                  child: Icon(
-                                                                    Icons.subdirectory_arrow_right,
-                                                                    size: 14,
-                                                                    color: Colors.blue,
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(width: 8),
-                                                                Flexible(
-                                                                  child: Text(
-                                                                    _selectedContext!.length > 25
-                                                                        ? '${_selectedContext!.substring(0, 25)}...'
-                                                                        : _selectedContext!,
-                                                                    style: const TextStyle(
-                                                                      color: Colors.blue,
-                                                                      fontSize: 14,
-                                                                      fontWeight: FontWeight.w500,
-                                                                    ),
-                                                                    maxLines: 1,
-                                                                    overflow: TextOverflow.ellipsis,
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(width: 8),
-                                                                GestureDetector(
-                                                                  onTap: () {
-                                                                    setState(() {
-                                                                      _selectedContext = null;
-                                                                    });
-                                                                  },
-                                                                  child: const Icon(Icons.close,
-                                                                      size: 14, color: Colors.blue),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      voiceRecorderProvider.isActive
-                                                          ? VoiceRecorderWidget(
-                                                              onTranscriptReady: (transcript, autoSend) {
-                                                                textController.text = transcript;
-                                                                voiceRecorderProvider.close();
-                                                                context
-                                                                    .read<MessageProvider>()
-                                                                    .setNextMessageOriginIsVoice(true);
-                                                                if (autoSend && transcript.trim().isNotEmpty) {
-                                                                  _sendMessageUtil(transcript.trim());
-                                                                }
-                                                              },
-                                                              onClose: () {
-                                                                voiceRecorderProvider.close();
-                                                              },
-                                                            )
-                                                          : Theme(
-                                                              data: Theme.of(context).copyWith(
-                                                                textSelectionTheme: TextSelectionThemeData(
-                                                                  selectionColor: Colors.grey.withOpacity(0.4),
-                                                                  selectionHandleColor: Colors.white,
-                                                                ),
-                                                              ),
-                                                              child: TextField(
-                                                                enabled: true,
-                                                                controller: textController,
-                                                                focusNode: textFieldFocusNode,
-                                                                obscureText: false,
-                                                                textAlign: TextAlign.start,
-                                                                // y: -0.35 nudges glyphs up. Font line metrics
-                                                                // place the visual baseline below the line box
-                                                                // center, so plain `.center` reads slightly low.
-                                                                textAlignVertical: const TextAlignVertical(y: -0.35),
-                                                                decoration: InputDecoration(
-                                                                  hintText: context.l10n.askAnything,
-                                                                  hintStyle: const TextStyle(
-                                                                      fontSize: 16.0, color: Colors.grey),
-                                                                  focusedBorder: InputBorder.none,
-                                                                  enabledBorder: InputBorder.none,
-                                                                  contentPadding: const EdgeInsets.symmetric(
-                                                                    horizontal: 4,
-                                                                    vertical: 10,
-                                                                  ),
-                                                                  isDense: true,
-                                                                ),
-                                                                minLines: 1,
-                                                                maxLines: 10,
-                                                                keyboardType: TextInputType.multiline,
-                                                                textCapitalization: TextCapitalization.sentences,
-                                                                style: const TextStyle(
-                                                                  fontSize: 16.0,
-                                                                  color: Colors.white,
-                                                                  height: 1.2,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                // Right-side button — stays INSIDE the pill.
-                                                // Send button while recording — transcribes and sends in one tap.
-                                                if (voiceRecorderProvider.isActive)
-                                                  GestureDetector(
-                                                    onTap: voiceRecorderProvider.state == VoiceRecorderState.recording
-                                                        ? () {
-                                                            HapticFeedback.mediumImpact();
-                                                            voiceRecorderProvider.requestAutoSendOnNextTranscript();
-                                                            voiceRecorderProvider.processRecording();
-                                                          }
-                                                        : null,
-                                                    child: Container(
-                                                      height: 38,
-                                                      width: 38,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            voiceRecorderProvider.state == VoiceRecorderState.recording
-                                                                ? Colors.white
-                                                                : const Color(0xFF4A4A4F),
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: Center(
-                                                        child: FaIcon(
-                                                          FontAwesomeIcons.arrowUp,
-                                                          color: voiceRecorderProvider.state ==
-                                                                  VoiceRecorderState.recording
-                                                              ? const Color(0xFF1f1f25)
-                                                              : Colors.grey.shade400,
-                                                          size: 16,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                // Microphone button — round white pill matching the send button.
-                                                if (!voiceRecorderProvider.isActive &&
-                                                    shouldShowVoiceRecorderButton() &&
-                                                    textController.text.isEmpty)
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      HapticFeedback.lightImpact();
-                                                      FocusScope.of(context).unfocus();
-                                                      voiceRecorderProvider.startRecording();
-                                                    },
-                                                    child: Container(
-                                                      height: 38,
-                                                      width: 38,
-                                                      decoration: const BoxDecoration(
-                                                        color: Colors.white,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: const Center(
-                                                        child: FaIcon(
-                                                          FontAwesomeIcons.microphone,
-                                                          color: Color(0xFF1f1f25),
-                                                          size: 16,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                // Send button — only when there's text and not in voice mode
-                                                if (!voiceRecorderProvider.isActive && shouldShowSendButton(provider))
-                                                  ValueListenableBuilder<TextEditingValue>(
-                                                    valueListenable: textController,
-                                                    builder: (context, value, child) {
-                                                      bool hasText = value.text.trim().isNotEmpty;
-                                                      if (!hasText) return const SizedBox.shrink();
-
-                                                      bool canSend = hasText &&
-                                                          !provider.sendingMessage &&
-                                                          !provider.isUploadingFiles &&
-                                                          connectivityProvider.isConnected;
-
-                                                      return GestureDetector(
-                                                        onTap: canSend
-                                                            ? () {
-                                                                HapticFeedback.mediumImpact();
-                                                                String message = textController.text.trim();
-                                                                if (message.isEmpty) return;
-                                                                _sendMessageUtil(message);
-                                                              }
-                                                            : null,
-                                                        child: Container(
-                                                          height: 38,
-                                                          width: 38,
-                                                          decoration: const BoxDecoration(
-                                                            color: Colors.white,
-                                                            shape: BoxShape.circle,
-                                                          ),
-                                                          child: const Center(
-                                                            child: FaIcon(
-                                                              FontAwesomeIcons.arrowUp,
-                                                              color: Color(0xFF1f1f25),
-                                                              size: 16,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                              ],
+                                            child: const Center(
+                                              child: Icon(Icons.stop, color: Colors.white, size: 18),
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    // LEFT button — Stop (recording) or Plus (idle). Rendered AFTER
-                                    // the inner Row so it sits on top of the pill's shadow.
-                                    if (voiceRecorderProvider.isActive &&
-                                        voiceRecorderProvider.state == VoiceRecorderState.recording)
-                                      Positioned(
-                                        left: 0,
-                                        top: 0,
-                                        bottom: 0,
-                                        child: Center(
-                                          child: GestureDetector(
-                                            onTap: () {
+                                      ),
+                                    )
+                                  else if (!voiceRecorderProvider.isActive && shouldShowMenuButton())
+                                    Positioned(
+                                      left: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Center(
+                                        child: PullDownButton(
+                                          itemBuilder: (context) => [
+                                            PullDownMenuItem(
+                                              title: context.l10n.takePhoto,
+                                              iconWidget: const FaIcon(FontAwesomeIcons.camera, size: 16),
+                                              onTap: () {
+                                                HapticFeedback.selectionClick();
+                                                if (mounted) {
+                                                  this.context.read<MessageProvider>().captureImage();
+                                                }
+                                              },
+                                            ),
+                                            PullDownMenuItem(
+                                              title: context.l10n.photoLibrary,
+                                              iconWidget: const FaIcon(FontAwesomeIcons.images, size: 16),
+                                              onTap: () {
+                                                HapticFeedback.selectionClick();
+                                                if (mounted) {
+                                                  this.context.read<MessageProvider>().selectImage();
+                                                }
+                                              },
+                                            ),
+                                            PullDownMenuItem(
+                                              title: context.l10n.chooseFile,
+                                              iconWidget: const FaIcon(FontAwesomeIcons.folder, size: 16),
+                                              onTap: () {
+                                                HapticFeedback.selectionClick();
+                                                if (mounted) {
+                                                  this.context.read<MessageProvider>().selectFile();
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                          position: PullDownMenuPosition.automatic,
+                                          buttonBuilder: (context, showMenu) => GestureDetector(
+                                            onTap: () async {
                                               HapticFeedback.lightImpact();
-                                              voiceRecorderProvider.processRecording();
+                                              if (provider.selectedFiles.length > 3) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(context.l10n.maxFilesLimit),
+                                                    duration: const Duration(seconds: 2),
+                                                  ),
+                                                );
+                                                return;
+                                              }
+                                              if (textFieldFocusNode.hasFocus) {
+                                                FocusScope.of(context).unfocus();
+                                                await Future.delayed(const Duration(milliseconds: 280));
+                                                if (!context.mounted) return;
+                                              }
+                                              showMenu();
                                             },
                                             child: Container(
                                               height: 48,
@@ -807,122 +870,35 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                   ),
                                                 ],
                                               ),
-                                              child: const Center(
-                                                child: Icon(Icons.stop, color: Colors.white, size: 18),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    else if (!voiceRecorderProvider.isActive && shouldShowMenuButton())
-                                      Positioned(
-                                        left: 0,
-                                        top: 0,
-                                        bottom: 0,
-                                        child: Center(
-                                          child: PullDownButton(
-                                            itemBuilder: (context) => [
-                                              PullDownMenuItem(
-                                                title: context.l10n.takePhoto,
-                                                iconWidget: const FaIcon(FontAwesomeIcons.camera, size: 16),
-                                                onTap: () {
-                                                  HapticFeedback.selectionClick();
-                                                  if (mounted) {
-                                                    this.context.read<MessageProvider>().captureImage();
-                                                  }
-                                                },
-                                              ),
-                                              PullDownMenuItem(
-                                                title: context.l10n.photoLibrary,
-                                                iconWidget: const FaIcon(FontAwesomeIcons.images, size: 16),
-                                                onTap: () {
-                                                  HapticFeedback.selectionClick();
-                                                  if (mounted) {
-                                                    this.context.read<MessageProvider>().selectImage();
-                                                  }
-                                                },
-                                              ),
-                                              PullDownMenuItem(
-                                                title: context.l10n.chooseFile,
-                                                iconWidget: const FaIcon(FontAwesomeIcons.folder, size: 16),
-                                                onTap: () {
-                                                  HapticFeedback.selectionClick();
-                                                  if (mounted) {
-                                                    this.context.read<MessageProvider>().selectFile();
-                                                  }
-                                                },
-                                              ),
-                                            ],
-                                            position: PullDownMenuPosition.automatic,
-                                            buttonBuilder: (context, showMenu) => GestureDetector(
-                                              onTap: () async {
-                                                HapticFeedback.lightImpact();
-                                                if (provider.selectedFiles.length > 3) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(context.l10n.maxFilesLimit),
-                                                      duration: const Duration(seconds: 2),
-                                                    ),
-                                                  );
-                                                  return;
-                                                }
-                                                if (textFieldFocusNode.hasFocus) {
-                                                  FocusScope.of(context).unfocus();
-                                                  await Future.delayed(const Duration(milliseconds: 280));
-                                                  if (!context.mounted) return;
-                                                }
-                                                showMenu();
-                                              },
-                                              child: Container(
-                                                height: 48,
-                                                width: 48,
-                                                decoration: BoxDecoration(
-                                                  color: const Color(0xFF1F1F25),
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(color: const Color(0xFF35343B), width: 1),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black.withValues(alpha: 0.65),
-                                                      blurRadius: 60,
-                                                      spreadRadius: 14,
-                                                      offset: const Offset(0, -16),
-                                                    ),
-                                                    BoxShadow(
-                                                      color: Colors.black.withValues(alpha: 0.45),
-                                                      blurRadius: 32,
-                                                      spreadRadius: 6,
-                                                      offset: const Offset(0, -8),
-                                                    ),
-                                                    BoxShadow(
-                                                      color: Colors.black.withValues(alpha: 0.25),
-                                                      blurRadius: 10,
-                                                      offset: const Offset(0, 2),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Center(
-                                                  child: FaIcon(
-                                                    FontAwesomeIcons.plus,
-                                                    color:
-                                                        provider.selectedFiles.length > 3 ? Colors.grey : Colors.white,
-                                                    size: 18,
-                                                  ),
+                                              child: Center(
+                                                child: FaIcon(
+                                                  FontAwesomeIcons.plus,
+                                                  color: provider.selectedFiles.length > 3 ? Colors.grey : Colors.white,
+                                                  size: 18,
                                                 ),
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                  ],
-                                ),
+                                    ),
+                                ],
                               ),
                             ),
-                          ],
-                        );
-                      },
-                    ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
+                SizedBox(height: textFieldFocusNode.hasFocus ? 12 : 14),
+                if (!textFieldFocusNode.hasFocus)
+                  BottomNavBar(
+                    onTabTap: (index, isRepeat) {
+                      context.read<HomeProvider>().setIndex(index);
+                      Navigator.of(context).pop();
+                    },
+                  ),
               ],
             ),
           ),
