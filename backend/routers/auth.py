@@ -5,7 +5,7 @@ import hashlib
 import time
 import jwt
 from typing import Optional
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from cryptography.hazmat.primitives import serialization
 from jwt.algorithms import RSAAlgorithm
 from fastapi import APIRouter, Request, HTTPException, Form
@@ -30,6 +30,47 @@ templates_path = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_path))
 
 
+# Loopback hosts permitted for CLI/native-app OAuth flows per RFC 8252
+# (Native Apps). The mobile app uses ``omi://`` which is allowed separately.
+# Anything else is rejected so an attacker cannot route the auth code to a
+# host they control.
+_LOOPBACK_HOSTNAMES = {"localhost", "127.0.0.1", "::1"}
+_DEFAULT_MOBILE_REDIRECT = "omi://auth/callback"
+
+
+def _validate_redirect_uri(redirect_uri: str) -> None:
+    """Reject everything except the mobile deep link and HTTP loopback URIs.
+
+    Security note: the auth ``code`` (a one-time secret) is delivered to the
+    ``redirect_uri`` the original requester provided. If we accepted arbitrary
+    URLs, a malicious actor who got a user to start a flow could harvest the
+    code at their own host. Restricting to the mobile scheme + loopback
+    addresses is the standard mitigation (RFC 8252 §7).
+    """
+    if not redirect_uri:
+        raise HTTPException(status_code=400, detail="redirect_uri is required")
+
+    if redirect_uri.startswith("omi://"):
+        # Allow any path under the mobile deep-link scheme.
+        return
+
+    parsed = urlparse(redirect_uri)
+    if parsed.scheme != "http":
+        raise HTTPException(
+            status_code=400,
+            detail="redirect_uri must use the omi:// scheme or http loopback (http://localhost:PORT)",
+        )
+
+    hostname = (parsed.hostname or "").strip().lower()
+    if hostname not in _LOOPBACK_HOSTNAMES:
+        raise HTTPException(
+            status_code=400,
+            detail="HTTP redirect_uri must point at loopback (localhost, 127.0.0.1, or ::1)",
+        )
+
+    return
+
+
 @router.get("/authorize")
 async def auth_authorize(
     request: Request,
@@ -43,6 +84,9 @@ async def auth_authorize(
     """
     if provider not in ['google', 'apple']:
         raise HTTPException(status_code=400, detail="Unsupported provider")
+
+    # Strict allowlist on where we'll deliver the auth code post-callback.
+    _validate_redirect_uri(redirect_uri)
 
     # Store session for auth flow
     session_id = str(uuid.uuid4())
@@ -88,14 +132,16 @@ async def auth_callback_google(
     auth_code = str(uuid.uuid4())
     set_auth_code(auth_code, oauth_credentials, 300)
 
-    # Redirect to HTML page that will handle custom scheme redirect
-    # This avoids browser security issues with backend->custom scheme redirects
+    # Redirect to HTML page that will handle the eventual scheme/loopback redirect.
+    # The original ``redirect_uri`` was validated by ``_validate_redirect_uri`` at
+    # ``/authorize`` time and cannot be overridden by the caller here.
     return templates.TemplateResponse(
         "auth_callback.html",
         {
             "request": request,
             "code": auth_code,
             "state": session_data['state'] or '',
+            "redirect_uri": session_data.get('redirect_uri') or _DEFAULT_MOBILE_REDIRECT,
         },
     )
 
@@ -126,14 +172,16 @@ async def auth_callback_apple_post(
     auth_code = str(uuid.uuid4())
     set_auth_code(auth_code, oauth_credentials, 300)
 
-    # Redirect to HTML page that will handle custom scheme redirect
-    # This avoids browser security issues with backend->custom scheme redirects
+    # Redirect to HTML page that will handle the eventual scheme/loopback redirect.
+    # The original ``redirect_uri`` was validated by ``_validate_redirect_uri`` at
+    # ``/authorize`` time and cannot be overridden by the caller here.
     return templates.TemplateResponse(
         "auth_callback.html",
         {
             "request": request,
             "code": auth_code,
             "state": session_data['state'] or '',
+            "redirect_uri": session_data.get('redirect_uri') or _DEFAULT_MOBILE_REDIRECT,
         },
     )
 
