@@ -319,6 +319,16 @@ env:
       secretKeyRef:
         name: dev-omi-backend-secrets
         key: METRICS_SECRET
+  - name: GROQ_API_KEY
+    value: "PLACEHOLDER_GROQ_API_KEY"
+  - name: OPENROUTER_API_KEY
+    value: "PLACEHOLDER_OPENROUTER_API_KEY"
+  - name: RAPID_API_HOST
+    value: "PLACEHOLDER_RAPID_API_HOST"
+  - name: RAPID_API_KEY
+    value: "PLACEHOLDER_RAPID_API_KEY"
+  - name: CONVERSATION_SUMMARIZED_APP_IDS
+    value: "PLACEHOLDER_CONVERSATION_SUMMARIZED_APP_IDS"
 
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
