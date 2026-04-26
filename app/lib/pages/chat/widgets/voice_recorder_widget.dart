@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -54,7 +52,10 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> with SingleTi
           case VoiceRecorderState.recording:
             return SizedBox(
               height: 44,
-              child: CustomPaint(painter: AudioWavePainter(levels: provider.audioLevels)),
+              child: CustomPaint(
+                painter: AudioWavePainter(levels: provider.audioLevels),
+                child: const SizedBox.expand(),
+              ),
             );
 
           case VoiceRecorderState.transcribing:
@@ -92,7 +93,10 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> with SingleTi
                   Expanded(
                     child: SizedBox(
                       height: 32,
-                      child: CustomPaint(painter: AudioWavePainter(levels: provider.audioLevels)),
+                      child: CustomPaint(
+                        painter: AudioWavePainter(levels: provider.audioLevels),
+                        child: const SizedBox.expand(),
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -121,30 +125,32 @@ class AudioWavePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (levels.isEmpty) return;
+    if (levels.isEmpty || size.width <= 0 || size.height <= 0) return;
 
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.7)
-      ..strokeWidth = 2.5
+      ..color = Colors.white.withValues(alpha: 0.85)
+      ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
     final width = size.width;
     final height = size.height;
-    final barWidth = width / levels.length / 2;
+    final centerY = height / 2;
+    // Even spacing across the full width regardless of level count.
+    final spacing = width / levels.length;
+    // Min bar = a small dot so silence still reads as "active".
+    const minBarHeight = 3.0;
+    final maxBarHeight = height * 0.92;
 
     for (int i = 0; i < levels.length; i++) {
-      final x = i * (barWidth * 2) + barWidth;
+      final x = spacing * (i + 0.5);
+      final level = levels[i].clamp(0.0, 1.0);
+      final barHeight = (minBarHeight + level * (maxBarHeight - minBarHeight)).clamp(minBarHeight, maxBarHeight);
 
-      final level = levels[i];
-      // Use a steeper curve so quiet sections stay short and loud sections
-      // pop, matching the visual rhythm in the reference design.
-      final scaled = math.pow(level, 1.4).toDouble();
-      final barHeight = (scaled * height * 0.85).clamp(2.0, height);
-
-      final topY = height / 2 - barHeight / 2;
-      final bottomY = height / 2 + barHeight / 2;
-
-      canvas.drawLine(Offset(x, topY), Offset(x, bottomY), paint);
+      canvas.drawLine(
+        Offset(x, centerY - barHeight / 2),
+        Offset(x, centerY + barHeight / 2),
+        paint,
+      );
     }
   }
 
@@ -152,7 +158,7 @@ class AudioWavePainter extends CustomPainter {
   bool shouldRepaint(covariant AudioWavePainter oldDelegate) {
     if (levels.length != oldDelegate.levels.length) return true;
     for (int i = 0; i < levels.length; i++) {
-      if ((levels[i] - oldDelegate.levels[i]).abs() > 0.01) return true;
+      if ((levels[i] - oldDelegate.levels[i]).abs() > 0.005) return true;
     }
     return false;
   }
