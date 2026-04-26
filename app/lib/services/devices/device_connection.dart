@@ -68,7 +68,7 @@ class DeviceConnectionFactory {
       case TransportKind.bluetooth:
         final deviceId = locator.bluetoothId;
         if (deviceId == null) return null;
-        final needsBond = device.type == DeviceType.limitless;
+        final needsBond = device.type == DeviceType.limitless || device.type == DeviceType.omi;
         transport = NativeBleTransport(deviceId, requiresBond: needsBond);
         break;
 
