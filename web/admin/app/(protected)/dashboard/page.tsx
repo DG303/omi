@@ -18,6 +18,7 @@ import {
   MousePointerClick,
   Percent,
   AlertTriangle,
+  Smartphone,
 } from "lucide-react";
 import useSWR from "swr";
 import { useAuthToken, authenticatedFetcher } from "@/hooks/useAuthToken";
@@ -1908,6 +1909,40 @@ export default function AnalyticsPage() {
 
   const macosKpis = useMemo<ChartItem[]>(() => [
     {
+      id: "kpi-total-users-macos",
+      title: "Total Users (macOS)",
+      variant: "kpi",
+      icon: <Monitor className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">
+            {profitability?.summary.totalUsersDesktop != null
+              ? profitability.summary.totalUsersDesktop.toLocaleString()
+              : "--"}
+          </div>
+          <p className="text-xs text-muted-foreground">All-time signups</p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-total-users-mobile",
+      title: "Total Users (Mobile)",
+      variant: "kpi",
+      icon: <Smartphone className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">
+            {profitability?.summary.totalUsersMobile != null
+              ? profitability.summary.totalUsersMobile.toLocaleString()
+              : "--"}
+          </div>
+          <p className="text-xs text-muted-foreground">All-time signups</p>
+        </div>
+      ),
+    },
+    {
       id: "kpi-dau", title: "DAU", variant: "kpi", icon: <Activity className="h-3.5 w-3.5" />,
       initialLayout: { cols: 2, rows: 1 },
       render: () => (
@@ -1967,7 +2002,7 @@ export default function AnalyticsPage() {
         </div>
       ),
     },
-  ], [vm]);
+  ], [vm, profitability]);
 
   const notificationsHeader: ChartItem = {
     id: "header-notifications",
