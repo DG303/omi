@@ -1,5 +1,7 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Stop creating up to 5 tasks (and notifications) on every app launch \u2014 task promotion now happens at the natural cadence (when you complete a task, or every 5 minutes at most one at a time)"
+  ],
   "releases": [
     {
       "version": "0.11.366",
