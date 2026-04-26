@@ -154,12 +154,13 @@ final class APIClientRoutingTests: XCTestCase {
         XCTAssertEqual(url, "https://desktop-backend-hhibjajaja-uc.a.run.app/")
     }
 
-    func testDevelopmentBackendSelectionOnlyAppliesToProductionBundleBetaChannel() {
-        XCTAssertTrue(DesktopBackendEnvironment.shouldUseDevelopmentBackends(
+    func testDevelopmentBackendRoutingDisabled() {
+        // Beta-to-dev routing disabled — see DesktopBackendEnvironment for context.
+        XCTAssertFalse(DesktopBackendEnvironment.shouldUseDevelopmentBackends(
             bundleIdentifier: "com.omi.computer-macos",
             updateChannel: "beta"
         ))
-        XCTAssertTrue(DesktopBackendEnvironment.shouldUseDevelopmentBackends(
+        XCTAssertFalse(DesktopBackendEnvironment.shouldUseDevelopmentBackends(
             bundleIdentifier: "com.omi.computer-macos",
             updateChannel: "staging"
         ))
