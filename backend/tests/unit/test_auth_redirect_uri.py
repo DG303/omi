@@ -107,6 +107,10 @@ def test_validator_accepts_every_known_client_shape(uri: str) -> None:
         "://x",
         "1omi://auth/callback",  # scheme must start with a letter
         "omi$://auth/callback",  # ``$`` not allowed in scheme
+        # Non-ASCII letters: RFC 3986 forbids these in scheme names. Python's
+        # ``str.isalpha`` would accept them — we explicitly use ASCII-only.
+        "ômi://auth/callback",
+        "омi://auth/callback",  # cyrillic 'о'
     ],
 )
 def test_validator_rejects_dangerous_or_malformed_uris(uri: str) -> None:
