@@ -8,10 +8,13 @@ import 'package:provider/provider.dart';
 import 'package:omi/backend/http/api/users.dart';
 import 'package:omi/backend/schema/conversation.dart';
 import 'package:omi/backend/schema/daily_summary.dart';
+import 'package:omi/pages/conversation_capturing/page.dart';
 import 'package:omi/pages/conversations/widgets/conversation_list_item.dart';
 import 'package:omi/pages/conversations/widgets/processing_capture.dart';
 import 'package:omi/pages/conversations/widgets/today_tasks_widget.dart';
 import 'package:omi/pages/memories/widgets/memory_graph_page.dart';
+import 'package:omi/pages/onboarding/device_selection.dart';
+import 'package:omi/pages/phone_calls/phone_calls_page.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
 import 'package:omi/providers/conversation_provider.dart';
 import 'package:omi/providers/home_provider.dart';
@@ -102,21 +105,29 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
                 SliverToBoxAdapter(child: _buildDailyRecapsPreview(context)),
               ],
 
-              // Conversations section
-              SliverToBoxAdapter(
-                child: _buildSectionHeader(
-                  context,
-                  context.l10n.conversations,
-                  onViewAll: () {
-                    // Reset the daily-summaries flag so the conversations tab
-                    // actually shows conversations (it persists from Daily
-                    // Recaps' View All otherwise).
-                    if (convoProvider.showDailySummaries) convoProvider.toggleDailySummaries();
-                    context.read<HomeProvider>().setIndex(1);
-                  },
+              // Conversations section.
+              //
+              // If the user has fewer than 3 non-discarded conversations,
+              // we replace the recent-conversations preview with three
+              // big "get started" options so the home page doesn't feel
+              // empty for new users.
+              if (_nonDiscardedConversationCount(convoProvider) >= 3) ...[
+                SliverToBoxAdapter(
+                  child: _buildSectionHeader(
+                    context,
+                    context.l10n.conversations,
+                    onViewAll: () {
+                      // Reset the daily-summaries flag so the conversations tab
+                      // actually shows conversations (it persists from Daily
+                      // Recaps' View All otherwise).
+                      if (convoProvider.showDailySummaries) convoProvider.toggleDailySummaries();
+                      context.read<HomeProvider>().setIndex(1);
+                    },
+                  ),
                 ),
-              ),
-              _buildConversationsPreview(convoProvider),
+                _buildConversationsPreview(convoProvider),
+              ] else
+                SliverToBoxAdapter(child: _buildGetStartedOptions(context)),
 
               // Mind Map section
               SliverToBoxAdapter(
@@ -137,6 +148,116 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
           ),
         );
       },
+    );
+  }
+
+  int _nonDiscardedConversationCount(ConversationProvider provider) {
+    return provider.conversations.where((c) => !c.discarded).length;
+  }
+
+  Widget _buildGetStartedOptions(BuildContext context) {
+    Widget option({
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+    }) {
+      return GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF7B5CFF), Color(0xFF5733E0)],
+                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.deepPurple.withValues(alpha: 0.45),
+                    blurRadius: 28,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 32),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: 96,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  height: 1.2,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final phoneOption = option(
+      icon: Icons.mic_rounded,
+      label: 'Record with Phone',
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ConversationCapturingPage()),
+        );
+      },
+    );
+    final callOption = option(
+      icon: Icons.phone_in_talk_rounded,
+      label: 'Record Call',
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PhoneCallsPage()),
+        );
+      },
+    );
+    final deviceOption = option(
+      icon: Icons.bluetooth_searching_rounded,
+      label: 'Connect Device',
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const DeviceSelectionPage()),
+        );
+      },
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 28, 16, 24),
+      child: Column(
+        children: [
+          // Top of the triangle: Record with Phone (the simplest path).
+          phoneOption,
+          const SizedBox(height: 22),
+          // Bottom of the triangle: the other two side by side.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              callOption,
+              deviceOption,
+            ],
+          ),
+        ],
+      ),
     );
   }
 
