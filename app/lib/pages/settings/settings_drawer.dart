@@ -746,10 +746,10 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
       height: MediaQuery.of(context).size.height * 0.9,
       decoration: const BoxDecoration(
         color: Color(0xFF000000),
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
       ),
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
         child: Stack(
           children: [
             // Top-anchored purple glow — fixed in the upper region of the
@@ -759,7 +759,7 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
               left: 0,
               right: 0,
               top: 0,
-              height: 220,
+              height: 440,
               child: IgnorePointer(
                 child: DecoratedBox(
                   decoration: const BoxDecoration(
