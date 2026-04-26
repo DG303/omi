@@ -530,7 +530,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                       ),
                                     ),
                                   const SizedBox(width: 8),
-                                  // CENTER pill — text field or waveform
+                                  // CENTER pill — text field/waveform + right-side button stays inside.
                                   Expanded(
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -538,10 +538,14 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         color: const Color(0xFF2A2A2F),
                                         borderRadius: BorderRadius.circular(32),
                                       ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
                                           if (_selectedContext != null && !voiceRecorderProvider.isActive)
                                             Padding(
                                               padding: const EdgeInsets.only(bottom: 4, top: 4, left: 2),
@@ -640,98 +644,101 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                     ),
                                                   ),
                                                 ),
+                                              ],
+                                            ),
+                                          ),
+                                          // Right-side button — stays INSIDE the pill.
+                                          // Send button while recording — transcribes and sends in one tap.
+                                          if (voiceRecorderProvider.isActive)
+                                            GestureDetector(
+                                              onTap: () {
+                                                HapticFeedback.mediumImpact();
+                                                if (voiceRecorderProvider.state == VoiceRecorderState.recording) {
+                                                  voiceRecorderProvider.requestAutoSendOnNextTranscript();
+                                                  voiceRecorderProvider.processRecording();
+                                                }
+                                              },
+                                              child: Container(
+                                                height: 44,
+                                                width: 44,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Center(
+                                                  child: FaIcon(
+                                                    FontAwesomeIcons.arrowUp,
+                                                    color: Color(0xFF1f1f25),
+                                                    size: 18,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          // Microphone button (only when not recording and field is empty)
+                                          if (!voiceRecorderProvider.isActive &&
+                                              shouldShowVoiceRecorderButton() &&
+                                              textController.text.isEmpty)
+                                            GestureDetector(
+                                              onTap: () {
+                                                HapticFeedback.lightImpact();
+                                                FocusScope.of(context).unfocus();
+                                                voiceRecorderProvider.startRecording();
+                                              },
+                                              child: Container(
+                                                height: 44,
+                                                width: 44,
+                                                alignment: Alignment.center,
+                                                child: const FaIcon(
+                                                  FontAwesomeIcons.microphone,
+                                                  color: Colors.grey,
+                                                  size: 20,
+                                                ),
+                                              ),
+                                            ),
+                                          // Send button — only when there's text and not in voice mode
+                                          if (!voiceRecorderProvider.isActive && shouldShowSendButton(provider))
+                                            ValueListenableBuilder<TextEditingValue>(
+                                              valueListenable: textController,
+                                              builder: (context, value, child) {
+                                                bool hasText = value.text.trim().isNotEmpty;
+                                                if (!hasText) return const SizedBox.shrink();
+
+                                                bool canSend = hasText &&
+                                                    !provider.sendingMessage &&
+                                                    !provider.isUploadingFiles &&
+                                                    connectivityProvider.isConnected;
+
+                                                return GestureDetector(
+                                                  onTap: canSend
+                                                      ? () {
+                                                          HapticFeedback.mediumImpact();
+                                                          String message = textController.text.trim();
+                                                          if (message.isEmpty) return;
+                                                          _sendMessageUtil(message);
+                                                        }
+                                                      : null,
+                                                  child: Container(
+                                                    height: 44,
+                                                    width: 44,
+                                                    decoration: const BoxDecoration(
+                                                      color: Colors.white,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: const Center(
+                                                      child: FaIcon(
+                                                        FontAwesomeIcons.arrowUp,
+                                                        color: Color(0xFF1f1f25),
+                                                        size: 18,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  // Send button while recording — transcribes and sends in one tap.
-                                  if (voiceRecorderProvider.isActive)
-                                      GestureDetector(
-                                        onTap: () {
-                                          HapticFeedback.mediumImpact();
-                                          if (voiceRecorderProvider.state == VoiceRecorderState.recording) {
-                                            voiceRecorderProvider.requestAutoSendOnNextTranscript();
-                                            voiceRecorderProvider.processRecording();
-                                          }
-                                        },
-                                        child: Container(
-                                          height: 44,
-                                          width: 44,
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Center(
-                                            child: FaIcon(
-                                              FontAwesomeIcons.arrowUp,
-                                              color: Color(0xFF1f1f25),
-                                              size: 18,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    // Microphone button (only when not recording and field is empty)
-                                    if (!voiceRecorderProvider.isActive &&
-                                        shouldShowVoiceRecorderButton() &&
-                                        textController.text.isEmpty)
-                                      GestureDetector(
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          FocusScope.of(context).unfocus();
-                                          voiceRecorderProvider.startRecording();
-                                        },
-                                        child: Container(
-                                          height: 44,
-                                          width: 44,
-                                          alignment: Alignment.center,
-                                          child: const FaIcon(
-                                            FontAwesomeIcons.microphone,
-                                            color: Colors.grey,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ),
-                                    // Send button — only when there's text and not in voice mode
-                                    if (!voiceRecorderProvider.isActive && shouldShowSendButton(provider))
-                                      ValueListenableBuilder<TextEditingValue>(
-                                        valueListenable: textController,
-                                        builder: (context, value, child) {
-                                          bool hasText = value.text.trim().isNotEmpty;
-                                          if (!hasText) return const SizedBox.shrink();
-
-                                          bool canSend = hasText &&
-                                              !provider.sendingMessage &&
-                                              !provider.isUploadingFiles &&
-                                              connectivityProvider.isConnected;
-
-                                          return GestureDetector(
-                                            onTap: canSend
-                                                ? () {
-                                                    HapticFeedback.mediumImpact();
-                                                    String message = textController.text.trim();
-                                                    if (message.isEmpty) return;
-                                                    _sendMessageUtil(message);
-                                                  }
-                                                : null,
-                                            child: Container(
-                                              height: 44,
-                                              width: 44,
-                                              decoration: const BoxDecoration(
-                                                color: Colors.white,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: const Center(
-                                                child: FaIcon(
-                                                  FontAwesomeIcons.arrowUp,
-                                                  color: Color(0xFF1f1f25),
-                                                  size: 18,
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
                                 ],
                               ),
                             ),
