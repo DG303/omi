@@ -722,7 +722,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                 height: 42,
                 margin: const EdgeInsets.only(right: 6),
                 decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: const Icon(FontAwesomeIcons.microphone, size: 15, color: Color(0xFF1F1F25)),
+                child: const Icon(FontAwesomeIcons.microphone, size: 15, color: Colors.white),
               ),
             ),
           ],
