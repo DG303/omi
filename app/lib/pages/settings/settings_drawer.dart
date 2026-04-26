@@ -745,8 +745,35 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
         color: Color(0xFF000000),
         borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
       ),
-      child: Column(
-        children: [
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+        child: Stack(
+          children: [
+            // Bottom purple glow — sits behind the content, fades up into black.
+            Positioned(
+              left: -60,
+              right: -60,
+              bottom: -180,
+              height: 360,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.center,
+                      radius: 0.55,
+                      colors: [
+                        const Color(0xFF8E5CFF).withValues(alpha: 0.45),
+                        const Color(0xFF8E5CFF).withValues(alpha: 0.18),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.45, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Column(
+              children: [
           // Handle bar
           Container(
             margin: const EdgeInsets.only(top: 8),
@@ -864,6 +891,9 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
             ),
           ),
         ],
+      ),
+          ],
+        ),
       ),
     );
   }
