@@ -14,21 +14,24 @@ export const GRID_GAP = 16; // px — matches Tailwind gap-4
 
 const GHOST_TRAILING_ROWS = 3;
 
-export type ColSpan = 3 | 4 | 6 | 8 | 9 | 12;
-const COL_VALUES: ColSpan[] = [3, 4, 6, 8, 9, 12];
-const MIN_ROWS = 2;
-const MAX_ROWS = 8;
+export type ColSpan = 2 | 3 | 4 | 6 | 8 | 9 | 12;
+const COL_VALUES: ColSpan[] = [2, 3, 4, 6, 8, 9, 12];
+const MIN_ROWS = 1;
+const MAX_ROWS = 12;
 
 export interface ChartLayout {
   cols: ColSpan;
   rows: number;
 }
 
+export type ChartVariant = "card" | "header" | "kpi";
+
 export interface ChartItem {
   id: string;
   title: string;
   subtitle?: string;
   icon?: ReactNode;
+  variant?: ChartVariant;
   initialLayout?: Partial<ChartLayout>;
   render: (layout: ChartLayout) => ReactNode;
 }
@@ -209,6 +212,99 @@ function ChartCard({
   };
 
   const pixelHeight = layout.rows * GRID_ROW_HEIGHT + (layout.rows - 1) * GRID_GAP;
+  const variant: ChartVariant = item.variant ?? "card";
+
+  const moveHandle = (
+    <button
+      type="button"
+      draggable
+      aria-label={`Move ${item.title}`}
+      title="Drag to move"
+      className="flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground active:cursor-grabbing"
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", item.id);
+        onDragStart(item.id);
+      }}
+      onDragEnd={onDragEnd}
+    >
+      <Move className="h-3.5 w-3.5" />
+    </button>
+  );
+
+  const resizeHandle = (
+    <button
+      type="button"
+      aria-label={`Resize ${item.title}`}
+      title="Drag to resize"
+      className="absolute bottom-1.5 right-1.5 flex h-5 w-5 cursor-nwse-resize items-center justify-center rounded-sm bg-background/80 text-muted-foreground opacity-60 ring-1 ring-border/60 backdrop-blur hover:opacity-100"
+      onPointerDown={startResize}
+      onPointerMove={updateResize}
+      onPointerUp={endResize}
+      onPointerCancel={endResize}
+    >
+      <GripVertical className="h-3 w-3 rotate-45" />
+    </button>
+  );
+
+  const sharedStyle = {
+    gridColumn: `span ${layout.cols} / span ${layout.cols}`,
+    gridRow: `span ${layout.rows} / span ${layout.rows}`,
+    minHeight: pixelHeight,
+  } as const;
+
+  if (variant === "header") {
+    return (
+      <div
+        ref={cardRef}
+        className={cn(
+          "group relative flex min-w-0 select-none items-end gap-2",
+          dragging && "opacity-50",
+          interacting && !dragging && "ring-1 ring-primary/30 rounded-md",
+        )}
+        style={sharedStyle}
+        onDragOver={onDragOverCard}
+        onDrop={() => onDropOnCard(item.id)}
+      >
+        <div className="absolute left-1 top-1 opacity-0 transition-opacity group-hover:opacity-100">
+          {moveHandle}
+        </div>
+        <div className="min-w-0 flex-1 pl-7">
+          <h2 className="truncate text-2xl font-bold tracking-tight">{item.title}</h2>
+          {item.subtitle && (
+            <p className="line-clamp-2 text-sm text-muted-foreground">{item.subtitle}</p>
+          )}
+        </div>
+        {resizeHandle}
+      </div>
+    );
+  }
+
+  if (variant === "kpi") {
+    return (
+      <Card
+        ref={cardRef}
+        className={cn(
+          "group relative flex min-w-0 select-none flex-col gap-1 p-3 transition-shadow",
+          dragging && "opacity-50 ring-2 ring-primary/40",
+          interacting && !dragging && "ring-1 ring-primary/30",
+        )}
+        style={sharedStyle}
+        onDragOver={onDragOverCard}
+        onDrop={() => onDropOnCard(item.id)}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1">
+            <div className="opacity-0 transition-opacity group-hover:opacity-100">{moveHandle}</div>
+            <span className="truncate text-xs font-medium text-muted-foreground">{item.title}</span>
+          </div>
+          {item.icon && <span className="shrink-0 text-muted-foreground">{item.icon}</span>}
+        </div>
+        <div className="min-h-0 min-w-0 flex-1">{item.render(layout)}</div>
+        {resizeHandle}
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -218,31 +314,13 @@ function ChartCard({
         dragging && "opacity-50 ring-2 ring-primary/40",
         interacting && !dragging && "ring-1 ring-primary/30",
       )}
-      style={{
-        gridColumn: `span ${layout.cols} / span ${layout.cols}`,
-        gridRow: `span ${layout.rows} / span ${layout.rows}`,
-        minHeight: pixelHeight,
-      }}
+      style={sharedStyle}
       onDragOver={onDragOverCard}
       onDrop={() => onDropOnCard(item.id)}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex items-center gap-2">
-          <button
-            type="button"
-            draggable
-            aria-label={`Move ${item.title}`}
-            title="Drag to move"
-            className="flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground active:cursor-grabbing"
-            onDragStart={(e) => {
-              e.dataTransfer.effectAllowed = "move";
-              e.dataTransfer.setData("text/plain", item.id);
-              onDragStart(item.id);
-            }}
-            onDragEnd={onDragEnd}
-          >
-            <Move className="h-3.5 w-3.5" />
-          </button>
+          {moveHandle}
           {item.icon && <span className="shrink-0 text-muted-foreground">{item.icon}</span>}
           <div className="min-w-0">
             <h3 className="truncate text-sm font-semibold tracking-tight">{item.title}</h3>
@@ -255,18 +333,7 @@ function ChartCard({
 
       <div className="min-h-0 min-w-0 flex-1">{item.render(layout)}</div>
 
-      <button
-        type="button"
-        aria-label={`Resize ${item.title}`}
-        title="Drag to resize"
-        className="absolute bottom-1.5 right-1.5 flex h-5 w-5 cursor-nwse-resize items-center justify-center rounded-sm bg-background/80 text-muted-foreground opacity-60 ring-1 ring-border/60 backdrop-blur hover:opacity-100"
-        onPointerDown={startResize}
-        onPointerMove={updateResize}
-        onPointerUp={endResize}
-        onPointerCancel={endResize}
-      >
-        <GripVertical className="h-3 w-3 rotate-45" />
-      </button>
+      {resizeHandle}
     </Card>
   );
 }
