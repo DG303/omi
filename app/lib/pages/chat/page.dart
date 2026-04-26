@@ -539,7 +539,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         borderRadius: BorderRadius.circular(32),
                                       ),
                                       child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
                                           Expanded(
                                             child: Column(
