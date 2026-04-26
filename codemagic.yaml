@@ -1875,7 +1875,6 @@ workflows:
         BUNDLE_ID: "com.omi.computer-macos"
         BUILD_DIR: "build"
         GITHUB_REPO: "BasedHardware/omi"
-        DESKTOP_BACKEND_URL: "https://desktop-backend-hhibjajaja-uc.a.run.app"
         OMI_DESKTOP_API_URL: "https://desktop-backend-hhibjajaja-uc.a.run.app/"
         OMI_PYTHON_API_URL: "https://api.omi.me"
         GCP_PROJECT: "based-hardware"
@@ -2638,7 +2637,7 @@ workflows:
             -H "Content-Type: application/json" \
             -H "X-Release-Secret: $RELEASE_SECRET" \
             -d "$RELEASE_JSON" \
-            "$DESKTOP_BACKEND_URL/updates/releases")
+            "$OMI_DESKTOP_API_URL/updates/releases")
 
           HTTP_CODE=$(echo "$HTTP_RESPONSE" | tail -n1)
           if [ "$HTTP_CODE" = "201" ]; then
