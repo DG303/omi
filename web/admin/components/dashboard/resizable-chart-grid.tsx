@@ -3,8 +3,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent, PointerEvent, ReactNode } from "react";
 import { Card } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { GripVertical, Move } from "lucide-react";
+import { GripVertical, Move, X, RotateCcw } from "lucide-react";
 
 // 12-column grid with fixed row height so both axes snap to tiles,
 // giving the layout PostHog/Mixpanel-style rectangle behavior.
@@ -33,6 +43,9 @@ export interface ChartItem {
   icon?: ReactNode;
   variant?: ChartVariant;
   initialLayout?: Partial<ChartLayout>;
+  // Defaults to true. Set false on widgets that must always be visible
+  // (e.g. critical KPIs); the X / delete affordance is hidden for those.
+  removable?: boolean;
   render: (layout: ChartLayout) => ReactNode;
 }
 
@@ -45,6 +58,7 @@ interface GridProps {
 interface PersistedLayout {
   order: string[];
   layouts: Record<string, ChartLayout>;
+  hidden?: string[];
 }
 
 const DEFAULT_LAYOUT: ChartLayout = { cols: 3, rows: 3 };
@@ -145,6 +159,7 @@ function ChartCard({
   onDragOverCard,
   onDropOnCard,
   onDragEnd,
+  onRequestRemove,
 }: {
   item: ChartItem;
   layout: ChartLayout;
@@ -156,6 +171,7 @@ function ChartCard({
   onDragOverCard: (e: DragEvent<HTMLElement>) => void;
   onDropOnCard: (id: string) => void;
   onDragEnd: () => void;
+  onRequestRemove: (id: string, title: string) => void;
 }) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const resizeRef = useRef<{
@@ -247,6 +263,22 @@ function ChartCard({
     </button>
   );
 
+  const removable = item.removable !== false;
+  const removeButton = removable ? (
+    <button
+      type="button"
+      aria-label={`Remove ${item.title}`}
+      title="Remove widget"
+      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+      onClick={(e) => {
+        e.stopPropagation();
+        onRequestRemove(item.id, item.title);
+      }}
+    >
+      <X className="h-3.5 w-3.5" />
+    </button>
+  ) : null;
+
   const sharedStyle = {
     gridColumn: `span ${layout.cols} / span ${layout.cols}`,
     gridRow: `span ${layout.rows} / span ${layout.rows}`,
@@ -266,10 +298,11 @@ function ChartCard({
         onDragOver={onDragOverCard}
         onDrop={() => onDropOnCard(item.id)}
       >
-        <div className="absolute left-1 top-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute left-1 top-1 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           {moveHandle}
+          {removeButton}
         </div>
-        <div className="min-w-0 flex-1 pl-7">
+        <div className="min-w-0 flex-1 pl-14">
           <h2 className="truncate text-2xl font-bold tracking-tight">{item.title}</h2>
           {item.subtitle && (
             <p className="line-clamp-2 text-sm text-muted-foreground">{item.subtitle}</p>
@@ -298,7 +331,10 @@ function ChartCard({
             <div className="opacity-0 transition-opacity group-hover:opacity-100">{moveHandle}</div>
             <span className="truncate text-xs font-medium text-muted-foreground">{item.title}</span>
           </div>
-          {item.icon && <span className="shrink-0 text-muted-foreground">{item.icon}</span>}
+          <div className="flex items-center gap-1">
+            {item.icon && <span className="shrink-0 text-muted-foreground">{item.icon}</span>}
+            <div className="opacity-0 transition-opacity group-hover:opacity-100">{removeButton}</div>
+          </div>
         </div>
         <div className="min-h-0 min-w-0 flex-1">{item.render(layout)}</div>
         {resizeHandle}
@@ -329,6 +365,7 @@ function ChartCard({
             )}
           </div>
         </div>
+        {removeButton}
       </div>
 
       <div className="min-h-0 min-w-0 flex-1">{item.render(layout)}</div>
@@ -346,6 +383,8 @@ export function ResizableChartGrid({ storageKey, items, className }: GridProps) 
   const [layouts, setLayouts] = useState<Record<string, ChartLayout>>(() =>
     Object.fromEntries(items.map((i) => [i.id, defaultLayoutFor(i)])),
   );
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [pendingRemove, setPendingRemove] = useState<{ id: string; title: string } | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [interactingCount, setInteractingCount] = useState(0);
@@ -361,17 +400,24 @@ export function ResizableChartGrid({ storageKey, items, className }: GridProps) 
       }
       return next;
     });
+    if (Array.isArray(stored?.hidden)) {
+      const validIds = new Set(itemIds);
+      setHidden(new Set(stored!.hidden!.filter((id) => validIds.has(id))));
+    }
     setHydrated(true);
   }, [itemIds, items, storageKey]);
 
   useEffect(() => {
     if (!hydrated) return;
     try {
-      localStorage.setItem(storageKey, JSON.stringify({ order, layouts }));
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({ order, layouts, hidden: Array.from(hidden) }),
+      );
     } catch {
       // localStorage may be unavailable; in-session state still works.
     }
-  }, [hydrated, layouts, order, storageKey]);
+  }, [hydrated, layouts, order, hidden, storageKey]);
 
   const updateLayout = useCallback((id: string, next: ChartLayout) => {
     setLayouts((cur) => ({ ...cur, [id]: next }));
@@ -386,9 +432,27 @@ export function ResizableChartGrid({ storageKey, items, className }: GridProps) 
     setInteractingCount((c) => Math.max(0, c + (active ? 1 : -1)));
   }, []);
 
+  const requestRemove = useCallback((id: string, title: string) => {
+    setPendingRemove({ id, title });
+  }, []);
+
+  const confirmRemove = useCallback(() => {
+    if (!pendingRemove) return;
+    setHidden((cur) => {
+      const next = new Set(cur);
+      next.add(pendingRemove.id);
+      return next;
+    });
+    setPendingRemove(null);
+  }, [pendingRemove]);
+
+  const restoreAll = useCallback(() => {
+    setHidden(new Set());
+  }, []);
+
   const ordered = order
     .map((id) => itemMap.get(id))
-    .filter((i): i is ChartItem => Boolean(i));
+    .filter((i): i is ChartItem => Boolean(i) && !hidden.has((i as ChartItem).id));
 
   const rowsUsed = computeRowsUsed(ordered, layouts);
   const ghostRows = rowsUsed + GHOST_TRAILING_ROWS;
@@ -402,45 +466,90 @@ export function ResizableChartGrid({ storageKey, items, className }: GridProps) 
   } as const;
 
   return (
-    <div className={cn("relative", className)}>
-      {/* Ghost lattice — faint tiles showing where charts can snap */}
-      <div aria-hidden className="pointer-events-none absolute inset-0" style={containerStyle}>
-        {Array.from({ length: ghostRows * GRID_COLS }).map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              "rounded-md border border-dashed transition-colors",
-              interacting
-                ? "border-primary/30 bg-primary/5"
-                : "border-border/40 bg-muted/20",
-            )}
-          />
-        ))}
+    <div className={cn("relative space-y-2", className)}>
+      {hidden.size > 0 && (
+        <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+          <span>
+            {hidden.size} widget{hidden.size === 1 ? "" : "s"} hidden
+          </span>
+          <button
+            type="button"
+            onClick={restoreAll}
+            className="inline-flex items-center gap-1 rounded-md border border-input bg-background px-2 py-1 font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+          >
+            <RotateCcw className="h-3 w-3" /> Restore all
+          </button>
+        </div>
+      )}
+
+      <div className="relative">
+        {/* Ghost lattice — faint tiles showing where charts can snap */}
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={containerStyle}>
+          {Array.from({ length: ghostRows * GRID_COLS }).map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "rounded-md border border-dashed transition-colors",
+                interacting
+                  ? "border-primary/30 bg-primary/5"
+                  : "border-border/40 bg-muted/20",
+              )}
+            />
+          ))}
+        </div>
+
+        {/* Real chart cards */}
+        <div className="relative" style={containerStyle}>
+          {ordered.map((item) => (
+            <ChartCard
+              key={item.id}
+              item={item}
+              layout={layouts[item.id] ?? defaultLayoutFor(item)}
+              dragging={draggingId === item.id}
+              interacting={interacting}
+              onLayoutChange={(l) => updateLayout(item.id, l)}
+              onInteractionChange={handleInteraction}
+              onDragStart={setDraggingId}
+              onDragOverCard={(e) => {
+                if (draggingId) {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                }
+              }}
+              onDropOnCard={handleDrop}
+              onDragEnd={() => setDraggingId(null)}
+              onRequestRemove={requestRemove}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Real chart cards */}
-      <div className="relative" style={containerStyle}>
-        {ordered.map((item) => (
-          <ChartCard
-            key={item.id}
-            item={item}
-            layout={layouts[item.id] ?? defaultLayoutFor(item)}
-            dragging={draggingId === item.id}
-            interacting={interacting}
-            onLayoutChange={(l) => updateLayout(item.id, l)}
-            onInteractionChange={handleInteraction}
-            onDragStart={setDraggingId}
-            onDragOverCard={(e) => {
-              if (draggingId) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = "move";
-              }
-            }}
-            onDropOnCard={handleDrop}
-            onDragEnd={() => setDraggingId(null)}
-          />
-        ))}
-      </div>
+      <AlertDialog
+        open={pendingRemove !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemove(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove widget?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingRemove
+                ? `"${pendingRemove.title}" will be hidden from this dashboard. You can restore it from the "Restore all" button at the top of the grid.`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemove}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
