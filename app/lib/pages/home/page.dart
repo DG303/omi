@@ -11,6 +11,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 import 'package:upgrader/upgrader.dart';
 
 import 'package:omi/backend/http/api/agents.dart';
@@ -36,7 +37,8 @@ import 'package:omi/pages/phone_calls/active_call_banner.dart';
 import 'package:omi/providers/usage_provider.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
 import 'package:omi/pages/settings/data_privacy_page.dart';
-import 'package:omi/pages/apps/widgets/create_options_sheet.dart';
+import 'package:omi/pages/apps/add_app.dart';
+import 'package:omi/pages/apps/add_mcp_server_page.dart';
 import 'package:omi/pages/settings/settings_drawer.dart';
 import 'package:omi/pages/settings/task_integrations_page.dart';
 import 'package:omi/pages/settings/wrapped_2025_page.dart';
@@ -56,6 +58,7 @@ import 'package:omi/utils/platform/platform_service.dart';
 import 'package:omi/services/announcement_service.dart';
 import 'package:omi/services/notifications.dart';
 import 'package:omi/utils/analytics/mixpanel.dart';
+import 'package:omi/utils/other/temp.dart';
 import 'package:omi/utils/audio/foreground.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/utils/logger.dart';
@@ -996,29 +999,44 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                   );
                 },
               ),
-              // Apps tab — Create app button (shown only on Apps tab, left of settings)
+              // Apps tab — Create app pull-down menu (shown only on Apps tab, left of settings)
               Consumer<HomeProvider>(
                 builder: (context, homeProvider, _) {
                   if (homeProvider.selectedIndex != 3) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(color: Color(0xFF1F1F25), shape: BoxShape.circle),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.add, size: 18, color: Colors.white70),
-                        onPressed: () {
+                    child: PullDownButton(
+                      itemBuilder: (context) => [
+                        PullDownMenuItem(
+                          title: context.l10n.createAnApp,
+                          subtitle: context.l10n.createAndShareYourApp,
+                          iconWidget: const Icon(Icons.apps, size: 18),
+                          onTap: () {
+                            MixpanelManager().pageOpened('Submit App');
+                            routeToPage(context, const AddAppPage());
+                          },
+                        ),
+                        PullDownMenuItem(
+                          title: context.l10n.addMcpServer,
+                          subtitle: context.l10n.connectExternalAiTools,
+                          iconWidget: const Icon(Icons.cable, size: 18),
+                          onTap: () {
+                            MixpanelManager().pageOpened('Add MCP Server');
+                            routeToPage(context, const AddMcpServerPage());
+                          },
+                        ),
+                      ],
+                      buttonBuilder: (context, showMenu) => GestureDetector(
+                        onTap: () {
                           HapticFeedback.mediumImpact();
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (context) => const CreateOptionsSheet(),
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                            ),
-                          );
+                          showMenu();
                         },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: const BoxDecoration(color: Color(0xFF1F1F25), shape: BoxShape.circle),
+                          child: const Icon(Icons.add, size: 18, color: Colors.white70),
+                        ),
                       ),
                     ),
                   );
