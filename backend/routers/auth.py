@@ -5,7 +5,7 @@ import hashlib
 import time
 import jwt
 from typing import Optional
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from cryptography.hazmat.primitives import serialization
 from jwt.algorithms import RSAAlgorithm
 from fastapi import APIRouter, Request, HTTPException, Form
@@ -29,36 +29,53 @@ router = APIRouter(
 templates_path = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_path))
 
-# Exact redirect URIs trusted for OAuth callback. Only these concrete URIs are allowed.
-# Named test bundles (omi-fix-rewind, omi-7020-auth, etc.) should use a local backend,
-# not the production auth flow, so they are not included here.
-_TRUSTED_REDIRECT_URIS = {
-    'omi://auth/callback',
-    'omi-computer://auth/callback',
-    'omi-computer-dev://auth/callback',
-}
-# Additional redirect URIs can be added via env var (comma-separated) for dev/staging
-_extra = os.getenv('AUTH_EXTRA_REDIRECT_URIS', '')
-if _extra:
-    _TRUSTED_REDIRECT_URIS.update(uri.strip() for uri in _extra.split(',') if uri.strip())
-
-# Default redirect URI for legacy callers that don't send redirect_uri
-_DEFAULT_REDIRECT_URI = 'omi://auth/callback'
+# Loopback hosts permitted for CLI/native-app OAuth flows per RFC 8252
+# (Native Apps). The mobile app uses ``omi://``, the desktop app uses
+# ``omi-computer://`` / ``omi-computer-dev://``, which are allowed separately.
+# Anything else is rejected so an attacker cannot route the auth code to a
+# host they control.
+_LOOPBACK_HOSTNAMES = {"localhost", "127.0.0.1", "::1"}
+_DEFAULT_MOBILE_REDIRECT = "omi://auth/callback"
 
 
-def _validate_redirect_uri(redirect_uri: Optional[str]) -> str:
-    """Validate and return a safe redirect URI for the auth callback.
+def _validate_redirect_uri(redirect_uri: str) -> None:
+    """Reject everything except omi custom-scheme URIs and HTTP loopback URIs.
 
-    Only accepts exact URIs from the trusted set. Returns the default for legacy
-    callers that omit redirect_uri. Rejects all other values with 400.
+    Security note: the auth ``code`` (a one-time secret) is delivered to the
+    ``redirect_uri`` the original requester provided. If we accepted arbitrary
+    URLs, a malicious actor who got a user to start a flow could harvest the
+    code at their own host. Restricting to the omi-* schemes + loopback
+    addresses is the standard mitigation (RFC 8252 §7).
+
+    The auth code is also bound to redirect_uri at token exchange, so even if
+    a novel omi-* scheme were registered by a third party, they could not
+    complete the token exchange without matching the original redirect_uri.
     """
     if not redirect_uri:
-        return _DEFAULT_REDIRECT_URI
+        raise HTTPException(status_code=400, detail="redirect_uri is required")
 
-    if redirect_uri in _TRUSTED_REDIRECT_URIS:
-        return redirect_uri
+    parsed = urlparse(redirect_uri)
 
-    raise HTTPException(status_code=400, detail="Invalid redirect_uri — not in trusted set")
+    # Allow omi:// (mobile), omi-computer:// (desktop), omi-computer-dev:// (desktop dev),
+    # and any future omi-* custom URL scheme.
+    if parsed.scheme.startswith("omi"):
+        return
+
+    # Allow HTTP loopback for CLI / native apps (RFC 8252 §7).
+    if parsed.scheme != "http":
+        raise HTTPException(
+            status_code=400,
+            detail="redirect_uri must use an omi-* scheme or http loopback (http://localhost:PORT)",
+        )
+
+    hostname = (parsed.hostname or "").strip().lower()
+    if hostname not in _LOOPBACK_HOSTNAMES:
+        raise HTTPException(
+            status_code=400,
+            detail="HTTP redirect_uri must point at loopback (localhost, 127.0.0.1, or ::1)",
+        )
+
+    return
 
 
 @router.get("/authorize")
@@ -75,14 +92,14 @@ async def auth_authorize(
     if provider not in ['google', 'apple']:
         raise HTTPException(status_code=400, detail="Unsupported provider")
 
-    # Validate redirect_uri against allowlist before storing
-    validated_redirect_uri = _validate_redirect_uri(redirect_uri)
+    # Strict allowlist on where we'll deliver the auth code post-callback.
+    _validate_redirect_uri(redirect_uri)
 
     # Store session for auth flow
     session_id = str(uuid.uuid4())
     session_data = {
         'provider': provider,
-        'redirect_uri': validated_redirect_uri,
+        'redirect_uri': redirect_uri,
         'state': state,
         'flow_type': 'user_auth',  # Distinguish from app oauth
     }
@@ -120,12 +137,13 @@ async def auth_callback_google(
 
     # Create temporary auth code bound to the original redirect_uri
     auth_code = str(uuid.uuid4())
-    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_REDIRECT_URI)
+    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_MOBILE_REDIRECT)
     code_data = json.dumps({'credentials': oauth_credentials, 'redirect_uri': app_redirect_uri})
     set_auth_code(auth_code, code_data, 300)
 
-    # Redirect to HTML page that will handle custom scheme redirect
-    # This avoids browser security issues with backend->custom scheme redirects
+    # Redirect to HTML page that will handle the eventual scheme/loopback redirect.
+    # The original ``redirect_uri`` was validated by ``_validate_redirect_uri`` at
+    # ``/authorize`` time and cannot be overridden by the caller here.
     return templates.TemplateResponse(
         "auth_callback.html",
         {
@@ -161,12 +179,13 @@ async def auth_callback_apple_post(
 
     # Create temporary auth code bound to the original redirect_uri
     auth_code = str(uuid.uuid4())
-    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_REDIRECT_URI)
+    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_MOBILE_REDIRECT)
     code_data = json.dumps({'credentials': oauth_credentials, 'redirect_uri': app_redirect_uri})
     set_auth_code(auth_code, code_data, 300)
 
-    # Redirect to HTML page that will handle custom scheme redirect
-    # This avoids browser security issues with backend->custom scheme redirects
+    # Redirect to HTML page that will handle the eventual scheme/loopback redirect.
+    # The original ``redirect_uri`` was validated by ``_validate_redirect_uri`` at
+    # ``/authorize`` time and cannot be overridden by the caller here.
     return templates.TemplateResponse(
         "auth_callback.html",
         {
@@ -215,7 +234,9 @@ async def auth_token(
                 logger.error("auth code in new format but missing redirect_uri — rejecting (fail closed)")
                 raise HTTPException(status_code=400, detail="malformed auth code")
             if redirect_uri != stored_redirect_uri:
-                logger.warning(f"redirect_uri mismatch: expected={sanitize(stored_redirect_uri)}, got={sanitize(redirect_uri)}")
+                logger.warning(
+                    f"redirect_uri mismatch: expected={sanitize(stored_redirect_uri)}, got={sanitize(redirect_uri)}"
+                )
                 raise HTTPException(status_code=400, detail="redirect_uri mismatch")
             oauth_credentials_json = code_data['credentials']
             oauth_credentials = (

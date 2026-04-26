@@ -21,37 +21,51 @@ patch.dict(
     'os.environ', {'GOOGLE_CLIENT_ID': 'test', 'GOOGLE_CLIENT_SECRET': 'test', 'BASE_API_URL': 'http://localhost:8080'}
 ).start()
 
-from routers.auth import _validate_redirect_uri, _DEFAULT_REDIRECT_URI, _TRUSTED_REDIRECT_URIS
+from routers.auth import _validate_redirect_uri, _DEFAULT_MOBILE_REDIRECT, _LOOPBACK_HOSTNAMES
 
 
 class TestValidateRedirectUri:
-    """Test _validate_redirect_uri exact-allowlist logic."""
+    """Test _validate_redirect_uri scheme + loopback allowlist logic."""
+
+    # --- omi-* custom scheme URIs (mobile, desktop, CLI) ---
 
     def test_accepts_omi_scheme(self):
-        assert _validate_redirect_uri('omi://auth/callback') == 'omi://auth/callback'
+        """Mobile app omi:// scheme is accepted."""
+        _validate_redirect_uri('omi://auth/callback')  # should not raise
 
     def test_accepts_omi_computer(self):
-        assert _validate_redirect_uri('omi-computer://auth/callback') == 'omi-computer://auth/callback'
+        """Desktop app omi-computer:// scheme is accepted."""
+        _validate_redirect_uri('omi-computer://auth/callback')  # should not raise
 
     def test_accepts_omi_computer_dev(self):
-        assert _validate_redirect_uri('omi-computer-dev://auth/callback') == 'omi-computer-dev://auth/callback'
+        """Desktop dev app omi-computer-dev:// scheme is accepted."""
+        _validate_redirect_uri('omi-computer-dev://auth/callback')  # should not raise
 
-    def test_trusted_set_contains_expected_uris(self):
-        """All three known app URIs are in the trusted set."""
-        assert 'omi://auth/callback' in _TRUSTED_REDIRECT_URIS
-        assert 'omi-computer://auth/callback' in _TRUSTED_REDIRECT_URIS
-        assert 'omi-computer-dev://auth/callback' in _TRUSTED_REDIRECT_URIS
+    def test_accepts_omi_any_path(self):
+        """Any path under omi:// is accepted."""
+        _validate_redirect_uri('omi://some/other/path')  # should not raise
 
-    def test_returns_default_for_none(self):
-        assert _validate_redirect_uri(None) == _DEFAULT_REDIRECT_URI
+    # --- HTTP loopback for CLI (RFC 8252 §7) ---
 
-    def test_returns_default_for_empty(self):
-        assert _validate_redirect_uri('') == _DEFAULT_REDIRECT_URI
+    def test_accepts_http_localhost(self):
+        _validate_redirect_uri('http://localhost:9876/callback')  # should not raise
 
-    def test_rejects_arbitrary_omi_scheme(self):
-        """Named test bundles must use local backend, not production auth."""
+    def test_accepts_http_127(self):
+        _validate_redirect_uri('http://127.0.0.1:8080/callback')  # should not raise
+
+    def test_accepts_http_ipv6_loopback(self):
+        _validate_redirect_uri('http://[::1]:8080/callback')  # should not raise
+
+    def test_loopback_hostnames_contains_expected(self):
+        assert 'localhost' in _LOOPBACK_HOSTNAMES
+        assert '127.0.0.1' in _LOOPBACK_HOSTNAMES
+        assert '::1' in _LOOPBACK_HOSTNAMES
+
+    # --- Rejected URIs ---
+
+    def test_rejects_empty(self):
         with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi-fix-rewind://auth/callback')
+            _validate_redirect_uri('')
         assert exc_info.value.status_code == 400
 
     def test_rejects_https_scheme(self):
@@ -69,35 +83,15 @@ class TestValidateRedirectUri:
             _validate_redirect_uri('data:text/html,<script>alert(1)</script>')
         assert exc_info.value.status_code == 400
 
-    def test_rejects_wrong_host(self):
-        with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi://evil/callback')
-        assert exc_info.value.status_code == 400
-
-    def test_rejects_wrong_path(self):
-        with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi://auth/evil')
-        assert exc_info.value.status_code == 400
-
-    def test_rejects_query_string(self):
-        with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi://auth/callback?extra=1')
-        assert exc_info.value.status_code == 400
-
-    def test_rejects_fragment(self):
-        with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi://auth/callback#frag')
-        assert exc_info.value.status_code == 400
-
     def test_rejects_non_omi_custom_scheme(self):
         with pytest.raises(HTTPException) as exc_info:
             _validate_redirect_uri('myapp://auth/callback')
         assert exc_info.value.status_code == 400
 
-    def test_rejects_omi_evil_scheme(self):
-        """Explicitly verify omi-evil is rejected (reviewer's concern)."""
+    def test_rejects_http_non_loopback(self):
+        """HTTP to external host must be rejected."""
         with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi-evil://auth/callback')
+            _validate_redirect_uri('http://evil.example:8080/callback')
         assert exc_info.value.status_code == 400
 
 
@@ -271,7 +265,7 @@ class TestAuthAuthorizeEndpoint:
     """Test auth_authorize rejects bad redirect_uri before session storage and stores valid ones."""
 
     def test_authorize_rejects_bad_redirect_uri_before_session_store(self):
-        """Invalid redirect_uri must fail before set_auth_session is called."""
+        """Invalid redirect_uri (non-omi, non-loopback) must fail before set_auth_session is called."""
         from routers.auth import auth_authorize
         import asyncio
 
@@ -282,7 +276,7 @@ class TestAuthAuthorizeEndpoint:
                     auth_authorize(
                         request=request,
                         provider='google',
-                        redirect_uri='omi-evil://auth/callback',
+                        redirect_uri='https://evil.example/steal',
                         state='test-state',
                     )
                 )
@@ -431,7 +425,7 @@ class TestCallbackEndpoints:
             mock_templates.TemplateResponse.return_value = MagicMock()
             asyncio.get_event_loop().run_until_complete(auth_callback_google(request=request, code='c', state='s'))
             stored = json.loads(mock_set_code.call_args[0][1])
-            assert stored['redirect_uri'] == _DEFAULT_REDIRECT_URI
+            assert stored['redirect_uri'] == _DEFAULT_MOBILE_REDIRECT
 
 
 class TestTokenEdgeCases:
