@@ -60,7 +60,7 @@ if [ "$1" = "--yolo" ]; then
     export OMI_SKIP_TUNNEL=1
     export OMI_API_URL="https://desktop-backend-hhibjajaja-uc.a.run.app"
     export OMI_PYTHON_API_URL="https://api.omi.me"
-    export OMI_AUTH_URL="https://omi-desktop-auth-208440318997.us-central1.run.app/"
+    export OMI_AUTH_URL="https://api.omi.me/"
     export FIREBASE_API_KEY="AIzaSyD9dzBdglc7IO9pPDIOvqnCoTis_xKkkC8"
 fi
 
