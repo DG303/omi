@@ -1,8 +1,13 @@
 {
-  "unreleased": [
-    "Stop creating up to 5 tasks (and notifications) on every app launch \u2014 task promotion now happens at the natural cadence (when you complete a task, or every 5 minutes at most one at a time)"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.367",
+      "date": "2026-04-26",
+      "changes": [
+        "Stop creating up to 5 tasks (and notifications) on every app launch \u2014 task promotion now happens at the natural cadence (when you complete a task, or every 5 minutes at most one at a time)"
+      ]
+    },
     {
       "version": "0.11.366",
       "date": "2026-04-26",
