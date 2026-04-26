@@ -51,7 +51,11 @@ Documentation = "https://docs.omi.me"
 Issues = "https://github.com/BasedHardware/omi/issues"
 
 [project.scripts]
-omi = "omi_cli.main:app"
+# Wire the console script through ``main()`` (not the bare Typer ``app``) so
+# the SIGINT/EOF + last-resort exception handlers in main.py run for every
+# invocation. Going through ``app`` directly would leak raw tracebacks on
+# unexpected errors and emit Click's default Ctrl-C string.
+omi = "omi_cli.main:main"
 
 [project.optional-dependencies]
 dev = [
