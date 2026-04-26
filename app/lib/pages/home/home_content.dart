@@ -126,24 +126,35 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
                   ),
                 ),
                 _buildConversationsPreview(convoProvider),
-              ] else
-                SliverToBoxAdapter(child: _buildGetStartedOptions(context)),
 
-              // Mind Map section
-              SliverToBoxAdapter(
-                child: _buildSectionHeader(
-                  context,
-                  context.l10n.mindMap,
-                  onViewAll: () => Navigator.push(
+                // Mind Map section — only shown for users with enough activity.
+                SliverToBoxAdapter(
+                  child: _buildSectionHeader(
                     context,
-                    MaterialPageRoute(builder: (context) => const MemoryGraphPage(trackOpenEvent: false)),
+                    context.l10n.mindMap,
+                    onViewAll: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MemoryGraphPage(trackOpenEvent: false)),
+                    ),
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(child: _buildMindMapPreview(context)),
+                SliverToBoxAdapter(child: _buildMindMapPreview(context)),
 
-              // Bottom padding so content isn't hidden behind chat bar + nav
-              const SliverToBoxAdapter(child: SizedBox(height: 160)),
+                // Bottom padding so content isn't hidden behind chat bar + nav
+                const SliverToBoxAdapter(child: SizedBox(height: 160)),
+              ] else
+                // For new users (< 3 non-discarded convos): hide the conversations
+                // preview AND the mind map. The 3 "get started" tiles fill the
+                // remaining vertical space and sit centered between Today/Daily
+                // Recaps above and the floating chat bar below.
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    // Bottom padding leaves room for the floating chat bar.
+                    padding: const EdgeInsets.only(bottom: 160),
+                    child: Center(child: _buildGetStartedOptions(context)),
+                  ),
+                ),
             ],
           ),
         );
