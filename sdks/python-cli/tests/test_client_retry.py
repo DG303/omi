@@ -115,6 +115,55 @@ def test_param_filtering_drops_none(authed_profile, respx_mock) -> None:
     assert request.url.params["limit"] == "25"
 
 
+def test_429_with_retry_after_waits_at_least_that_long(authed_profile, respx_mock, monkeypatch) -> None:
+    """Greptile P2: the retry wait must honor a server-supplied Retry-After
+    header rather than blindly using exponential jitter."""
+    import time
+
+    sleeps: list[float] = []
+
+    def fake_sleep(seconds: float) -> None:
+        sleeps.append(seconds)
+
+    # tenacity sleeps via time.sleep — capture and short-circuit.
+    monkeypatch.setattr(time, "sleep", fake_sleep)
+
+    respx_mock.get("/v1/dev/user/memories").mock(
+        side_effect=[
+            httpx.Response(429, headers={"Retry-After": "3"}, json={"detail": "slow down"}),
+            httpx.Response(200, json=[]),
+        ]
+    )
+    with OmiClient(authed_profile) as client:
+        result = client.get("/v1/dev/user/memories")
+    assert result == []
+    # Exactly one inter-attempt wait happened, and it honored the Retry-After
+    # value (3 seconds), not the jitter window (which caps at ~0.5s on attempt 1).
+    assert len(sleeps) == 1
+    assert sleeps[0] == 3.0
+
+
+def test_429_retry_after_is_capped(authed_profile, respx_mock, monkeypatch) -> None:
+    """A pathologically large Retry-After value must be capped so the CLI
+    doesn't pin for hours on a misbehaving upstream."""
+    import time
+
+    sleeps: list[float] = []
+    monkeypatch.setattr(time, "sleep", lambda s: sleeps.append(s))
+
+    from omi_cli import client as client_module
+
+    respx_mock.get("/v1/dev/user/memories").mock(
+        side_effect=[
+            httpx.Response(429, headers={"Retry-After": "99999"}, json={"detail": "wait"}),
+            httpx.Response(200, json=[]),
+        ]
+    )
+    with OmiClient(authed_profile) as cli:
+        cli.get("/v1/dev/user/memories")
+    assert sleeps[0] == client_module.MAX_RETRY_AFTER_SECONDS
+
+
 def test_validation_error_detail_string_is_formatted(authed_profile, respx_mock) -> None:
     respx_mock.post("/v1/dev/user/memories").respond(
         422,
