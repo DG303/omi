@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Optional
 
 import typer
 
-from omi_cli.errors import UsageError
+from omi_cli.errors import NotFoundError, UsageError
 from omi_cli.models import MemoryCategory, MemoryVisibility
 from omi_cli.output import shorten
 
@@ -77,13 +77,16 @@ def get_memory(
         while True:
             page = client.get("/v1/dev/user/memories", params={"limit": page_size, "offset": offset})
             if not page:
-                raise UsageError(message=f"Memory not found: {memory_id}", detail=None)
+                # Exit code 5 — preserves the documented "not found" agent contract
+                # whether the resource is missing server-side (HTTP 404) or absent
+                # from the client-side scan we do here.
+                raise NotFoundError(message=f"Memory not found: {memory_id}")
             for item in page:
                 if item.get("id") == memory_id:
                     ctx.renderer.emit(item, title="memory")
                     return
             if len(page) < page_size:
-                raise UsageError(message=f"Memory not found: {memory_id}")
+                raise NotFoundError(message=f"Memory not found: {memory_id}")
             offset += page_size
 
 
