@@ -55,6 +55,57 @@ def test_save_creates_file_with_secure_perms(config_path: Path) -> None:
     assert mode == 0o600
 
 
+def test_save_does_not_leave_world_readable_window(monkeypatch, config_path: Path) -> None:
+    """TOCTOU regression test (Greptile P1).
+
+    Force a permissive umask, save the config, and assert that *neither* the
+    final file nor any leftover temp file is world-readable. Earlier versions
+    of ``save()`` created the temp with default umask perms (~0o644) before
+    chmodding to 0o600 — that left a window where another local user could
+    read bearer credentials.
+    """
+    # Force a permissive umask. If save() relied on umask alone, the file would
+    # be created at 0o666 by default and the test would fail.
+    old_umask = os.umask(0o000)
+    try:
+        config = cfg.load()
+        profile = config.get_profile()
+        profile.auth_method = "api_key"
+        profile.api_key = "omi_dev_secret"
+        config.set_profile(profile)
+        cfg.save(config)
+    finally:
+        os.umask(old_umask)
+
+    # Final file is owner-only.
+    mode = stat.S_IMODE(os.stat(config_path).st_mode)
+    assert mode == 0o600
+
+    # No leftover temp file with relaxed perms.
+    tmp = config_path.with_suffix(config_path.suffix + ".tmp")
+    assert not tmp.exists()
+
+
+def test_save_overwrites_stale_temp_file(config_path: Path) -> None:
+    """If a previous save() crashed mid-write, a stale .tmp may remain.
+    save() should detect this and recover instead of erroring on O_EXCL."""
+    tmp = config_path.with_suffix(config_path.suffix + ".tmp")
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp.write_text("stale leftover")
+    assert tmp.exists()
+
+    config = cfg.load()
+    profile = config.get_profile()
+    profile.auth_method = "api_key"
+    profile.api_key = "omi_dev_recovered"
+    config.set_profile(profile)
+    cfg.save(config)
+
+    assert not tmp.exists()
+    reloaded = cfg.load().get_profile()
+    assert reloaded.api_key == "omi_dev_recovered"
+
+
 def test_masked_credential_for_api_key(config_path: Path) -> None:
     profile = cfg.Profile(name="default", auth_method="api_key", api_key="omi_dev_abcdefghij1234")
     masked = profile.masked_credential()
