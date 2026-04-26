@@ -20,6 +20,7 @@ opportunistically by the HTTP client just before each request.
 
 from __future__ import annotations
 
+import html
 import http.server
 import secrets
 import socketserver
@@ -326,12 +327,15 @@ def _make_callback_handler(
                     "</body></html>"
                 )
             else:
+                # ``html.escape`` is the right tool for inlining untrusted text
+                # into HTML — ``urllib.parse.quote`` is a URL-percent-encoder
+                # and would let through characters HTML treats specially.
                 err = received.get("error") or "missing code"
                 body = (
                     "<!DOCTYPE html><html><body style=\"font-family: -apple-system, sans-serif; "
                     "padding: 48px; max-width: 480px; margin: 0 auto; text-align: center;\">"
                     "<h1>Authentication failed</h1>"
-                    f"<p>{urllib.parse.quote(err)}</p>"
+                    f"<p>{html.escape(err)}</p>"
                     "<p>Close this tab and run <code>omi auth login --browser</code> again.</p>"
                     "</body></html>"
                 )
