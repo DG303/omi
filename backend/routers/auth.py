@@ -119,13 +119,23 @@ def _validate_redirect_uri(redirect_uri: str) -> None:
     return
 
 
+_ASCII_LETTERS = frozenset("abcdefghijklmnopqrstuvwxyz")
+_ASCII_ALNUM = _ASCII_LETTERS | frozenset("0123456789")
+
+
 def _is_valid_scheme(scheme: str) -> bool:
-    """RFC 3986 scheme validity check: ALPHA, then ALPHA/DIGIT/+/-/."""
+    """RFC 3986 scheme validity check: ASCII ALPHA, then ASCII ALPHA/DIGIT/+/-/.
+
+    We deliberately use explicit ASCII sets instead of ``str.isalpha`` /
+    ``str.isalnum`` — those are Unicode-aware and would happily accept
+    non-ASCII letters (``ñ``, ``й``, etc.) that RFC 3986 forbids in scheme names.
+    """
     if not scheme:
         return False
-    if not scheme[0].isalpha():
+    lowered = scheme.lower()
+    if lowered[0] not in _ASCII_LETTERS:
         return False
-    return all(c.isalnum() or c in "+-." for c in scheme)
+    return all(c in _ASCII_ALNUM or c in "+-." for c in lowered)
 
 
 @router.get("/authorize")
