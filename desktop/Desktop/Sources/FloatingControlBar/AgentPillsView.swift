@@ -36,6 +36,7 @@ struct AgentPillView: View {
     @ObservedObject var manager: AgentPillsManager
     @State private var rotationAngle: Double = 0
     @State private var isHovering: Bool = false
+    @State private var rotationTask: Task<Void, Never>?
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -57,6 +58,10 @@ struct AgentPillView: View {
         }
         .onAppear { startRotationIfRunning() }
         .onChange(of: pill.status) { startRotationIfRunning() }
+        .onDisappear {
+            rotationTask?.cancel()
+            rotationTask = nil
+        }
         .accessibilityLabel("\(pill.title) — \(pill.status.displayLabel)")
     }
 
@@ -112,7 +117,6 @@ struct AgentPillView: View {
             }
         }
         .rotationEffect(.degrees(rotationAngle))
-        .animation(isRotating ? .linear(duration: 4.0).repeatForever(autoreverses: false) : .default, value: rotationAngle)
     }
 
     @ViewBuilder
@@ -152,31 +156,35 @@ struct AgentPillView: View {
         }
     }
 
-    private var isRotating: Bool {
-        switch pill.status {
-        case .starting, .running: return true
-        default: return false
-        }
-    }
-
     private func startRotationIfRunning() {
         switch pill.status {
         case .starting, .running:
-            // Continuous slow rotation — set a single faraway target and let
-            // SwiftUI's repeatForever animation drive it. Avoids the timer
-            // wakeups and the "pause between revolutions" feel of the old
-            // implementation.
-            rotationAngle = 0
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                withAnimation(.linear(duration: 4.0).repeatForever(autoreverses: false)) {
-                    rotationAngle = 360
+            // Continuous slow rotation. We use a Task instead of repeatForever
+            // because repeatForever can't be cancelled cleanly from outside —
+            // explicit Task.cancel() lets us actually halt rotation when the
+            // agent finishes (otherwise the spinner kept going past Done).
+            rotationTask?.cancel()
+            rotationTask = Task { @MainActor in
+                while !Task.isCancelled {
+                    let target = rotationAngle + 360
+                    withAnimation(.linear(duration: 4.0)) {
+                        rotationAngle = target
+                    }
+                    do {
+                        try await Task.sleep(nanoseconds: 4_000_000_000)
+                    } catch {
+                        break
+                    }
                 }
             }
         default:
-            // Stop where we are — no snap-back, that would feel jerky after
-            // a long-running task.
-            withAnimation(.easeOut(duration: 0.4)) {
-                rotationAngle = floor(rotationAngle / 360) * 360
+            // Cancel the task and snap to the nearest full revolution with a
+            // gentle settle.
+            rotationTask?.cancel()
+            rotationTask = nil
+            let settled = (rotationAngle / 360.0).rounded() * 360.0
+            withAnimation(.easeOut(duration: 0.35)) {
+                rotationAngle = settled
             }
         }
     }

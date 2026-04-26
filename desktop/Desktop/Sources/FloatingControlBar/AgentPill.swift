@@ -122,10 +122,15 @@ final class AgentPillsManager: ObservableObject {
 
     /// Parse phrases like "spawn 3 agents", "5 tasks", "two agents working in
     /// parallel" out of a user query. Returns 1 if no count is mentioned.
+    /// Handles "3 test agents" — words between the number and the noun are
+    /// allowed (up to 5 tokens) so demo phrasing doesn't fall through.
     static func parseAgentCount(from text: String) -> Int {
         let lower = text.lowercased()
-        // Numeric form: "3 agents", "spawn 5", "do 2 things"
-        let numericPattern = #"\b(\d+)\s+(?:agents?|tasks?|pills?|things?|background\s+(?:agents?|tasks?))\b"#
+        let nounGroup = "(?:agents?|tasks?|pills?|things?)"
+        // Numeric: "3 agents", "spawn 5 in parallel", "3 test agents",
+        // "spawn 3 of these", but NOT "in 30 seconds".
+        // Allow up to ~5 short words between the number and the noun.
+        let numericPattern = #"\b(\d+)(?:\s+\S+){0,5}\s+\#(nounGroup)\b"#
         if let regex = try? NSRegularExpression(pattern: numericPattern),
             let match = regex.firstMatch(in: lower, range: NSRange(lower.startIndex..., in: lower)),
             match.numberOfRanges > 1,
@@ -135,11 +140,11 @@ final class AgentPillsManager: ObservableObject {
         {
             return min(n, 8)
         }
-        // Word form: "two agents", "three tasks"
+        // Word form: "two agents", "three tasks", "five test agents"
         let wordToNumber: [String: Int] = [
             "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
         ]
-        let wordPattern = #"\b(two|three|four|five|six|seven|eight)\s+(?:agents?|tasks?|pills?|things?)\b"#
+        let wordPattern = #"\b(two|three|four|five|six|seven|eight)(?:\s+\S+){0,5}\s+\#(nounGroup)\b"#
         if let regex = try? NSRegularExpression(pattern: wordPattern),
             let match = regex.firstMatch(in: lower, range: NSRange(lower.startIndex..., in: lower)),
             match.numberOfRanges > 1,
@@ -386,14 +391,31 @@ final class AgentPillsManager: ObservableObject {
     }
 
     fileprivate static func generateTitleAndAck(for query: String) async -> (title: String, ack: String)? {
-        guard let apiKey = APIKeyService.currentAnthropicKey, !apiKey.isEmpty else { return nil }
-        let url = URL(string: "https://api.anthropic.com/v1/messages")!
+        // Route through the desktop-backend's OpenAI-compatible proxy at
+        // /v2/chat/completions instead of hitting api.anthropic.com directly.
+        // This way we don't need a BYOK key (no partial-BYOK 403 risk), and
+        // the request goes through the user's existing Firebase auth + plan.
+        let baseURL = await APIClient.shared.rustBackendURL
+        guard !baseURL.isEmpty else {
+            log("AgentPill: title gen skipped — rustBackendURL empty")
+            return nil
+        }
+        let normalized = baseURL.hasSuffix("/") ? baseURL : baseURL + "/"
+        guard let url = URL(string: normalized + "v2/chat/completions") else {
+            log("AgentPill: title gen failed — bad URL")
+            return nil
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = 8
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        do {
+            let headers = try await APIClient.shared.buildHeaders(requireAuth: true)
+            for (k, v) in headers { request.setValue(v, forHTTPHeaderField: k) }
+        } catch {
+            log("AgentPill: title gen skipped — auth header unavailable (\(error.localizedDescription))")
+            return nil
+        }
 
         let prompt = """
         The user just kicked off a background agent with this request:
@@ -404,28 +426,49 @@ final class AgentPillsManager: ObservableObject {
         {"title":"<3-5 word imperative title in Title Case, no trailing punctuation>","ack":"<one short spoken acknowledgement, max 7 words, friendly tone, e.g. 'Got it, building Mario now.'>"}
         """
 
+        // OpenAI-compatible body. The backend translates to Anthropic upstream.
         let body: [String: Any] = [
             "model": "claude-haiku-4-5-20251001",
             "max_tokens": 120,
             "messages": [["role": "user", "content": prompt]],
+            "stream": false,
         ]
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else { return nil }
+            guard let http = response as? HTTPURLResponse else {
+                log("AgentPill: title gen failed — no HTTP response")
+                return nil
+            }
+            guard (200..<300).contains(http.statusCode) else {
+                let body = String(data: data.prefix(200), encoding: .utf8) ?? "<binary>"
+                log("AgentPill: title gen HTTP \(http.statusCode) — \(body)")
+                return nil
+            }
+            // OpenAI shape: { choices: [{ message: { content: "..." } }] }
             guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let content = json["content"] as? [[String: Any]],
-                let text = content.first?["text"] as? String
-            else { return nil }
+                let choices = json["choices"] as? [[String: Any]],
+                let firstChoice = choices.first,
+                let message = firstChoice["message"] as? [String: Any],
+                let text = message["content"] as? String
+            else {
+                log("AgentPill: title gen response shape unexpected")
+                return nil
+            }
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             guard let payloadData = trimmed.data(using: .utf8),
                 let payload = try? JSONSerialization.jsonObject(with: payloadData) as? [String: Any],
                 let title = (payload["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
                 let ack = (payload["ack"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
                 !title.isEmpty, !ack.isEmpty
-            else { return nil }
+            else {
+                log("AgentPill: title gen JSON parse failed — raw: \(String(trimmed.prefix(200)))")
+                return nil
+            }
+            log("AgentPill: title gen ok — title=\"\(title)\" ack=\"\(ack)\"")
             return (title: String(title.prefix(40)), ack: String(ack.prefix(120)))
         } catch {
+            log("AgentPill: title gen threw — \(error.localizedDescription)")
             return nil
         }
     }
