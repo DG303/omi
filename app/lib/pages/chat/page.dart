@@ -474,29 +474,30 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  // LEFT button — Plus (with pull-down menu) or Stop (only while recording)
-                                  if (voiceRecorderProvider.isActive)
-                                    voiceRecorderProvider.state == VoiceRecorderState.recording
-                                        ? GestureDetector(
-                                            onTap: () {
-                                              HapticFeedback.lightImpact();
-                                              voiceRecorderProvider.processRecording();
-                                            },
-                                            child: Container(
-                                              height: 52,
-                                              width: 52,
-                                              decoration: const BoxDecoration(
-                                                color: Color(0xFF2A2A2F),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: const Center(
-                                                child: Icon(Icons.stop, color: Colors.white, size: 20),
-                                              ),
-                                            ),
-                                          )
-                                        // Hide while transcribing — placeholder keeps the pill from shifting.
-                                        : const SizedBox(height: 52, width: 52)
-                                  else if (shouldShowMenuButton())
+                                  // LEFT button — Stop (recording) or Plus (idle). During the
+                                  // transcribing state we render nothing here, and the gap below
+                                  // is also skipped, so the pill expands to fill the row.
+                                  if (voiceRecorderProvider.isActive &&
+                                      voiceRecorderProvider.state == VoiceRecorderState.recording) ...[
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        voiceRecorderProvider.processRecording();
+                                      },
+                                      child: Container(
+                                        height: 48,
+                                        width: 48,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF2A2A2F),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Center(
+                                          child: Icon(Icons.stop, color: Colors.white, size: 18),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ] else if (!voiceRecorderProvider.isActive && shouldShowMenuButton()) ...[
                                     PullDownButton(
                                       itemBuilder: (context) => [
                                         PullDownMenuItem(
@@ -549,8 +550,8 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                           showMenu();
                                         },
                                         child: Container(
-                                          height: 52,
-                                          width: 52,
+                                          height: 48,
+                                          width: 48,
                                           decoration: const BoxDecoration(
                                             color: Color(0xFF2A2A2F),
                                             shape: BoxShape.circle,
@@ -559,13 +560,14 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                             child: FaIcon(
                                               FontAwesomeIcons.plus,
                                               color: provider.selectedFiles.length > 3 ? Colors.grey : Colors.white,
-                                              size: 20,
+                                              size: 18,
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  const SizedBox(width: 8),
+                                    const SizedBox(width: 8),
+                                  ],
                                   // CENTER pill — text field/waveform + right-side button stays inside.
                                   Expanded(
                                     child: Container(
@@ -660,16 +662,20 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                           focusNode: textFieldFocusNode,
                                                           obscureText: false,
                                                           textAlign: TextAlign.start,
-                                                          textAlignVertical: TextAlignVertical.center,
+                                                          // y: -0.35 nudges glyphs up. Font line metrics
+                                                          // place the visual baseline below the line box
+                                                          // center, so plain `.center` reads slightly low.
+                                                          textAlignVertical: const TextAlignVertical(y: -0.35),
                                                           decoration: InputDecoration(
                                                             hintText: context.l10n.askAnything,
                                                             hintStyle:
                                                                 const TextStyle(fontSize: 16.0, color: Colors.grey),
                                                             focusedBorder: InputBorder.none,
                                                             enabledBorder: InputBorder.none,
-                                                            // Slightly less bottom padding pulls the baseline
-                                                            // up so single-line text reads as visually centered.
-                                                            contentPadding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+                                                            contentPadding: const EdgeInsets.symmetric(
+                                                              horizontal: 4,
+                                                              vertical: 10,
+                                                            ),
                                                             isDense: true,
                                                           ),
                                                           minLines: 1,
@@ -679,7 +685,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                           style: const TextStyle(
                                                             fontSize: 16.0,
                                                             color: Colors.white,
-                                                            height: 1.4,
+                                                            height: 1.2,
                                                           ),
                                                         ),
                                                       ),
