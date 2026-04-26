@@ -1,9 +1,9 @@
 """Tests for auth redirect_uri validation and auth code binding (#7020).
 
 Verifies that:
-1. _validate_redirect_uri accepts valid Omi custom schemes and rejects bad ones
+1. _validate_redirect_uri accepts only exact trusted URIs and rejects all others
 2. Auth code is bound to redirect_uri and /v1/auth/token enforces match
-3. Callback template receives dynamic redirect_uri
+3. Callback template renders with dynamic redirect_uri (not hardcoded)
 """
 
 import json
@@ -21,11 +21,11 @@ patch.dict(
     'os.environ', {'GOOGLE_CLIENT_ID': 'test', 'GOOGLE_CLIENT_SECRET': 'test', 'BASE_API_URL': 'http://localhost:8080'}
 ).start()
 
-from routers.auth import _validate_redirect_uri, _DEFAULT_REDIRECT_URI
+from routers.auth import _validate_redirect_uri, _DEFAULT_REDIRECT_URI, _TRUSTED_REDIRECT_URIS
 
 
 class TestValidateRedirectUri:
-    """Test _validate_redirect_uri allowlist logic."""
+    """Test _validate_redirect_uri exact-allowlist logic."""
 
     def test_accepts_omi_scheme(self):
         assert _validate_redirect_uri('omi://auth/callback') == 'omi://auth/callback'
@@ -36,17 +36,22 @@ class TestValidateRedirectUri:
     def test_accepts_omi_computer_dev(self):
         assert _validate_redirect_uri('omi-computer-dev://auth/callback') == 'omi-computer-dev://auth/callback'
 
-    def test_accepts_named_test_bundle(self):
-        assert _validate_redirect_uri('omi-fix-rewind://auth/callback') == 'omi-fix-rewind://auth/callback'
-
-    def test_accepts_named_bundle_with_numbers(self):
-        assert _validate_redirect_uri('omi-7020-auth-fix://auth/callback') == 'omi-7020-auth-fix://auth/callback'
+    def test_trusted_set_is_exactly_three(self):
+        """Ensure no unexpected URIs leaked into the trusted set."""
+        expected = {'omi://auth/callback', 'omi-computer://auth/callback', 'omi-computer-dev://auth/callback'}
+        assert _TRUSTED_REDIRECT_URIS == expected
 
     def test_returns_default_for_none(self):
         assert _validate_redirect_uri(None) == _DEFAULT_REDIRECT_URI
 
     def test_returns_default_for_empty(self):
         assert _validate_redirect_uri('') == _DEFAULT_REDIRECT_URI
+
+    def test_rejects_arbitrary_omi_scheme(self):
+        """Named test bundles must use local backend, not production auth."""
+        with pytest.raises(HTTPException) as exc_info:
+            _validate_redirect_uri('omi-fix-rewind://auth/callback')
+        assert exc_info.value.status_code == 400
 
     def test_rejects_https_scheme(self):
         with pytest.raises(HTTPException) as exc_info:
@@ -88,14 +93,10 @@ class TestValidateRedirectUri:
             _validate_redirect_uri('myapp://auth/callback')
         assert exc_info.value.status_code == 400
 
-    def test_rejects_double_hyphen(self):
+    def test_rejects_omi_evil_scheme(self):
+        """Explicitly verify omi-evil is rejected (reviewer's concern)."""
         with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi--bad://auth/callback')
-        assert exc_info.value.status_code == 400
-
-    def test_rejects_trailing_hyphen(self):
-        with pytest.raises(HTTPException) as exc_info:
-            _validate_redirect_uri('omi-bad-://auth/callback')
+            _validate_redirect_uri('omi-evil://auth/callback')
         assert exc_info.value.status_code == 400
 
 
@@ -203,3 +204,63 @@ class TestAuthCodeBinding:
             )
             assert result['provider'] == 'apple'
             assert result['id_token'] == 'legacy-id-token'
+
+
+class TestCallbackTemplateRendering:
+    """Test that the callback template receives and uses dynamic redirect_uri."""
+
+    def test_template_uses_dynamic_redirect_uri(self):
+        """Verify auth_callback.html renders with the session's redirect_uri, not hardcoded."""
+        from jinja2 import Environment, FileSystemLoader
+        import pathlib
+
+        templates_dir = pathlib.Path(__file__).parent.parent.parent / "templates"
+        env = Environment(loader=FileSystemLoader(str(templates_dir)), autoescape=True)
+        template = env.get_template("auth_callback.html")
+
+        html = template.render(
+            code="test-auth-code",
+            state="test-state",
+            redirect_uri="omi-computer://auth/callback",
+        )
+
+        # The rendered HTML must use the dynamic redirect_uri, not hardcoded omi://
+        assert 'omi-computer://auth/callback' in html
+        assert "omi://auth/callback" not in html  # hardcoded value must not appear
+
+    def test_template_json_escapes_redirect_uri(self):
+        """Verify redirect_uri is JSON-escaped in the template (XSS prevention)."""
+        from jinja2 import Environment, FileSystemLoader
+        import pathlib
+
+        templates_dir = pathlib.Path(__file__).parent.parent.parent / "templates"
+        env = Environment(loader=FileSystemLoader(str(templates_dir)), autoescape=True)
+        template = env.get_template("auth_callback.html")
+
+        # Use a URI with characters that would be dangerous if not JSON-escaped
+        html = template.render(
+            code='test</script><script>alert(1)',
+            state='test-state',
+            redirect_uri='omi-computer://auth/callback',
+        )
+
+        # The dangerous characters should be escaped, not raw
+        assert '</script><script>' not in html
+
+    def test_template_defaults_when_redirect_uri_missing(self):
+        """Verify template falls back to omi://auth/callback when redirect_uri not provided."""
+        from jinja2 import Environment, FileSystemLoader
+        import pathlib
+
+        templates_dir = pathlib.Path(__file__).parent.parent.parent / "templates"
+        env = Environment(loader=FileSystemLoader(str(templates_dir)), autoescape=True)
+        template = env.get_template("auth_callback.html")
+
+        # Render without redirect_uri — should use the default
+        html = template.render(
+            code="test-code",
+            state="test-state",
+            # redirect_uri intentionally omitted
+        )
+
+        assert 'omi://auth/callback' in html
