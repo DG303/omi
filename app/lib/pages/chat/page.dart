@@ -479,8 +479,31 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    // Plus button
-                                    if (shouldShowMenuButton())
+                                    // Left button: Stop (during voice) or Plus (otherwise)
+                                    if (voiceRecorderProvider.isActive)
+                                      GestureDetector(
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          // Stop = transcribe + paste only (no auto-send).
+                                          if (voiceRecorderProvider.state == VoiceRecorderState.recording) {
+                                            voiceRecorderProvider.processRecording();
+                                          } else {
+                                            voiceRecorderProvider.close();
+                                          }
+                                        },
+                                        child: Container(
+                                          height: 44,
+                                          width: 44,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF3C3C43),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Center(
+                                            child: Icon(Icons.stop, color: Colors.white, size: 18),
+                                          ),
+                                        ),
+                                      )
+                                    else if (shouldShowMenuButton())
                                       GestureDetector(
                                         onTap: () {
                                           HapticFeedback.lightImpact();
@@ -569,10 +592,13 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                             ),
                                           voiceRecorderProvider.isActive
                                               ? VoiceRecorderWidget(
-                                                  onTranscriptReady: (transcript) {
+                                                  onTranscriptReady: (transcript, autoSend) {
                                                     textController.text = transcript;
                                                     voiceRecorderProvider.close();
                                                     context.read<MessageProvider>().setNextMessageOriginIsVoice(true);
+                                                    if (autoSend && transcript.trim().isNotEmpty) {
+                                                      _sendMessageUtil(transcript.trim());
+                                                    }
                                                   },
                                                   onClose: () {
                                                     voiceRecorderProvider.close();
@@ -617,8 +643,36 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         ],
                                       ),
                                     ),
-                                    // Microphone button
-                                    if (shouldShowVoiceRecorderButton() && textController.text.isEmpty)
+                                    // Send button while recording — transcribes and sends in one tap.
+                                    if (voiceRecorderProvider.isActive)
+                                      GestureDetector(
+                                        onTap: () {
+                                          HapticFeedback.mediumImpact();
+                                          if (voiceRecorderProvider.state == VoiceRecorderState.recording) {
+                                            voiceRecorderProvider.requestAutoSendOnNextTranscript();
+                                            voiceRecorderProvider.processRecording();
+                                          }
+                                        },
+                                        child: Container(
+                                          height: 44,
+                                          width: 44,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Center(
+                                            child: FaIcon(
+                                              FontAwesomeIcons.arrowUp,
+                                              color: Color(0xFF1f1f25),
+                                              size: 18,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    // Microphone button (only when not recording and field is empty)
+                                    if (!voiceRecorderProvider.isActive &&
+                                        shouldShowVoiceRecorderButton() &&
+                                        textController.text.isEmpty)
                                       GestureDetector(
                                         onTap: () {
                                           HapticFeedback.lightImpact();
@@ -636,8 +690,8 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                           ),
                                         ),
                                       ),
-                                    // Send button - only show when there's text
-                                    if (shouldShowSendButton(provider))
+                                    // Send button — only when there's text and not in voice mode
+                                    if (!voiceRecorderProvider.isActive && shouldShowSendButton(provider))
                                       ValueListenableBuilder<TextEditingValue>(
                                         valueListenable: textController,
                                         builder: (context, value, child) {
