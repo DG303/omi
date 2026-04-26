@@ -36,6 +36,7 @@ import 'package:omi/pages/phone_calls/active_call_banner.dart';
 import 'package:omi/providers/usage_provider.dart';
 import 'package:omi/pages/settings/daily_summary_detail_page.dart';
 import 'package:omi/pages/settings/data_privacy_page.dart';
+import 'package:omi/pages/apps/widgets/create_options_sheet.dart';
 import 'package:omi/pages/settings/settings_drawer.dart';
 import 'package:omi/pages/settings/task_integrations_page.dart';
 import 'package:omi/pages/settings/wrapped_2025_page.dart';
@@ -696,8 +697,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: const Color(0xFF35343B), width: 1),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.65), blurRadius: 60, spreadRadius: 14, offset: const Offset(0, -16)),
-            BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 32, spreadRadius: 6, offset: const Offset(0, -8)),
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.65),
+                blurRadius: 60,
+                spreadRadius: 14,
+                offset: const Offset(0, -16)),
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 32,
+                spreadRadius: 6,
+                offset: const Offset(0, -8)),
             BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 10, offset: const Offset(0, 2)),
           ],
         ),
@@ -715,7 +724,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
               onTap: () {
                 HapticFeedback.lightImpact();
                 MixpanelManager().bottomNavigationTabClicked('Chat Voice');
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage(isPivotBottom: false, autoStartVoice: true)));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ChatPage(isPivotBottom: false, autoStartVoice: true)));
               },
               child: Container(
                 width: 42,
@@ -981,6 +993,34 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                       ),
                       const SizedBox(width: 8),
                     ],
+                  );
+                },
+              ),
+              // Apps tab — Create app button (shown only on Apps tab, left of settings)
+              Consumer<HomeProvider>(
+                builder: (context, homeProvider, _) {
+                  if (homeProvider.selectedIndex != 3) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(color: Color(0xFF1F1F25), shape: BoxShape.circle),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.add, size: 18, color: Colors.white70),
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) => const CreateOptionsSheet(),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   );
                 },
               ),
