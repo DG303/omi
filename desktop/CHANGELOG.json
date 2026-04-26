@@ -1,9 +1,14 @@
 {
-  "unreleased": [
-    "Proactive notifications now only appear in the floating bar, not as macOS system banners",
-    "Made the entire floating bar notification clickable (previously only the text opened the chat)"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.361",
+      "date": "2026-04-26",
+      "changes": [
+        "Proactive notifications now only appear in the floating bar, not as macOS system banners",
+        "Made the entire floating bar notification clickable (previously only the text opened the chat)"
+      ]
+    },
     {
       "version": "0.11.358",
       "date": "2026-04-23",
