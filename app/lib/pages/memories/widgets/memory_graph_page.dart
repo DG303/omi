@@ -644,42 +644,46 @@ class _MemoryGraphPageState extends State<MemoryGraphPage> with SingleTickerProv
 
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.hub_outlined, color: Colors.white30, size: 64),
-              const SizedBox(height: 16),
-              Text(context.l10n.noKnowledgeGraphYet, style: const TextStyle(color: Colors.white70, fontSize: 18)),
-              const SizedBox(height: 12),
-              Text(
-                _isRebuilding
-                    ? context.l10n.buildingKnowledgeGraphFromMemories
-                    : context.l10n.knowledgeGraphWillBuildAutomatically,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white38, fontSize: 14),
-              ),
-              const SizedBox(height: 24),
-              if (_isRebuilding)
-                SizedBox(
-                  width: 200,
-                  child: LinearProgressIndicator(
-                    backgroundColor: Colors.white10,
-                    color: Colors.purpleAccent,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                )
-              else if (!widget.hideRebuildButtonWhenEmpty)
-                ElevatedButton.icon(
-                  onPressed: _rebuildGraph,
-                  icon: const Icon(Icons.auto_fix_high),
-                  label: Text(context.l10n.buildGraphButton),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purpleAccent.withOpacity(0.2),
-                    foregroundColor: Colors.purpleAccent,
-                  ),
+          padding: EdgeInsets.all(widget.embedded ? 16.0 : 32.0),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.hub_outlined, color: Colors.white30, size: 64),
+                const SizedBox(height: 16),
+                Text(context.l10n.noKnowledgeGraphYet, style: const TextStyle(color: Colors.white70, fontSize: 18)),
+                const SizedBox(height: 12),
+                Text(
+                  _isRebuilding
+                      ? context.l10n.buildingKnowledgeGraphFromMemories
+                      : context.l10n.knowledgeGraphWillBuildAutomatically,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white38, fontSize: 14),
                 ),
-            ],
+                const SizedBox(height: 24),
+                if (_isRebuilding)
+                  SizedBox(
+                    width: 200,
+                    child: LinearProgressIndicator(
+                      backgroundColor: Colors.white10,
+                      color: Colors.purpleAccent,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  )
+                else if (!widget.hideRebuildButtonWhenEmpty)
+                  ElevatedButton.icon(
+                    onPressed: _rebuildGraph,
+                    icon: const Icon(Icons.auto_fix_high),
+                    label: Text(context.l10n.buildGraphButton),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purpleAccent.withOpacity(0.2),
+                      foregroundColor: Colors.purpleAccent,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       );
