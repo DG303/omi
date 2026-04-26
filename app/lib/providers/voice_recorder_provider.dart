@@ -39,8 +39,9 @@ class VoiceRecorderProvider extends ChangeNotifier {
   // Persisted WAV file for retry (kept until transcription succeeds or user closes)
   File? _wavFile;
 
-  // Audio visualization
-  final List<double> _audioLevels = List.generate(20, (_) => 0.1);
+  // Audio visualization — more bars give the wave a denser, more "speech-like"
+  // look that matches modern voice-mode designs.
+  final List<double> _audioLevels = List.generate(50, (_) => 0.05);
   Timer? _waveformTimer;
 
   // Callbacks for UI integration
@@ -156,7 +157,10 @@ class VoiceRecorderProvider extends ChangeNotifier {
               rms = 0;
             }
 
-            final level = math.pow(rms, 0.4).toDouble().clamp(0.1, 1.0);
+            // Wider dynamic range so quiet sections stay near zero and loud
+            // peaks reach the full bar height. The 0.5 exponent boosts mid
+            // levels so normal speech has visible amplitude.
+            final level = math.pow(rms, 0.5).toDouble().clamp(0.02, 1.0);
 
             for (int i = 0; i < _audioLevels.length - 1; i++) {
               _audioLevels[i] = _audioLevels[i + 1];
