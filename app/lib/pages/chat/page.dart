@@ -473,7 +473,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  // LEFT button — outside the pill for visual separation
+                                  // LEFT button — outside the pill, sized to match the pill height.
                                   if (voiceRecorderProvider.isActive)
                                     GestureDetector(
                                       onTap: () {
@@ -486,14 +486,14 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         }
                                       },
                                       child: Container(
-                                        height: 44,
-                                        width: 44,
+                                        height: 52,
+                                        width: 52,
                                         decoration: const BoxDecoration(
                                           color: Color(0xFF2A2A2F),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Center(
-                                          child: Icon(Icons.stop, color: Colors.white, size: 18),
+                                          child: Icon(Icons.stop, color: Colors.white, size: 20),
                                         ),
                                       ),
                                     )
@@ -514,8 +514,8 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         _showIOSStyleActionSheet(context);
                                       },
                                       child: Container(
-                                        height: 44,
-                                        width: 44,
+                                        height: 52,
+                                        width: 52,
                                         decoration: const BoxDecoration(
                                           color: Color(0xFF2A2A2F),
                                           shape: BoxShape.circle,
@@ -524,7 +524,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                           child: FaIcon(
                                             FontAwesomeIcons.plus,
                                             color: provider.selectedFiles.length > 3 ? Colors.grey : Colors.white,
-                                            size: 18,
+                                            size: 20,
                                           ),
                                         ),
                                       ),
@@ -533,7 +533,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                   // CENTER pill — text field/waveform + right-side button stays inside.
                                   Expanded(
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                                      padding: const EdgeInsets.only(left: 14, right: 6, top: 4, bottom: 4),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF2A2A2F),
                                         borderRadius: BorderRadius.circular(32),
@@ -659,8 +659,8 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                 }
                                               },
                                               child: Container(
-                                                height: 44,
-                                                width: 44,
+                                                height: 38,
+                                                width: 38,
                                                 decoration: const BoxDecoration(
                                                   color: Colors.white,
                                                   shape: BoxShape.circle,
@@ -669,7 +669,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                   child: FaIcon(
                                                     FontAwesomeIcons.arrowUp,
                                                     color: Color(0xFF1f1f25),
-                                                    size: 18,
+                                                    size: 16,
                                                   ),
                                                 ),
                                               ),
@@ -685,8 +685,9 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                 voiceRecorderProvider.startRecording();
                                               },
                                               child: Container(
-                                                height: 44,
-                                                width: 44,
+                                                height: 38,
+                                                width: 38,
+                                                padding: const EdgeInsets.only(left: 6),
                                                 alignment: Alignment.center,
                                                 child: const FaIcon(
                                                   FontAwesomeIcons.microphone,
@@ -718,8 +719,8 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                         }
                                                       : null,
                                                   child: Container(
-                                                    height: 44,
-                                                    width: 44,
+                                                    height: 38,
+                                                    width: 38,
                                                     decoration: const BoxDecoration(
                                                       color: Colors.white,
                                                       shape: BoxShape.circle,
@@ -728,7 +729,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                       child: FaIcon(
                                                         FontAwesomeIcons.arrowUp,
                                                         color: Color(0xFF1f1f25),
-                                                        size: 18,
+                                                        size: 16,
                                                       ),
                                                     ),
                                                   ),
