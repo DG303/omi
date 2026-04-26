@@ -535,9 +535,8 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                       // bottom of the screen so it naturally pops above.
                                       position: PullDownMenuPosition.automatic,
                                       buttonBuilder: (context, showMenu) => GestureDetector(
-                                        onTap: () {
+                                        onTap: () async {
                                           HapticFeedback.lightImpact();
-                                          FocusScope.of(context).unfocus();
                                           if (provider.selectedFiles.length > 3) {
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               SnackBar(
@@ -546,6 +545,15 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                               ),
                                             );
                                             return;
+                                          }
+                                          // If the keyboard is open, dismissing it shifts the input
+                                          // bar down. Wait for the keyboard animation to finish
+                                          // before the menu anchors to the button — otherwise the
+                                          // menu floats at the old (higher) button position.
+                                          if (textFieldFocusNode.hasFocus) {
+                                            FocusScope.of(context).unfocus();
+                                            await Future.delayed(const Duration(milliseconds: 280));
+                                            if (!context.mounted) return;
                                           }
                                           showMenu();
                                         },
@@ -571,7 +579,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                   // CENTER pill — text field/waveform + right-side button stays inside.
                                   Expanded(
                                     child: Container(
-                                      padding: const EdgeInsets.only(left: 14, right: 8, top: 4, bottom: 4),
+                                      padding: const EdgeInsets.only(left: 14, right: 8, top: 7, bottom: 7),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF2A2A2F),
                                         borderRadius: BorderRadius.circular(32),
