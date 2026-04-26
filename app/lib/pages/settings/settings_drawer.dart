@@ -752,10 +752,14 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
         child: Stack(
           children: [
-            // Bottom purple glow — full-width linear gradient that fades from
-            // deep purple at the bottom up into the black drawer body. Mirrors
-            // the top-down purple gradient used on the daily recap detail page.
-            Positioned.fill(
+            // Bottom-anchored purple glow — fixed in the lower region of the
+            // drawer (not pervasive). The gradient fades upward into
+            // transparent so the upper drawer body stays clean.
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 220,
               child: IgnorePointer(
                 child: DecoratedBox(
                   decoration: const BoxDecoration(
@@ -766,7 +770,6 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                         Color(0xFF2D1F5B),
                         Color(0x002D1F5B),
                       ],
-                      stops: [0.0, 0.55],
                     ),
                   ),
                 ),
