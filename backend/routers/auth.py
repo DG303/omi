@@ -1,12 +1,11 @@
 import os
-import re
 import uuid
 import json
 import hashlib
 import time
 import jwt
 from typing import Optional
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote
 from cryptography.hazmat.primitives import serialization
 from jwt.algorithms import RSAAlgorithm
 from fastapi import APIRouter, Request, HTTPException, Form
@@ -30,8 +29,19 @@ router = APIRouter(
 templates_path = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_path))
 
-# Omi custom URL scheme pattern: omi, omi-computer, omi-computer-dev, omi-fix-rewind, etc.
-_ALLOWED_SCHEME_RE = re.compile(r'^omi(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?$')
+# Exact redirect URIs trusted for OAuth callback. Only these concrete URIs are allowed.
+# Named test bundles (omi-fix-rewind, omi-7020-auth, etc.) should use a local backend,
+# not the production auth flow, so they are not included here.
+_TRUSTED_REDIRECT_URIS = {
+    'omi://auth/callback',
+    'omi-computer://auth/callback',
+    'omi-computer-dev://auth/callback',
+}
+# Additional redirect URIs can be added via env var (comma-separated) for dev/staging
+_extra = os.getenv('AUTH_EXTRA_REDIRECT_URIS', '')
+if _extra:
+    _TRUSTED_REDIRECT_URIS.update(uri.strip() for uri in _extra.split(',') if uri.strip())
+
 # Default redirect URI for legacy callers that don't send redirect_uri
 _DEFAULT_REDIRECT_URI = 'omi://auth/callback'
 
@@ -39,24 +49,16 @@ _DEFAULT_REDIRECT_URI = 'omi://auth/callback'
 def _validate_redirect_uri(redirect_uri: Optional[str]) -> str:
     """Validate and return a safe redirect URI for the auth callback.
 
-    Accepts only Omi custom URL schemes (omi://, omi-computer://, omi-computer-dev://, etc.)
-    with host=auth and path=/callback.  Returns the default for legacy callers that omit it.
+    Only accepts exact URIs from the trusted set. Returns the default for legacy
+    callers that omit redirect_uri. Rejects all other values with 400.
     """
     if not redirect_uri:
         return _DEFAULT_REDIRECT_URI
 
-    parts = urlsplit(redirect_uri)
-    scheme = parts.scheme.lower()
-    if (
-        _ALLOWED_SCHEME_RE.match(scheme)
-        and parts.netloc == 'auth'
-        and parts.path == '/callback'
-        and not parts.query
-        and not parts.fragment
-    ):
+    if redirect_uri in _TRUSTED_REDIRECT_URIS:
         return redirect_uri
 
-    raise HTTPException(status_code=400, detail="Invalid redirect_uri — must be an omi:// custom scheme callback")
+    raise HTTPException(status_code=400, detail="Invalid redirect_uri — not in trusted set")
 
 
 @router.get("/authorize")
