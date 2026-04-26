@@ -1,5 +1,8 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Added agent pills: action-y Ask Omi requests (typed or voice) now spawn small floating-bar agents that run in parallel; hover any pill to see live progress and open in chat",
+    "Added Execute button on floating-bar notification cards and task rows \u2014 one click spawns an agent that handles the item end-to-end"
+  ],
   "releases": [
     {
       "version": "0.11.363",
