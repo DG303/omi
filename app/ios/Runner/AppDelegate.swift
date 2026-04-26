@@ -142,7 +142,7 @@ extension FlutterError: Error {}
         defaults?.set(Date(), forKey: "widget_last_updated")
         // NOTE: isMuted is intentionally NOT written here — only updateMuteState controls it
         if #available(iOS 14.0, *) {
-          WidgetCenter.shared.reloadTimelines(ofKind: "OmiBatteryWidget")
+          WidgetCenter.shared.reloadAllTimelines()
         }
       case "updateMuteState":
         let isMuted = (args["isMuted"] as? Bool) ?? (args["isMuted"] as? NSNumber)?.boolValue ?? false
