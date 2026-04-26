@@ -106,7 +106,13 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
                 child: _buildSectionHeader(
                   context,
                   context.l10n.conversations,
-                  onViewAll: () => context.read<HomeProvider>().setIndex(1),
+                  onViewAll: () {
+                    // Reset the daily-summaries flag so the conversations tab
+                    // actually shows conversations (it persists from Daily
+                    // Recaps' View All otherwise).
+                    if (convoProvider.showDailySummaries) convoProvider.toggleDailySummaries();
+                    context.read<HomeProvider>().setIndex(1);
+                  },
                 ),
               ),
               _buildConversationsPreview(convoProvider),
