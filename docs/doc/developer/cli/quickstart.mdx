@@ -1,0 +1,121 @@
+---
+title: "Quickstart"
+icon: "rocket"
+description: "Get from zero to a memory list in three commands."
+---
+
+This guide assumes you've already [installed `omi-cli`](/doc/developer/cli/install).
+
+## 1. Get a developer API key
+
+<Steps>
+  <Step title="Open the Omi web app">
+    Go to [`https://app.omi.me`](https://app.omi.me) and sign in.
+  </Step>
+  <Step title="Create a key">
+    Navigate to **Developer → API Keys** and click **Create key**.
+  </Step>
+  <Step title="Pick scopes">
+    Select the scopes you want this key to have. For a first-pass exploration,
+    grant all `:read` scopes; add `:write` as you need them. The CLI checks
+    the prefix of the key client-side so you'll fail fast on a typo.
+  </Step>
+  <Step title="Copy the key">
+    The key is shown **once** — copy it now. It looks like
+    `omi_dev_<32 hex chars>`.
+  </Step>
+</Steps>
+
+## 2. Log in
+
+<Tabs>
+  <Tab title="Interactive (preferred)">
+    ```bash
+    omi auth login
+    ```
+
+    The CLI prompts for the key with hidden input — your token never ends up
+    in shell history.
+  </Tab>
+  <Tab title="Headless / CI">
+    ```bash
+    export OMI_API_KEY=omi_dev_...
+    ```
+
+    The env var takes effect immediately; no on-disk config needed. The same
+    prefix validation runs, so a malformed value fails with a clear error
+    rather than a cryptic 401.
+  </Tab>
+  <Tab title="Stdin (also nice for CI)">
+    ```bash
+    omi auth login < /path/to/key.txt
+    ```
+
+    Useful when the key already lives in a secret manager and you can pipe it
+    in without ever displaying it.
+  </Tab>
+</Tabs>
+
+Confirm:
+
+```bash
+omi auth status
+```
+
+```text
+          omi auth status
+ profile        default
+ authenticated  ✓
+ auth_method    api_key
+ api_base       https://api.omi.me
+ credential     omi_de…a385
+```
+
+## 3. Read your data
+
+```bash
+omi memory list
+omi conversation list --limit 5
+omi action-item list --open
+omi goal list
+```
+
+Add `--json` (as a global flag, before the verb) for machine-readable output:
+
+```bash
+omi --json memory list --limit 25 | jq '.[] | {id, content, category}'
+```
+
+## 4. Make a change
+
+```bash
+# Create a memory:
+omi memory create "Prefers async over sync meetings" --category work --tag preferences
+
+# Mark an action item complete:
+omi action-item complete a1b2c3d4
+
+# Update goal progress:
+omi goal progress g_xyz 7
+```
+
+## Profiles
+
+Got more than one Omi account (e.g. personal + work)? Use named profiles:
+
+```bash
+omi config profile use work
+omi auth login                      # logs in the active profile
+omi --profile personal memory list  # one-off override
+```
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Command reference" icon="book" href="/doc/developer/cli/commands">
+    Every verb, every flag.
+  </Card>
+  <Card title="For agents" icon="robot" href="/doc/developer/cli/agents">
+    Stable JSON contract + exit codes for LLM use.
+  </Card>
+</CardGroup>
