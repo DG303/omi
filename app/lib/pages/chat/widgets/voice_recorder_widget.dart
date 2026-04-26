@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -9,8 +8,11 @@ import 'package:omi/widgets/shimmer_with_timeout.dart';
 import 'package:omi/providers/voice_recorder_provider.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 
+/// Compact waveform pill that lives inside the chat input row, between the
+/// stop button and the send button. Mirrors the visual treatment of the
+/// regular text field so the input bar feels cohesive in voice mode.
 class VoiceRecorderWidget extends StatefulWidget {
-  final Function(String) onTranscriptReady;
+  final Function(String transcript, bool autoSend) onTranscriptReady;
   final VoidCallback onClose;
 
   const VoiceRecorderWidget({super.key, required this.onTranscriptReady, required this.onClose});
@@ -28,12 +30,10 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> with SingleTi
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))
       ..repeat(reverse: true);
 
-    // Set up callbacks and start recording
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<VoiceRecorderProvider>();
       provider.setCallbacks(onTranscriptReady: widget.onTranscriptReady, onClose: widget.onClose);
 
-      // Only start recording if not already recording and not recovering a previous recording
       if (!provider.isRecording && !provider.hasPendingRecording) {
         provider.startRecording();
       }
@@ -43,8 +43,6 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> with SingleTi
   @override
   void dispose() {
     _animationController.dispose();
-    // Don't stop recording on dispose - let it continue across page navigation
-    // The provider will handle cleanup when close() is called
     super.dispose();
   }
 
@@ -54,84 +52,31 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> with SingleTi
       builder: (context, provider, child) {
         switch (provider.state) {
           case VoiceRecorderState.recording:
-            return Container(
-              decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: provider.close,
-                  ),
-                  Expanded(
-                    child: SizedBox(
-                      height: 40,
-                      child: CustomPaint(painter: AudioWavePainter(levels: provider.audioLevels)),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: provider.processRecording,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      margin: const EdgeInsets.only(top: 10, bottom: 10, right: 6, left: 16),
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: const Icon(Icons.check, color: Colors.black, size: 20.0),
-                    ),
-                  ),
-                ],
-              ),
+            return SizedBox(
+              height: 44,
+              child: CustomPaint(painter: AudioWavePainter(levels: provider.audioLevels)),
             );
 
           case VoiceRecorderState.transcribing:
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ShimmerWithTimeout(
-                    baseColor: Color(0xFF35343B),
-                    highlightColor: Colors.white,
-                    child: Text(context.l10n.transcribing, style: const TextStyle(color: Colors.white)),
+            return SizedBox(
+              height: 44,
+              child: Center(
+                child: ShimmerWithTimeout(
+                  baseColor: const Color(0xFF35343B),
+                  highlightColor: Colors.white,
+                  child: Text(
+                    context.l10n.transcribing,
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
                   ),
-                ],
+                ),
               ),
-            );
-
-          case VoiceRecorderState.transcribeSuccess:
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)),
-                  child: Text(provider.transcript, style: const TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: provider.close,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
-                      onPressed: () => widget.onTranscriptReady(provider.transcript),
-                    ),
-                  ],
-                ),
-              ],
             );
 
           case VoiceRecorderState.transcribeFailed:
           case VoiceRecorderState.pendingRecovery:
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(16)),
+            return SizedBox(
+              height: 44,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     provider.state == VoiceRecorderState.pendingRecovery
@@ -139,43 +84,30 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> with SingleTi
                         : context.l10n.error,
                     style: TextStyle(
                       color: provider.state == VoiceRecorderState.pendingRecovery ? Colors.white : Colors.redAccent,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: SizedBox(
-                      height: 40,
+                      height: 32,
                       child: CustomPaint(painter: AudioWavePainter(levels: provider.audioLevels)),
                     ),
                   ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: provider.retry,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          margin: const EdgeInsets.only(left: 10, right: 0, top: 10, bottom: 10),
-                          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                          child: const Icon(color: Colors.black, Icons.refresh, size: 20.0),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: provider.close,
-                        child: Container(
-                          padding: const EdgeInsets.only(left: 14, right: 0, top: 14, bottom: 14),
-                          child: const Icon(Icons.close, color: Colors.white, size: 20),
-                        ),
-                      ),
-                    ],
+                  GestureDetector(
+                    onTap: provider.retry,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Icon(Icons.refresh, color: Colors.white, size: 20),
+                    ),
                   ),
                 ],
               ),
             );
 
           default:
-            return const SizedBox.shrink();
+            return const SizedBox(height: 44);
         }
       },
     );
@@ -189,13 +121,11 @@ class AudioWavePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Guard against empty levels to prevent divide-by-zero
     if (levels.isEmpty) return;
 
     final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth =
-          4 // Slightly thicker for better visibility
+      ..color = Colors.white.withValues(alpha: 0.7)
+      ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round;
 
     final width = size.width;
@@ -205,21 +135,21 @@ class AudioWavePainter extends CustomPainter {
     for (int i = 0; i < levels.length; i++) {
       final x = i * (barWidth * 2) + barWidth;
 
-      // Use the level directly for more accurate RMS representation
       final level = levels[i];
-      final barHeight = level * height * 0.8;
+      // Use a steeper curve so quiet sections stay short and loud sections
+      // pop, matching the visual rhythm in the reference design.
+      final scaled = math.pow(level, 1.4).toDouble();
+      final barHeight = (scaled * height * 0.85).clamp(2.0, height);
 
       final topY = height / 2 - barHeight / 2;
       final bottomY = height / 2 + barHeight / 2;
 
-      // Draw only the individual bars with rounded caps
       canvas.drawLine(Offset(x, topY), Offset(x, bottomY), paint);
     }
   }
 
   @override
   bool shouldRepaint(covariant AudioWavePainter oldDelegate) {
-    // Only repaint if the audio levels have actually changed
     if (levels.length != oldDelegate.levels.length) return true;
     for (int i = 0; i < levels.length; i++) {
       if ((levels[i] - oldDelegate.levels[i]).abs() > 0.01) return true;
