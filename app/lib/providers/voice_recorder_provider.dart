@@ -125,8 +125,10 @@ class VoiceRecorderProvider extends ChangeNotifier {
       }
     }
 
-    // Setup timer to update the wave visualization every second
-    _waveformTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    // Repaint the waveform at ~20Hz. Levels are shifted in onByteReceived
+    // (much faster than this), but the UI only re-renders on notifyListeners,
+    // so a 1s timer made the wave appear frozen.
+    _waveformTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       if (_state == VoiceRecorderState.recording) {
         notifyListeners();
       }
