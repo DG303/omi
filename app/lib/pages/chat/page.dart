@@ -112,11 +112,15 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
           }
         });
       } else if (_isInitialLoad) {
-        // Auto-focus the text field only on initial load, not on app switches
+        // Auto-focus the text field only on initial load, not on app switches.
+        // iOS sometimes ignores programmatic focus and won't pop the keyboard
+        // until the user taps the field — explicitly invoking TextInput.show
+        // after requestFocus forces the keyboard up.
         Future.delayed(const Duration(milliseconds: 300), () {
           final voiceRecorderProvider = context.read<VoiceRecorderProvider>();
           if (mounted && !voiceRecorderProvider.isActive && _isInitialLoad) {
             textFieldFocusNode.requestFocus();
+            SystemChannels.textInput.invokeMethod('TextInput.show');
           }
         });
       }
