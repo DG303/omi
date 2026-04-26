@@ -821,6 +821,16 @@ class CaptureProvider extends ChangeNotifier
     notifyListeners();
   }
 
+  void clearUserData() {
+    segments = [];
+    photos = [];
+    hasTranscripts = false;
+    _transcriptionServiceStatuses = [];
+    suggestionsBySegmentId = {};
+    taggingSegmentIds = [];
+    notifyListeners();
+  }
+
   void _startMetricsTracking() {
     _blesBytesReceived = 0;
     _wsSocketBytesSent = 0;
