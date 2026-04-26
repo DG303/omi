@@ -1,4 +1,4 @@
-"""``omi auth`` — login, logout, status."""
+"""``omi auth`` — login (browser or API key), logout, status, refresh."""
 
 from __future__ import annotations
 
@@ -29,54 +29,120 @@ def _ctx(typer_ctx: typer.Context) -> "AppContext":
     return obj  # type: ignore[no-any-return]
 
 
-@app.command("login", help="Authenticate this profile with an Omi developer API key.")
+@app.command("login", help="Authenticate this profile. Prompts for browser or API key if no flag is given.")
 def login(
     typer_ctx: typer.Context,
     api_key_arg: Optional[str] = typer.Option(
         None,
         "--api-key",
-        help="API key. If omitted, you will be prompted interactively (preferred — keeps the key out of shell history).",
+        help="API key (skips the prompt). Visible in shell history — prefer the interactive paste.",
     ),
     browser: bool = typer.Option(
         False,
         "--browser",
-        help="Use the Firebase OAuth browser flow (coming in v0.2.0).",
+        help="Force the Firebase OAuth browser flow.",
+    ),
+    provider: str = typer.Option(
+        "google",
+        "--provider",
+        help="OAuth provider for --browser: google or apple.",
     ),
 ) -> None:
     ctx = _ctx(typer_ctx)
     renderer = ctx.renderer
 
+    if browser and api_key_arg:
+        raise UsageError(
+            message="Pick one auth method",
+            detail="`--browser` and `--api-key` are mutually exclusive.",
+        )
+
+    # Explicit flags win over the picker.
     if browser:
-        # Surface the v0.2.0 stub message — clean, expected error path.
-        oauth_auth.login_with_browser(ctx.profile_name)
-        return  # unreachable; the stub raises
+        return _do_browser_login(ctx, provider=provider)
 
-    if api_key_arg is None:
-        # Read from stdin if not a TTY (handy for piping `omi auth login < key.txt`).
-        if not sys.stdin.isatty():
-            api_key_arg = sys.stdin.read().strip()
-        else:
-            api_key_arg = typer.prompt("Paste your Omi developer API key", hide_input=True).strip()
+    if api_key_arg is not None:
+        return _do_api_key_login(ctx, api_key_arg)
 
-    profile = api_key_auth.login_with_api_key(ctx.profile_name, api_key_arg, api_base=ctx.api_base_override)
+    # Headless / piped contexts: read API key from stdin (e.g. `omi auth login < key.txt`).
+    if not sys.stdin.isatty():
+        piped = sys.stdin.read().strip()
+        if not piped:
+            raise UsageError(
+                message="No input on stdin",
+                detail="Pipe an API key in, or run `omi auth login` interactively.",
+            )
+        return _do_api_key_login(ctx, piped)
 
-    # Optional sanity check: reach out and confirm the key works. We do this on
-    # a tolerant endpoint (memories list with limit=1) so a missing scope on the
-    # primary domain doesn't make login appear to fail.
+    # Interactive picker — the new default UX.
+    if not ctx.renderer.json_mode:
+        renderer.info("How would you like to log in?")
+        renderer.info("  [bold]1[/bold]) Browser  — sign in with Google or Apple via OAuth (recommended for humans)")
+        renderer.info("  [bold]2[/bold]) API key  — paste a developer key from app.omi.me (recommended for agents/CI)")
+    choice = typer.prompt("Choose 1 or 2", default="1").strip()
+
+    if choice in {"1", "browser", "b"}:
+        return _do_browser_login(ctx, provider=provider)
+    if choice in {"2", "api-key", "key", "k"}:
+        api_key_input = typer.prompt("Paste your Omi developer API key", hide_input=True).strip()
+        return _do_api_key_login(ctx, api_key_input)
+    raise UsageError(
+        message=f"Unrecognized choice: {choice!r}",
+        detail="Enter 1 (browser) or 2 (API key).",
+    )
+
+
+def _do_browser_login(ctx: "AppContext", *, provider: str) -> None:
+    """Run the OAuth browser flow + verify the resulting Firebase token works."""
+    api_base = ctx.api_base_override or ctx.get_profile().api_base
+    profile = oauth_auth.login_with_browser(ctx.profile_name, api_base=api_base, provider=provider)
+
+    # Verify the freshly-minted Firebase ID token actually authenticates against
+    # the Omi API. If it doesn't, roll back so the user isn't left holding a
+    # half-broken OAuth profile.
     try:
         with OmiClient(profile, verbose=ctx.verbose) as client:
             client.get("/v1/dev/user/memories", params={"limit": 1})
     except AuthError as exc:
-        # Roll back the bad credential so the user isn't stuck with a broken profile.
         clear_credentials(ctx.profile_name)
         raise exc
     except CliError as exc:
-        # Network / rate-limit / non-auth issues: don't roll back, but warn.
-        renderer.warn(f"Could not verify the key right now ({exc.message}). It is stored — try again shortly.")
+        # Insufficient scope / 403 also bubbles as AuthError above. Anything
+        # else is a transient network blip — keep the credential, just warn.
+        ctx.renderer.warn(
+            f"Could not verify the new token right now ({exc.message}). It is stored — try again shortly."
+        )
 
-    renderer.success(f"Logged in as profile [bold]{profile.name}[/bold] ({profile.masked_credential()}).")
+    ctx.renderer.success(f"Logged in via [bold]{provider}[/bold] OAuth as profile [bold]{profile.name}[/bold].")
     if ctx.renderer.json_mode:
-        renderer.emit({"profile": profile.name, "auth_method": profile.auth_method, "api_base": profile.api_base})
+        ctx.renderer.emit(
+            {
+                "profile": profile.name,
+                "auth_method": profile.auth_method,
+                "api_base": profile.api_base,
+                "provider": provider,
+            }
+        )
+
+
+def _do_api_key_login(ctx: "AppContext", api_key: str) -> None:
+    """Validate, persist, and verify a dev API key."""
+    profile = api_key_auth.login_with_api_key(ctx.profile_name, api_key, api_base=ctx.api_base_override)
+
+    # Sanity check on a tolerant endpoint — see the original launch PR's
+    # rationale. AuthError → roll back; other CliError → warn and keep.
+    try:
+        with OmiClient(profile, verbose=ctx.verbose) as client:
+            client.get("/v1/dev/user/memories", params={"limit": 1})
+    except AuthError as exc:
+        clear_credentials(ctx.profile_name)
+        raise exc
+    except CliError as exc:
+        ctx.renderer.warn(f"Could not verify the key right now ({exc.message}). It is stored — try again shortly.")
+
+    ctx.renderer.success(f"Logged in as profile [bold]{profile.name}[/bold] ({profile.masked_credential()}).")
+    if ctx.renderer.json_mode:
+        ctx.renderer.emit({"profile": profile.name, "auth_method": profile.auth_method, "api_base": profile.api_base})
 
 
 @app.command("logout", help="Clear credentials for the active profile.")
@@ -95,13 +161,16 @@ def logout(typer_ctx: typer.Context) -> None:
 def status(typer_ctx: typer.Context) -> None:
     ctx = _ctx(typer_ctx)
     profile = ctx.get_profile()
-    payload = {
+    payload: dict[str, object] = {
         "profile": profile.name,
         "authenticated": profile.is_authenticated(),
         "auth_method": profile.auth_method,
         "api_base": profile.api_base,
         "credential": profile.masked_credential(),
     }
+    if profile.auth_method == "oauth" and profile.id_token_expires_at:
+        # Surface expiry so users can tell if the auto-refresh has been keeping up.
+        payload["id_token_expires_at"] = profile.id_token_expires_at
     ctx.renderer.emit(payload, title="omi auth status")
 
 
@@ -109,21 +178,21 @@ def status(typer_ctx: typer.Context) -> None:
 def whoami(typer_ctx: typer.Context) -> None:
     ctx = _ctx(typer_ctx)
     # The public dev surface doesn't expose a /me endpoint, but a memories list
-    # round-trip with the credential confirms the key is alive and identifies
-    # the user implicitly (the count belongs to *this* user). This keeps the
-    # command useful without inventing new backend routes.
+    # round-trip with the credential confirms the credential is alive and
+    # identifies the user implicitly (the count belongs to *this* user).
     with ctx.make_client() as client:
         memories = client.get("/v1/dev/user/memories", params={"limit": 1})
     payload = {
         "profile": ctx.profile_name,
         "credential": ctx.get_profile().masked_credential(),
+        "auth_method": ctx.get_profile().auth_method,
         "api_base": ctx.get_profile().api_base,
         "owns_memories": isinstance(memories, list),
     }
     ctx.renderer.emit(payload, title="omi whoami")
 
 
-@app.command("refresh", help="Refresh the OAuth ID token (no-op for API-key profiles).")
+@app.command("refresh", help="Force-refresh the OAuth ID token (no-op for API-key profiles).")
 def refresh(typer_ctx: typer.Context) -> None:
     ctx = _ctx(typer_ctx)
     profile = ctx.get_profile()
@@ -132,10 +201,11 @@ def refresh(typer_ctx: typer.Context) -> None:
             message="Nothing to refresh",
             detail=(
                 f"Profile '{profile.name}' uses API-key auth — there is no token to refresh. "
-                "API keys are long-lived; rotate them in the Omi web app if needed."
+                "Rotate keys in the Omi web app if needed."
             ),
         )
     oauth_auth.refresh_id_token(profile.name)
+    ctx.renderer.success(f"Refreshed Firebase ID token for profile [bold]{profile.name}[/bold].")
 
 
 def _ensure_authenticated(profile: cfg.Profile) -> None:  # pragma: no cover — utility for sibling commands

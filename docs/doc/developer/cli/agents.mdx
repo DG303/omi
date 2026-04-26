@@ -35,16 +35,28 @@ omi --json memory list --limit 25 | jq '.[] | {id, content, category}'
 These codes are **part of the contract** — they won't shift between minor
 versions. Branch on them in your harness without parsing English errors.
 
-## Authentication
+## Authentication: API key vs browser OAuth
 
-For agents, prefer the env-var path:
+The CLI supports both — but for **agents** specifically, the API-key path is
+almost always the right call:
+
+| Need                                | Use this                  |
+| ----------------------------------- | ------------------------- |
+| Headless / CI / container runtime   | `OMI_API_KEY` env var     |
+| Long-running unattended automation  | API key                   |
+| Scoped permissions                  | API key (granular scopes) |
+| Interactive use by a human          | `omi auth login --browser`|
+
+API keys are long-lived, scoped, and don't need a browser — perfect for
+agents. The browser OAuth flow exists for humans on a laptop and uses
+short-lived Firebase ID tokens that auto-refresh between calls.
 
 ```bash
 export OMI_API_KEY=omi_dev_...
 ```
 
-The on-disk config file is great for humans on a laptop but a footgun in
-shared CI runners. The env var injection runs the same prefix validation as
+The on-disk config file is great for humans but a footgun in shared CI
+runners. The env var injection runs the same prefix validation as
 `omi auth login` so a malformed value still fails fast with exit `1`.
 
 ## Retry behavior

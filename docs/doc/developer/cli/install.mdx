@@ -4,6 +4,9 @@ icon: "download"
 description: "Install omi-cli and confirm the binary is on your PATH."
 ---
 
+`omi-cli` is published on PyPI: [pypi.org/project/omi-cli](https://pypi.org/project/omi-cli/).
+Source lives in the [Omi monorepo](https://github.com/BasedHardware/omi/tree/main/sdks/python-cli).
+
 ## Install
 
 <Tabs>
@@ -50,7 +53,7 @@ description: "Install omi-cli and confirm the binary is on your PATH."
 
 ```bash
 omi --version
-# omi-cli 0.1.0
+# omi-cli 0.2.0
 
 omi --help
 ```
@@ -63,8 +66,9 @@ You should see the full command tree (`auth`, `config`, `memory`,
 - **Python 3.10+** — the package is tested on 3.10, 3.11, and 3.12.
 - **A network path to `https://api.omi.me`** — overridable via `--api-base` or
   `$OMI_API_BASE` for staging or local environments.
-- **A developer API key** — see the [Quickstart](/doc/developer/cli/quickstart)
-  for how to generate one.
+- **A way to authenticate** — either a Google/Apple account (browser OAuth)
+  or a developer API key from the Omi web app. The
+  [Quickstart](/doc/developer/cli/quickstart) walks through both.
 
 ## Where state lives
 
