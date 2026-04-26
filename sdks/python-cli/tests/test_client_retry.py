@@ -1,11 +1,15 @@
-"""Tests for the HTTP client: auth headers, retry logic, error mapping."""
+"""Tests for the HTTP client: auth headers, retry logic, error mapping, OAuth refresh."""
 
 from __future__ import annotations
+
+import time
 
 import httpx
 import pytest
 
 from omi_cli import __version__
+from omi_cli import config as cfg
+from omi_cli.auth.store import store_oauth_tokens
 from omi_cli.client import USER_AGENT, OmiClient
 from omi_cli.errors import AuthError, CliError, NotFoundError, RateLimitError, ServerError
 
@@ -13,6 +17,60 @@ from omi_cli.errors import AuthError, CliError, NotFoundError, RateLimitError, S
 def test_user_agent_contains_version_and_repo() -> None:
     assert __version__ in USER_AGENT
     assert "omi-cli" in USER_AGENT
+
+
+def test_oauth_pre_flight_refresh_when_token_expired(config_path, monkeypatch) -> None:
+    """Constructing an OmiClient on an OAuth profile with an expired ID token
+    must trigger a Firebase refresh before the bearer header is built."""
+    # Seed the profile with an expired token.
+    store_oauth_tokens(
+        "default",
+        id_token="stale_token",
+        refresh_token="refr_x",
+        expires_at=time.time() - 60,
+        api_base="https://api.test.omi.local",
+    )
+
+    refreshed_calls: dict = {}
+
+    def fake_refresh(profile_name: str) -> str:
+        refreshed_calls["called"] = profile_name
+        return "fresh_token_after_refresh"
+
+    monkeypatch.setattr("omi_cli.auth.oauth.refresh_id_token", fake_refresh)
+
+    profile = cfg.load().get_profile("default")
+    with OmiClient(profile) as client:
+        # Inspect the Authorization header the client computed.
+        sent_token = client._http.headers["Authorization"]
+    assert refreshed_calls.get("called") == "default"
+    assert sent_token == "Bearer fresh_token_after_refresh"
+
+
+def test_oauth_pre_flight_skipped_when_token_fresh(config_path, monkeypatch) -> None:
+    """A still-valid OAuth ID token should NOT trigger a refresh — that would
+    waste a Firebase round-trip on every CLI invocation."""
+    store_oauth_tokens(
+        "default",
+        id_token="fresh_token",
+        refresh_token="refr_x",
+        expires_at=time.time() + 1800,  # 30 min remaining
+        api_base="https://api.test.omi.local",
+    )
+
+    refresh_count = {"n": 0}
+
+    def fake_refresh(profile_name: str) -> str:
+        refresh_count["n"] += 1
+        return "should_not_be_used"
+
+    monkeypatch.setattr("omi_cli.auth.oauth.refresh_id_token", fake_refresh)
+
+    profile = cfg.load().get_profile("default")
+    with OmiClient(profile) as client:
+        sent_token = client._http.headers["Authorization"]
+    assert refresh_count["n"] == 0
+    assert sent_token == "Bearer fresh_token"
 
 
 def test_get_injects_bearer_and_returns_json(authed_profile, respx_mock) -> None:
