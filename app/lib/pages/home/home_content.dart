@@ -86,18 +86,20 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
               // Today section — TodayTasksWidget has its own header
               const SliverToBoxAdapter(child: TodayTasksWidget()),
 
-              // Daily Recaps section
-              SliverToBoxAdapter(
-                child: _buildSectionHeader(
-                  context,
-                  context.l10n.dailyRecaps,
-                  onViewAll: () {
-                    if (!convoProvider.showDailySummaries) convoProvider.toggleDailySummaries();
-                    context.read<HomeProvider>().setIndex(1);
-                  },
+              // Daily Recaps section — hidden entirely when not loading and empty
+              if (_loadingSummaries || _recentSummaries.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: _buildSectionHeader(
+                    context,
+                    context.l10n.dailyRecaps,
+                    onViewAll: () {
+                      if (!convoProvider.showDailySummaries) convoProvider.toggleDailySummaries();
+                      context.read<HomeProvider>().setIndex(1);
+                    },
+                  ),
                 ),
-              ),
-              SliverToBoxAdapter(child: _buildDailyRecapsPreview(context)),
+                SliverToBoxAdapter(child: _buildDailyRecapsPreview(context)),
+              ],
 
               // Conversations section
               SliverToBoxAdapter(
