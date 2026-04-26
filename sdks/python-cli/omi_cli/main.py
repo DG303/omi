@@ -20,10 +20,12 @@ import sys
 from dataclasses import dataclass, field
 from typing import Optional
 
+import click
 import typer
 
 from omi_cli import __version__
 from omi_cli import config as cfg
+from omi_cli.auth.api_key import validate_api_key_format
 from omi_cli.client import OmiClient
 from omi_cli.commands import action_item as action_item_cmd
 from omi_cli.commands import auth as auth_cmd
@@ -72,10 +74,13 @@ class AppContext:
         if self.api_base_override:
             profile.api_base = self.api_base_override
         # Allow OMI_API_KEY to take effect even if the on-disk profile has no key.
+        # Validate the prefix here so an obviously-bad env value fails fast with the
+        # same friendly UsageError the paste flow uses, instead of bouncing off the
+        # API as a cryptic 401.
         env_key = os.environ.get(cfg.ENV_API_KEY)
         if env_key and not profile.api_key:
             profile.auth_method = "api_key"
-            profile.api_key = env_key
+            profile.api_key = validate_api_key_format(env_key)
         env_base = os.environ.get(cfg.ENV_API_BASE)
         if env_base and not self.api_base_override:
             profile.api_base = env_base
@@ -158,7 +163,22 @@ def _exit_with_cli_error(error: CliError, renderer: Renderer) -> int:
 
 
 def main() -> None:
-    """Module-level entry point that converts CliError into stable exit codes."""
+    """Module-level entry point that converts CliError into stable exit codes.
+
+    We run Click in non-standalone mode so we can shape the exit codes ourselves.
+    The exception ladder, in order of specificity:
+
+    * :class:`CliError` (our own, subclass of ClickException) — already knows how
+      to render via the active Renderer; just call ``show()`` and exit with its
+      ``exit_code``.
+    * Other :class:`click.ClickException` (e.g. ``NoSuchOption`` for a typo'd
+      flag) — let Click's default ``show()`` print the friendly usage message,
+      then exit with its built-in ``exit_code`` (typically 2 for Click usage).
+    * :class:`typer.Exit` — Typer's "clean exit at this code", e.g. from
+      ``--version``. Pass through.
+    * KeyboardInterrupt / EOFError — Ctrl-C / Ctrl-D. Conventional 130.
+    * Anything else — last-chance handler. Print a clean line, exit 1.
+    """
     try:
         app(standalone_mode=False)
     except CliError as exc:
@@ -166,6 +186,11 @@ def main() -> None:
         # not exist — fall back to a default Renderer reading the env.
         renderer = Renderer(json_mode=False)
         sys.exit(_exit_with_cli_error(exc, renderer))
+    except click.ClickException as exc:
+        # Click's own usage errors (unknown flag, missing argument, etc.).
+        # Let Click format it the way users expect; honor its exit_code.
+        exc.show()
+        sys.exit(exc.exit_code)
     except typer.Exit as exc:
         sys.exit(exc.exit_code)
     except (KeyboardInterrupt, EOFError):
