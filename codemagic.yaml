@@ -1835,7 +1835,7 @@ workflows:
   #   OMI_DESKTOP_APP_ENV_V2          — base64-encoded .env bundled into .app at build time
   #                                     Contains:
   #                                       OMI_API_URL=https://api.omi.me
-  #                                       OMI_AUTH_URL=https://omi-desktop-auth-208440318997.us-central1.run.app/
+  #                                       OMI_AUTH_URL=https://api.omi.me/
   #                                       FIREBASE_API_KEY=<prod firebase web api key>
   #                                       MIXPANEL_PROJECT_TOKEN=<token>
   #                                     NOTE: OMI_PYTHON_API_URL is set via workflow vars (not in this secret)
