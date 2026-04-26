@@ -704,6 +704,10 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
 
   _sendMessageUtil(String text) async {
     var provider = context.read<MessageProvider>();
+    // Guard against re-entry (rapid double-tap of send, voice→transcribeSuccess
+    // race firing onTranscriptReady twice, etc.). Without this the chat could
+    // submit the same text twice and the AI replies twice.
+    if (provider.sendingMessage) return;
 
     String? currentContext = _selectedContext;
     setState(() {
