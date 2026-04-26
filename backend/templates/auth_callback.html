@@ -112,8 +112,10 @@
             try {
                 const u = new URL(uri);
                 if (u.protocol !== 'http:') return false;
+                // URL.hostname returns the bracketless form for IPv6 — compare
+                // against the bare ``::1`` rather than ``[::1]``.
                 const host = u.hostname.toLowerCase();
-                return host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+                return host === 'localhost' || host === '127.0.0.1' || host === '::1';
             } catch (_) {
                 return false;
             }
