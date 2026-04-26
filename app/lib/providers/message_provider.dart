@@ -337,6 +337,16 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearUserData() {
+    messages = [];
+    chatApps = [];
+    selectedFiles = [];
+    selectedFileTypes = [];
+    uploadedFiles = [];
+    uploadingFiles = {};
+    notifyListeners();
+  }
+
   Future<List<MessageFile>?> uploadFiles(List<File> files, String? appId) async {
     if (files.isNotEmpty) {
       setMultiUploadingFileStatus(files.map((e) => e.path).toList(), true);
