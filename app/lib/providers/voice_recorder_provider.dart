@@ -125,10 +125,11 @@ class VoiceRecorderProvider extends ChangeNotifier {
       }
     }
 
-    // Repaint the waveform at ~20Hz. Levels are shifted in onByteReceived
-    // (much faster than this), but the UI only re-renders on notifyListeners,
-    // so a 1s timer made the wave appear frozen.
-    _waveformTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+    // Repaint at ~60Hz so the wave flows smoothly. Levels are shifted in
+    // onByteReceived (audio callback rate, much faster than the UI), but the
+    // canvas only re-renders on notifyListeners — so a slower timer made the
+    // wave appear frozen / laggy.
+    _waveformTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
       if (_state == VoiceRecorderState.recording) {
         notifyListeners();
       }
