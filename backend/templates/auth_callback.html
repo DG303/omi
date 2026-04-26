@@ -93,13 +93,14 @@
 
     <script>
         // Get values from template variables (passed from backend).
+        // Use |tojson for safe JS interpolation (prevents XSS via template injection).
         // ``baseRedirect`` was validated server-side at /authorize time; here
         // we still re-check the scheme/host before navigating, as defense in
         // depth against a misconfigured upstream.
-        const code = "{{ code }}";
-        const state = "{{ state }}";
-        const error = "{{ error if error is defined else '' }}";
-        const baseRedirect = "{{ redirect_uri | default('omi://auth/callback') }}";
+        const code = {{ code | tojson }};
+        const state = {{ state | tojson }};
+        const error = {{ (error if error is defined else '') | tojson }};
+        const baseRedirect = {{ redirect_uri | default('omi://auth/callback') | tojson }};
 
         const errorElement = document.getElementById('error');
         const messageElement = document.getElementById('message');

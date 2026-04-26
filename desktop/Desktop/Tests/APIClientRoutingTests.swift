@@ -198,15 +198,15 @@ final class APIClientRoutingTests: XCTestCase {
     }
 
     func testRustBackendURLReadsFromApiUrlEnvVar() async {
-        setenv("OMI_API_URL", "http://localhost:8787", 1)
-        defer { unsetenv("OMI_API_URL") }
+        setenv("OMI_DESKTOP_API_URL", "http://localhost:8787", 1)
+        defer { unsetenv("OMI_DESKTOP_API_URL") }
         let client = APIClient()
         let url = await client.rustBackendURL
         XCTAssertEqual(url, "http://localhost:8787/")
     }
 
     func testRustBackendURLReturnsEmptyWhenNotSet() async {
-        unsetenv("OMI_API_URL")
+        unsetenv("OMI_DESKTOP_API_URL")
         let client = APIClient()
         let url = await client.rustBackendURL
         XCTAssertEqual(url, "")
@@ -214,8 +214,8 @@ final class APIClientRoutingTests: XCTestCase {
 
     func testBaseURLAndRustBackendURLAreIndependent() async {
         setenv("OMI_PYTHON_API_URL", "http://python:8080", 1)
-        setenv("OMI_API_URL", "http://rust:8787", 1)
-        defer { unsetenv("OMI_PYTHON_API_URL"); unsetenv("OMI_API_URL") }
+        setenv("OMI_DESKTOP_API_URL", "http://rust:8787", 1)
+        defer { unsetenv("OMI_PYTHON_API_URL"); unsetenv("OMI_DESKTOP_API_URL") }
 
         let client = APIClient()
         let base = await client.baseURL
@@ -240,12 +240,12 @@ final class APIClientRoutingTests: XCTestCase {
         super.setUp()
         URLCapture.reset()
         setenv("OMI_PYTHON_API_URL", "http://python-test:9001", 1)
-        setenv("OMI_API_URL", "http://rust-test:9002", 1)
+        setenv("OMI_DESKTOP_API_URL", "http://rust-test:9002", 1)
     }
 
     override func tearDown() {
         unsetenv("OMI_PYTHON_API_URL")
-        unsetenv("OMI_API_URL")
+        unsetenv("OMI_DESKTOP_API_URL")
         URLCapture.reset()
         super.tearDown()
     }

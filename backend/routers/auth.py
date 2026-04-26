@@ -195,9 +195,11 @@ async def auth_callback_google(
     # Exchange code for OAuth credentials
     oauth_credentials = await _exchange_provider_code_for_oauth_credentials('google', code, session_data)
 
-    # Create temporary auth code
+    # Create temporary auth code bound to the original redirect_uri
     auth_code = str(uuid.uuid4())
-    set_auth_code(auth_code, oauth_credentials, 300)
+    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_MOBILE_REDIRECT)
+    code_data = json.dumps({'credentials': oauth_credentials, 'redirect_uri': app_redirect_uri})
+    set_auth_code(auth_code, code_data, 300)
 
     # Redirect to HTML page that will handle the eventual scheme/loopback redirect.
     # The original ``redirect_uri`` was validated by ``_validate_redirect_uri`` at
@@ -208,7 +210,7 @@ async def auth_callback_google(
             "request": request,
             "code": auth_code,
             "state": session_data['state'] or '',
-            "redirect_uri": session_data.get('redirect_uri') or _DEFAULT_MOBILE_REDIRECT,
+            "redirect_uri": app_redirect_uri,
         },
     )
 
@@ -235,9 +237,11 @@ async def auth_callback_apple_post(
     # Exchange code for OAuth credentials
     oauth_credentials = await _exchange_provider_code_for_oauth_credentials('apple', code, session_data)
 
-    # Create temporary auth code
+    # Create temporary auth code bound to the original redirect_uri
     auth_code = str(uuid.uuid4())
-    set_auth_code(auth_code, oauth_credentials, 300)
+    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_MOBILE_REDIRECT)
+    code_data = json.dumps({'credentials': oauth_credentials, 'redirect_uri': app_redirect_uri})
+    set_auth_code(auth_code, code_data, 300)
 
     # Redirect to HTML page that will handle the eventual scheme/loopback redirect.
     # The original ``redirect_uri`` was validated by ``_validate_redirect_uri`` at
@@ -248,7 +252,7 @@ async def auth_callback_apple_post(
             "request": request,
             "code": auth_code,
             "state": session_data['state'] or '',
-            "redirect_uri": session_data.get('redirect_uri') or _DEFAULT_MOBILE_REDIRECT,
+            "redirect_uri": app_redirect_uri,
         },
     )
 
@@ -271,16 +275,39 @@ async def auth_token(
     if grant_type != 'authorization_code':
         raise HTTPException(status_code=400, detail="Unsupported grant type")
 
-    # Get OAuth credentials from Redis
-    oauth_credentials_json = get_auth_code(code)
-    if not oauth_credentials_json:
+    # Get auth code data from Redis
+    raw_code_data = get_auth_code(code)
+    if not raw_code_data:
         raise HTTPException(status_code=400, detail="Invalid or expired code")
 
     # Clean up used code
     delete_auth_code(code)
 
     try:
-        oauth_credentials = json.loads(oauth_credentials_json)
+        code_data = json.loads(raw_code_data)
+
+        # Support both new format (with redirect_uri binding) and legacy format
+        if 'credentials' in code_data:
+            # New format: auth code bound to redirect_uri — fail closed if redirect_uri missing
+            stored_redirect_uri = code_data.get('redirect_uri')
+            if not stored_redirect_uri:
+                logger.error("auth code in new format but missing redirect_uri — rejecting (fail closed)")
+                raise HTTPException(status_code=400, detail="malformed auth code")
+            if redirect_uri != stored_redirect_uri:
+                logger.warning(
+                    f"redirect_uri mismatch: expected={sanitize(stored_redirect_uri)}, got={sanitize(redirect_uri)}"
+                )
+                raise HTTPException(status_code=400, detail="redirect_uri mismatch")
+            oauth_credentials_json = code_data['credentials']
+            oauth_credentials = (
+                json.loads(oauth_credentials_json)
+                if isinstance(oauth_credentials_json, str)
+                else oauth_credentials_json
+            )
+        else:
+            # Legacy format: raw OAuth credentials (backwards compatible)
+            oauth_credentials = code_data
+
         provider = oauth_credentials.get('provider')
         id_token = oauth_credentials.get('id_token')
         access_token = oauth_credentials.get('access_token')
@@ -305,6 +332,8 @@ async def auth_token(
 
         return response
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error parsing OAuth credentials: {e}")
         raise HTTPException(status_code=400, detail="Invalid OAuth credentials")

@@ -101,7 +101,7 @@ class TranscriptionService {
 
     /// Python backend base URL for transcription endpoints.
     /// Resolution order: beta release channel → OMI_PYTHON_API_URL → https://api.omi.me/
-    /// NOTE: Do NOT fall back to OMI_API_URL — that points to the Rust desktop-backend
+    /// NOTE: Do NOT fall back to OMI_DESKTOP_API_URL — that points to the Rust desktop-backend
     /// (Cloud Run), which does not have /v2/voice-message/* or /v4/listen endpoints.
     private static let pythonBackendBaseURL: String = DesktopBackendEnvironment.pythonBaseURL()
 

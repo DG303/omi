@@ -11,12 +11,12 @@ actor APIClient {
   // Rust desktop backend URL — used only for: agent VM provisioning/status,
   // config/api-keys, Crisp, and local test subscription. All data CRUD,
   // chat AI, and title generation are on Python.
-  // Set via OMI_API_URL env var (in .env).
+  // Set via OMI_DESKTOP_API_URL env var (in .env).
   var rustBackendURL: String {
     let resolved = DesktopBackendEnvironment.rustBackendURL()
     if !resolved.isEmpty { return resolved }
 
-    NSLog("OMI API: OMI_API_URL not set — Rust backend calls will fail")
+    NSLog("OMI API: OMI_DESKTOP_API_URL not set — Rust backend calls will fail")
     return ""
   }
 

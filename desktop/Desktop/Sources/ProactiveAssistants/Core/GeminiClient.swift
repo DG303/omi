@@ -162,9 +162,9 @@ struct GeminiResponse: Decodable {
 actor GeminiClient {
   private let model: String
 
-  /// Backend proxy base URL (from OMI_API_URL env var)
+  /// Backend proxy base URL (from OMI_DESKTOP_API_URL env var)
   private static var proxyBaseURL: String {
-    if let cString = getenv("OMI_API_URL"), let url = String(validatingUTF8: cString), !url.isEmpty {
+    if let cString = getenv("OMI_DESKTOP_API_URL"), let url = String(validatingUTF8: cString), !url.isEmpty {
       return url.hasSuffix("/") ? url : url + "/"
     }
     return "https://api.omi.me/"
@@ -229,7 +229,7 @@ actor GeminiClient {
   init(apiKey: String? = nil, model: String = ModelQoS.Gemini.proactive) throws {
     // BREAKING CHANGE (issue #5861): apiKey parameter is ignored.
     // All Gemini requests now route through the backend proxy which supplies
-    // the key server-side. Defaults to production when OMI_API_URL is absent
+    // the key server-side. Defaults to production when OMI_DESKTOP_API_URL is absent
     // so installed test bundles launched from Finder still have AI features.
     guard !Self.proxyBaseURL.isEmpty else {
       throw GeminiClientError.missingAPIKey
