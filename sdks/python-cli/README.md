@@ -15,6 +15,10 @@ It's intentionally small, scriptable, and JSON-first — everything you need to
 plug Omi into shell pipelines, CI jobs, agent harnesses, or just your own
 personal automation.
 
+* **PyPI:** [pypi.org/project/omi-cli](https://pypi.org/project/omi-cli/)
+* **Docs:** [docs.omi.me/doc/developer/cli/introduction](https://docs.omi.me/doc/developer/cli/introduction)
+* **Source:** [github.com/BasedHardware/omi/tree/main/sdks/python-cli](https://github.com/BasedHardware/omi/tree/main/sdks/python-cli)
+
 ## Install
 
 ```bash
@@ -36,46 +40,48 @@ omi --help
 ## Quickstart
 
 ```bash
-# 1. Generate a developer API key in the Omi web app:
-#    https://app.omi.me   →   Developer   →   API Keys
-#    Choose the scopes you want this CLI to be able to exercise.
-
-# 2. Log in (the prompt is hidden — your key never lands in shell history):
+# 1. Log in. With no flags, omi-cli asks how you want to authenticate:
 omi auth login
+# → 1) Browser — sign in with Google or Apple (recommended for humans)
+# → 2) API key — paste a developer key from app.omi.me (recommended for agents/CI)
 
-# 3. Start using it:
+# 2. Start using it:
 omi memory list
 omi conversation list --limit 5
 omi action-item list --open
 omi goal list
 ```
 
-Pass `--json` to any command to get machine-readable output, ready for `jq`,
-agent harnesses, or whatever else:
+Pass `--json` to any command (as a global flag, before the verb) to get
+machine-readable output, ready for `jq`, agent harnesses, or whatever else:
 
 ```bash
-omi memory list --json | jq '.[] | {id, content}'
+omi --json memory list | jq '.[] | {id, content}'
 ```
 
 ## Auth
 
-Two auth methods are wired:
+Two auth methods, both fully wired:
 
-| Method                      | Status   | Use it for                    |
-| --------------------------- | -------- | ----------------------------- |
-| Dev API key (`omi_dev_*`)   | ✅ v0.1.0 | Agents, CI, headless, default |
-| Firebase OAuth (`--browser`) | 🚧 v0.2.0 | Humans on a laptop            |
+| Method                       | Best for                                 | How to use                                |
+| ---------------------------- | ---------------------------------------- | ----------------------------------------- |
+| Dev API key (`omi_dev_*`)    | Agents, CI, headless, scoped permissions | `omi auth login --api-key ...` or env var |
+| Firebase OAuth (Google/Apple) | Humans on a laptop                       | `omi auth login --browser`                |
 
-The browser flow is currently stubbed with a clear message; for now generate a
-dev key in the Omi web app and paste it into `omi auth login`. API keys are
-the right choice for agents anyway — they're long-lived, scoped, and don't
-need a browser.
+The browser flow opens your default browser for OAuth, captures the code on a
+localhost callback, and stores a Firebase ID token + refresh token. The ID
+token is auto-refreshed before each request when it's near expiry — you
+shouldn't need to think about it.
 
 ```bash
-omi auth login                  # interactive paste, hidden input
-omi auth login < key.txt        # piped, useful in CI
-omi auth status                 # show profile + masked credential
+omi auth login                  # interactive picker (browser or key)
+omi auth login --browser        # force OAuth (default provider: google)
+omi auth login --browser --provider apple
+omi auth login --api-key K      # force API-key path
+omi auth login < key.txt        # piped key, useful in CI
+omi auth status                 # show profile + masked credential + expiry
 omi auth whoami                 # round-trip to verify the credential works
+omi auth refresh                # force a Firebase refresh (no-op for API keys)
 omi auth logout                 # wipe the credential
 ```
 
