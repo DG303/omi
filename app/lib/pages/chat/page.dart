@@ -356,6 +356,21 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                   },
                                 ),
                 ),
+                // Bottom nav bar — rendered BEFORE the input bar so the input
+                // bar's pill (rendered after) sits on top of the nav bar's
+                // shadow instead of getting covered by it.
+                if (!textFieldFocusNode.hasFocus)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: BottomNavBar(
+                      onTabTap: (index, isRepeat) {
+                        context.read<HomeProvider>().setIndex(index);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
                 // Send message area — pinned to the bottom, overlapping the top
                 // of the nav bar the same way the home chat bar does (bottom: 78).
                 Positioned(
@@ -908,21 +923,6 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                     ),
                   ),
                 ),
-                // Bottom nav bar — pinned at the very bottom of the body.
-                // The input bar above sits at bottom: 78 so it overlaps the
-                // top of the nav bar, matching the home chat bar layout.
-                if (!textFieldFocusNode.hasFocus)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: BottomNavBar(
-                      onTabTap: (index, isRepeat) {
-                        context.read<HomeProvider>().setIndex(index);
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ),
               ],
             ),
           ),
