@@ -374,7 +374,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: textFieldFocusNode.hasFocus ? 0 : 78,
+                  bottom: textFieldFocusNode.hasFocus ? 12 : 78,
                   child: Container(
                     margin: EdgeInsets.zero,
                     decoration: const BoxDecoration(
@@ -624,7 +624,6 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                               ),
                                                               child: TextField(
                                                                 enabled: true,
-                                                                autofocus: !widget.autoStartVoice,
                                                                 controller: textController,
                                                                 focusNode: textFieldFocusNode,
                                                                 obscureText: false,
