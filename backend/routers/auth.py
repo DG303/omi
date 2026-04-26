@@ -209,10 +209,13 @@ async def auth_token(
 
         # Support both new format (with redirect_uri binding) and legacy format
         if 'credentials' in code_data:
-            # New format: auth code bound to redirect_uri
-            stored_redirect_uri = code_data.get('redirect_uri', '')
-            if stored_redirect_uri and redirect_uri != stored_redirect_uri:
-                logger.warning(f"redirect_uri mismatch: expected={stored_redirect_uri}, got={redirect_uri}")
+            # New format: auth code bound to redirect_uri — fail closed if redirect_uri missing
+            stored_redirect_uri = code_data.get('redirect_uri')
+            if not stored_redirect_uri:
+                logger.error("auth code in new format but missing redirect_uri — rejecting (fail closed)")
+                raise HTTPException(status_code=400, detail="malformed auth code")
+            if redirect_uri != stored_redirect_uri:
+                logger.warning(f"redirect_uri mismatch: expected={sanitize(stored_redirect_uri)}, got={sanitize(redirect_uri)}")
                 raise HTTPException(status_code=400, detail="redirect_uri mismatch")
             oauth_credentials_json = code_data['credentials']
             oauth_credentials = (
