@@ -752,20 +752,20 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
         child: Stack(
           children: [
-            // Bottom-anchored purple glow — fixed in the lower region of the
-            // drawer (not pervasive). The gradient fades upward into
-            // transparent so the upper drawer body stays clean.
+            // Top-anchored purple glow — fixed in the upper region of the
+            // drawer. Same treatment as the daily-recap detail page header
+            // gradient, just scoped to a band so it doesn't tint the body.
             Positioned(
               left: 0,
               right: 0,
-              bottom: 0,
+              top: 0,
               height: 220,
               child: IgnorePointer(
                 child: DecoratedBox(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                       colors: [
                         Color(0xFF2D1F5B),
                         Color(0x002D1F5B),
