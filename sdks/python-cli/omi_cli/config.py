@@ -156,21 +156,53 @@ def load(path: Optional[Path] = None) -> Config:
 
 
 def save(config: Config) -> None:
-    """Persist the config to disk with secure (owner-only) permissions."""
+    """Persist the config to disk with secure (owner-only) permissions.
+
+    The temp file is **created** with mode ``0o600`` via :func:`os.open`, not
+    chmodded after the fact — this closes a TOCTOU window where another local
+    user could read bearer credentials between file creation (default umask,
+    typically ``0o644``) and the chmod call. We also temporarily clamp the
+    process umask to ``0o077`` so any platform that ANDs the requested mode
+    against the umask still ends up with owner-only perms.
+    """
     config.path.parent.mkdir(parents=True, exist_ok=True)
+    # Tighten parent dir perms too — credentials live underneath. Best-effort:
+    # don't fail if the user has a custom mode they want to keep.
+    try:
+        os.chmod(config.path.parent, 0o700)
+    except OSError:
+        pass
 
     payload: dict[str, Any] = {
         "active_profile": config.active_profile,
         "profiles": {name: p.to_toml_dict() for name, p in config.profiles.items()},
     }
 
-    # Write atomically: write to a temp file in the same dir, chmod, then rename.
     tmp_path = config.path.with_suffix(config.path.suffix + ".tmp")
-    with tmp_path.open("wb") as fh:
-        tomli_w.dump(payload, fh)
+    # Belt-and-suspenders: clamp umask AND pass an explicit 0o600 mode to os.open.
+    old_umask = os.umask(0o077)
+    try:
+        # O_EXCL guards against following an attacker-planted symlink at this path.
+        try:
+            fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            # Stale temp from a previous interrupted save — remove and retry once.
+            os.unlink(tmp_path)
+            fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                tomli_w.dump(payload, fh)
+        except Exception:
+            # Best-effort cleanup if the dump itself failed mid-write.
+            try:
+                os.unlink(tmp_path)
+            except FileNotFoundError:
+                pass
+            raise
+    finally:
+        os.umask(old_umask)
 
-    # Owner read/write only — credentials are inside.
-    os.chmod(tmp_path, 0o600)
+    # Atomic rename. The destination inherits the temp's 0o600 mode.
     os.replace(tmp_path, config.path)
 
 
