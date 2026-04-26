@@ -16,8 +16,12 @@ enum DesktopBackendEnvironment {
     bundleIdentifier: String,
     updateChannel: String
   ) -> Bool {
-    bundleIdentifier == AppBuild.productionBundleIdentifier
-      && normalizedChannel(updateChannel) == "beta"
+    // Beta-to-dev routing disabled: signed-in users were landing in fresh empty
+    // Firebase accounts (e.g. caLCFj7… instead of viUv7Gtdo… for kodjima33),
+    // because the dev backend's auth path mints custom tokens for new UIDs
+    // instead of linking to the existing prod user. Keep beta on prod backends
+    // until the auth flow is fixed.
+    return false
   }
 
   static func pythonBaseURL(

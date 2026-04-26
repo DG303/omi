@@ -1,5 +1,7 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Fixed beta build creating empty Firebase accounts on sign-in by routing back to production backend"
+  ],
   "releases": [
     {
       "version": "0.11.365",
