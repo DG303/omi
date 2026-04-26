@@ -1,31 +1,64 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth";
+import { spawn, type ChildProcess } from "node:child_process";
+import path from "node:path";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-const REPO_OWNER = process.env.AGENT_REPO_OWNER || "BasedHardware";
-const REPO_NAME = process.env.AGENT_REPO_NAME || "omi";
-const WORKFLOW_FILE = process.env.AGENT_WORKFLOW_FILE || "admin_dashboard_agent.yml";
-const WORKFLOW_REF = process.env.AGENT_WORKFLOW_REF || "main";
+const MAX_PROMPT_LEN = 8000;
 
-const MAX_PROMPT_LEN = 4000;
+// Repo-aware preamble. Prepended to every user prompt so the agent has
+// the same orientation a fresh contributor would get from CLAUDE.md.
+const CONTEXT_PREAMBLE = `You are editing the OMI admin dashboard.
+
+Repo orientation:
+- Admin Next.js app: web/admin/
+- Main "Dashboard" (formerly Analytics) page: web/admin/app/(protected)/dashboard/page.tsx
+- Every widget on that page is a ChartItem in a single ResizableChartGrid.
+  Add new widgets to the unifiedItems array; they become draggable, resizable,
+  and deletable for free.
+- Grid component: web/admin/components/dashboard/resizable-chart-grid.tsx
+  (variant: "card" | "header" | "kpi"; col snap: 2/3/4/6/8/9/12; rows 1-12)
+- All API access uses useAuthToken + authenticatedFetcher (SWR reads) or
+  useAuthFetch (mutations). Server routes call verifyAdmin from @/lib/auth.
+- Existing stats endpoints live under web/admin/app/api/omi/stats/.
+- Constraints: stay inside web/admin/. Do not touch backend/, app/, firmware/.
+- When done, run \`npx tsc --noEmit\` from web/admin/ to verify.
+
+User request:
+`;
+
+type Model = "claude" | "codex";
+
+// CLI invocations. Each binary's flags are exactly what the user runs by hand.
+// The full prompt (preamble + user text) is appended as the final positional arg.
+const COMMANDS: Record<Model, { bin: string; args: string[] }> = {
+  claude: {
+    bin: "claude",
+    // --print for non-interactive one-shot output. The user-requested
+    // --dangerously-skip-permissions and --chrome flags pass through.
+    args: ["--dangerously-skip-permissions", "--chrome", "--print"],
+  },
+  codex: {
+    bin: "codex",
+    // exec is codex's non-interactive subcommand.
+    args: ["exec", "--dangerously-bypass-approvals-and-sandbox"],
+  },
+};
+
+function defaultWorkingDir(): string {
+  // The Next dev server runs from web/admin/. Edits should target the worktree
+  // root (two dirs up) so the agent can touch the whole admin app and any
+  // shared bits at the repo root if it has to.
+  return process.env.AGENT_WORKING_DIR ?? path.resolve(process.cwd(), "..", "..");
+}
 
 export async function POST(request: NextRequest) {
   const auth = await verifyAdmin(request);
   if (auth instanceof NextResponse) return auth;
 
-  const ghToken = process.env.AGENT_GITHUB_TOKEN || process.env.GITHUB_TOKEN;
-  if (!ghToken) {
-    return NextResponse.json(
-      {
-        error:
-          "AGENT_GITHUB_TOKEN not configured. Set a fine-scoped PAT (repo+workflow) on the admin server to enable dispatch.",
-      },
-      { status: 503 },
-    );
-  }
-
-  let body: { prompt?: string };
+  let body: { prompt?: string; model?: string };
   try {
     body = await request.json();
   } catch {
@@ -43,70 +76,87 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const dispatchUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/workflows/${WORKFLOW_FILE}/dispatches`;
-  // GitHub returns 204 with no body for workflow_dispatch and gives no run id;
-  // we read the most recent run for this workflow to surface a link in the UI.
-  const dispatchedAt = Date.now();
-  const dispatchRes = await fetch(dispatchUrl, {
-    method: "POST",
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${ghToken}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-      "Content-Type": "application/json",
+  const modelInput = (body.model ?? "claude") as Model;
+  const cmd = COMMANDS[modelInput];
+  if (!cmd) {
+    return NextResponse.json(
+      { error: `unknown model "${modelInput}". Use "claude" or "codex".` },
+      { status: 400 },
+    );
+  }
+
+  const cwd = defaultWorkingDir();
+  const fullPrompt = CONTEXT_PREAMBLE + prompt;
+
+  // SSE stream. Each event is one JSON-encoded payload.
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      const enc = new TextEncoder();
+      const send = (event: string, data: unknown) => {
+        try {
+          controller.enqueue(
+            enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`),
+          );
+        } catch {
+          // controller may already be closed if the client disconnected
+        }
+      };
+
+      send("status", {
+        phase: "starting",
+        model: modelInput,
+        bin: cmd.bin,
+        args: cmd.args,
+        cwd,
+      });
+
+      let child: ChildProcess;
+      try {
+        child = spawn(cmd.bin, [...cmd.args, fullPrompt], {
+          cwd,
+          env: process.env,
+          stdio: ["ignore", "pipe", "pipe"],
+        });
+      } catch (err: any) {
+        send("error", {
+          message: `Failed to spawn ${cmd.bin}: ${err?.message ?? "unknown error"}. Is it on PATH?`,
+        });
+        controller.close();
+        return;
+      }
+
+      child.stdout?.on("data", (chunk: Buffer) => {
+        send("stdout", { text: chunk.toString("utf8") });
+      });
+      child.stderr?.on("data", (chunk: Buffer) => {
+        send("stderr", { text: chunk.toString("utf8") });
+      });
+      child.on("error", (err: Error) => {
+        send("error", {
+          message: `${cmd.bin} failed to start: ${err.message}. Make sure it's installed and on PATH.`,
+        });
+        controller.close();
+      });
+      child.on("close", (code) => {
+        send("done", { code });
+        controller.close();
+      });
+
+      // If the client disconnects, kill the subprocess so we don't leak
+      // a runaway agent on the dev box.
+      request.signal.addEventListener("abort", () => {
+        child.kill("SIGTERM");
+      });
     },
-    body: JSON.stringify({
-      ref: WORKFLOW_REF,
-      inputs: {
-        prompt,
-        admin_uid: auth.uid,
-      },
-    }),
   });
 
-  if (!dispatchRes.ok) {
-    const errText = await dispatchRes.text().catch(() => "");
-    return NextResponse.json(
-      {
-        error: `GitHub dispatch failed (${dispatchRes.status}): ${errText.slice(0, 400)}`,
-      },
-      { status: 502 },
-    );
-  }
-
-  // Best-effort: poll the runs endpoint briefly to get a runId/runUrl. The
-  // dispatch is async on GitHub's side so we wait up to ~5s.
-  let runId: number | null = null;
-  let runUrl: string | null = null;
-  const runsUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/workflows/${WORKFLOW_FILE}/runs?event=workflow_dispatch&per_page=5`;
-  for (let i = 0; i < 5; i++) {
-    await new Promise((r) => setTimeout(r, 1000));
-    const runsRes = await fetch(runsUrl, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${ghToken}`,
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    });
-    if (!runsRes.ok) continue;
-    const runsData: { workflow_runs?: Array<{ id: number; html_url: string; created_at: string }> } =
-      await runsRes.json();
-    const candidate = runsData.workflow_runs?.find(
-      (r) => new Date(r.created_at).getTime() >= dispatchedAt - 5000,
-    );
-    if (candidate) {
-      runId = candidate.id;
-      runUrl = candidate.html_url;
-      break;
-    }
-  }
-
-  return NextResponse.json({
-    dispatched: true,
-    runId,
-    runUrl,
-    prUrl: null, // PR URL fills in once the workflow finishes; UI links to the run.
-    workflow: WORKFLOW_FILE,
-    ref: WORKFLOW_REF,
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      // Disable nginx-style buffering on any reverse proxy in front.
+      "X-Accel-Buffering": "no",
+    },
   });
 }
