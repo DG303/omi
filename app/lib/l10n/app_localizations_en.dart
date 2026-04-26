@@ -7769,7 +7769,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get capabilityExternalIntegration => 'External Integration';
 
   @override
-  String get capabilityNotification => 'Notification';
+  String get capabilityNotification => 'Smart Notifications';
 
   @override
   String get triggerAudioBytes => 'Audio Bytes';
@@ -9150,4 +9150,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agreeAndContinue => 'Agree & Continue';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

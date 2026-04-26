@@ -9166,4 +9166,13 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get agreeAndContinue => 'Kabul Et ve Devam Et';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

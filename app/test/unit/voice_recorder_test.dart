@@ -493,7 +493,7 @@ void main() {
       var transcriptCallbackCalled = false;
 
       final provider = VoiceRecorderProvider(transcriber: (_) async => '');
-      provider.setCallbacks(onTranscriptReady: (_) => transcriptCallbackCalled = true);
+      provider.setCallbacks(onTranscriptReady: (_, __) => transcriptCallbackCalled = true);
       await provider.checkPendingRecording();
 
       await provider.retry();

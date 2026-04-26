@@ -9162,4 +9162,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get agreeAndContinue => 'সম্মত হই এবং চালিয়ে যান';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

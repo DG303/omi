@@ -9202,4 +9202,13 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get agreeAndContinue => 'Се согласувам и продолжи';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

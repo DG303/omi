@@ -41,13 +41,22 @@ class VoiceRecorderProvider extends ChangeNotifier {
   // Persisted WAV file for retry (kept until transcription succeeds or user closes)
   File? _wavFile;
 
-  // Audio visualization
-  final List<double> _audioLevels = List.generate(20, (_) => 0.1);
+  // Audio visualization — more bars give the wave a denser, more "speech-like"
+  // look that matches modern voice-mode designs.
+  final List<double> _audioLevels = List.generate(50, (_) => 0.05);
   Timer? _waveformTimer;
 
   // Callbacks for UI integration
-  Function(String transcript)? _onTranscriptReady;
+  Function(String transcript, bool autoSend)? _onTranscriptReady;
   VoidCallback? _onClose;
+
+  // Set by the caller (e.g. tapping the send button mid-recording) before
+  // processRecording() — instructs the chat page to send immediately after
+  // filling the text field instead of waiting for a manual send tap.
+  bool _autoSendRequested = false;
+  void requestAutoSendOnNextTranscript() {
+    _autoSendRequested = true;
+  }
 
   final VoiceMessageTranscriber _transcribeVoiceMessage;
 
@@ -79,7 +88,7 @@ class VoiceRecorderProvider extends ChangeNotifier {
     }
   }
 
-  void setCallbacks({Function(String transcript)? onTranscriptReady, VoidCallback? onClose}) {
+  void setCallbacks({Function(String transcript, bool autoSend)? onTranscriptReady, VoidCallback? onClose}) {
     _onTranscriptReady = onTranscriptReady;
     _onClose = onClose;
   }
@@ -123,8 +132,11 @@ class VoiceRecorderProvider extends ChangeNotifier {
       }
     }
 
-    // Setup timer to update the wave visualization every second
-    _waveformTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    // Repaint at ~60Hz so the wave flows smoothly. Levels are shifted in
+    // onByteReceived (audio callback rate, much faster than the UI), but the
+    // canvas only re-renders on notifyListeners — so a slower timer made the
+    // wave appear frozen / laggy.
+    _waveformTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
       if (_state == VoiceRecorderState.recording) {
         notifyListeners();
       }
@@ -155,7 +167,10 @@ class VoiceRecorderProvider extends ChangeNotifier {
               rms = 0;
             }
 
-            final level = math.pow(rms, 0.4).toDouble().clamp(0.1, 1.0);
+            // Wider dynamic range so quiet sections stay near zero and loud
+            // peaks reach the full bar height. The 0.5 exponent boosts mid
+            // levels so normal speech has visible amplitude.
+            final level = math.pow(rms, 0.5).toDouble().clamp(0.02, 1.0);
 
             for (int i = 0; i < _audioLevels.length - 1; i++) {
               _audioLevels[i] = _audioLevels[i + 1];
@@ -230,7 +245,9 @@ class VoiceRecorderProvider extends ChangeNotifier {
           _state = VoiceRecorderState.transcribeSuccess;
           _isProcessing = false;
           notifyListeners();
-          _onTranscriptReady?.call(transcript);
+          final autoSend = _autoSendRequested;
+          _autoSendRequested = false;
+          _onTranscriptReady?.call(transcript, autoSend);
           close();
         } else {
           Logger.debug('Empty transcript received; preserving recording for retry');
@@ -281,7 +298,9 @@ class VoiceRecorderProvider extends ChangeNotifier {
           _state = VoiceRecorderState.transcribeSuccess;
           _isProcessing = false;
           notifyListeners();
-          _onTranscriptReady?.call(transcript);
+          final autoSend = _autoSendRequested;
+          _autoSendRequested = false;
+          _onTranscriptReady?.call(transcript, autoSend);
           close();
         } else {
           Logger.debug('Empty transcript received on retry; preserving recording for retry');
@@ -461,6 +480,7 @@ class VoiceRecorderProvider extends ChangeNotifier {
     _transcript = '';
     _isProcessing = false;
     _pcmBytesWritten = 0;
+    _autoSendRequested = false;
 
     // Close PCM sink if still open
     _pcmSink?.close();

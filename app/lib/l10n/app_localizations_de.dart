@@ -9230,4 +9230,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get agreeAndContinue => 'Zustimmen und fortfahren';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

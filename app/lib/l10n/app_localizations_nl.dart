@@ -9181,4 +9181,13 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get agreeAndContinue => 'Akkoord en doorgaan';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

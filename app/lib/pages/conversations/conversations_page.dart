@@ -14,7 +14,6 @@ import 'package:omi/pages/conversations/widgets/processing_capture.dart';
 import 'package:omi/pages/phone_calls/active_call_banner.dart';
 import 'package:omi/pages/conversations/widgets/search_result_header_widget.dart';
 import 'package:omi/pages/conversations/widgets/search_widget.dart';
-import 'package:omi/pages/conversations/widgets/today_tasks_widget.dart';
 import 'package:omi/backend/preferences.dart';
 import 'package:omi/providers/capture_provider.dart';
 import 'package:omi/providers/conversation_provider.dart';
@@ -182,7 +181,6 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
               const SliverToBoxAdapter(child: SpeechProfileCardWidget()),
               const SliverToBoxAdapter(child: UpdateFirmwareCardWidget()),
               const SliverToBoxAdapter(child: ActiveCallBanner()),
-              const SliverToBoxAdapter(child: ConversationCaptureWidget()),
 
               // Search bar
               Consumer2<HomeProvider, ConversationProvider>(
@@ -208,15 +206,13 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
                   if (convoProvider.showDailySummaries || isSearchActive || hasCalendarFilter) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
                   }
-                  final showTasks = prefs.showTasksEnabled;
                   final showGoals = prefs.showGoalTrackerEnabled;
-                  if (!showTasks && !showGoals) {
+                  if (!showGoals) {
                     return const SliverToBoxAdapter(child: SizedBox.shrink());
                   }
                   return SliverToBoxAdapter(
                     child: Column(
                       children: [
-                        if (showTasks) const TodayTasksWidget(),
                         if (showGoals) GoalsWidget(key: _goalsWidgetKey, onRefresh: _refreshGoals),
                       ],
                     ),
@@ -224,14 +220,20 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
                 },
               ),
 
-              // Section header - show "Daily Recaps" or "Conversations"
+              // Section header - show "Daily Recaps" or "Conversations" with optional recording pill
               SliverToBoxAdapter(
                 child: Builder(
                   builder: (context) => Padding(
-                    padding: const EdgeInsets.only(left: 24, top: 16, bottom: 8),
-                    child: Text(
-                      convoProvider.showDailySummaries ? context.l10n.dailyRecaps : context.l10n.conversations,
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                    padding: const EdgeInsets.only(left: 24, right: 16, top: 16, bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          convoProvider.showDailySummaries ? context.l10n.dailyRecaps : context.l10n.conversations,
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
                   ),
                 ),

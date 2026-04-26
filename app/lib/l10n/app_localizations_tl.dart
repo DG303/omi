@@ -9238,4 +9238,13 @@ class AppLocalizationsTl extends AppLocalizations {
 
   @override
   String get agreeAndContinue => 'Sumasang-ayon at Magpatuloy';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }
