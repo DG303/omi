@@ -750,153 +750,123 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
-        child: Stack(
+        child: Column(
           children: [
-            // Top-anchored purple glow — fixed in the upper region of the
-            // drawer. Same treatment as the daily-recap detail page header
-            // gradient, just scoped to a band so it doesn't tint the body.
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: 440,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF2D1F5B),
-                        Color(0x002D1F5B),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              height: 4,
+              width: 36,
+              decoration: BoxDecoration(color: const Color(0xFF3C3C43), borderRadius: BorderRadius.circular(2)),
             ),
-            Column(
-              children: [
-                // Handle bar
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  height: 4,
-                  width: 36,
-                  decoration: BoxDecoration(color: const Color(0xFF3C3C43), borderRadius: BorderRadius.circular(2)),
-                ),
-                // Header
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-                  child: _isSearching
-                      ? Padding(
-                          key: const ValueKey('search-header'),
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _searchController,
-                                  focusNode: _searchFocusNode,
-                                  autofocus: true,
-                                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                                  cursorColor: Colors.white,
-                                  decoration: InputDecoration(
-                                    hintText: 'Search settings…',
-                                    hintStyle: const TextStyle(color: Colors.white60, fontSize: 14),
-                                    filled: true,
-                                    fillColor: const Color(0xFF1C1C1E),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(Icons.search, color: Colors.white60),
-                                    suffixIcon: _searchQuery.isNotEmpty
-                                        ? GestureDetector(
-                                            onTap: () {
-                                              setState(() => _searchQuery = '');
-                                              _searchController.clear();
-                                            },
-                                            child: const Icon(Icons.close, color: Colors.white60),
-                                          )
-                                        : null,
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                                  ),
-                                  onChanged: (value) => setState(() => _searchQuery = value),
+            // Header
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+              child: _isSearching
+                  ? Padding(
+                      key: const ValueKey('search-header'),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              autofocus: true,
+                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              cursorColor: Colors.white,
+                              decoration: InputDecoration(
+                                hintText: 'Search settings…',
+                                hintStyle: const TextStyle(color: Colors.white60, fontSize: 14),
+                                filled: true,
+                                fillColor: const Color(0xFF1C1C1E),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                  borderSide: BorderSide.none,
                                 ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                  borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(Icons.search, color: Colors.white60),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? GestureDetector(
+                                        onTap: () {
+                                          setState(() => _searchQuery = '');
+                                          _searchController.clear();
+                                        },
+                                        child: const Icon(Icons.close, color: Colors.white60),
+                                      )
+                                    : null,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                               ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _isSearching = false;
-                                    _searchQuery = '';
-                                    _searchController.clear();
-                                  });
-                                  _searchFocusNode.unfocus();
-                                },
-                                child: const Text('Cancel', style: TextStyle(color: Colors.white, fontSize: 16)),
-                              ),
-                            ],
+                              onChanged: (value) => setState(() => _searchQuery = value),
+                            ),
                           ),
-                        )
-                      : Padding(
-                          key: const ValueKey('normal-header'),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          child: Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() => _isSearching = true);
-                                  Future.microtask(() => _searchFocusNode.requestFocus());
-                                },
-                                child: const Icon(Icons.search, color: Colors.white, size: 22),
-                              ),
-                              Expanded(
-                                child: Center(
-                                  child: Text(
-                                    context.l10n.settings,
-                                    style:
-                                        const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                  decoration:
-                                      BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                                  child: Text(
-                                    context.l10n.done,
-                                    style:
-                                        const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isSearching = false;
+                                _searchQuery = '';
+                                _searchController.clear();
+                              });
+                              _searchFocusNode.unfocus();
+                            },
+                            child: const Text('Cancel', style: TextStyle(color: Colors.white, fontSize: 16)),
                           ),
-                        ),
-                ),
-                const SizedBox(height: 16),
-                // Content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _isSearching && _searchQuery.isNotEmpty
-                        ? _buildSearchResults(context)
-                        : _buildOmiModeContent(context),
-                  ),
-                ),
-              ],
+                        ],
+                      ),
+                    )
+                  : Padding(
+                      key: const ValueKey('normal-header'),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() => _isSearching = true);
+                              Future.microtask(() => _searchFocusNode.requestFocus());
+                            },
+                            child: const Icon(Icons.search, color: Colors.white, size: 22),
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                context.l10n.settings,
+                                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                              child: Text(
+                                context.l10n.done,
+                                style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+            const SizedBox(height: 16),
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _isSearching && _searchQuery.isNotEmpty
+                    ? _buildSearchResults(context)
+                    : _buildOmiModeContent(context),
+              ),
             ),
           ],
         ),
