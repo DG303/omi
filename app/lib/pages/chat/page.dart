@@ -472,7 +472,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         : 2),
                               ),
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   // LEFT button — Stop (recording) or Plus (idle). During the
                                   // transcribing state we render nothing here, and the gap below
