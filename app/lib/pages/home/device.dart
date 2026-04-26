@@ -173,13 +173,17 @@ class _ConnectedDeviceState extends State<ConnectedDevice> {
               height: 24,
               child: Padding(
                 padding: const EdgeInsets.only(left: 2, top: 1),
-                child: charging
-                    ? const Icon(Icons.bolt, color: Color.fromARGB(255, 0, 255, 8), size: 22)
-                    : FaIcon(
-                        _getBatteryIcon(provider.batteryLevel),
-                        color: _getBatteryColor(provider.batteryLevel),
-                        size: 20,
-                      ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    FaIcon(
+                      _getBatteryIcon(provider.batteryLevel),
+                      color: _getBatteryColor(provider.batteryLevel),
+                      size: 20,
+                    ),
+                    if (charging) const Icon(Icons.bolt, color: Color.fromARGB(255, 0, 255, 8), size: 14),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 16),
