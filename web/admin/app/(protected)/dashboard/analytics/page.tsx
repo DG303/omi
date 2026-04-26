@@ -51,6 +51,8 @@ import {
   ResizableChartGrid,
   type ChartItem,
 } from "@/components/dashboard/resizable-chart-grid";
+import { AgentPromptWidget } from "@/components/dashboard/agent-prompt-widget";
+import { Sparkles } from "lucide-react";
 
 // --- Types ---
 
@@ -1656,6 +1658,561 @@ export default function AnalyticsPage() {
     ];
   }, [retentionView, mixpanelRetention]);
 
+  // ─────────────────────────────────────────────────────────────────────
+  //  Unified single-grid items
+  //
+  //  Every widget on this page is a draggable, resizable ChartItem in one
+  //  unified grid (no section dividers). KPI tiles, section headers, the
+  //  AI prompt panel, and all charts share the same 12-col layout.
+  // ─────────────────────────────────────────────────────────────────────
+
+  const chatRatingsItems = useChatRatingsItems({ token });
+
+  const cpuMobile = profitability?.summary.avgCostPerUserMobile ?? null;
+  const cpuDesktop = profitability?.summary.avgCostPerUserDesktop ?? null;
+  const totalFirebaseUsers = dailyNewUsers?.totalUsers ?? null;
+
+  const topKpiAndNewWidgets = useMemo<ChartItem[]>(() => {
+    return [
+      {
+        id: "ai-prompt",
+        title: "Customize this dashboard",
+        variant: "card",
+        icon: <Sparkles className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 12, rows: 3 },
+        render: () => <AgentPromptWidget />,
+      },
+      {
+        id: "kpi-mrr",
+        title: "MRR",
+        variant: "kpi",
+        icon: <DollarSign className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 3, rows: 1 },
+        render: () => (
+          <div>
+            <div className="text-2xl font-bold">{formatCurrency(mrr)}</div>
+            {mrrGrowthPct !== null && (
+              <p className={`text-xs ${mrrGrowthPct >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {mrrGrowthPct >= 0 ? "+" : ""}{mrrGrowthPct.toFixed(1)}% from last month
+              </p>
+            )}
+          </div>
+        ),
+      },
+      {
+        id: "kpi-arr",
+        title: "ARR",
+        variant: "kpi",
+        icon: <TrendingUp className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 3, rows: 1 },
+        render: () => (
+          <div>
+            <div className="text-2xl font-bold">{formatCurrency(arr)}</div>
+            <p className="text-xs text-muted-foreground">Based on current MRR</p>
+          </div>
+        ),
+      },
+      {
+        id: "kpi-subscriptions",
+        title: "Subscriptions",
+        variant: "kpi",
+        icon: <Users className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 3, rows: 1 },
+        render: () => (
+          <div>
+            <div className="text-2xl font-bold">{totalSubs.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">{monthlySubs} monthly · {annualSubs} annual</p>
+          </div>
+        ),
+      },
+      {
+        id: "kpi-conversations",
+        title: "Conversations",
+        variant: "kpi",
+        icon: <MessageSquare className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 3, rows: 1 },
+        render: () => (
+          <div>
+            <div className="text-2xl font-bold">{formatCompact(totalConversations)}</div>
+            <p className="text-xs text-muted-foreground">All time</p>
+          </div>
+        ),
+      },
+      {
+        id: "kpi-cost-per-user-mobile",
+        title: "Cost / user (Mobile)",
+        variant: "kpi",
+        icon: <DollarSign className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 3, rows: 1 },
+        render: () => (
+          <div>
+            <div className="text-2xl font-bold">
+              {cpuMobile != null ? `$${cpuMobile.toFixed(3)}` : "--"}
+            </div>
+            <p className="text-xs text-muted-foreground">avg / day · last {profitDays}d</p>
+          </div>
+        ),
+      },
+      {
+        id: "kpi-cost-per-user-desktop",
+        title: "Cost / user (Desktop)",
+        variant: "kpi",
+        icon: <Monitor className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 3, rows: 1 },
+        render: () => (
+          <div>
+            <div className="text-2xl font-bold">
+              {cpuDesktop != null ? `$${cpuDesktop.toFixed(3)}` : "--"}
+            </div>
+            <p className="text-xs text-muted-foreground">avg / day · last {profitDays}d</p>
+          </div>
+        ),
+      },
+      {
+        id: "kpi-total-users-firebase",
+        title: "Total Users (Firebase)",
+        variant: "kpi",
+        icon: <Users className="h-3.5 w-3.5" />,
+        initialLayout: { cols: 3, rows: 1 },
+        render: () => (
+          <div>
+            <div className="text-2xl font-bold">
+              {totalFirebaseUsers != null ? totalFirebaseUsers.toLocaleString() : "--"}
+            </div>
+            <p className="text-xs text-muted-foreground">All-time signups</p>
+          </div>
+        ),
+      },
+      {
+        id: "chart-total-users-cumulative",
+        title: "Total Users — All-time growth",
+        subtitle: "Cumulative signups (Firebase Auth)",
+        variant: "card",
+        initialLayout: { cols: 6, rows: 4 },
+        render: () => (
+          allDailyData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={allDailyData}>
+                <defs>
+                  <linearGradient id="totalUsersGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="date" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  tickFormatter={(v) => new Date(v).toLocaleDateString("en-US", { month: "short", year: "2-digit" })} />
+                <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => formatCompact(v)} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => v.toLocaleString()} />
+                <Area type="monotone" dataKey="cumulative" name="Total users" stroke="#3b82f6" strokeWidth={2} fill="url(#totalUsersGradient)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground">No data</div>
+          )
+        ),
+      },
+    ];
+  }, [mrr, arr, totalSubs, monthlySubs, annualSubs, totalConversations, mrrGrowthPct, cpuMobile, cpuDesktop, profitDays, totalFirebaseUsers, allDailyData]);
+
+  // Section headers + per-section control widgets that sit inline between
+  // groups of charts. They are full-width by default so the user sees a
+  // clear visual break, but they can be moved or shrunk like any widget.
+
+  const profitabilityHeader: ChartItem = {
+    id: "header-profitability",
+    title: "Profitability by Platform",
+    subtitle:
+      "Daily users, revenue, cost and free→paid conversion — desktop (macOS) vs mobile (iOS/Android).",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  const profitabilityControls: ChartItem = {
+    id: "controls-profitability",
+    title: "Profit controls",
+    variant: "card",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => (
+      <div className="flex h-full flex-wrap items-center gap-2">
+        <div className="flex overflow-hidden rounded-md border border-input">
+          {([30, 60, 90] as const).map((d) => (
+            <button
+              key={d}
+              onClick={() => setProfitDays(d)}
+              className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                profitDays === d ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent"
+              }`}
+            >{d}d</button>
+          ))}
+        </div>
+        <label className="flex items-center gap-1 text-xs text-muted-foreground">
+          Desktop $/user/day
+          <input type="number" step="0.01" min="0" value={desktopCostInput}
+            onChange={(e) => setDesktopCostInput(e.target.value)}
+            className="w-16 rounded-md border border-input bg-background px-2 py-1 text-xs" />
+        </label>
+        <label className="flex items-center gap-1 text-xs text-muted-foreground">
+          Mobile $/user/day
+          <input type="number" step="0.01" min="0" value={mobileCostInput}
+            onChange={(e) => setMobileCostInput(e.target.value)}
+            className="w-16 rounded-md border border-input bg-background px-2 py-1 text-xs" />
+        </label>
+        {profitability?.summary.partial && (
+          <span className="ml-auto inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-800">
+            <AlertTriangle className="h-3 w-3" /> Partial data
+          </span>
+        )}
+      </div>
+    ),
+  };
+
+  const revenueHeader: ChartItem = {
+    id: "header-revenue",
+    title: "Revenue Overview",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  const revenueControls: ChartItem = {
+    id: "controls-revenue",
+    title: "Revenue window",
+    variant: "card",
+    initialLayout: { cols: 6, rows: 1 },
+    render: () => (
+      <div className="flex h-full items-center gap-2">
+        <span className="text-xs text-muted-foreground">Cumulative window:</span>
+        <div className="flex overflow-hidden rounded-md border border-input">
+          {(["7d", "30d", "all"] as const).map((w) => (
+            <button key={w} onClick={() => setCumulativeWindow(w)}
+              className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                cumulativeWindow === w ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent"
+              }`}>
+              {w === "7d" ? "Last week" : w === "30d" ? "Last month" : "All time"}
+            </button>
+          ))}
+        </div>
+      </div>
+    ),
+  };
+
+  const macosHeader: ChartItem = {
+    id: "header-macos-growth",
+    title: "macOS Growth Metrics",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  const macosKpis = useMemo<ChartItem[]>(() => [
+    {
+      id: "kpi-dau", title: "DAU", variant: "kpi", icon: <Activity className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div><div className="text-2xl font-bold">{vm?.summary.dau ?? "--"}</div>
+          <p className="text-xs text-muted-foreground">avg last 7 days</p></div>
+      ),
+    },
+    {
+      id: "kpi-wau", title: "WAU", variant: "kpi", icon: <Users className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div><div className="text-2xl font-bold">{vm?.summary.wau ?? "--"}</div>
+          <p className="text-xs text-muted-foreground">last 7 days</p></div>
+      ),
+    },
+    {
+      id: "kpi-mau", title: "MAU", variant: "kpi", icon: <Users className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div><div className="text-2xl font-bold">{vm?.summary.mau ?? "--"}</div>
+          <p className="text-xs text-muted-foreground">last 30 days</p></div>
+      ),
+    },
+    {
+      id: "kpi-dau-mau", title: "DAU/MAU", variant: "kpi", icon: <Zap className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className={`text-2xl font-bold ${(vm?.summary.dauMau ?? 0) >= 20 ? "text-green-600" : ""}`}>
+            {vm?.summary.dauMau != null ? `${vm.summary.dauMau}%` : "--"}
+          </div>
+          <p className="text-xs text-muted-foreground">Stickiness (good: 20%+)</p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-quick-ratio", title: "Quick Ratio", variant: "kpi", icon: <TrendingUp className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className={`text-2xl font-bold ${(vm?.summary.quickRatio ?? 0) >= 1 ? "text-green-600" : "text-red-600"}`}>
+            {vm?.summary.quickRatio != null ? `${vm.summary.quickRatio}x` : "--"}
+          </div>
+          <p className="text-xs text-muted-foreground">Growing if &gt;1x</p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-activation", title: "Activation", variant: "kpi", icon: <Target className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className={`text-2xl font-bold ${(vm?.summary.activationRate ?? 0) >= 50 ? "text-green-600" : ""}`}>
+            {vm?.summary.activationRate != null ? `${vm.summary.activationRate}%` : "--"}
+          </div>
+          <p className="text-xs text-muted-foreground">Memory within 7d</p>
+        </div>
+      ),
+    },
+  ], [vm]);
+
+  const notificationsHeader: ChartItem = {
+    id: "header-notifications",
+    title: "Notification Analytics",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  const notificationKpis = useMemo<ChartItem[]>(() => [
+    {
+      id: "kpi-notif-enabled", title: "Notifications Enabled", variant: "kpi", icon: <Bell className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">{notificationEnabledDisabled?.enabled?.toLocaleString() ?? "--"}</div>
+          <p className="text-xs text-muted-foreground">
+            {notificationEnabledDisabled
+              ? `${((notificationEnabledDisabled.enabled / notificationEnabledDisabled.total) * 100).toFixed(1)}% of users`
+              : "Loading"}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-notif-disabled", title: "Notifications Disabled", variant: "kpi", icon: <BellOff className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">{notificationEnabledDisabled?.disabled?.toLocaleString() ?? "--"}</div>
+          <p className="text-xs text-muted-foreground">Explicitly disabled</p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-omi-says-7d", title: '"Omi says" (7d)', variant: "kpi", icon: <Send className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">{notificationMentorLast7.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground">Built-in mentor</p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-marketplace-mentor-7d", title: "Marketplace Mentor (7d)", variant: "kpi", icon: <Users className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">{notificationMarketplaceLast7.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground">Marketplace app</p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-fb-clicks", title: "Floating Bar Clicks", variant: "kpi", icon: <MousePointerClick className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">{floatingBarCtrSummary?.clicked?.toLocaleString() ?? "0"}</div>
+          <p className="text-xs text-muted-foreground">Notification opens</p>
+        </div>
+      ),
+    },
+    {
+      id: "kpi-fb-ctr", title: "Floating Bar CTR", variant: "kpi", icon: <Percent className="h-3.5 w-3.5" />,
+      initialLayout: { cols: 2, rows: 1 },
+      render: () => (
+        <div>
+          <div className="text-2xl font-bold">{floatingBarCtrSummary ? `${floatingBarCtrSummary.ctr.toFixed(1)}%` : "0.0%"}</div>
+          <p className="text-xs text-muted-foreground">{floatingBarCtrSummary?.mode === "surface_tagged" ? "Tagged sends" : "Fallback"}</p>
+        </div>
+      ),
+    },
+  ], [notificationEnabledDisabled, notificationMentorLast7, notificationMarketplaceLast7, floatingBarCtrSummary]);
+
+  const ratingsHeader: ChartItem = {
+    id: "header-ratings",
+    title: "Ratings & Usage",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  const viralHeader: ChartItem = {
+    id: "header-viral",
+    title: "Viral Metrics",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  const retentionHeader: ChartItem = {
+    id: "header-retention",
+    title: "Retention",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  const retentionControls: ChartItem = {
+    id: "controls-retention",
+    title: "Retention controls",
+    variant: "card",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => (
+      <div className="flex h-full flex-wrap items-center gap-2">
+        <div className="flex rounded-md border border-input overflow-hidden">
+          <button onClick={() => setRetentionView("average")}
+            className={`px-3 py-1 text-xs font-medium transition-colors ${
+              retentionView === "average" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent"
+            }`}>Average</button>
+          <button onClick={() => setRetentionView("cohorts")}
+            className={`px-3 py-1 text-xs font-medium transition-colors ${
+              retentionView === "cohorts" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent"
+            }`}>By Cohort</button>
+        </div>
+        <Select value={retentionPlatform} onValueChange={setRetentionPlatform}>
+          <SelectTrigger className="h-7 w-[120px] text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="macos">macOS</SelectItem>
+            <SelectItem value="all">All Platforms</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={String(retentionDays)} onValueChange={(v) => setRetentionDays(parseInt(v, 10))}>
+          <SelectTrigger className="h-7 w-[110px] text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="14">14 days</SelectItem>
+            <SelectItem value="30">30 days</SelectItem>
+            <SelectItem value="60">60 days</SelectItem>
+            <SelectItem value="90">90 days</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="ml-auto flex gap-2 text-xs">
+          <span className="rounded-md bg-muted px-2 py-1">D1: <span className="font-semibold">{retentionD1 !== null ? `${retentionD1.toFixed(1)}%` : "--"}</span></span>
+          <span className="rounded-md bg-muted px-2 py-1">D7: <span className="font-semibold">{retentionD7 !== null ? `${retentionD7.toFixed(1)}%` : "--"}</span></span>
+        </div>
+      </div>
+    ),
+  };
+
+  const cohortTableItem: ChartItem = {
+    id: "chart-retention-cohort-table",
+    title: "Retention Cohort Table",
+    variant: "card",
+    initialLayout: { cols: 12, rows: 6 },
+    render: () => (
+      <div className="h-full overflow-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="border-b">
+              <th className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Date</th>
+              <th className="px-3 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">Users</th>
+              {Array.from({ length: cohortMaxDays }, (_, i) => (
+                <th key={i} className="px-3 py-3 text-center font-medium text-muted-foreground whitespace-nowrap min-w-[64px]">
+                  {i === 0 ? "< 1 Day" : `Day ${i}`}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {mixpanelRetention?.data && mixpanelRetention.data.length > 0 && (
+              <tr className="border-b font-semibold">
+                <td className="sticky left-0 z-10 bg-card px-4 py-2.5 whitespace-nowrap">Weighted Avg</td>
+                <td className="px-3 py-2.5 text-right text-muted-foreground">{mixpanelRetention.totalUsers.toLocaleString()}</td>
+                {mixpanelRetention.data.map((p) => (
+                  <td key={p.day} className="px-3 py-2.5 text-center" style={{ backgroundColor: retentionHeatColor(p.retention) }}>
+                    <span className={p.retention > 50 ? "text-white" : ""}>{p.retention.toFixed(1)}%</span>
+                  </td>
+                ))}
+              </tr>
+            )}
+            {cohorts.map((c) => (
+              <tr key={c.date} className="border-b last:border-b-0 hover:bg-muted/30">
+                <td className="sticky left-0 z-10 bg-card px-4 py-2 whitespace-nowrap">{formatCohortDate(c.date)}</td>
+                <td className="px-3 py-2 text-right text-muted-foreground">{c.users}</td>
+                {Array.from({ length: cohortMaxDays }, (_, i) => {
+                  const val = i < c.data.length ? c.data[i].retention : null;
+                  return (
+                    <td key={i} className="px-3 py-2 text-center" style={val !== null ? { backgroundColor: retentionHeatColor(val) } : {}}>
+                      {val !== null ? <span className={val > 50 ? "text-white" : ""}>{val.toFixed(1)}%</span> : null}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ),
+  };
+
+  const chatRatingsHeader: ChartItem = {
+    id: "header-chat-ratings",
+    title: "Chat Ratings",
+    variant: "header",
+    initialLayout: { cols: 12, rows: 1 },
+    render: () => null,
+  };
+
+  // Order: AI prompt → top KPIs → cost-per-user KPIs → total-users chart →
+  // each section's header + controls + charts in original order. The user
+  // can drag any item anywhere; this is just the default layout.
+  const unifiedItems = useMemo<ChartItem[]>(() => {
+    return [
+      ...topKpiAndNewWidgets,
+
+      profitabilityHeader,
+      profitabilityControls,
+      ...profitCharts,
+
+      revenueHeader,
+      revenueControls,
+      ...revenueCharts,
+
+      macosHeader,
+      ...macosKpis,
+      ...macosGrowthCharts,
+
+      notificationsHeader,
+      ...notificationKpis,
+      ...notificationCharts,
+
+      ratingsHeader,
+      ...ratingsAndUsageCharts,
+
+      viralHeader,
+      ...viralCharts,
+
+      retentionHeader,
+      retentionControls,
+      ...(retentionView === "cohorts" ? [cohortTableItem] : retentionCharts),
+
+      chatRatingsHeader,
+      ...chatRatingsItems,
+    ];
+  }, [
+    topKpiAndNewWidgets, profitCharts, revenueCharts, macosKpis, macosGrowthCharts,
+    notificationKpis, notificationCharts, ratingsAndUsageCharts, viralCharts,
+    retentionView, retentionCharts, chatRatingsItems,
+    // Inline header/control items capture state via closures; React's
+    // dep tracking is handled by the per-item render callbacks.
+    profitabilityControls, revenueControls, retentionControls, cohortTableItem,
+  ]);
+
   if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
@@ -1665,7 +2222,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
           Analytics Dashboard
@@ -1693,449 +2250,14 @@ export default function AnalyticsPage() {
         </Card>
       )}
 
-      {/* Revenue Summary Cards */}
+      {/* Unified single-grid dashboard — every widget is draggable & resizable. */}
       {hasPartialData && (
         <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>Some data sources failed to load. Numbers may be incomplete.</span>
         </div>
       )}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">MRR</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(mrr)}</div>
-            {mrrGrowthPct !== null && (
-              <p className={`text-xs ${mrrGrowthPct >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {mrrGrowthPct >= 0 ? "+" : ""}{mrrGrowthPct.toFixed(1)}% from last month
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">ARR</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(arr)}</div>
-            <p className="text-xs text-muted-foreground">Based on current MRR</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Subscriptions</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalSubs.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              {monthlySubs} monthly &middot; {annualSubs} annual
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Conversations</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCompact(totalConversations)}</div>
-            <p className="text-xs text-muted-foreground">All time</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Profitability by Platform — draggable & resizable */}
-      <div className="pt-2">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Profitability by Platform</h2>
-            <p className="text-sm text-muted-foreground">
-              Daily users, revenue, cost and free→paid conversion — desktop (macOS) vs mobile (iOS/Android). Revenue and
-              cost per platform are estimates. Drag cards to reorder; drag the bottom-right corner to resize.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex overflow-hidden rounded-md border border-input">
-              {([30, 60, 90] as const).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setProfitDays(d)}
-                  className={`px-2.5 py-1 text-xs font-medium transition-colors ${
-                    profitDays === d
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background text-muted-foreground hover:bg-accent"
-                  }`}
-                >
-                  {d}d
-                </button>
-              ))}
-            </div>
-            <label className="flex items-center gap-1 text-xs text-muted-foreground">
-              Desktop $/user/day
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={desktopCostInput}
-                onChange={(e) => setDesktopCostInput(e.target.value)}
-                className="w-16 rounded-md border border-input bg-background px-2 py-1 text-xs"
-              />
-            </label>
-            <label className="flex items-center gap-1 text-xs text-muted-foreground">
-              Mobile $/user/day
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={mobileCostInput}
-                onChange={(e) => setMobileCostInput(e.target.value)}
-                className="w-16 rounded-md border border-input bg-background px-2 py-1 text-xs"
-              />
-            </label>
-          </div>
-        </div>
-
-        {profitError ? (
-          <Card className="border-destructive/50 bg-destructive/5 p-4">
-            <p className="text-sm text-destructive">Failed to load profitability data.</p>
-          </Card>
-        ) : profitLoading && !profitability ? (
-          <Card className="flex h-[200px] items-center justify-center p-6">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </Card>
-        ) : (
-          <>
-            {profitability?.summary.partial && (
-              <div className="mb-3 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>Some profitability inputs failed. Numbers may be incomplete.</span>
-              </div>
-            )}
-            <ResizableChartGrid storageKey="admin:profitability:v1" items={profitCharts} />
-          </>
-        )}
-      </div>
-
-      {/* Revenue Overview — draggable & resizable */}
-      <div className="pt-2">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-2xl font-bold tracking-tight">Revenue Overview</h2>
-          <div className="flex rounded-md border border-input overflow-hidden">
-            {(["7d", "30d", "all"] as const).map((w) => (
-              <button
-                key={w}
-                onClick={() => setCumulativeWindow(w)}
-                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
-                  cumulativeWindow === w
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background text-muted-foreground hover:bg-accent"
-                }`}
-              >
-                {w === "7d" ? "Last week" : w === "30d" ? "Last month" : "All time"}
-              </button>
-            ))}
-          </div>
-        </div>
-        {dailyNewUsersLoading ? (
-          <Card className="flex h-[200px] items-center justify-center p-6">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </Card>
-        ) : (
-          <ResizableChartGrid storageKey="admin:revenue-overview:v1" items={revenueCharts} />
-        )}
-      </div>
-
-      {/* ─────────────────────────────────────────────────── */}
-      {/* macOS Growth Metrics */}
-      {/* ─────────────────────────────────────────────────── */}
-      <h2 className="text-2xl font-bold tracking-tight pt-4">macOS Growth Metrics</h2>
-
-      {/* Key Metrics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">DAU</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{vm?.summary.dau ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">avg last 7 days</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">WAU</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{vm?.summary.wau ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">last 7 days</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">MAU</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{vm?.summary.mau ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">last 30 days</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">DAU/MAU</CardTitle>
-            <Zap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${(vm?.summary.dauMau ?? 0) >= 20 ? "text-green-600" : ""}`}>
-              {vm?.summary.dauMau != null ? `${vm.summary.dauMau}%` : "--"}
-            </div>
-            <p className="text-xs text-muted-foreground">Stickiness (good: 20%+)</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Quick Ratio</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${(vm?.summary.quickRatio ?? 0) >= 1 ? "text-green-600" : "text-red-600"}`}>
-              {vm?.summary.quickRatio != null ? `${vm.summary.quickRatio}x` : "--"}
-            </div>
-            <p className="text-xs text-muted-foreground">Growing if &gt;1x</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Activation</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${(vm?.summary.activationRate ?? 0) >= 50 ? "text-green-600" : ""}`}>
-              {vm?.summary.activationRate != null ? `${vm.summary.activationRate}%` : "--"}
-            </div>
-            <p className="text-xs text-muted-foreground">Memory within 7d</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <ResizableChartGrid storageKey="admin:macos-growth:v1" items={macosGrowthCharts} />
-
-      <h2 className="text-2xl font-bold tracking-tight pt-4">Notification Analytics</h2>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Notifications Enabled</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{notificationEnabledDisabled?.enabled?.toLocaleString() ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">
-              {notificationEnabledDisabled
-                ? `of ${notificationEnabledDisabled.total.toLocaleString()} users (${((notificationEnabledDisabled.enabled / notificationEnabledDisabled.total) * 100).toFixed(1)}%)`
-                : "Loading notification adoption"}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Notifications Disabled</CardTitle>
-            <BellOff className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{notificationEnabledDisabled?.disabled?.toLocaleString() ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">Explicitly disabled desktop notifications</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">"Omi says" Sent (7d)</CardTitle>
-            <Send className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{notificationMentorLast7.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Built-in mentor notifications</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Marketplace Mentor (7d)</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{notificationMarketplaceLast7.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Marketplace "Omi Mentor" app</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Floating Bar Clicks</CardTitle>
-            <MousePointerClick className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{floatingBarCtrSummary?.clicked?.toLocaleString() ?? "0"}</div>
-            <p className="text-xs text-muted-foreground">Explicit notification opens from the floating bar</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Floating Bar CTR</CardTitle>
-            <Percent className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{floatingBarCtrSummary ? `${floatingBarCtrSummary.ctr.toFixed(1)}%` : "0.0%"}</div>
-            <p className="text-xs text-muted-foreground">
-              {floatingBarCtrSummary
-                ? floatingBarCtrSummary.mode === "surface_tagged"
-                  ? `${floatingBarCtrSummary.sent.toLocaleString()} tagged sends, ${floatingBarCtrSummary.uniqueClickers.toLocaleString()} unique clickers`
-                  : `Fallback: all desktop notifications, ${floatingBarCtrSummary.sent.toLocaleString()} sent`
-                : "Waiting for new surface-tagged events"}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <ResizableChartGrid storageKey="admin:notifications:v1" items={notificationCharts} />
-
-      {/* Ratings + Floating Bar Usage — draggable & resizable */}
-      <ResizableChartGrid storageKey="admin:ratings-usage:v1" items={ratingsAndUsageCharts} />
-
-      {/* Viral metrics — draggable & resizable */}
-      <ResizableChartGrid storageKey="admin:viral-metrics:v1" items={viralCharts} />
-
-      {/* ─────────────────────────────────────────────────── */}
-      {/* Retention Section */}
-      {/* ─────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between pt-4">
-        <h2 className="text-2xl font-bold tracking-tight">Retention</h2>
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-md border border-input overflow-hidden">
-            <button
-              onClick={() => setRetentionView("average")}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                retentionView === "average"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              Average
-            </button>
-            <button
-              onClick={() => setRetentionView("cohorts")}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                retentionView === "cohorts"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background text-muted-foreground hover:bg-accent"
-              }`}
-            >
-              By Cohort
-            </button>
-          </div>
-          <Select value={retentionPlatform} onValueChange={setRetentionPlatform}>
-            <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="macos">macOS</SelectItem>
-              <SelectItem value="all">All Platforms</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={String(retentionDays)} onValueChange={(v) => setRetentionDays(parseInt(v, 10))}>
-            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="14">14 days</SelectItem>
-              <SelectItem value="30">30 days</SelectItem>
-              <SelectItem value="60">60 days</SelectItem>
-              <SelectItem value="90">90 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Retention D1/D7 Summary */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">D1 Retention</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{retentionD1 !== null ? `${retentionD1.toFixed(1)}%` : "--"}</div>
-            <p className={`text-xs ${retentionD1 !== null && retentionD1 >= 25 ? "text-green-600" : "text-muted-foreground"}`}>Good: 25%+</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">D7 Retention</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{retentionD7 !== null ? `${retentionD7.toFixed(1)}%` : "--"}</div>
-            <p className={`text-xs ${retentionD7 !== null && retentionD7 >= 15 ? "text-green-600" : "text-muted-foreground"}`}>Good: 15%+</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Retention Chart / Cohort Table */}
-      {mixpanelRetLoading ? (
-        <Card className="p-6">
-          <div className="flex items-center justify-center h-[400px]">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        </Card>
-      ) : retentionView === "average" ? (
-        <ResizableChartGrid storageKey="admin:retention-avg:v1" items={retentionCharts} />
-      ) : (
-        <Card className="p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-medium text-muted-foreground whitespace-nowrap">Date</th>
-                  <th className="px-3 py-3 text-right font-medium text-muted-foreground whitespace-nowrap">Users</th>
-                  {Array.from({ length: cohortMaxDays }, (_, i) => (
-                    <th key={i} className="px-3 py-3 text-center font-medium text-muted-foreground whitespace-nowrap min-w-[64px]">
-                      {i === 0 ? "< 1 Day" : `Day ${i}`}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {mixpanelRetention?.data && mixpanelRetention.data.length > 0 && (
-                  <tr className="border-b font-semibold">
-                    <td className="sticky left-0 z-10 bg-card px-4 py-2.5 whitespace-nowrap">Weighted Avg</td>
-                    <td className="px-3 py-2.5 text-right text-muted-foreground">{mixpanelRetention.totalUsers.toLocaleString()}</td>
-                    {mixpanelRetention.data.map((p) => (
-                      <td key={p.day} className="px-3 py-2.5 text-center" style={{ backgroundColor: retentionHeatColor(p.retention) }}>
-                        <span className={p.retention > 50 ? "text-white" : ""}>{p.retention.toFixed(1)}%</span>
-                      </td>
-                    ))}
-                  </tr>
-                )}
-                {cohorts.map((c) => (
-                  <tr key={c.date} className="border-b last:border-b-0 hover:bg-muted/30">
-                    <td className="sticky left-0 z-10 bg-card px-4 py-2 whitespace-nowrap">{formatCohortDate(c.date)}</td>
-                    <td className="px-3 py-2 text-right text-muted-foreground">{c.users}</td>
-                    {Array.from({ length: cohortMaxDays }, (_, i) => {
-                      const val = i < c.data.length ? c.data[i].retention : null;
-                      return (
-                        <td key={i} className="px-3 py-2 text-center" style={val !== null ? { backgroundColor: retentionHeatColor(val) } : {}}>
-                          {val !== null ? <span className={val > 50 ? "text-white" : ""}>{val.toFixed(1)}%</span> : null}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-      {/* Chat Ratings by Week */}
-      <ChatRatingsChart token={token} />
+      <ResizableChartGrid storageKey="admin:unified:v1" items={unifiedItems} />
     </div>
   );
 }
@@ -2147,7 +2269,7 @@ interface RatingVersion { version: string; thumbs_up: number; thumbs_down: numbe
 interface ChatRatingsWeekData { weeks: RatingWeek[]; total_up: number; total_down: number }
 interface ChatRatingsVersionData { versions: RatingVersion[]; total_up: number; total_down: number }
 
-function ChatRatingsChart({ token }: { token: string | null }) {
+function useChatRatingsItems({ token }: { token: string | null }): ChartItem[] {
   const [platform, setPlatform] = useState<"all" | "desktop" | "mobile">("desktop");
   const [groupBy, setGroupBy] = useState<"week" | "version">("week");
 
@@ -2265,5 +2387,5 @@ function ChatRatingsChart({ token }: { token: string | null }) {
     },
   ], [platform, groupBy, isLoading, chartData, stats]);
 
-  return <ResizableChartGrid storageKey="admin:chat-ratings:v1" items={items} />;
+  return items;
 }
