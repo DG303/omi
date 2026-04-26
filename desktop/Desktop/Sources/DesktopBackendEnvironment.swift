@@ -42,8 +42,8 @@ enum DesktopBackendEnvironment {
   }
 
   static func rustBackendURL(
-    environmentValue: String? = currentEnvironmentValue("OMI_API_URL"),
-    launchEnvironmentValue: String? = ProcessInfo.processInfo.environment["OMI_API_URL"]
+    environmentValue: String? = currentEnvironmentValue("OMI_DESKTOP_API_URL"),
+    launchEnvironmentValue: String? = ProcessInfo.processInfo.environment["OMI_DESKTOP_API_URL"]
   ) -> String {
     rustBackendURL(
       useDevelopmentBackends: shouldUseDevelopmentBackends,
@@ -76,7 +76,7 @@ enum DesktopBackendEnvironment {
     guard shouldUseDevelopmentBackends else { return }
 
     setenv("OMI_PYTHON_API_URL", developmentPythonAPIURL, 1)
-    setenv("OMI_API_URL", developmentRustBackendURL, 1)
+    setenv("OMI_DESKTOP_API_URL", developmentRustBackendURL, 1)
     log("BackendEnvironment: beta channel using development backends with production data stores")
   }
 
