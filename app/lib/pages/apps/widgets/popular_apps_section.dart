@@ -35,7 +35,7 @@ class PopularAppsSection extends StatelessWidget {
       children: [
         // Section header - Apple style
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: Row(
             children: [
               Text(
