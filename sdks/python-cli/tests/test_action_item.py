@@ -48,3 +48,11 @@ def test_action_item_delete(authed_profile, respx_mock, cli_runner) -> None:
     respx_mock.delete("/v1/dev/user/action-items/a1").respond(json={"success": True})
     result = cli_runner.invoke(app, ["action-item", "delete", "a1", "-y"])
     assert result.exit_code == 0
+
+
+def test_action_item_get_missing_returns_not_found_exit_code(authed_profile, respx_mock, cli_runner) -> None:
+    """Same agent contract as memory get — client-side miss is exit 5, not 1."""
+    respx_mock.get("/v1/dev/user/action-items").respond(json=[])
+    result = cli_runner.invoke(app, ["action-item", "get", "missing"])
+    assert result.exit_code == 5  # EXIT_NOT_FOUND
+    assert "not found" in result.stderr.lower()
