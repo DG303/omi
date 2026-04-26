@@ -473,12 +473,19 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _voiceSendInFlight = false;
+
   Future sendVoiceMessageStreamToServer(
     List<List<int>> audioBytes, {
     Function? onFirstChunkRecived,
     BleAudioCodec? codec,
     bool playResponseAudio = false,
   }) async {
+    // Re-entry guard so a duplicated end-of-session signal from the device
+    // button can't kick off two parallel voice replies.
+    if (_voiceSendInFlight) return;
+    if (audioBytes.isEmpty) return;
+    _voiceSendInFlight = true;
     _chatQuotaExceeded = false; // Clear stale quota state from previous sends
     var file = await FileUtils.saveAudioBytesToTempFile(
       audioBytes,
@@ -589,6 +596,8 @@ class MessageProvider extends ChangeNotifier {
         await OmiVoicePlaybackService.instance.interrupt();
       }
       notifyListeners();
+    } finally {
+      _voiceSendInFlight = false;
     }
 
     setShowTypingIndicator(false);
