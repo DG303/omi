@@ -39,15 +39,20 @@ omi
 
 ## `omi auth`
 
-| Command                       | Notes                                                           |
-| ----------------------------- | --------------------------------------------------------------- |
-| `omi auth login`              | Hidden-input prompt for a dev API key.                          |
-| `omi auth login --api-key K`  | Headless. Exposes the key in `ps`/history — prefer the prompt.  |
-| `omi auth login --browser`    | OAuth browser flow. **Coming in v0.2.0.**                       |
-| `omi auth logout`             | Clear the active profile's credentials.                         |
-| `omi auth status`             | Show profile + masked credential + API base.                    |
-| `omi auth whoami`             | Round-trip to the API to verify the credential is valid.        |
-| `omi auth refresh`            | OAuth-only (no-op with API keys).                               |
+| Command                                | Notes                                                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------- |
+| `omi auth login`                       | Interactive prompt: pick browser OAuth or paste an API key.                      |
+| `omi auth login --browser`             | Force the Firebase OAuth browser flow (default provider: Google).                |
+| `omi auth login --browser --provider apple` | Same flow, Apple Sign-In.                                                   |
+| `omi auth login --api-key K`           | Force the API-key path. Exposes the key in `ps`/history — prefer the prompt.    |
+| `omi auth logout`                      | Clear the active profile's credentials.                                          |
+| `omi auth status`                      | Show profile + masked credential + API base. OAuth profiles also show expiry.    |
+| `omi auth whoami`                      | Round-trip to the API to verify the credential is valid.                         |
+| `omi auth refresh`                     | Force-refresh the OAuth ID token. No-op for API-key profiles.                    |
+
+OAuth ID tokens are auto-refreshed before each request when the cached token
+is past (or near) its expiry — you should rarely need to call `refresh` by
+hand. The refresh token rotates if Firebase decides to.
 
 ## `omi config`
 
