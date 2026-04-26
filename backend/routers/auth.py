@@ -1,11 +1,12 @@
 import os
+import re
 import uuid
 import json
 import hashlib
 import time
 import jwt
 from typing import Optional
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 from cryptography.hazmat.primitives import serialization
 from jwt.algorithms import RSAAlgorithm
 from fastapi import APIRouter, Request, HTTPException, Form
@@ -29,6 +30,34 @@ router = APIRouter(
 templates_path = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_path))
 
+# Omi custom URL scheme pattern: omi, omi-computer, omi-computer-dev, omi-fix-rewind, etc.
+_ALLOWED_SCHEME_RE = re.compile(r'^omi(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?$')
+# Default redirect URI for legacy callers that don't send redirect_uri
+_DEFAULT_REDIRECT_URI = 'omi://auth/callback'
+
+
+def _validate_redirect_uri(redirect_uri: Optional[str]) -> str:
+    """Validate and return a safe redirect URI for the auth callback.
+
+    Accepts only Omi custom URL schemes (omi://, omi-computer://, omi-computer-dev://, etc.)
+    with host=auth and path=/callback.  Returns the default for legacy callers that omit it.
+    """
+    if not redirect_uri:
+        return _DEFAULT_REDIRECT_URI
+
+    parts = urlsplit(redirect_uri)
+    scheme = parts.scheme.lower()
+    if (
+        _ALLOWED_SCHEME_RE.match(scheme)
+        and parts.netloc == 'auth'
+        and parts.path == '/callback'
+        and not parts.query
+        and not parts.fragment
+    ):
+        return redirect_uri
+
+    raise HTTPException(status_code=400, detail="Invalid redirect_uri — must be an omi:// custom scheme callback")
+
 
 @router.get("/authorize")
 async def auth_authorize(
@@ -44,11 +73,14 @@ async def auth_authorize(
     if provider not in ['google', 'apple']:
         raise HTTPException(status_code=400, detail="Unsupported provider")
 
+    # Validate redirect_uri against allowlist before storing
+    validated_redirect_uri = _validate_redirect_uri(redirect_uri)
+
     # Store session for auth flow
     session_id = str(uuid.uuid4())
     session_data = {
         'provider': provider,
-        'redirect_uri': redirect_uri,
+        'redirect_uri': validated_redirect_uri,
         'state': state,
         'flow_type': 'user_auth',  # Distinguish from app oauth
     }
@@ -84,9 +116,11 @@ async def auth_callback_google(
     # Exchange code for OAuth credentials
     oauth_credentials = await _exchange_provider_code_for_oauth_credentials('google', code, session_data)
 
-    # Create temporary auth code
+    # Create temporary auth code bound to the original redirect_uri
     auth_code = str(uuid.uuid4())
-    set_auth_code(auth_code, oauth_credentials, 300)
+    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_REDIRECT_URI)
+    code_data = json.dumps({'credentials': oauth_credentials, 'redirect_uri': app_redirect_uri})
+    set_auth_code(auth_code, code_data, 300)
 
     # Redirect to HTML page that will handle custom scheme redirect
     # This avoids browser security issues with backend->custom scheme redirects
@@ -96,6 +130,7 @@ async def auth_callback_google(
             "request": request,
             "code": auth_code,
             "state": session_data['state'] or '',
+            "redirect_uri": app_redirect_uri,
         },
     )
 
@@ -122,9 +157,11 @@ async def auth_callback_apple_post(
     # Exchange code for OAuth credentials
     oauth_credentials = await _exchange_provider_code_for_oauth_credentials('apple', code, session_data)
 
-    # Create temporary auth code
+    # Create temporary auth code bound to the original redirect_uri
     auth_code = str(uuid.uuid4())
-    set_auth_code(auth_code, oauth_credentials, 300)
+    app_redirect_uri = session_data.get('redirect_uri', _DEFAULT_REDIRECT_URI)
+    code_data = json.dumps({'credentials': oauth_credentials, 'redirect_uri': app_redirect_uri})
+    set_auth_code(auth_code, code_data, 300)
 
     # Redirect to HTML page that will handle custom scheme redirect
     # This avoids browser security issues with backend->custom scheme redirects
@@ -134,6 +171,7 @@ async def auth_callback_apple_post(
             "request": request,
             "code": auth_code,
             "state": session_data['state'] or '',
+            "redirect_uri": app_redirect_uri,
         },
     )
 
@@ -156,16 +194,34 @@ async def auth_token(
     if grant_type != 'authorization_code':
         raise HTTPException(status_code=400, detail="Unsupported grant type")
 
-    # Get OAuth credentials from Redis
-    oauth_credentials_json = get_auth_code(code)
-    if not oauth_credentials_json:
+    # Get auth code data from Redis
+    raw_code_data = get_auth_code(code)
+    if not raw_code_data:
         raise HTTPException(status_code=400, detail="Invalid or expired code")
 
     # Clean up used code
     delete_auth_code(code)
 
     try:
-        oauth_credentials = json.loads(oauth_credentials_json)
+        code_data = json.loads(raw_code_data)
+
+        # Support both new format (with redirect_uri binding) and legacy format
+        if 'credentials' in code_data:
+            # New format: auth code bound to redirect_uri
+            stored_redirect_uri = code_data.get('redirect_uri', '')
+            if stored_redirect_uri and redirect_uri != stored_redirect_uri:
+                logger.warning(f"redirect_uri mismatch: expected={stored_redirect_uri}, got={redirect_uri}")
+                raise HTTPException(status_code=400, detail="redirect_uri mismatch")
+            oauth_credentials_json = code_data['credentials']
+            oauth_credentials = (
+                json.loads(oauth_credentials_json)
+                if isinstance(oauth_credentials_json, str)
+                else oauth_credentials_json
+            )
+        else:
+            # Legacy format: raw OAuth credentials (backwards compatible)
+            oauth_credentials = code_data
+
         provider = oauth_credentials.get('provider')
         id_token = oauth_credentials.get('id_token')
         access_token = oauth_credentials.get('access_token')
@@ -190,6 +246,8 @@ async def auth_token(
 
         return response
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error parsing OAuth credentials: {e}")
         raise HTTPException(status_code=400, detail="Invalid OAuth credentials")
