@@ -470,74 +470,74 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         ? 0
                                         : 2),
                               ),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF2A2A2F),
-                                  borderRadius: BorderRadius.circular(32),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    // Left button: Stop (during voice) or Plus (otherwise)
-                                    if (voiceRecorderProvider.isActive)
-                                      GestureDetector(
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          // Stop = transcribe + paste only (no auto-send).
-                                          if (voiceRecorderProvider.state == VoiceRecorderState.recording) {
-                                            voiceRecorderProvider.processRecording();
-                                          } else {
-                                            voiceRecorderProvider.close();
-                                          }
-                                        },
-                                        child: Container(
-                                          height: 44,
-                                          width: 44,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFF3C3C43),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Center(
-                                            child: Icon(Icons.stop, color: Colors.white, size: 18),
-                                          ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  // LEFT button — outside the pill for visual separation
+                                  if (voiceRecorderProvider.isActive)
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        // Stop = transcribe + paste only (no auto-send).
+                                        if (voiceRecorderProvider.state == VoiceRecorderState.recording) {
+                                          voiceRecorderProvider.processRecording();
+                                        } else {
+                                          voiceRecorderProvider.close();
+                                        }
+                                      },
+                                      child: Container(
+                                        height: 44,
+                                        width: 44,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF2A2A2F),
+                                          shape: BoxShape.circle,
                                         ),
-                                      )
-                                    else if (shouldShowMenuButton())
-                                      GestureDetector(
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          FocusScope.of(context).unfocus();
-                                          if (provider.selectedFiles.length > 3) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text(context.l10n.maxFilesLimit),
-                                                duration: const Duration(seconds: 2),
-                                              ),
-                                            );
-                                            return;
-                                          }
-                                          _showIOSStyleActionSheet(context);
-                                        },
-                                        child: Container(
-                                          height: 44,
-                                          width: 44,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFF3C3C43),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Center(
-                                            child: FaIcon(
-                                              FontAwesomeIcons.plus,
-                                              color: provider.selectedFiles.length > 3 ? Colors.grey : Colors.white,
-                                              size: 18,
+                                        child: const Center(
+                                          child: Icon(Icons.stop, color: Colors.white, size: 18),
+                                        ),
+                                      ),
+                                    )
+                                  else if (shouldShowMenuButton())
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        FocusScope.of(context).unfocus();
+                                        if (provider.selectedFiles.length > 3) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(context.l10n.maxFilesLimit),
+                                              duration: const Duration(seconds: 2),
                                             ),
+                                          );
+                                          return;
+                                        }
+                                        _showIOSStyleActionSheet(context);
+                                      },
+                                      child: Container(
+                                        height: 44,
+                                        width: 44,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF2A2A2F),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: FaIcon(
+                                            FontAwesomeIcons.plus,
+                                            color: provider.selectedFiles.length > 3 ? Colors.grey : Colors.white,
+                                            size: 18,
                                           ),
                                         ),
                                       ),
-                                    const SizedBox(width: 12),
-                                    // Text field
-                                    Expanded(
+                                    ),
+                                  const SizedBox(width: 8),
+                                  // CENTER pill — text field or waveform
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2A2A2F),
+                                        borderRadius: BorderRadius.circular(32),
+                                      ),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,8 +643,10 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                         ],
                                       ),
                                     ),
-                                    // Send button while recording — transcribes and sends in one tap.
-                                    if (voiceRecorderProvider.isActive)
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Send button while recording — transcribes and sends in one tap.
+                                  if (voiceRecorderProvider.isActive)
                                       GestureDetector(
                                         onTap: () {
                                           HapticFeedback.mediumImpact();
@@ -730,8 +732,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                           );
                                         },
                                       ),
-                                  ],
-                                ),
+                                ],
                               ),
                             ),
                           ),
