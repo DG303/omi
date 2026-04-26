@@ -44,8 +44,16 @@ class VoiceRecorderProvider extends ChangeNotifier {
   Timer? _waveformTimer;
 
   // Callbacks for UI integration
-  Function(String transcript)? _onTranscriptReady;
+  Function(String transcript, bool autoSend)? _onTranscriptReady;
   VoidCallback? _onClose;
+
+  // Set by the caller (e.g. tapping the send button mid-recording) before
+  // processRecording() — instructs the chat page to send immediately after
+  // filling the text field instead of waiting for a manual send tap.
+  bool _autoSendRequested = false;
+  void requestAutoSendOnNextTranscript() {
+    _autoSendRequested = true;
+  }
 
   VoiceRecorderState get state => _state;
   String get transcript => _transcript;
@@ -72,7 +80,7 @@ class VoiceRecorderProvider extends ChangeNotifier {
     }
   }
 
-  void setCallbacks({Function(String transcript)? onTranscriptReady, VoidCallback? onClose}) {
+  void setCallbacks({Function(String transcript, bool autoSend)? onTranscriptReady, VoidCallback? onClose}) {
     _onTranscriptReady = onTranscriptReady;
     _onClose = onClose;
   }
@@ -224,7 +232,9 @@ class VoiceRecorderProvider extends ChangeNotifier {
         notifyListeners();
 
         if (transcript.isNotEmpty) {
-          _onTranscriptReady?.call(transcript);
+          final autoSend = _autoSendRequested;
+          _autoSendRequested = false;
+          _onTranscriptReady?.call(transcript, autoSend);
           close();
         } else {
           Logger.debug('Empty transcript received, closing without error');
@@ -278,7 +288,9 @@ class VoiceRecorderProvider extends ChangeNotifier {
         notifyListeners();
 
         if (transcript.isNotEmpty) {
-          _onTranscriptReady?.call(transcript);
+          final autoSend = _autoSendRequested;
+          _autoSendRequested = false;
+          _onTranscriptReady?.call(transcript, autoSend);
           close();
         } else {
           Logger.debug('Empty transcript received on retry, closing without error');
@@ -438,6 +450,7 @@ class VoiceRecorderProvider extends ChangeNotifier {
     _transcript = '';
     _isProcessing = false;
     _pcmBytesWritten = 0;
+    _autoSendRequested = false;
 
     // Close PCM sink if still open
     _pcmSink?.close();
