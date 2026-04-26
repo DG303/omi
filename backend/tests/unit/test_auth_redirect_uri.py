@@ -531,6 +531,34 @@ class TestTokenEdgeCases:
             assert result['provider'] == 'google'
             assert result['id_token'] == 'dict-tok'
 
+    def test_token_rejects_new_format_without_redirect_uri(self):
+        """New-format auth code (has 'credentials' key) must include redirect_uri — fail closed."""
+        from routers.auth import auth_token
+        import asyncio
+
+        code_data = json.dumps(
+            {
+                'credentials': json.dumps(
+                    {'provider': 'google', 'id_token': 't', 'access_token': 'a', 'provider_id': 'google.com'}
+                ),
+                # redirect_uri intentionally missing
+            }
+        )
+        request = MagicMock()
+        with patch('routers.auth.get_auth_code', return_value=code_data), patch('routers.auth.delete_auth_code'):
+            with pytest.raises(HTTPException) as exc_info:
+                asyncio.get_event_loop().run_until_complete(
+                    auth_token(
+                        request=request,
+                        grant_type='authorization_code',
+                        code='c',
+                        redirect_uri='omi://auth/callback',
+                        use_custom_token=False,
+                    )
+                )
+            assert exc_info.value.status_code == 400
+            assert 'malformed' in exc_info.value.detail.lower()
+
     def test_token_rejects_unsupported_grant_type(self):
         """Non-authorization_code grant type returns 400."""
         from routers.auth import auth_token
