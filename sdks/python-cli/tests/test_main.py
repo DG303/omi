@@ -33,3 +33,25 @@ def test_auth_status_unauthenticated_in_json(config_path, cli_runner) -> None:
     payload = json.loads(result.stdout)
     assert payload["authenticated"] is False
     assert payload["auth_method"] is None
+
+
+def test_omi_api_key_env_var_is_validated(config_path, cli_runner, monkeypatch) -> None:
+    """Greptile P2: an obviously-bad OMI_API_KEY env value must surface as a
+    UsageError (exit 1) before the CLI tries to call the API and bounces off
+    a 401."""
+    monkeypatch.setenv("OMI_API_KEY", "not-a-real-key")
+    result = cli_runner.invoke(app, ["memory", "list"])
+    assert result.exit_code == 1  # EXIT_USAGE — same shape as the paste flow's bad-format error
+    assert "developer key" in result.stderr.lower() or "omi_dev_" in result.stderr.lower()
+
+
+def test_omi_api_key_env_var_with_valid_format_is_accepted(config_path, cli_runner, monkeypatch, respx_mock) -> None:
+    """A well-formed env-var key should reach the API exactly like the on-disk path."""
+    from tests.conftest import FAKE_API_BASE
+
+    monkeypatch.setenv("OMI_API_KEY", "omi_dev_" + ("a" * 32))
+    monkeypatch.setenv("OMI_API_BASE", FAKE_API_BASE)
+    respx_mock.get("/v1/dev/user/memories").respond(json=[])
+    result = cli_runner.invoke(app, ["--json", "memory", "list"])
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "[]"
