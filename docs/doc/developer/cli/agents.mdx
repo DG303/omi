@@ -75,8 +75,12 @@ backoff strategies.
 ```python
 import json
 import subprocess
-import time
+from datetime import datetime, timedelta, timezone
 from typing import Any
+
+
+class OmiCliError(RuntimeError):
+    pass
 
 
 def omi(*args: str) -> Any:
@@ -98,12 +102,7 @@ def omi(*args: str) -> Any:
     raise OmiCliError(err)
 
 
-class OmiCliError(RuntimeError):
-    pass
-
-
 # Read all open action items and mark anything older than 30 days complete.
-from datetime import datetime, timedelta, timezone
 cutoff = datetime.now(timezone.utc) - timedelta(days=30)
 
 items = omi("action-item", "list", "--open") or []
@@ -116,15 +115,22 @@ for item in items:
 ## Handling rate limits in your harness
 
 ```python
-import json, subprocess, time, re
+import json
+import re
+import subprocess
+import time
 
 
-def omi_with_backoff(*args, max_attempts=3):
-    for attempt in range(max_attempts):
-        result = subprocess.run(["omi", "--json", *args], capture_output=True, text=True)
+def omi_with_backoff(*args: str, max_attempts: int = 3) -> object:
+    for _ in range(max_attempts):
+        result = subprocess.run(
+            ["omi", "--json", *args],
+            capture_output=True,
+            text=True,
+        )
         if result.returncode == 0:
             return json.loads(result.stdout) if result.stdout.strip() else None
-        if result.returncode != 4:        # not a rate-limit error
+        if result.returncode != 4:  # not a rate-limit error
             raise RuntimeError(result.stderr)
         # Pull "Retry in Ns" out of the detail message.
         match = re.search(r"Retry in (\d+)s", result.stderr)
