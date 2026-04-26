@@ -23,6 +23,7 @@ from typing import Any, Iterator, Mapping, Optional
 
 import httpx
 from tenacity import (
+    RetryCallState,
     Retrying,
     retry_if_exception_type,
     stop_after_attempt,
@@ -36,6 +37,10 @@ from omi_cli.errors import CliError, RateLimitError, ServerError, from_status
 USER_AGENT = f"omi-cli/{__version__} (+https://github.com/BasedHardware/omi)"
 DEFAULT_TIMEOUT = httpx.Timeout(30.0, connect=10.0)
 MAX_RETRY_ATTEMPTS = 4
+# Cap on how long we'll honor a server-supplied Retry-After hint. Without this,
+# a misconfigured upstream could pin the CLI for hours; agents will get a
+# RateLimitError they can act on much sooner.
+MAX_RETRY_AFTER_SECONDS = 60.0
 
 # Backend rate-limit policies surfaced to users on 429 (see
 # ``backend/utils/rate_limit_config.py``).
@@ -114,7 +119,9 @@ class OmiClient:
         retrying = Retrying(
             reraise=True,
             stop=stop_after_attempt(MAX_RETRY_ATTEMPTS),
-            wait=wait_exponential_jitter(initial=0.5, max=8.0),
+            # Honor server-supplied Retry-After when present, otherwise fall
+            # back to exponential jitter. See ``_retry_wait`` for the logic.
+            wait=_retry_wait,
             retry=retry_if_exception_type((httpx.TransportError, _RetryableHttp)),
         )
 
@@ -124,11 +131,14 @@ class OmiClient:
                     response = self._http.request(method, path, params=cleaned_params, json=json_body)
                     self._maybe_log(method, path, response)
                     if response.status_code >= 500:
-                        raise _RetryableHttp(response)
+                        raise _RetryableHttp(response, retry_after=None)
                     if response.status_code == 429:
                         # Surface the structured RateLimitError so callers can show
                         # a useful message; tenacity treats this as retryable.
-                        raise _RetryableHttp(response)
+                        raise _RetryableHttp(
+                            response,
+                            retry_after=_parse_retry_after(response.headers.get("Retry-After")),
+                        )
                     return self._handle_response(response)
         except _RetryableHttp as exc:
             # We exhausted retries — convert to the proper CliError now.
@@ -202,11 +212,37 @@ class OmiClient:
 
 
 class _RetryableHttp(Exception):
-    """Internal sentinel: a retryable HTTP response (5xx or 429)."""
+    """Internal sentinel: a retryable HTTP response (5xx or 429).
 
-    def __init__(self, response: httpx.Response) -> None:
+    ``retry_after`` is populated for 429s when the server sent a ``Retry-After``
+    header — the wait function reads it to honor the server's hint.
+    """
+
+    def __init__(self, response: httpx.Response, *, retry_after: Optional[float] = None) -> None:
         super().__init__(f"retryable HTTP {response.status_code}")
         self.response = response
+        self.retry_after = retry_after
+
+
+# Module-level wait function so tenacity's introspection (and tests) can find it.
+_jittered_backoff = wait_exponential_jitter(initial=0.5, max=8.0)
+
+
+def _retry_wait(retry_state: RetryCallState) -> float:
+    """Wait strategy: server-supplied Retry-After when available, jitter otherwise.
+
+    A 429 that includes ``Retry-After`` ends up here as a ``_RetryableHttp``
+    with ``retry_after`` populated. We honor it but cap to
+    :data:`MAX_RETRY_AFTER_SECONDS` so a pathological upstream can't pin the
+    CLI for an unbounded time. For 5xx (no ``Retry-After`` from this backend)
+    and transport errors we fall back to exponential jitter — same behavior
+    the client had before this fix.
+    """
+    outcome = retry_state.outcome
+    exc = outcome.exception() if outcome is not None and outcome.failed else None
+    if isinstance(exc, _RetryableHttp) and exc.retry_after is not None and exc.retry_after > 0:
+        return min(exc.retry_after, MAX_RETRY_AFTER_SECONDS)
+    return float(_jittered_backoff(retry_state))
 
 
 def _safe_parse_json(response: httpx.Response) -> Any:
