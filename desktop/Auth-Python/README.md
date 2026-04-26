@@ -1,8 +1,8 @@
 # Desktop Auth Service (Auth-Python) — DEPRECATED
 
 > **DEPRECATED:** This standalone auth service is superseded by `backend/routers/auth.py`
-> which uses Redis-backed session storage. The desktop app now points `OMI_AUTH_URL` to
-> `https://api.omi.me/` (the main Python backend). The Cloud Run service `omi-desktop-auth`
+> which uses Redis-backed session storage. The desktop app now reads `OMI_PYTHON_API_URL`
+> for auth (defaults to `https://api.omi.me/`). The Cloud Run service `omi-desktop-auth`
 > will be retired once all app versions using the old URL are phased out.
 > See [#7020](https://github.com/BasedHardware/omi/issues/7020) for details.
 
