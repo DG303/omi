@@ -93,9 +93,11 @@
 
     <script>
         // Get values from template variables (passed from backend)
-        const code = "{{ code }}";
-        const state = "{{ state }}";
-        const error = "{{ error if error is defined else '' }}";
+        // Use |tojson for safe JS interpolation (prevents XSS via template injection)
+        const code = {{ code | tojson }};
+        const state = {{ state | tojson }};
+        const redirectUri = {{ redirect_uri | default('omi://auth/callback') | tojson }};
+        const error = {{ (error if error is defined else '') | tojson }};
 
         const errorElement = document.getElementById('error');
         const messageElement = document.getElementById('message');
@@ -108,8 +110,8 @@
             spinnerElement.style.display = 'none';
             messageElement.textContent = 'Please close this window and try again.';
         } else if (code) {
-            // Build the custom scheme redirect URL
-            let redirectUrl = 'omi://auth/callback?code=' + encodeURIComponent(code);
+            // Build the redirect URL using the dynamic redirect_uri from the auth request
+            let redirectUrl = redirectUri + '?code=' + encodeURIComponent(code);
             if (state) {
                 redirectUrl += '&state=' + encodeURIComponent(state);
             }
