@@ -17,6 +17,7 @@ import 'package:omi/pages/referral/referral_page.dart';
 import 'package:omi/providers/device_provider.dart';
 import 'package:omi/providers/usage_provider.dart';
 import 'package:omi/models/subscription.dart';
+import 'package:omi/utils/auth/clear_user_state.dart';
 import 'package:omi/utils/other/temp.dart';
 import 'package:omi/utils/platform/platform_service.dart';
 import 'package:omi/widgets/dialog.dart';
@@ -427,9 +428,12 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                 () => Navigator.of(ctx).pop(),
                 () async {
                   Navigator.of(ctx).pop();
+                  final rootCtx = globalNavigatorKey.currentContext;
+                  if (rootCtx != null && rootCtx.mounted) {
+                    clearAllUserState(rootCtx);
+                  }
                   await SharedPreferencesUtil().clear();
                   await AuthService.instance.signOut();
-                  final rootCtx = globalNavigatorKey.currentContext;
                   if (rootCtx != null && rootCtx.mounted) {
                     routeToPage(rootCtx, const AppShell(), replace: true);
                   }
@@ -698,14 +702,17 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                           () => Navigator.of(ctx).pop(),
                           () async {
                             Navigator.of(ctx).pop();
-                            await SharedPreferencesUtil().clear();
-                            await AuthService.instance.signOut();
                             // The drawer's context is unmounted by the time we
                             // get here (we popped it before opening the
                             // confirm dialog), so routing through it is a
                             // silent no-op. Use the root navigator instead so
                             // we always land back on the auth screen.
                             final rootCtx = globalNavigatorKey.currentContext;
+                            if (rootCtx != null && rootCtx.mounted) {
+                              clearAllUserState(rootCtx);
+                            }
+                            await SharedPreferencesUtil().clear();
+                            await AuthService.instance.signOut();
                             if (rootCtx != null && rootCtx.mounted) {
                               routeToPage(rootCtx, const AppShell(), replace: true);
                             }
