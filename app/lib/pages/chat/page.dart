@@ -624,6 +624,7 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                               ),
                                                               child: TextField(
                                                                 enabled: true,
+                                                                autofocus: !widget.autoStartVoice,
                                                                 controller: textController,
                                                                 focusNode: textFieldFocusNode,
                                                                 obscureText: false,
