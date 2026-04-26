@@ -531,7 +531,10 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
                           : _buildTasksList(categorizedItems, provider),
                 ),
               ),
-              _buildFab(),
+              // Hide the purple corner FAB when the empty-state already
+              // shows its own "Create Action Item" pill — otherwise we
+              // render two competing add buttons on top of each other.
+              if (!categorizedItems.values.every((l) => l.isEmpty)) _buildFab(),
             ],
           ),
         );
