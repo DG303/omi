@@ -111,24 +111,14 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
             context.read<VoiceRecorderProvider>().startRecording();
           }
         });
-      } else if (!widget.autoStartVoice) {
-        // Auto-focus the text field. iOS frequently swallows a single
-        // programmatic focus request during a route push (route animation,
-        // keyboard dismiss-on-pop from the previous page, etc.), so try a few
-        // times across the route animation window. Each call is cheap and
-        // idempotent; the first one that lands wins and the rest no-op.
-        void tryFocus() {
-          if (!mounted) return;
+      } else if (_isInitialLoad) {
+        // Auto-focus the text field only on initial load, not on app switches
+        Future.delayed(const Duration(milliseconds: 300), () {
           final voiceRecorderProvider = context.read<VoiceRecorderProvider>();
-          if (voiceRecorderProvider.isActive) return;
-          if (textFieldFocusNode.hasFocus) return; // already focused, done
-          textFieldFocusNode.requestFocus();
-          SystemChannels.textInput.invokeMethod('TextInput.show');
-        }
-
-        for (final ms in const [0, 100, 250, 400, 600]) {
-          Future.delayed(Duration(milliseconds: ms), tryFocus);
-        }
+          if (mounted && !voiceRecorderProvider.isActive && _isInitialLoad) {
+            textFieldFocusNode.requestFocus();
+          }
+        });
       }
       // Handle auto-message from notification (e.g., daily reflection or goal advice)
       // This sends a message FROM Omi AI, not from the user
@@ -634,7 +624,6 @@ class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
                                                               ),
                                                               child: TextField(
                                                                 enabled: true,
-                                                                autofocus: !widget.autoStartVoice,
                                                                 controller: textController,
                                                                 focusNode: textFieldFocusNode,
                                                                 obscureText: false,
