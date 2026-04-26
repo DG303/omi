@@ -181,7 +181,6 @@ class _ConversationsPageState extends State<ConversationsPage> with AutomaticKee
               const SliverToBoxAdapter(child: SpeechProfileCardWidget()),
               const SliverToBoxAdapter(child: UpdateFirmwareCardWidget()),
               const SliverToBoxAdapter(child: ActiveCallBanner()),
-              const SliverToBoxAdapter(child: ConversationCaptureWidget()),
 
               // Search bar
               Consumer2<HomeProvider, ConversationProvider>(
