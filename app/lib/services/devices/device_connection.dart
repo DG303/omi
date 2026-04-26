@@ -64,11 +64,20 @@ class DeviceConnectionFactory {
     final locator = device.locator;
     if (locator == null) return null;
 
+    // Use name-based detection as fallback for OmiGlass devices (some advertise as DeviceType.omi).
+    final deviceName = device.name.toLowerCase();
+    final isOmiGlass = device.type == DeviceType.openglass ||
+        deviceName.contains('openglass') ||
+        deviceName.contains('omiglass') ||
+        deviceName.contains('glass');
+
     switch (locator.kind) {
       case TransportKind.bluetooth:
         final deviceId = locator.bluetoothId;
         if (deviceId == null) return null;
-        final needsBond = device.type == DeviceType.limitless;
+        // OmiGlass firmware does not have CONFIG_BT_SMP — exclude it from the bonded set
+        // even if it advertised as DeviceType.omi.
+        final needsBond = device.type == DeviceType.limitless || (device.type == DeviceType.omi && !isOmiGlass);
         transport = NativeBleTransport(deviceId, requiresBond: needsBond);
         break;
 
@@ -79,14 +88,6 @@ class DeviceConnectionFactory {
       default:
         return null;
     }
-
-    // Create device connection with transport
-    // Use name-based detection as fallback for OmiGlass devices
-    final deviceName = device.name.toLowerCase();
-    final isOmiGlass = device.type == DeviceType.openglass ||
-        deviceName.contains('openglass') ||
-        deviceName.contains('omiglass') ||
-        deviceName.contains('glass');
 
     switch (device.type) {
       case DeviceType.omi:
