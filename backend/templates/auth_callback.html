@@ -108,18 +108,37 @@
         const manualLinkElement = document.getElementById('manualLink');
 
         function isAllowedRedirect(uri) {
+            // Mirrors the server-side allowlist in backend/routers/auth.py
+            // (see _validate_redirect_uri / _FORBIDDEN_REDIRECT_SCHEMES).
+            // Must accept ALL native app schemes the Omi family registers
+            // (omi://, omi-computer://, omi-computer-dev://, com.omi.app://, ...)
+            // plus http loopback for the CLI; reject https and any
+            // browser-executable scheme.
             if (!uri) return false;
-            if (uri.indexOf('omi://') === 0) return true;
-            try {
-                const u = new URL(uri);
-                if (u.protocol !== 'http:') return false;
-                // URL.hostname returns the bracketless form for IPv6 — compare
-                // against the bare ``::1`` rather than ``[::1]``.
-                const host = u.hostname.toLowerCase();
-                return host === 'localhost' || host === '127.0.0.1' || host === '::1';
-            } catch (_) {
-                return false;
+
+            // Pull out the scheme via regex so we don't depend on URL parser
+            // behavior with unusual custom schemes across browsers.
+            const m = uri.match(/^([a-zA-Z][a-zA-Z0-9+\-.]*):/);
+            if (!m) return false;
+            const scheme = m[1].toLowerCase();
+
+            const forbidden = ['https', 'javascript', 'data', 'vbscript', 'file', 'blob', 'filesystem', 'about'];
+            if (forbidden.indexOf(scheme) !== -1) return false;
+
+            if (scheme === 'http') {
+                try {
+                    const u = new URL(uri);
+                    // URL.hostname returns the bracketless form for IPv6 — compare
+                    // against the bare ``::1`` rather than ``[::1]``.
+                    const host = u.hostname.toLowerCase();
+                    return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+                } catch (_) {
+                    return false;
+                }
             }
+
+            // Native-app custom scheme (omi://, omi-computer://, etc.)
+            return true;
         }
 
         if (error) {

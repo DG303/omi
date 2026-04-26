@@ -29,53 +29,113 @@ router = APIRouter(
 templates_path = pathlib.Path(__file__).parent.parent / "templates"
 templates = Jinja2Templates(directory=str(templates_path))
 
-# Loopback hosts permitted for CLI/native-app OAuth flows per RFC 8252
-# (Native Apps). The mobile app uses ``omi://``, the desktop app uses
-# ``omi-computer://`` / ``omi-computer-dev://``, which are allowed separately.
-# Anything else is rejected so an attacker cannot route the auth code to a
-# host they control.
+
+# Loopback hosts permitted for CLI/native-app OAuth flows per RFC 8252 §7.3.
 _LOOPBACK_HOSTNAMES = {"localhost", "127.0.0.1", "::1"}
 _DEFAULT_MOBILE_REDIRECT = "omi://auth/callback"
 
+# Schemes that must NOT receive an OAuth code:
+#   - ``https``: would leak the code to an arbitrary remote host. (Loopback OAuth
+#     is HTTP, not HTTPS, per RFC 8252.)
+#   - ``javascript``, ``data``, ``vbscript``: browser-executable URLs. A code
+#     leaked into one of these would be exfiltrated by the rendered page.
+#   - ``file``: local file URL — could end up read by another process.
+#   - ``blob``, ``filesystem``, ``about``: browser-internal pseudo-schemes.
+_FORBIDDEN_REDIRECT_SCHEMES = {
+    "https",
+    "javascript",
+    "data",
+    "vbscript",
+    "file",
+    "blob",
+    "filesystem",
+    "about",
+}
+
 
 def _validate_redirect_uri(redirect_uri: str) -> None:
-    """Reject everything except omi custom-scheme URIs and HTTP loopback URIs.
+    """Reject redirect URIs that could deliver the OAuth code to an attacker.
 
-    Security note: the auth ``code`` (a one-time secret) is delivered to the
-    ``redirect_uri`` the original requester provided. If we accepted arbitrary
-    URLs, a malicious actor who got a user to start a flow could harvest the
-    code at their own host. Restricting to the omi-* schemes + loopback
-    addresses is the standard mitigation (RFC 8252 §7).
+    Allow:
 
-    The auth code is also bound to redirect_uri at token exchange, so even if
-    a novel omi-* scheme were registered by a third party, they could not
-    complete the token exchange without matching the original redirect_uri.
+    * **Custom app schemes** (``omi://``, ``omi-computer://``,
+      ``omi-computer-dev://``, ``omi-fix-rewind://``, ``com.omi.app://``,
+      etc.). The Omi mobile app, the macOS desktop app, and per-bundle
+      developer test builds register their own URL schemes with the OS
+      via ``CFBundleURLSchemes`` / Android intent filters; this is the
+      standard native-app OAuth callback mechanism per RFC 8252.
+
+    * **HTTP loopback** (``http://localhost[:PORT]/...``,
+      ``http://127.0.0.1[:PORT]/...``, ``http://[::1][:PORT]/...``) for the
+      CLI's loopback callback server.
+
+    Reject:
+
+    * **https://** and any other web-fetchable scheme — they could exfiltrate
+      the auth code off-device.
+    * **http://** to anything other than loopback.
+    * Browser-executable schemes (``javascript:``, ``data:``, etc.).
+    * Empty / unparseable input.
+
+    Security note: the auth ``code`` is a one-time secret. If we accepted
+    arbitrary URLs, an attacker who induced a user to start a flow could
+    harvest the code at their own host. Restricting to native-app custom
+    schemes + loopback is the RFC 8252 §7 mitigation.
     """
     if not redirect_uri:
         raise HTTPException(status_code=400, detail="redirect_uri is required")
 
     parsed = urlparse(redirect_uri)
+    scheme = (parsed.scheme or "").strip().lower()
 
-    # Allow omi:// (mobile), omi-computer:// (desktop), omi-computer-dev:// (desktop dev),
-    # and any future omi-* custom URL scheme.
-    if parsed.scheme.startswith("omi"):
+    if not scheme:
+        raise HTTPException(status_code=400, detail="redirect_uri must include a scheme")
+
+    if scheme == "http":
+        hostname = (parsed.hostname or "").strip().lower()
+        if hostname not in _LOOPBACK_HOSTNAMES:
+            raise HTTPException(
+                status_code=400,
+                detail="HTTP redirect_uri must point at loopback (localhost, 127.0.0.1, or ::1)",
+            )
         return
 
-    # Allow HTTP loopback for CLI / native apps (RFC 8252 §7).
-    if parsed.scheme != "http":
+    if scheme in _FORBIDDEN_REDIRECT_SCHEMES:
         raise HTTPException(
             status_code=400,
-            detail="redirect_uri must use an omi-* scheme or http loopback (http://localhost:PORT)",
+            detail=f"redirect_uri scheme '{scheme}' is not permitted",
         )
 
-    hostname = (parsed.hostname or "").strip().lower()
-    if hostname not in _LOOPBACK_HOSTNAMES:
+    # Custom app scheme. Per RFC 3986, a scheme is
+    # ``ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )``. Be a little stricter
+    # than urllib here — require the scheme to start with a letter and contain
+    # only the RFC-allowed characters, so we don't accept garbage like ``://x``.
+    if not _is_valid_scheme(scheme):
         raise HTTPException(
             status_code=400,
-            detail="HTTP redirect_uri must point at loopback (localhost, 127.0.0.1, or ::1)",
+            detail=f"redirect_uri scheme '{scheme}' is malformed",
         )
 
     return
+
+
+_ASCII_LETTERS = frozenset("abcdefghijklmnopqrstuvwxyz")
+_ASCII_ALNUM = _ASCII_LETTERS | frozenset("0123456789")
+
+
+def _is_valid_scheme(scheme: str) -> bool:
+    """RFC 3986 scheme validity check: ASCII ALPHA, then ASCII ALPHA/DIGIT/+/-/.
+
+    We deliberately use explicit ASCII sets instead of ``str.isalpha`` /
+    ``str.isalnum`` — those are Unicode-aware and would happily accept
+    non-ASCII letters (``ñ``, ``й``, etc.) that RFC 3986 forbids in scheme names.
+    """
+    if not scheme:
+        return False
+    lowered = scheme.lower()
+    if lowered[0] not in _ASCII_LETTERS:
+        return False
+    return all(c in _ASCII_ALNUM or c in "+-." for c in lowered)
 
 
 @router.get("/authorize")
