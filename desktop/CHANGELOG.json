@@ -1,8 +1,13 @@
 {
-  "unreleased": [
-    "Fixed beta build creating empty Firebase accounts on sign-in by routing back to production backend"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.366",
+      "date": "2026-04-26",
+      "changes": [
+        "Fixed beta build creating empty Firebase accounts on sign-in by routing back to production backend"
+      ]
+    },
     {
       "version": "0.11.365",
       "date": "2026-04-26",
