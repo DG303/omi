@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import 'package:omi/backend/http/api/users.dart';
+import 'package:omi/backend/schema/conversation.dart';
 import 'package:omi/backend/schema/daily_summary.dart';
 import 'package:omi/pages/conversations/widgets/conversation_list_item.dart';
 import 'package:omi/pages/conversations/widgets/processing_capture.dart';
@@ -399,7 +400,20 @@ class HomeContentPageState extends State<HomeContentPage> with AutomaticKeepAliv
       );
     }
 
-    final recent = convoProvider.conversations.take(3).toList();
+    // Use groupedConversations because it has the user's filters already applied
+    // (discarded / short / starred / date). conversations.take(3) ignores
+    // showDiscardedConversations and would show items that aren't on the
+    // conversations page.
+    final sortedDates = convoProvider.groupedConversations.keys.toList()..sort((a, b) => b.compareTo(a));
+    final recent = <ServerConversation>[];
+    for (final date in sortedDates) {
+      final list = convoProvider.groupedConversations[date] ?? const [];
+      for (final c in list) {
+        recent.add(c);
+        if (recent.length >= 3) break;
+      }
+      if (recent.length >= 3) break;
+    }
     if (recent.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     return SliverList(
