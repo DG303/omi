@@ -1,0 +1,72 @@
+name: Admin Dashboard Agent
+
+# Triggered by the "Customize this dashboard" widget on the Analytics page.
+# A POST to /api/omi/agent/customize on the admin server dispatches this
+# workflow. Claude Code Action edits the admin dashboard based on the prompt
+# and opens a PR.
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Natural-language instruction for the dashboard agent"
+        required: true
+        type: string
+      admin_uid:
+        description: "UID of the admin who triggered the dispatch (audit only)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  customize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "omi-dashboard-agent[bot]"
+          git config user.email "omi-dashboard-agent@users.noreply.github.com"
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Constrain the agent to the admin dashboard so it can't edit
+          # anything outside web/admin. The agent reads the prompt from the
+          # workflow input and is expected to commit + open a PR.
+          direct_prompt: |
+            You are editing the OMI admin dashboard at `web/admin/`. The user
+            asked: "${{ inputs.prompt }}"
+
+            Constraints:
+            - Only edit files under `web/admin/`. Do NOT touch other parts of
+              the repo (backend, app, firmware, etc.).
+            - The Analytics dashboard lives at
+              `web/admin/app/(protected)/dashboard/analytics/page.tsx`.
+            - New widgets must be ChartItems passed into the unified
+              `ResizableChartGrid` (see `unifiedItems`). They become
+              draggable and resizable for free.
+            - All API access goes through `useAuthToken()` +
+              `authenticatedFetcher` for SWR reads and `useAuthFetch()` for
+              mutations (see `web/admin/CLAUDE.md`).
+            - Server routes must call `verifyAdmin(request)` from
+              `lib/auth.ts`.
+            - Do not introduce build-breaking changes. Keep
+              `npm run lint` clean.
+
+            When done, create a branch named
+            `agent/dashboard/${{ github.run_id }}`, commit your changes,
+            push, and open a PR titled "Dashboard agent:
+            ${{ inputs.prompt }}". Link this run in the PR body.
+          allowed_tools: "Edit,Read,Write,Bash,Glob,Grep"
