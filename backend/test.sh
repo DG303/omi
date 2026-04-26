@@ -39,6 +39,7 @@ pytest tests/unit/test_firmware_pagination.py -v
 pytest tests/unit/test_vad_gate.py -v
 pytest tests/unit/test_vad_onnx.py -v
 pytest tests/unit/test_log_sanitizer.py -v
+pytest tests/unit/test_auth_redirect_uri.py -v
 pytest tests/unit/test_pusher_heartbeat.py -v
 pytest tests/unit/test_pusher_conversation_retry.py -v
 pytest tests/unit/test_listen_fallback_removal.py -v
