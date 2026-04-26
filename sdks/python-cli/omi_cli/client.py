@@ -55,6 +55,21 @@ class OmiClient:
     """Thin wrapper around :class:`httpx.Client`. One per CLI invocation."""
 
     def __init__(self, profile: Profile, *, timeout: Optional[httpx.Timeout] = None, verbose: bool = False) -> None:
+        # Pre-flight: if this is an OAuth profile and the cached Firebase ID
+        # token is expired (or close to it), refresh before we build the bearer
+        # header so the very first request goes out with a fresh token.
+        # ``omi_cli.auth.oauth`` is imported lazily because it pulls in
+        # ``http.server`` / ``socketserver`` which we don't need for the more
+        # common API-key path.
+        if profile.auth_method == "oauth":
+            from omi_cli.auth import oauth as oauth_auth  # local to avoid import cost on api_key path
+
+            if oauth_auth.needs_refresh(profile):
+                new_id_token = oauth_auth.refresh_id_token(profile.name)
+                # Mutate the in-memory profile so _build_headers picks up the
+                # new token without re-reading the config file.
+                profile.id_token = new_id_token
+
         self._profile = profile
         self._verbose = verbose
         self._http = httpx.Client(
