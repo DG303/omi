@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional
 
 import typer
 
-from omi_cli.errors import UsageError
+from omi_cli.errors import NotFoundError, UsageError
 from omi_cli.output import shorten
 
 if TYPE_CHECKING:
@@ -88,7 +88,9 @@ def get_action_item(
                     return
             if len(page) < 200:
                 break
-    raise UsageError(message=f"Action item not found: {action_item_id}")
+    # Exit code 5 (NotFoundError) — same contract as a server-side 404,
+    # whether or not the dev API exposed a direct GET for this noun.
+    raise NotFoundError(message=f"Action item not found: {action_item_id}")
 
 
 @app.command("create", help="Create a new action item.")
