@@ -294,13 +294,8 @@ class _ConversationCaptureWidgetState extends State<ConversationCaptureWidget> {
     String statusText = isPaused
         ? (isDeviceRecording ? context.l10n.muted : context.l10n.paused)
         : hasPhotos
-<<<<<<< caleb/6499-ios-audio-interruption
             ? 'Capturing'
-            : (transcriptServiceStateOk ? context.l10n.listening : context.l10n.transcriptionPaused);
-=======
-        ? 'Capturing'
-        : context.l10n.listening;
->>>>>>> main
+            : context.l10n.listening;
 
     // When recording is active, show the unified UI design
     if (isDeviceRecording || isPhoneRecording) {
