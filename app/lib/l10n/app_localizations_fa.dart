@@ -9165,4 +9165,10 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'حالت صوتی';
+
+  @override
+  String get quickActionAskOmi => 'از Omi هر چیزی بپرسید';
 }

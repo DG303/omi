@@ -9166,4 +9166,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Modo de voz';
+
+  @override
+  String get quickActionAskOmi => 'Pergunte qualquer coisa ao Omi';
 }

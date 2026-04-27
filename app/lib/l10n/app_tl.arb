@@ -10699,5 +10699,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "Voice Mode",
+  "quickActionAskOmi": "Tanungin si Omi ng kahit ano"
 }

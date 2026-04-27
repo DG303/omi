@@ -9194,4 +9194,10 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'ಧ್ವನಿ ಮೋಡ್';
+
+  @override
+  String get quickActionAskOmi => 'Omi ಗೆ ಏನು ಬೇಕಾದರೂ ಕೇಳಿ';
 }

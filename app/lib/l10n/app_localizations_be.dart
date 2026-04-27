@@ -9188,4 +9188,10 @@ class AppLocalizationsBe extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Галасавы рэжым';
+
+  @override
+  String get quickActionAskOmi => 'Спытайце ў Омі што заўгодна';
 }

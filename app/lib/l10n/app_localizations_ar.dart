@@ -9101,4 +9101,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'وضع الصوت';
+
+  @override
+  String get quickActionAskOmi => 'اسأل أومي أي شيء';
 }

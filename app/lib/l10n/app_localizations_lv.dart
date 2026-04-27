@@ -9180,4 +9180,10 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Balss režīms';
+
+  @override
+  String get quickActionAskOmi => 'Jautājiet Omi jebko';
 }

@@ -9216,4 +9216,10 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Mode de veu';
+
+  @override
+  String get quickActionAskOmi => 'Pregunta-li qualsevol cosa a l\'Omi';
 }

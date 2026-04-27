@@ -9171,4 +9171,10 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'ভয়েস মোড';
+
+  @override
+  String get quickActionAskOmi => 'Omi কে যেকোনো কিছু জিজ্ঞেস করুন';
 }

@@ -9158,4 +9158,10 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Stemmemodus';
+
+  @override
+  String get quickActionAskOmi => 'Spør Omi om hva som helst';
 }

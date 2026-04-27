@@ -10699,5 +10699,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "ভয়েস মোড",
+  "quickActionAskOmi": "Omi কে যেকোনো কিছু জিজ্ঞেস করুন"
 }

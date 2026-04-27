@@ -9247,4 +9247,10 @@ class AppLocalizationsTl extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Voice Mode';
+
+  @override
+  String get quickActionAskOmi => 'Tanungin si Omi ng kahit ano';
 }

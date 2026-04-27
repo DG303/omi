@@ -9192,4 +9192,10 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Glasovni način';
+
+  @override
+  String get quickActionAskOmi => 'Pitajte Omi bilo što';
 }

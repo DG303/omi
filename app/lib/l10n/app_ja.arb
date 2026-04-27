@@ -2992,5 +2992,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "音声モード",
+  "quickActionAskOmi": "Omiに何でも聞く"
 }

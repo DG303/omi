@@ -9186,4 +9186,10 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Glasovni način';
+
+  @override
+  String get quickActionAskOmi => 'Vprašajte Omi karkoli';
 }

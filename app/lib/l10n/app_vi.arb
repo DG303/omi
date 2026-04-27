@@ -2996,5 +2996,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "Chế độ giọng nói",
+  "quickActionAskOmi": "Hỏi Omi bất cứ điều gì"
 }

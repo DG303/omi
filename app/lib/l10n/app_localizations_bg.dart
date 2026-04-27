@@ -9197,4 +9197,10 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Гласов режим';
+
+  @override
+  String get quickActionAskOmi => 'Попитайте Omi всичко';
 }

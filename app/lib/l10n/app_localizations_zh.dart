@@ -8999,4 +8999,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => '语音模式';
+
+  @override
+  String get quickActionAskOmi => '向Omi询问任何事';
 }

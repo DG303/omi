@@ -9142,4 +9142,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'वॉयस मोड';
+
+  @override
+  String get quickActionAskOmi => 'Omi से कुछ भी पूछें';
 }

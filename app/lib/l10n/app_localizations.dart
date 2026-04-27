@@ -17102,6 +17102,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mind Map'**
   String get mindMap;
+
+  /// iOS home screen quick action: opens chat in voice mode
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Mode'**
+  String get voiceMode;
+
+  /// iOS home screen quick action: opens chat page
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Omi Anything'**
+  String get quickActionAskOmi;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

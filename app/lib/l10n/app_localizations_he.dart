@@ -9090,4 +9090,10 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'מצב קולי';
+
+  @override
+  String get quickActionAskOmi => 'שאל את Omi כל דבר';
 }
