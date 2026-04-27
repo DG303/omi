@@ -2512,6 +2512,7 @@
         }
     },
     "batteryLevel": "سطح باتری",
+    "charging": "در حال شارژ",
     "@batteryLevel": {
         "description": "Battery level label"
     },
@@ -2778,14 +2779,6 @@
     "trackPersonalGoalsOnHomepage": "ردیابی اهداف شخصی خود در صفحه اصلی",
     "@trackPersonalGoalsOnHomepage": {
         "description": "Description for goal tracker"
-    },
-    "dailyReflection": "تأمل روزانه",
-    "@dailyReflection": {
-        "description": "Section header for daily reflection settings"
-    },
-    "get9PmReminderToReflect": "یادآوری ساعت 9 شب برای تأمل در روز خود",
-    "@get9PmReminderToReflect": {
-        "description": "Description for daily reflection"
     },
     "actionItemDescriptionCannotBeEmpty": "توضیح مورد اقدام نمی‌تواند خالی باشد",
     "@actionItemDescriptionCannotBeEmpty": {
@@ -4421,7 +4414,6 @@
     "noAPIKeys": "کلید API نیست. یکی ایجاد کنید تا شروع کنید.",
     "autoCreateWhenDetected": "ایجاد خودکار زمانی که نام تشخیص داده شود",
     "trackPersonalGoals": "پیگیری اهداف شخصی در صفحه اصلی",
-    "dailyReflectionDescription": "یادآوری در ساعت ۹ شب برای تفکر در روز خود و ثبت افکار خود.",
     "endpointURL": "URL نقطه پایانی",
     "links": "پیوندها",
     "discordMemberCount": "۸۰۰۰+ عضو بر روی Discord",
@@ -5317,11 +5309,11 @@
     "@alreadyBestValuePlan": {
         "description": "Message when user already has best plan"
     },
-    "unableToLoadPlans": "نتوانستیم طرح‌ها را بارگذاری کنیم",
+    "unableToLoadPlans": "بارگذاری طرح‌ها ممکن نشد",
     "@unableToLoadPlans": {
         "description": "Error message when plans cannot load"
     },
-    "checkConnectionTryAgain": "لطفا اتصال خود را بررسی کنید و دوباره تلاش کنید",
+    "checkConnectionTryAgain": "اتصال خود را بررسی کنید و دوباره تلاش کنید",
     "@checkConnectionTryAgain": {
         "description": "Message to check connection"
     },
@@ -6042,7 +6034,7 @@
     "@additionalSpeechSampleRemoved": {
         "description": "Confirmation message when an additional speech sample is deleted"
     },
-    "consentDataMessage": "با ادامه، تمام داده‌هایی که با این برنامه اشتراک می‌گذارید (شامل مکالمات، ضبط‌ها و اطلاعات شخصی شما) به‌طور ایمن روی سرورهای ما ذخیره خواهند شد تا برای شما بینش‌های هوشمند فراهم کند و تمام ویژگی‌های برنامه را فعال کند.",
+    "consentDataMessage": "با ادامه دادن، مکالمات، ضبط‌ها و اطلاعات شخصی شما به طور ایمن در سرورهای ما ذخیره می‌شود. ضبط‌های صوتی و رونوشت‌های شما توسط سرویس‌های هوش مصنوعی شخص ثالث (از جمله Deepgram برای رونویسی و OpenAI برای تحلیل) پردازش می‌شوند تا بینش‌های مبتنی بر هوش مصنوعی را به شما ارائه دهند و تمام ویژگی‌های برنامه را فعال کنند.",
     "@consentDataMessage": {
         "description": "Consent message explaining how user data will be stored and used"
     },
@@ -6840,9 +6832,6 @@
     "notificationFrequencyDescription": "کنترل کنید که Omi چند بار اعلانات پیشفعال و یادآوری ارسال می کند.",
     "@notificationFrequencyDescription": {
         "description": "Description text for notification frequency section"
-    },
-    "@dailyReflectionDescription": {
-        "description": "Description text for daily reflection section"
     },
     "sliderOff": "خاموش",
     "@sliderOff": {
@@ -8899,14 +8888,6 @@
             }
         }
     },
-    "dailyReflectionNotificationTitle": "وقت تأمل روزانه",
-    "@dailyReflectionNotificationTitle": {
-        "description": "Title for the daily reflection notification shown at 9 PM"
-    },
-    "dailyReflectionNotificationBody": "درباره روز خود برای من بگویید",
-    "@dailyReflectionNotificationBody": {
-        "description": "Body text for the daily reflection notification"
-    },
     "actionItemReminderTitle": "یادآور Omi",
     "@actionItemReminderTitle": {
         "description": "Title for action item reminder notifications"
@@ -10015,6 +9996,8 @@
     "phoneSpeaker": "بلندگو",
     "phoneEndCall": "پایان",
     "phoneCallSettingsTitle": "تنظیمات تماس تلفنی",
+    "showPhoneCallButtonTitle": "نمایش دکمه تماس",
+    "showPhoneCallButtonDesc": "نمایش دکمه تماس تلفنی در صفحه اصلی",
     "yourVerifiedNumbers": "شماره‌های تأیید شده شما",
     "verifiedNumbersDescription": "هنگامی که شما تماس می‌گیرید، طرف مقابل این شماره را روی تلفن خود خواهد دید",
     "noVerifiedNumbers": "بدون شماره تأیید شده",
@@ -10625,5 +10608,96 @@
     "tasksClearCompleted": "پاک کردن تکمیل‌شده‌ها",
     "tasksSelectAll": "انتخاب همه",
     "tasksDeleteSelected": "حذف {count} وظیفه",
-    "tasksMarkComplete": "به عنوان تکمیل‌شده علامت‌گذاری شد"
+    "tasksMarkComplete": "به عنوان تکمیل‌شده علامت‌گذاری شد",
+    "appleHealthManageNote": "Omi از طریق چارچوب HealthKit اپل به Apple Health دسترسی دارد. در هر زمان می‌توانید دسترسی را از تنظیمات iOS لغو کنید.",
+    "appleHealthConnectCta": "اتصال به Apple Health",
+    "appleHealthDisconnectCta": "قطع اتصال از Apple Health",
+    "appleHealthConnectedBadge": "متصل",
+    "appleHealthFeatureChatTitle": "درباره سلامتی خود گفتگو کنید",
+    "appleHealthFeatureChatDesc": "از Omi درباره قدم‌ها، خواب، ضربان قلب و تمرین‌های خود بپرسید.",
+    "appleHealthFeatureReadOnlyTitle": "دسترسی فقط خواندنی",
+    "appleHealthFeatureReadOnlyDesc": "Omi هرگز در Apple Health نمی‌نویسد و داده‌های شما را تغییر نمی‌دهد.",
+    "appleHealthFeatureSecureTitle": "همگام‌سازی امن",
+    "appleHealthFeatureSecureDesc": "داده‌های Apple Health شما به‌صورت خصوصی با حساب Omi همگام می‌شوند.",
+    "appleHealthDeniedTitle": "دسترسی به Apple Health رد شد",
+    "appleHealthDeniedBody": "Omi مجوز خواندن داده‌های Apple Health شما را ندارد. آن را در تنظیمات iOS ← حریم خصوصی و امنیت ← Health ← Omi فعال کنید.",
+    "deleteFlowReasonTitle": "چرا می‌روید؟",
+    "deleteFlowReasonSubtitle": "بازخورد شما به ما کمک می‌کند Omi را برای همه بهتر کنیم.",
+    "deleteReasonPrivacy": "نگرانی‌های حریم خصوصی",
+    "deleteReasonNotUsing": "به اندازه کافی استفاده نمی‌کنم",
+    "deleteReasonMissingFeatures": "ویژگی‌هایی که نیاز دارم وجود ندارد",
+    "deleteReasonTechnicalIssues": "مشکلات فنی زیاد",
+    "deleteReasonFoundAlternative": "از چیز دیگری استفاده می‌کنم",
+    "deleteReasonTakingBreak": "فقط کمی استراحت می‌کنم",
+    "deleteReasonOther": "دیگر",
+    "deleteFlowFeedbackTitle": "بیشتر بگویید",
+    "deleteFlowFeedbackSubtitle": "چه چیزی باعث می‌شد Omi برای شما مفید باشد؟",
+    "deleteFlowFeedbackHint": "اختیاری — نظرات شما به ما کمک می‌کند محصول بهتری بسازیم.",
+    "deleteFlowConfirmTitle": "این عمل برگشت‌ناپذیر است",
+    "deleteFlowConfirmSubtitle": "پس از حذف حساب، راهی برای بازیابی آن وجود ندارد.",
+    "deleteConsequenceSubscription": "هرگونه اشتراک فعال لغو خواهد شد.",
+    "deleteConsequenceNoRecovery": "حساب شما قابل بازیابی نیست — حتی توسط پشتیبانی.",
+    "deleteTypeToConfirm": "برای تأیید، DELETE را تایپ کنید",
+    "deleteConfirmationWord": "DELETE",
+    "deleteAccountPermanently": "حذف دائمی حساب",
+    "keepMyAccount": "حفظ حساب من",
+    "deleteAccountFailed": "حذف حساب شما ممکن نشد. لطفاً دوباره تلاش کنید.",
+    "planUpdate": "به‌روزرسانی طرح",
+    "@planUpdate": {
+        "description": "Header for plan deprecation notice"
+    },
+    "planDeprecationMessage": "طرح Unlimited شما در حال بازنشسته شدن است. به طرح Operator تغییر دهید — همان ویژگی‌های عالی با $49/ماه. طرح فعلی شما در این مدت به کار خود ادامه خواهد داد.",
+    "@planDeprecationMessage": {
+        "description": "Deprecation notice for legacy Unlimited subscribers"
+    },
+    "upgradeYourPlan": "طرح خود را ارتقا دهید",
+    "@upgradeYourPlan": {
+        "description": "Header for plan upgrade screen for non-paid users"
+    },
+    "youAreOnAPaidPlan": "شما در یک طرح پولی هستید.",
+    "@youAreOnAPaidPlan": {
+        "description": "Subtitle for paid plan users on plans sheet"
+    },
+    "chatTitle": "چت",
+    "chatMessages": "پیام",
+    "unlimitedChatThisMonth": "پیام‌های چت نامحدود این ماه",
+    "chatUsedOfLimitCompute": "{used} از {limit} بودجه محاسباتی استفاده شده",
+    "chatUsedOfLimitMessages": "{used} از {limit} پیام این ماه استفاده شده",
+    "chatUsageProgress": "{used} / {limit} استفاده شده",
+    "chatLimitReachedUpgrade": "سقف چت تمام شد. برای پیام‌های بیشتر ارتقا دهید.",
+    "chatLimitReachedTitle": "سقف چت تمام شد",
+    "chatUsageDescription": "شما {used} از {limitDisplay} را در طرح {plan} استفاده کرده‌اید.",
+    "resetsInDays": "بازنشانی در {count} روز",
+    "resetsInHours": "بازنشانی در {count} ساعت",
+    "resetsSoon": "به‌زودی بازنشانی می‌شود",
+    "upgradePlan": "ارتقای طرح",
+    "billingMonthly": "ماهانه",
+    "billingYearly": "سالانه",
+    "savePercent": "~17% صرفه‌جویی",
+    "popular": "محبوب",
+    "currentPlan": "فعلی",
+    "neoSubtitle": "{count} پرسش در ماه",
+    "operatorSubtitle": "{count} پرسش در ماه",
+    "architectSubtitle": "هوش مصنوعی پیشرفته — هزاران گفتگو + اتوماسیون عاملی",
+    "chatUsageCost": "چت: ${used} / ${limit} مصرف‌شده این ماه",
+    "chatUsageCostNoLimit": "چت: ${used} مصرف‌شده این ماه",
+    "chatUsageMessages": "چت: {used} / {limit} پیام این ماه",
+    "chatUsageMessagesNoLimit": "چت: {used} پیام این ماه",
+    "chatQuotaSubtitle": "AI chat messages used with Omi this month.",
+    "chatQuotaExceededReply": "شما به حد ماهانه خود رسیده‌اید. برای ادامه گفتگو با Omi بدون محدودیت ارتقا دهید.",
+    "batteryHistory": "باتری",
+    "day": "روز",
+    "noBatteryDataYet": "هنوز داده‌ای از باتری موجود نیست",
+    "week": "هفته",
+    "voiceResponseAudio": "خواندن پاسخ Omi با صدای بلند",
+    "voiceResponseMode": "پاسخ صوتی",
+    "voiceResponseModeTitle": "چه زمانی پاسخ‌ها خوانده شوند",
+    "voiceResponseOff": "خاموش",
+    "voiceResponseHeadphonesOnly": "فقط هدفون",
+    "voiceResponseAlways": "همیشه",
+    "agreeAndContinue": "موافقم و ادامه",
+    "mindMap": "Mind Map",
+    "@mindMap": {
+        "description": "Section header for memory knowledge graph on home page"
+    }
 }

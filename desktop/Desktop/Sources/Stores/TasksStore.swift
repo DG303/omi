@@ -28,6 +28,17 @@ class TasksStore: ObservableObject {
     @Published var hasMoreDeletedTasks = true
     @Published var error: String?
 
+    /// Counter bumped at the top of `refreshTasksIfNeeded()`, before any of the
+    /// early-exit guards. Lets `TasksStoreObserverTests` prove that posting
+    /// `didBecomeActive` / `.refreshAllData` actually reaches the refresh method
+    /// — if the observer rewire regresses (wrong notification name, dropped
+    /// subscription), the counter stays flat and the test fails.
+    /// Deliberately **not** `@Published` — publishing on every activation/Cmd+R
+    /// refresh would emit `objectWillChange` and invalidate SwiftUI views
+    /// observing `TasksStore`, which is a pure production cost for a value
+    /// nothing drives UI from.
+    private(set) var refreshInvocations: Int = 0
+
     // Legacy compatibility - combines both lists
     var tasks: [TaskActionItem] {
         incompleteTasks + completedTasks
@@ -161,9 +172,15 @@ class TasksStore: ObservableObject {
     // MARK: - Initialization
 
     private init() {
-        // Auto-refresh tasks every 30 seconds
-        Timer.publish(every: 30.0, on: .main, in: .common)
-            .autoconnect()
+        // Refresh tasks when app becomes active
+        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+            .sink { [weak self] _ in
+                Task { await self?.refreshTasksIfNeeded() }
+            }
+            .store(in: &cancellables)
+
+        // Cmd+R: refresh tasks on demand
+        NotificationCenter.default.publisher(for: .refreshAllData)
             .sink { [weak self] _ in
                 Task { await self?.refreshTasksIfNeeded() }
             }
@@ -175,6 +192,7 @@ class TasksStore: ObservableObject {
     /// Uses local-first pattern: sync API to cache, then reload from cache
     /// Merges changes in-place to avoid wholesale array replacement (which kills SwiftUI gestures)
     private func refreshTasksIfNeeded() async {
+        refreshInvocations += 1
         // Skip if not signed in
         guard AuthService.shared.isSignedIn else { return }
         // Skip if in auth backoff period (recent 401 errors)
@@ -470,14 +488,10 @@ class TasksStore: ObservableObject {
             let userId = UserDefaults.standard.string(forKey: "auth_userId") ?? "unknown"
             await backfillRelevanceScoresIfNeeded(userId: userId)
         }
-        // Ensure minimum promoted tasks on startup — insert directly, no full reload
-        Task {
-            let promoted = await TaskPromotionService.shared.ensureMinimumOnStartup()
-            if !promoted.isEmpty {
-                self.incompleteTasks.append(contentsOf: promoted)
-                log("TasksStore: Inserted \(promoted.count) promoted tasks on startup")
-            }
-        }
+        // Note: no startup task promotion. Promotion happens on the natural
+        // cadence — when the user completes/deletes a task, or via the
+        // 5-minute safety-net timer. Bursting up to 5 promotions on every
+        // launch felt like spam.
     }
 
     /// Load incomplete tasks (To Do) using local-first pattern (like Memories)

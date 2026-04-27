@@ -827,7 +827,9 @@ class FloatingControlBarManager {
     static let shared = FloatingControlBarManager()
 
     private static let kAskOmiEnabled = "askOmiBarEnabled"
+    private static let kSnoozedUntil = "floatingBar_snoozedUntil"
     private static let recentNotificationReuseInterval: TimeInterval = 60
+    static let snoozeTwoHoursDuration: TimeInterval = 2 * 60 * 60
 
     private struct PendingFollowUpQuery {
         let text: String
@@ -846,11 +848,17 @@ class FloatingControlBarManager {
     }
 
     private var window: FloatingControlBarWindow?
+    private var snoozeTimer: Timer?
+    private var pillsWindow: AgentPillsWindow?
     private var recordingCancellable: AnyCancellable?
     private var durationCancellable: AnyCancellable?
     private var chatCancellable: AnyCancellable?
     private var historyChatProvider: ChatProvider?
     private var floatingChatProvider: ChatProvider?
+
+    /// Public read-only access to the floating bar's chat provider so the
+    /// agent pills manager can inherit the working directory / model.
+    var sharedFloatingProvider: ChatProvider? { floatingChatProvider }
     private var pendingNotifications: [FloatingBarNotification] = []
     private var notificationDismissWorkItem: DispatchWorkItem?
     private var notificationWasTemporarilyShown = false
@@ -874,6 +882,68 @@ class FloatingControlBarManager {
         set {
             UserDefaults.standard.set(newValue, forKey: Self.kAskOmiEnabled)
         }
+    }
+
+    /// Timestamp until which the bar and notifications are temporarily suppressed.
+    /// Independent from `isEnabled` — snoozing does not flip the persisted enable preference.
+    var snoozedUntil: Date? {
+        get {
+            let timestamp = UserDefaults.standard.double(forKey: Self.kSnoozedUntil)
+            guard timestamp > 0 else { return nil }
+            return Date(timeIntervalSince1970: timestamp)
+        }
+        set {
+            if let newValue {
+                UserDefaults.standard.set(newValue.timeIntervalSince1970, forKey: Self.kSnoozedUntil)
+            } else {
+                UserDefaults.standard.removeObject(forKey: Self.kSnoozedUntil)
+            }
+        }
+    }
+
+    var isSnoozed: Bool {
+        guard let snoozedUntil else { return false }
+        return snoozedUntil > Date()
+    }
+
+    /// Hide the bar and suppress notifications for the given duration.
+    func snooze(for duration: TimeInterval) {
+        let until = Date().addingTimeInterval(duration)
+        snoozedUntil = until
+        notificationDismissWorkItem?.cancel()
+        notificationDismissWorkItem = nil
+        pendingNotifications.removeAll()
+        if let window, window.state.currentNotification != nil {
+            window.dismissNotification(animated: false)
+        }
+        window?.orderOut(nil)
+        scheduleSnoozeTimer()
+        AnalyticsManager.shared.floatingBarToggled(visible: false, source: "snooze")
+    }
+
+    /// Clear snooze state; the bar becomes visible again if the user preference is enabled.
+    func endSnooze() {
+        snoozedUntil = nil
+        snoozeTimer?.invalidate()
+        snoozeTimer = nil
+        if isEnabled {
+            window?.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    private func scheduleSnoozeTimer() {
+        snoozeTimer?.invalidate()
+        snoozeTimer = nil
+        guard let snoozedUntil else { return }
+        let interval = snoozedUntil.timeIntervalSinceNow
+        guard interval > 0 else {
+            self.snoozedUntil = nil
+            return
+        }
+        let timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
+            Task { @MainActor in self?.endSnooze() }
+        }
+        snoozeTimer = timer
     }
 
     private init() {}
@@ -920,6 +990,18 @@ class FloatingControlBarManager {
 
         barWindow.onSendQuery = { [weak self, weak barWindow, weak floatingProvider] message in
             guard let self = self, let barWindow = barWindow, let provider = floatingProvider else { return }
+            // Route action-like queries to an agent pill (no inline chat). Quick
+            // questions still flow through the inline conversation.
+            if AgentPillsManager.looksLikeAction(message) {
+                let model = ShortcutSettings.shared.selectedModel.isEmpty
+                    ? "claude-sonnet-4-6"
+                    : ShortcutSettings.shared.selectedModel
+                _ = AgentPillsManager.shared.spawnFromUserQuery(message, model: model)
+                // Collapse the input so the pill is the only visible result.
+                barWindow.state.aiInputText = ""
+                barWindow.closeAIConversation()
+                return
+            }
             Task { @MainActor in
                 await self.sendAIQuery(message, barWindow: barWindow, provider: provider)
             }
@@ -990,6 +1072,33 @@ class FloatingControlBarManager {
             }
 
         self.window = barWindow
+
+        // Re-apply any in-flight snooze that survived app relaunch.
+        if isSnoozed {
+            scheduleSnoozeTimer()
+        } else if snoozedUntil != nil {
+            snoozedUntil = nil
+        }
+
+        // Create the agent pills overlay window and anchor it under the bar.
+        let pills = AgentPillsWindow()
+        pills.attach(to: barWindow)
+        self.pillsWindow = pills
+
+        // Listen for "open in chat" requests from a pill so the user can
+        // continue an agent's task inline if they want.
+        NotificationCenter.default.addObserver(
+            forName: .agentPillRequestedChat, object: nil, queue: .main
+        ) { [weak barWindow] note in
+            guard let barWindow = barWindow else { return }
+            Task { @MainActor in
+                let query = (note.userInfo?["query"] as? String) ?? ""
+                barWindow.showAIConversation()
+                if !query.isEmpty {
+                    barWindow.state.aiInputText = query
+                }
+            }
+        }
     }
 
     /// Whether the floating bar window is currently visible.
@@ -1001,6 +1110,10 @@ class FloatingControlBarManager {
     func show() {
         log("FloatingControlBarManager: show() called, window=\(window != nil), isVisible=\(window?.isVisible ?? false)")
         isEnabled = true
+        if isSnoozed {
+            log("FloatingControlBarManager: show() suppressed because bar is snoozed until \(snoozedUntil?.description ?? "?")")
+            return
+        }
         window?.makeKeyAndOrderFront(nil)
         log("FloatingControlBarManager: show() done, frame=\(window?.frame ?? .zero)")
 
@@ -1022,6 +1135,10 @@ class FloatingControlBarManager {
     /// Used when browser tools activate so the bar stays visible above Chrome.
     func showTemporarily() {
         guard window != nil else { return }
+        if isSnoozed {
+            log("FloatingControlBarManager: showTemporarily() suppressed because bar is snoozed")
+            return
+        }
         log("FloatingControlBarManager: showTemporarily() — showing bar above Chrome")
         window?.normalizeForTemporaryShow()
         window?.makeKeyAndOrderFront(nil)
@@ -1044,6 +1161,11 @@ class FloatingControlBarManager {
         )
         guard let window else {
             log("FloatingControlBarManager: dropping notification because window is not set up")
+            return
+        }
+
+        if isSnoozed {
+            log("FloatingControlBarManager: dropping notification because bar is snoozed until \(snoozedUntil?.description ?? "?")")
             return
         }
 
@@ -1166,6 +1288,15 @@ class FloatingControlBarManager {
         // Re-wire the onSendQuery to use the isolated floating-bar provider
         window.onSendQuery = { [weak self, weak window, weak provider] message in
             guard let self = self, let window = window, let provider = provider else { return }
+            if AgentPillsManager.looksLikeAction(message) {
+                let model = ShortcutSettings.shared.selectedModel.isEmpty
+                    ? "claude-sonnet-4-6"
+                    : ShortcutSettings.shared.selectedModel
+                _ = AgentPillsManager.shared.spawnFromUserQuery(message, model: model)
+                window.state.aiInputText = ""
+                window.closeAIConversation()
+                return
+            }
             Task { @MainActor in
                 await self.sendAIQuery(message, barWindow: window, provider: provider)
             }
@@ -1191,7 +1322,17 @@ class FloatingControlBarManager {
         window.state.currentQueryFromVoice = fromVoice
         window.orderFrontRegardless()
 
-        // Auto-send the query
+        // Auto-send the query. PTT bypasses the typed onSendQuery closure, so
+        // we need to apply the same pill-routing rule here ourselves.
+        if AgentPillsManager.looksLikeAction(query) {
+            let model = ShortcutSettings.shared.selectedModel.isEmpty
+                ? "claude-sonnet-4-6"
+                : ShortcutSettings.shared.selectedModel
+            _ = AgentPillsManager.shared.spawnFromUserQuery(query, model: model, fromVoice: fromVoice)
+            window.state.aiInputText = ""
+            window.closeAIConversation()
+            return
+        }
         Task { @MainActor in
             await self.sendAIQuery(query, barWindow: window, provider: provider)
         }
@@ -1302,6 +1443,17 @@ class FloatingControlBarManager {
 
     private func persistNotificationMessageIfNeeded(_ notification: FloatingBarNotification) {
         guard storedNotificationMessages[notification.id] == nil else { return }
+
+        // Also append the notification as an assistant message in the main chat
+        // history provider so it is visible on the home-page chat and synced to
+        // the backend. The floating bar still uses its own provider for follow-up
+        // questions (see openNotificationConversation), so this append does not
+        // affect the floating-bar session in any way.
+        if let historyProvider = historyChatProvider {
+            let bodyText = notification.message.trimmingCharacters(in: .whitespacesAndNewlines)
+            let messageText = bodyText.isEmpty ? notification.title : bodyText
+            _ = historyProvider.appendAssistantMessage(messageText)
+        }
 
         storedNotificationMessages[notification.id] = StoredNotificationMessage(
             notification: notification,
@@ -1455,26 +1607,32 @@ class FloatingControlBarManager {
         prepareVisibleQueryState(message, in: barWindow, fromVoice: queryFromVoice)
         let generation = activeQueryGeneration
 
-        // Check weekly usage limit for free users
+        // Check monthly usage limit for free users (shared with main chat page).
         let limiter = FloatingBarUsageLimiter.shared
-        if limiter.isLimitReached {
-            guard isActiveQueryGeneration(generation) else { return }
-            barWindow.state.isAILoading = false
-            barWindow.state.showingAIResponse = true
-            barWindow.state.currentAIMessage = ChatMessage(
-                text: "You've used all \(FloatingBarUsageLimiter.weeklyFreeLimit) free queries this week. Upgrade to Pro for unlimited access, or wait for your weekly reset.",
-                sender: .ai
-            )
-            barWindow.resizeToResponseHeightPublic(animated: true)
-            return
-        }
+        if provider.isUsingOmiAccountProvider {
+            if limiter.isLimitReached {
+                guard isActiveQueryGeneration(generation) else { return }
+                barWindow.state.isAILoading = false
+                barWindow.state.showingAIResponse = true
+                barWindow.state.currentAIMessage = ChatMessage(
+                    text: "You've reached \(limiter.limitDescription). Upgrade to keep chatting without restrictions.",
+                    sender: .ai
+                )
+                barWindow.resizeToResponseHeightPublic(animated: true)
+                NotificationCenter.default.post(
+                    name: .showUsageLimitPopup,
+                    object: nil,
+                    userInfo: ["reason": "floating_bar"]
+                )
+                return
+            }
 
-        limiter.recordQuery()
+            limiter.recordQuery()
+        }
         FloatingBarVoicePlaybackService.shared.interruptCurrentResponse()
 
         let screenshotData = await Task.detached { () -> Data? in
-            guard let url = ScreenCaptureManager.captureScreen() else { return nil }
-            return try? Data(contentsOf: url)
+            return ScreenCaptureManager.captureScreenData()
         }.value
         barWindow.orderFrontRegardless()
 
@@ -1534,7 +1692,7 @@ class FloatingControlBarManager {
             }
 
         let floatingModel = ShortcutSettings.shared.selectedModel.isEmpty
-            ? "claude-sonnet-4-6"
+            ? ModelQoS.Claude.defaultSelection
             : ShortcutSettings.shared.selectedModel
         let notificationContextSuffix = notificationContextSuffixIfNeeded(for: message)
         await provider.sendMessage(
