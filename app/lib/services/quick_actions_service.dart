@@ -40,6 +40,11 @@ class QuickActionsService {
     _updateShortcuts(context);
   }
 
+  // Called from HomePage.dispose() so a rebuilt HomePage can re-register the callback.
+  void reset() {
+    _initialized = false;
+  }
+
   void updateShortcuts(BuildContext context) {
     if (!Platform.isIOS) return;
     _updateShortcuts(context);
@@ -95,6 +100,7 @@ class QuickActionsService {
         break;
       case _kConnectDevice:
         Provider.of<DeviceProvider>(context, listen: false).initiateConnection('QuickActions');
+        navigator.push(MaterialPageRoute(builder: (_) => const DeviceSettings()));
         break;
       case _kDeviceSettings:
         navigator.push(MaterialPageRoute(builder: (_) => const DeviceSettings()));

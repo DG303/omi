@@ -1121,6 +1121,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
     _deviceProviderForQuickActions = null;
     _captureProviderForQuickActions?.removeListener(_onDeviceStateChangedForQuickActions);
     _captureProviderForQuickActions = null;
+    QuickActionsService.instance.reset();
     // Clean up freemium handler
     _freemiumHandler.dispose();
     // Remove foreground task callback to prevent memory leak
