@@ -407,6 +407,13 @@ class MixpanelManager {
         properties: {'threshold_seconds': thresholdSeconds, 'threshold_minutes': thresholdSeconds ~/ 60},
       );
 
+  void voiceResponseToggled(bool enabled) => track('Voice Response Audio Toggled', properties: {'enabled': enabled});
+
+  void voiceResponseModeChanged(int mode) {
+    const names = {0: 'off', 1: 'headphones_only', 2: 'always'};
+    track('Voice Response Mode Changed', properties: {'mode': names[mode] ?? 'unknown', 'mode_int': mode});
+  }
+
   // Conversation Merge Events
   void conversationMergeSelectionModeEntered() => track('Conversation Merge Selection Mode Entered');
 
@@ -564,6 +571,20 @@ class MixpanelManager {
   void deleteAccountConfirmed() => track('Delete Account Confirmed');
 
   void deleteAccountCancelled() => track('Delete Account Cancelled');
+
+  void deleteAccountFlowStarted() => track('Delete Account Flow Started');
+
+  void deleteAccountReasonSelected({required String reason}) =>
+      track('Delete Account Reason Selected', properties: {'reason': reason});
+
+  void deleteAccountFeedbackSubmitted({required String reason, String? details}) =>
+      track('Delete Account Feedback Submitted', properties: {'reason': reason, 'reason_details': details});
+
+  void deleteAccountAbandoned({required int step, String? reason}) =>
+      track('Delete Account Abandoned', properties: {'step': step, 'reason': reason});
+
+  void deleteAccountKeptAccount({required int step, String? reason}) =>
+      track('Delete Account Kept Account', properties: {'step': step, 'reason': reason});
 
   void deleteUser() => PlatformService.executeIfSupported(PlatformService.isMixpanelSupported, () {
         if (PlatformService.isMixpanelNativelySupported) {
@@ -1605,9 +1626,5 @@ class MixpanelManager {
 
   void notificationFrequencyChanged({required int oldFrequency, required int newFrequency}) {
     track('Notification Frequency Changed', properties: {'old_frequency': oldFrequency, 'new_frequency': newFrequency});
-  }
-
-  void dailyReflectionToggled({required bool enabled}) {
-    track('Daily Reflection Toggled', properties: {'enabled': enabled});
   }
 }

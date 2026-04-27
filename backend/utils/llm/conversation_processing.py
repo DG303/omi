@@ -5,12 +5,13 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
+from database.auth import get_user_name
 from models.app import App
 from models.calendar_context import CalendarMeetingContext
 from models.conversation import Conversation
 from models.conversation_photo import ConversationPhoto
 from models.structured import ActionItem, ActionItemsExtraction, Event, Structured
-from .clients import llm_mini, parser, llm_high, llm_medium_experiment
+from .clients import get_llm, parser
 import logging
 
 logger = logging.getLogger(__name__)
@@ -119,7 +120,7 @@ Provide:
 
     folder_parser = PydanticOutputParser(pydantic_object=FolderAssignment)
     prompt = ChatPromptTemplate.from_messages([('system', prompt_text)])
-    chain = prompt | llm_mini | folder_parser
+    chain = prompt | get_llm('conv_folder') | folder_parser
 
     try:
         response: FolderAssignment = chain.invoke(
@@ -231,7 +232,7 @@ Content:
             ).strip()
         ]
     )
-    chain = prompt | llm_mini | custom_parser
+    chain = prompt | get_llm('conv_discard') | custom_parser
     try:
         response: DiscardConversation = chain.invoke(
             {
@@ -306,6 +307,7 @@ def extract_action_items(
     photos: List[ConversationPhoto] = None,
     existing_action_items: List[dict] = None,
     calendar_meeting_context: 'CalendarMeetingContext' = None,
+    output_language_code: str = None,
 ) -> List[ActionItem]:
     """
     Dedicated function to extract action items from conversation content.
@@ -316,7 +318,10 @@ def extract_action_items(
         language_code: Language code for the conversation
         tz: User's timezone
         photos: Optional conversation photos
-        existing_action_items: Recent action items for deduplication (from past 2 days)
+        existing_action_items: Open action items semantically related to this
+            conversation (top vector matches, recently active). Caller is
+            expected to pre-filter to open items only; this function defends
+            in depth by skipping any item that arrives marked completed.
 
     Returns:
         List of extracted ActionItem objects
@@ -329,40 +334,25 @@ def extract_action_items(
     if existing_action_items:
         items_list = []
         for item in existing_action_items:
+            # Defensive: the rendered section is "OPEN TASKS"; a completed item
+            # leaking through (e.g. a future caller that doesn't pre-filter)
+            # would mislead the LLM into suppressing valid new tasks.
+            if item.get('completed', False):
+                continue
             desc = item.get('description', '')
             due = item.get('due_at')
             due_str = due.strftime('%Y-%m-%d %H:%M UTC') if due else 'No due date'
-            completed = '✓ Completed' if item.get('completed', False) else 'Pending'
-            items_list.append(f"  • {desc} (Due: {due_str}) [{completed}]")
+            items_list.append(f"  • {desc} (Due: {due_str})")
 
-        existing_items_context = f"\n\nEXISTING ACTION ITEMS FROM PAST 2 DAYS ({len(items_list)} items):\n" + "\n".join(
-            items_list
-        )
+        if items_list:
+            existing_items_context = (
+                f"\n\nPOTENTIALLY RELATED OPEN TASKS — recently active, semantically similar ({len(items_list)} items):\n"
+                + "\n".join(items_list)
+            )
 
     # First system message: task-specific instructions (static prefix enables cross-conversation caching)
     # NOTE: {language_code} is in the context message, not here, to keep this prefix fully static across all languages.
-    instructions_text = '''You are an expert action item extractor. Your sole purpose is to identify and extract actionable tasks from the provided content.
-
-    EXPLICIT TASK/REMINDER REQUESTS (HIGHEST PRIORITY)
-
-    When the primary user OR someone speaking to them uses these patterns, ALWAYS extract the task:
-    - "Remind me to X" / "Remember to X" → EXTRACT "X"
-    - "Don't forget to X" / "Don't let me forget X" → EXTRACT "X"
-    - "Add task X" / "Create task X" / "Make a task for X" → EXTRACT "X"
-    - "Note to self: X" / "Mental note: X" → EXTRACT "X"
-    - "Task: X" / "Todo: X" / "To do: X" → EXTRACT "X"
-    - "I need to remember to X" → EXTRACT "X"
-    - "Put X on my list" / "Add X to my tasks" → EXTRACT "X"
-    - "Set a reminder for X" / "Can you remind me X" → EXTRACT "X"
-    - "You need to X" / "You should X" / "Make sure you X" (said TO the user) → EXTRACT "X"
-
-    These explicit requests bypass importance/timing filters. If someone explicitly asks for a reminder or task, extract it.
-
-    Examples:
-    - User says "Remind me to buy milk" → Extract "Buy milk"
-    - Someone tells user "Don't forget to call your mom" → Extract "Call mom"
-    - User says "Add task pick up dry cleaning" → Extract "Pick up dry cleaning"
-    - User says "Note to self, check tire pressure" → Extract "Check tire pressure"
+    instructions_text = '''You are an expert action item extractor. Your sole purpose is to identify and extract high-quality, actionable tasks from the provided content.
 
     CRITICAL: If CALENDAR MEETING CONTEXT is provided with participant names, you MUST use those names:
     - The conversation DEFINITELY happened between the named participants
@@ -373,34 +363,37 @@ def extract_action_items(
     - Consider the scheduled meeting time and duration when extracting due dates
     - If you cannot confidently match a speaker to a name, use the action description without speaker references
 
-    CRITICAL DEDUPLICATION RULES (Check BEFORE extracting):
-    • DO NOT extract action items that are >95% similar to existing ones in the content
-    • Check both the description AND the due date/timeframe
-    • Consider semantic similarity, not just exact word matches
-    • Examples of what counts as DUPLICATES (DO NOT extract):
-      - "Call John" vs "Phone John" → DUPLICATE
-      - "Finish report by Friday" (existing) vs "Complete report by end of week" → DUPLICATE
-      - "Buy milk" (existing) vs "Get milk from store" → DUPLICATE
-      - "Email Sarah about meeting" (existing) vs "Send email to Sarah regarding the meeting" → DUPLICATE
-    • Examples of what is NOT duplicate (OK to extract):
-      - "Buy groceries" (existing) vs "Buy milk" → NOT duplicate (different scope)
-      - "Call dentist" (existing) vs "Call plumber" → NOT duplicate (different person/service)
-      - "Submit report by March 1st" (existing) vs "Submit report by March 15th" → NOT duplicate (different deadlines)
-    • If you're unsure whether something is a duplicate, err on the side of treating it as a duplicate (DON'T extract)
-    • SINGLE-TOPIC LIMIT: If a conversation discusses one topic, extract AT MOST 1 action item for it — not one per variation, option, or detail mentioned in the discussion.
+    DEDUPLICATION RULES — be conservative about suppressing:
+    • The "POTENTIALLY RELATED OPEN TASKS" section lists open items recently active in the user's task list, semantically similar to this conversation. They may or may not be true duplicates.
+    • Only suppress a candidate if you are 100% confident the existing task captures this EXACT intent and the user is just re-mentioning it (not re-doing it).
+    • EXTRACT (do not suppress) when the user signals re-occurrence or distinct scope:
+      - Re-occurrence cues: "again", "another", "still need to", "I forgot to", "more", "one more"
+      - Different person, scope, or deadline ("Submit report by March 1" vs "Submit report by April 15" — different deadlines, both valid)
+      - Existing item describes a one-off task that's already in progress; user is starting a new instance
+    • If user says "I did X" / "I just X'd" / "X is done" / "X is taken care of": DO NOT extract a new item AND do not modify the existing one — just leave it (auto-completion of existing tasks is out of scope here).
+    • Examples of true DUPLICATES (suppress):
+      - "Call John" said today, existing open "Call John" from this morning, no new context → DUPLICATE
+      - "Email Sarah about meeting" said today, existing "Email Sarah about meeting" still open → DUPLICATE (same intent re-mentioned)
+    • Examples of NOT duplicates (extract anyway):
+      - Existing: "Buy milk" (open). User says "I need to buy more milk" → EXTRACT (re-occurrence cue)
+      - Existing: "Submit report by March 1" (open). User says "Submit report by April 15" → EXTRACT (different deadline)
+      - Existing: "Call dentist" (open). User says "Call plumber" → EXTRACT (different scope)
+    • When unsure → EXTRACT. A duplicate the user can delete is recoverable; a silently-suppressed real task is not.
+    • SINGLE-TOPIC LIMIT: Within THIS conversation, extract AT MOST 1 action item per topic — not one per variation, option, or detail. (This rule applies within the current transcript, not across conversations.)
 
     WORKFLOW:
     1. FIRST: Read the ENTIRE conversation carefully to understand the full context
-    2. SECOND: Check for EXPLICIT task requests (remind me, add task, don't forget, etc.) - ALWAYS extract these
-    3. THIRD: For IMPLICIT tasks - default to extracting NOTHING:
-       - Is the user already doing this or about to do it? SKIP IT
+    2. SECOND: Identify all topics, people, places, or things being discussed
+    3. THIRD: Default to extracting NOTHING. Filter aggressively:
+       - Is the user ALREADY doing this or about to do it? SKIP IT
        - Is this being handled in real-time between the participants? SKIP IT
        - Would a busy person genuinely forget this without a reminder? If not OBVIOUS, SKIP IT
        - NEVER extract multiple items about the same topic from a single conversation
        - When in doubt, extract 0 items. One missed marginal task is far better than multiple garbage tasks.
-    4. FOURTH: Extract timing information separately and put it in the due_at field
-    5. FIFTH: Clean the description - remove ALL time references and vague words
-    6. SIXTH: Final check - description should be timeless and specific (e.g., "Buy groceries" NOT "buy them by tomorrow")
+    4. FOURTH: Extract ONLY action items that passed step 3, using specific names/details
+    5. FIFTH: Extract timing information separately and put it in the due_at field
+    6. SIXTH: Clean the description - remove ALL time references and vague words
+    7. SEVENTH: Final check - description should be timeless and specific (e.g., "Buy groceries" NOT "buy them by tomorrow")
 
     CRITICAL CONTEXT:
     • These action items are primarily for the PRIMARY USER who is having/recording this conversation
@@ -411,11 +404,11 @@ def extract_action_items(
       - It's super crucial for the primary user to track it
       - The primary user needs to follow up on it
 
-    BALANCE QUALITY AND USER INTENT:
-    • For EXPLICIT requests (remind me, add task, don't forget, etc.) - ALWAYS extract
-    • For IMPLICIT tasks inferred from conversation - be very selective, better to extract 0 than flood the user
-    • Think: "Did the user ask for this reminder, or am I guessing they need it?"
-    • If the user explicitly asked for a task/reminder, respect their request even if it seems trivial
+    QUALITY OVER QUANTITY:
+    • Better to have 0 action items than to flood the user with unnecessary ones
+    • Only extract action items that are truly important and need tracking
+    • When in doubt, DON'T extract - be conservative and selective
+    • Think: "Would a busy person want to be reminded of this?"
 
     STRICT FILTERING RULES - Include ONLY tasks that meet ALL these criteria:
 
@@ -434,20 +427,18 @@ def extract_action_items(
 
     2. **Concrete Action**: The task describes a specific, actionable next step (not vague intentions)
 
-    3. **Timing Signal** (NOT required for explicit task requests):
+    3. **Timing Signal**: The task includes a timing cue:
        - Explicit dates or times
        - Relative timing ("tomorrow", "next week", "by Friday", "this month")
        - Urgency markers ("urgent", "ASAP", "high priority")
-       - NOTE: Skip this requirement if user explicitly asked for a reminder/task
 
-    4. **Real Importance** (NOT required for explicit task requests):
+    4. **Real Importance**: The task has genuine consequences if missed:
        - Financial impact (bills, payments, purchases, invoices)
        - Health/safety concerns (appointments, medications, safety checks)
        - Hard deadlines (submissions, filings, registrations)
        - Explicit stress if missed (stated by speakers)
        - Critical dependencies (primary user blocked without it)
        - Commitments to other people (meetings, deliverables, promises)
-       - NOTE: Skip this requirement if user explicitly asked for a reminder/task
 
     5. **NOT Already Being Done or About to Do Immediately**:
        - Skip if user is currently doing it, about to do it, or handling it in this conversation
@@ -455,10 +446,10 @@ def extract_action_items(
        - "I'll do X for you" → SKIP (immediate response to a request)
        - "Let me X" → SKIP (taking action now)
        - "Today I will X" → SKIP unless there's a specific time/deadline attached
-       - "I want to X" → SKIP unless paired with a concrete deadline or explicit reminder request
+       - "I want to X" → SKIP unless paired with a concrete deadline
        - Only EXTRACT if there's a real future deadline that could be forgotten:
          * "I need to submit the report by Friday" → EXTRACT (forgettable deadline)
-         * "Remind me to call the dentist tomorrow" → EXTRACT (explicit request)
+         * "Call the dentist tomorrow" → EXTRACT (future deadline)
          * "Don't forget to pay rent by the 1st" → EXTRACT (financial deadline)
 
     EXCLUDE these types of items (be aggressive about exclusion):
@@ -538,11 +529,12 @@ def extract_action_items(
         '    ', ''
     ).strip()
 
+    response_language = output_language_code or language_code
     action_items_parser = PydanticOutputParser(pydantic_object=ActionItemsExtraction)
     # Second system message: conversation context + existing items (dynamic, per-conversation)
-    context_message = 'The content language is {language_code}. Use the same language {language_code} for your response.\n\nContent:\n{conversation_context}{existing_items_context}'
+    context_message = 'The content language is {language_code}. You MUST respond entirely in {response_language}.\n\nContent:\n{conversation_context}{existing_items_context}'
     prompt = ChatPromptTemplate.from_messages([('system', instructions_text), ('system', context_message)])
-    chain = prompt | llm_medium_experiment.bind(prompt_cache_key="omi-extract-actions") | action_items_parser
+    chain = prompt | get_llm('conv_action_items', cache_key='omi-extract-actions') | action_items_parser
 
     current_time = datetime.now(timezone.utc)
 
@@ -552,6 +544,7 @@ def extract_action_items(
                 'conversation_context': conversation_context,
                 'format_instructions': action_items_parser.get_format_instructions(),
                 'language_code': language_code,
+                'response_language': response_language,
                 'started_at': started_at.isoformat(),
                 'current_time': current_time.isoformat(),
                 'tz': tz,
@@ -587,16 +580,25 @@ def get_transcript_structure(
     started_at: datetime,
     language_code: str,
     tz: str,
+    uid: str,
     photos: List[ConversationPhoto] = None,
     calendar_meeting_context: 'CalendarMeetingContext' = None,
+    output_language_code: str = None,
 ) -> Structured:
     conversation_context = _build_conversation_context(transcript, photos, calendar_meeting_context)
     if not conversation_context:
         return Structured()  # Should be caught by discard logic, but as a safeguard.
 
+    response_language = output_language_code or language_code
+    try:
+        user_name = get_user_name(uid)
+    except Exception as e:
+        logger.warning(f'Failed to load user name for transcript structuring (uid={uid}): {e}')
+        user_name = 'The User'
+
     # First system message: task-specific instructions (static prefix enables cross-conversation caching)
+    # NOTE: language instructions are in context_message (second message) to keep this prefix fully static.
     instructions_text = '''You are an expert content analyzer. Your task is to analyze the provided content (which could be a transcript, a series of photo descriptions from a wearable camera, or both) and provide structure and clarity.
-    The content language is {language_code}. Use the same language {language_code} for your response.
 
     CRITICAL: If CALENDAR MEETING CONTEXT is provided with participant names, you MUST use those names:
     - The conversation DEFINITELY happened between the named participants
@@ -634,22 +636,23 @@ def get_transcript_structure(
     • Vague suggestions ("let's grab coffee soon")
     • Hypothetical scenarios ("if we meet Tuesday...")
 
-    For date context, this content was captured on {started_at}. {tz} is the user's timezone; convert all event times to UTC and respond in UTC.
+    For date context, this content was captured on {started_at}. {tz} is the user's timezone; respond in user local timezone.
 
     {format_instructions}'''.replace(
         '    ', ''
     ).strip()
 
     # Second system message: conversation context (dynamic, per-conversation)
-    context_message = 'Content:\n{conversation_context}'
+    context_message = 'The content language is {language_code}. You MUST respond entirely in {response_language}.\n\nContent:\n{conversation_context}'
     prompt = ChatPromptTemplate.from_messages([('system', instructions_text), ('system', context_message)])
-    chain = prompt | llm_medium_experiment.bind(prompt_cache_key="omi-transcript-structure") | parser
+    chain = prompt | get_llm('conv_structure', cache_key='omi-transcript-structure') | parser
 
     response = chain.invoke(
         {
             'conversation_context': conversation_context,
             'format_instructions': parser.get_format_instructions(),
             'language_code': language_code,
+            'response_language': response_language,
             'started_at': started_at.isoformat(),
             'tz': tz,
         }
@@ -670,6 +673,7 @@ def get_reprocess_transcript_structure(
     tz: str,
     title: str,
     photos: List[ConversationPhoto] = None,
+    output_language_code: str = None,
 ) -> Structured:
     context_parts = []
     if transcript and transcript.strip():
@@ -684,9 +688,10 @@ def get_reprocess_transcript_structure(
         return Structured()
 
     full_context = "\n\n".join(context_parts)
+    response_language = output_language_code or language_code
 
     prompt_text = '''You are an expert content analyzer. Your task is to analyze the provided content (which could be a transcript, a series of photo descriptions from a wearable camera, or both) and provide structure and clarity.
-    The content language is {language_code}. Use the same language {language_code} for your response.
+    The content language is {language_code}. You MUST respond entirely in {response_language}.
 
     For the title, use ```{title}```, if it is empty, use the main topic of the content.
     For the overview, condense the content into a summary with the main topics discussed or scenes observed, making sure to capture the key points and important details.
@@ -714,7 +719,7 @@ def get_reprocess_transcript_structure(
     • Vague suggestions ("let's grab coffee soon")
     • Hypothetical scenarios ("if we meet Tuesday...")
     
-    For date context, this content was captured on {started_at}. {tz} is the user's timezone; convert all event times to UTC and respond in UTC.
+    For date context, this content was captured on {started_at}. {tz} is the user's timezone; respond in user local timezone.
 
     Content:
     {full_context}
@@ -724,7 +729,7 @@ def get_reprocess_transcript_structure(
     ).strip()
 
     prompt = ChatPromptTemplate.from_messages([('system', prompt_text)])
-    chain = prompt | llm_medium_experiment.bind(prompt_cache_key="omi-transcript-structure") | parser
+    chain = prompt | get_llm('conv_structure', cache_key='omi-transcript-structure') | parser
 
     response = chain.invoke(
         {
@@ -732,6 +737,7 @@ def get_reprocess_transcript_structure(
             'title': title,
             'format_instructions': parser.get_format_instructions(),
             'language_code': language_code,
+            'response_language': response_language,
             'started_at': started_at.isoformat(),
             'tz': tz,
         }
@@ -772,7 +778,7 @@ def get_app_result(transcript: str, photos: List[ConversationPhoto], app: App, l
     {full_context}
     '''
 
-    response = llm_medium_experiment.invoke(prompt, prompt_cache_key="omi-app-result")
+    response = get_llm('conv_app_result', cache_key='omi-app-result').invoke(prompt)
     content = response.content.replace('```json', '').replace('```', '')
     return content
 
@@ -856,7 +862,7 @@ def get_suggested_apps_for_conversation(conversation: Conversation, apps: List[A
     """
 
     try:
-        with_parser = llm_mini.with_structured_output(SuggestedAppsSelection)
+        with_parser = get_llm('conv_app_select').with_structured_output(SuggestedAppsSelection)
         response: SuggestedAppsSelection = with_parser.invoke(prompt)
 
         # Validate that suggested app IDs exist in the available apps
@@ -927,7 +933,7 @@ def select_best_app_for_conversation(conversation: Conversation, apps: List[App]
     """
 
     try:
-        with_parser = llm_mini.with_structured_output(BestAppSelection)
+        with_parser = get_llm('conv_app_select').with_structured_output(BestAppSelection)
         response: BestAppSelection = with_parser.invoke(prompt)
         selected_app_id = response.app_id
 
@@ -956,5 +962,5 @@ def generate_summary_with_prompt(conversation_text: str, prompt: str, language_c
     The conversation is:
     {conversation_text}
     """
-    response = llm_medium_experiment.invoke(full_prompt, prompt_cache_key="omi-daily-summary")
+    response = get_llm('daily_summary', cache_key='omi-daily-summary').invoke(full_prompt)
     return response.content

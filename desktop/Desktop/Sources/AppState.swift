@@ -57,6 +57,10 @@ class AppState: ObservableObject {
   /// Tracks the source for the current recording (for API tagging)
   private var currentConversationSource: ConversationSource = .desktop
 
+  /// Guards against re-entering the silent-mic fallback path multiple times in a single session.
+  /// The user-visible banner lives in `SilentMicNoticeMonitor.shared`.
+  private var silentMicFallbackInProgress: Bool = false
+
   // Audio levels moved to AudioLevelMonitor to avoid triggering global re-renders
   // Access via AudioLevelMonitor.shared.microphoneLevel / .systemLevel
   var microphoneAudioLevel: Float { AudioLevelMonitor.shared.microphoneLevel }
@@ -105,8 +109,8 @@ class AppState: ObservableObject {
   private var lastNotificationAlertStyle: String?
   private var lastNotificationSoundEnabled: Bool?
   private var lastNotificationBadgeEnabled: Bool?
-  @Published var isScreenCaptureKitBroken = false  // TCC says yes but ScreenCaptureKit says no
-  @Published var isScreenRecordingStale = false  // TCC says yes but capture fails (developer signing changed)
+  @Published var isScreenCaptureKitBroken = false  // Capture engine issue; not the source of permission truth
+  @Published var isScreenRecordingStale = false  // Deprecated: no longer inferred from capture failures
   var screenRecordingGrantAttempts = 0  // Track how many times user clicked Grant without success
   @Published var hasAutomationPermission = false
   @Published var automationPermissionError: OSStatus = 0  // Non-zero when check fails unexpectedly (e.g. -600 procNotFound)
@@ -114,6 +118,19 @@ class AppState: ObservableObject {
   @Published var hasAccessibilityPermission = false
   @Published var isAccessibilityBroken = false  // TCC says yes but AX calls actually fail (common after macOS updates/app re-signs)
   @Published var hasFullDiskAccess = false
+
+  /// Usage-limit popup state. Set by `triggerUsageLimitPopup(reason:)` when the
+  /// user hits a free-tier cap (transcription minutes, monthly chat messages, etc).
+  /// The popup is mounted as an overlay in `DesktopHomeView` and is closable.
+  @Published var showUsageLimitPopup: Bool = false
+  @Published var usageLimitReason: String = ""
+
+  /// Trigger the monthly-limit popup. Safe to call repeatedly — SwiftUI's
+  /// `@Published` dedupes identical-value writes automatically.
+  func triggerUsageLimitPopup(reason: String) {
+    usageLimitReason = reason
+    showUsageLimitPopup = true
+  }
 
   /// True if notifications are enabled but won't show visual banners
   var isNotificationBannerDisabled: Bool {
@@ -124,7 +141,7 @@ class AppState: ObservableObject {
   var missingPermissions: [String] {
     var missing: [String] = []
     if !hasMicrophonePermission { missing.append("Microphone") }
-    if !hasScreenRecordingPermission || isScreenCaptureKitBroken || isScreenRecordingStale {
+    if !hasScreenRecordingPermission || isScreenRecordingStale {
       missing.append("Screen Recording")
     }
     if !hasNotificationPermission {
@@ -213,6 +230,9 @@ class AppState: ObservableObject {
     // Register as the current instance so background services can check recording state
     AppState.current = self
 
+    // Resolve beta/stable before loading backend URLs so beta releases use dev services.
+    AppBuild.prepareUpdateChannelForBackendRouting()
+
     // Load API key from environment or .env file
     loadEnvironment()
 
@@ -231,9 +251,12 @@ class AppState: ObservableObject {
       queue: .main
     ) { [weak self] _ in
       Task { @MainActor in
-        self?.hasScreenRecordingPermission = false
+        let granted = ScreenCaptureService.checkPermission()
+        self?.hasScreenRecordingPermission = ScreenRecordingPermissionPolicy.uiPermissionGranted(
+          tccGranted: granted)
         self?.isScreenCaptureKitBroken = false  // Not broken, just lost
-        log("AppState: Screen recording permission lost")
+        self?.isScreenRecordingStale = false
+        log("AppState: Screen recording permission lost notification; TCC granted=\(granted)")
       }
     }
 
@@ -244,9 +267,13 @@ class AppState: ObservableObject {
       queue: .main
     ) { [weak self] _ in
       Task { @MainActor in
-        self?.hasScreenRecordingPermission = false
-        self?.isScreenCaptureKitBroken = true  // Needs reset
-        log("AppState: ScreenCaptureKit broken - needs reset")
+        let granted = ScreenCaptureService.checkPermission()
+        self?.hasScreenRecordingPermission = ScreenRecordingPermissionPolicy.uiPermissionGranted(
+          tccGranted: granted)
+        self?.isScreenCaptureKitBroken = ScreenRecordingPermissionPolicy.shouldMarkCaptureKitBroken(
+          tccGranted: granted)
+        self?.isScreenRecordingStale = false
+        log("AppState: ScreenCaptureKit broken notification; TCC granted=\(granted)")
       }
     }
 
@@ -441,7 +468,7 @@ class AppState: ObservableObject {
             guard !key.hasPrefix("#") else { continue }
             // API keys are fetched from the backend at runtime (APIKeyService).
             // Do NOT load them from .env — defer entirely to APIKeyService.fetchKeys().
-            let backendServedKeys = ["GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_CALENDAR_API_KEY"]
+            let backendServedKeys = ["GEMINI_API_KEY", "GOOGLE_CALENDAR_API_KEY"]
             if backendServedKeys.contains(key) {
               log("  Skipped \(key) (fetched from backend via APIKeyService)")
               continue
@@ -458,6 +485,8 @@ class AppState: ObservableObject {
         // Don't break - load all .env files to merge keys
       }
     }
+
+    DesktopBackendEnvironment.applyReleaseChannelDefaults()
 
     log("Environment loaded (API keys will be fetched from backend after auth)")
   }
@@ -822,79 +851,22 @@ class AppState: ObservableObject {
 
   /// Check screen recording permission status
   func checkScreenRecordingPermission() {
-    let tccGranted = CGPreflightScreenCaptureAccess()
-    let shouldForceActualTest = screenRecordingGrantAttempts > 0 || hasScreenRecordingPermission
+    let permissionGranted = ScreenCaptureService.checkPermission()
+    hasScreenRecordingPermission = ScreenRecordingPermissionPolicy.uiPermissionGranted(
+      tccGranted: permissionGranted)
 
-    if !tccGranted {
-      let actualPermission = ScreenCaptureService.checkPermission(
-        forceActualTestIfPreflightDenied: shouldForceActualTest)
-      if actualPermission {
-        hasScreenRecordingPermission = true
-        isScreenCaptureKitBroken = false
-        isScreenRecordingStale = false
-        screenRecordingGrantAttempts = 0
-        return
-      }
-
-      hasScreenRecordingPermission = false
+    if !permissionGranted {
       isScreenCaptureKitBroken = false
-      // If user already tried Grant once and permission is still not granted,
-      // the TCC entry is likely corrupted (e.g. after developer account change
-      // + tccutil reset). Show stale UI with toggle off/on instructions.
-      if screenRecordingGrantAttempts > 0 && !isScreenRecordingStale {
-        log(
-          "Screen capture: Grant attempted but permission still denied — showing recovery instructions"
-        )
-        isScreenRecordingStale = true
-      }
+      isScreenRecordingStale = false
       return
     }
 
-    // TCC says granted. If the permission alert is currently showing (permission was
-    // previously false or broken or stale), do a real capture test to verify the stale TCC case
-    // (e.g. after developer account change). This avoids spawning a screencapture process
-    // on every didBecomeActive when everything is fine.
-    if !hasScreenRecordingPermission || isScreenCaptureKitBroken || isScreenRecordingStale {
-      let realPermission = ScreenCaptureService.checkPermission()
-      hasScreenRecordingPermission = realPermission
-
-      // Stale TCC entry from old developer signing: CGPreflight says granted but
-      // actual capture fails. The user must toggle OFF then ON in System Settings
-      // to update the code signing requirement (csreq) stored in the TCC database.
-      // NOTE: Do NOT call tccutil reset here — it wipes the user's permission entry
-      // entirely and forces them to re-grant manually. This was the root cause of
-      // users' screen recording permission getting reset "for no reason" after
-      // local rebuilds of Omi Beta (binary hash changes → stale csreq → self-reset).
-      // The correct recovery is for the user to toggle the permission in System
-      // Settings, which refreshes csreq in place. See PR #5616 / a2bc4471d for history.
-      if !realPermission && !isScreenRecordingStale {
-        log("Screen capture: stale TCC entry detected (developer signing changed)")
-        log(
-          "Screen capture: please toggle Screen Recording OFF then ON for this app in System Settings → Privacy & Security → Screen Recording"
-        )
-        isScreenRecordingStale = true
-      } else if realPermission {
-        // Permission recovered (user toggled off/on in System Settings)
-        isScreenRecordingStale = false
-        screenRecordingGrantAttempts = 0
-      }
-
-      if isScreenCaptureKitBroken {
-        // Re-check if SCK has recovered (user toggled permission in System Settings)
-        if #available(macOS 14.0, *) {
-          Task {
-            let sckWorks = await ScreenCaptureService.testScreenCaptureKitPermission()
-            if sckWorks {
-              log("AppState: ScreenCaptureKit recovered — clearing broken flag")
-              self.isScreenCaptureKitBroken = false
-              self.hasScreenRecordingPermission = true
-            }
-          }
-        }
-      }
-    } else {
-      hasScreenRecordingPermission = true
-    }
+    // Permission is granted. Capture-engine failures are handled by the
+    // monitoring pipeline and must not make the permission badge red.
+    isScreenRecordingStale = false
+    isScreenCaptureKitBroken = false
+    screenRecordingGrantAttempts = 0
+    UserDefaults.standard.removeObject(forKey: NotificationService.screenCaptureResetShownKey)
   }
 
   /// Check automation permission without triggering a prompt
@@ -1433,52 +1405,98 @@ class AppState: ObservableObject {
     }
   }
 
-  /// Start microphone audio capture — sends mono mic audio directly to Python backend
+  /// Start microphone + system audio capture — mixes mic and system audio into a single
+  /// mono stream (via AudioMixer) and sends it to the Python backend (`channels=1`).
+  /// This way anything playing through the Mac's speakers (YouTube, calls, music)
+  /// ends up in the conversation transcript alongside the user's voice.
   private func startMicrophoneAudioCapture() async {
     guard let audioCaptureService = audioCaptureService else { return }
 
+    // Silent-mic watchdog: on A2DP profile conflict the Bluetooth input device returns
+    // zero samples even though CoreAudio reports healthy capture. Fall back to the
+    // built-in mic when the watchdog fires.
+    audioCaptureService.onSilentMicDetected = { [weak self] in
+      Task { @MainActor in
+        self?.handleSilentMicFallback()
+      }
+    }
+
+    // Start the mixer — it sums mic + system into a mono stream and forwards it to
+    // the transcription WebSocket.
+    audioMixer?.start { [weak self] monoMixed in
+      self?.transcriptionService?.sendAudio(monoMixed)
+    }
+
     do {
-      // Start microphone capture — send audio directly to transcription service (mono)
-      // Python backend handles diarization server-side, no need for stereo mixing
+      // Microphone capture → mixer (mic channel). Level still drives the UI.
       try await audioCaptureService.startCapture(
         onAudioChunk: { [weak self] audioData in
-          self?.transcriptionService?.sendAudio(audioData)
+          self?.audioMixer?.setMicAudio(audioData)
         },
         onAudioLevel: { level in
           // Use dedicated monitor to avoid triggering AppState re-renders
           AudioLevelMonitor.shared.updateMicrophoneLevel(level)
         }
       )
-      log("Transcription: Microphone capture started (mono, Python backend)")
+      log("Transcription: Microphone capture started (→ mixer, Python backend mono)")
 
-      // Start system audio capture if available (macOS 14.4+)
-      // System audio is still captured for audio level display but NOT sent to transcription
-      // (Python backend receives mono mic-only audio with channels=1)
+      // Start system audio capture if available (macOS 14.4+). When present, its
+      // samples are mixed into the same mono stream so YouTube/calls/music end up
+      // in the transcript too. If unavailable or it fails, we simply keep mic-only
+      // audio flowing through the mixer.
       if #available(macOS 14.4, *) {
         if let systemService = systemAudioCaptureService as? SystemAudioCaptureService {
           do {
             try await systemService.startCapture(
               onAudioChunk: { [weak self] audioData in
-                // Still mix system audio for audio level monitoring
                 self?.audioMixer?.setSystemAudio(audioData)
               },
               onAudioLevel: { level in
                 AudioLevelMonitor.shared.updateSystemLevel(level)
               }
             )
-            log("Transcription: System audio capture started (level monitoring only)")
+            log("Transcription: System audio capture started (→ mixer, mono sum)")
           } catch {
-            // System audio is optional - continue with mic only
+            // System audio is optional — continue with mic only (mixer will just
+            // emit mic samples summed with zero system samples).
             logError(
               "Transcription: System audio capture failed (continuing with mic only)", error: error)
           }
         }
       }
 
-      log("Transcription: Audio capture started (mono mic → Python backend)")
+      log("Transcription: Audio capture started (mic + system → mono mix → Python backend)")
     } catch {
       logError("Transcription: Failed to start audio capture", error: error)
       stopTranscription()
+    }
+  }
+
+  /// Fall back from a silent Bluetooth mic to the built-in microphone.
+  /// Triggered by `AudioCaptureService.onSilentMicDetected`.
+  @MainActor
+  private func handleSilentMicFallback() {
+    guard isTranscribing, !silentMicFallbackInProgress else { return }
+    silentMicFallbackInProgress = true
+
+    guard let builtInID = AudioCaptureService.findBuiltInMicDeviceID() else {
+      log("Transcription: silent-mic detected but no built-in microphone available — leaving capture as-is")
+      silentMicFallbackInProgress = false
+      return
+    }
+
+    log("Transcription: silent-mic fallback — switching to built-in mic (deviceID=\(builtInID))")
+
+    // Tear down the dead Bluetooth capture and spin a new one pinned to the built-in mic.
+    // Silent healing — no user-facing UI, the recording just keeps working.
+    audioCaptureService?.stopCapture()
+    audioCaptureService = AudioCaptureService(overrideDeviceID: builtInID)
+    recordingInputDeviceName =
+      AudioCaptureService.getCurrentMicrophoneName() ?? "Built-in Microphone"
+
+    Task { @MainActor in
+      await self.startMicrophoneAudioCapture()
+      self.silentMicFallbackInProgress = false
     }
   }
 
@@ -1576,6 +1594,7 @@ class AppState: ObservableObject {
 
     stopAudioCapture()
     clearTranscriptionState()
+    silentMicFallbackInProgress = false
 
     // After WS close, the Python backend processes the conversation automatically.
     // Call force-process to ensure finalization and get the backend conversation ID.
@@ -1992,7 +2011,7 @@ class AppState: ObservableObject {
     NotificationCenter.default.post(name: .conversationsPageDidLoad, object: nil)
   }
 
-  /// Refresh conversations silently (for auto-refresh timer and app-activate).
+  /// Refresh conversations silently (for app-activation and Cmd+R event-driven refreshes).
   /// Fetches from API only, merges in-place, and only triggers @Published if data actually changed.
   func refreshConversations() async {
     // Skip if user is signed out (tokens are cleared)
@@ -2054,7 +2073,6 @@ class AppState: ObservableObject {
       }
     }
 
-    // Update total count
     do {
       let count = try await APIClient.shared.getConversationsCount(includeDiscarded: false)
       if totalConversationsCount != count {
@@ -2506,6 +2524,7 @@ class AppState: ObservableObject {
     case "freemium_threshold_reached":
       let remaining = event.raw["remaining_seconds"] as? Int ?? 0
       log("Transcription: Freemium threshold reached, \(remaining)s remaining")
+      triggerUsageLimitPopup(reason: "transcription")
 
     case "translating":
       if let segmentsArray = event.raw["segments"] as? [[String: Any]] {
@@ -3023,6 +3042,8 @@ extension Notification.Name {
   static let screenCaptureKitBroken = Notification.Name("screenCaptureKitBroken")
   /// Posted to show the "Try asking" popup centered over the full window
   static let showTryAskingPopup = Notification.Name("showTryAskingPopup")
+  /// Posted to show the over-usage-limit popup. userInfo["reason"] = "transcription" | "chat" | "floating_bar".
+  static let showUsageLimitPopup = Notification.Name("showUsageLimitPopup")
   /// Posted to navigate to Rewind settings
   static let navigateToRewindSettings = Notification.Name("navigateToRewindSettings")
   /// Posted to navigate to Rewind page (global hotkey: Cmd+Option+R)
@@ -3062,6 +3083,8 @@ extension Notification.Name {
   static let navigateToTasks = Notification.Name("navigateToTasks")
   /// Posted by keyboard shortcuts to navigate sidebar. userInfo: ["rawValue": Int]
   static let navigateToSidebarItem = Notification.Name("navigateToSidebarItem")
+  /// Posted by Cmd+R to refresh all data (conversations, chat, tasks, memories)
+  static let refreshAllData = Notification.Name("refreshAllData")
   /// Posted by the local desktop automation bridge to request semantic navigation.
   static let desktopAutomationNavigateRequested = Notification.Name(
     "desktopAutomationNavigateRequested")

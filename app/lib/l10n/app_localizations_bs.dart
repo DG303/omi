@@ -2377,6 +2377,9 @@ class AppLocalizationsBs extends AppLocalizations {
   String get batteryLevel => 'Nivo baterije';
 
   @override
+  String get charging => 'Punjenje';
+
+  @override
   String get productUpdate => 'Ažuriranje proizvoda';
 
   @override
@@ -2503,12 +2506,6 @@ class AppLocalizationsBs extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => 'Prati svoje lične ciljeve na početnoj stranici';
-
-  @override
-  String get dailyReflection => 'Dnevna refleksija';
-
-  @override
-  String get get9PmReminderToReflect => 'Dobij podsjetnik u 21:00 za razmišljanje o svom danu';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => 'Opis elementa akcije ne može biti prazan';
@@ -3927,9 +3924,6 @@ class AppLocalizationsBs extends AppLocalizations {
   String get trackPersonalGoals => 'Prati osobne ciljeve na početnoj stranici';
 
   @override
-  String get dailyReflectionDescription => 'Obavijest u 21:00 da razmislim na dan i zabilježi svoje misli.';
-
-  @override
   String get endpointURL => 'URL krajnje točke';
 
   @override
@@ -4575,7 +4569,7 @@ class AppLocalizationsBs extends AppLocalizations {
   String get unableToLoadPlans => 'Nije moguće učitati planove';
 
   @override
-  String get checkConnectionTryAgain => 'Molimo provjerite vašu konekciju i pokušajte ponovno';
+  String get checkConnectionTryAgain => 'Provjerite vezu i pokušajte ponovo';
 
   @override
   String get useFreePlan => 'Koristi besplatni plan';
@@ -5111,7 +5105,7 @@ class AppLocalizationsBs extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Nastavkom, svi podaci koje dijelite s ovom aplikacijom (uključujući vaše razgovore, snimke i osobne informacije) bit će sigurno pohranjeni na našim serverima kako bi vam omogućili AI-pogonjena uvida i omogućili sve značajke aplikacije.';
+      'Nastavljanjem, vaši razgovori, snimke i lični podaci bit će sigurno pohranjeni na našim serverima. Vaši audio zapisi i transkripti se obrađuju od strane AI usluga trećih strana (uključujući Deepgram za transkripciju i OpenAI za analizu) kako bi vam pružili uvide pokretane vještačkom inteligencijom i omogućili sve funkcije aplikacije.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7203,12 +7197,6 @@ class AppLocalizationsBs extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Vrijeme za dnevnu razmjenu';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Reči mi o tvom danu';
-
-  @override
   String get actionItemReminderTitle => 'Omi podsjetnik';
 
   @override
@@ -8325,6 +8313,12 @@ class AppLocalizationsBs extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Podešavanja telefonskih poziva';
 
   @override
+  String get showPhoneCallButtonTitle => 'Prikaži dugme za pozive';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Prikaži dugme za pozive na početnom ekranu';
+
+  @override
   String get yourVerifiedNumbers => 'Tvoji verifikovani brojevi';
 
   @override
@@ -8852,6 +8846,18 @@ class AppLocalizationsBs extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Baterija';
+
+  @override
+  String get noBatteryDataYet => 'Još nema podataka o bateriji';
+
+  @override
+  String get day => 'Dan';
+
+  @override
+  String get week => 'Sedmica';
+
+  @override
   String get rollbackToStableFirmware => 'Vrati se na stabilnu firmware';
 
   @override
@@ -8916,4 +8922,268 @@ class AppLocalizationsBs extends AppLocalizations {
 
   @override
   String get continueAnyway => 'Nastavi';
+
+  @override
+  String get tasksClearCompleted => 'Obriši završene';
+
+  @override
+  String get tasksSelectAll => 'Odaberi sve';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return 'Obriši $count zadatak(e)';
+  }
+
+  @override
+  String get tasksMarkComplete => 'Označeno kao završeno';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi pristupa Apple Health-u preko Appleovog HealthKit okvira. Pristup možete opozvati u bilo kojem trenutku u iOS postavkama.';
+
+  @override
+  String get appleHealthConnectCta => 'Poveži s Apple Health';
+
+  @override
+  String get appleHealthDisconnectCta => 'Prekini vezu s Apple Health';
+
+  @override
+  String get appleHealthConnectedBadge => 'Povezano';
+
+  @override
+  String get appleHealthFeatureChatTitle => 'Razgovarajte o svom zdravlju';
+
+  @override
+  String get appleHealthFeatureChatDesc => 'Pitajte Omi o vašim koracima, snu, otkucajima srca i treninzima.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => 'Samo za čitanje';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi nikada ne upisuje u Apple Health niti mijenja vaše podatke.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => 'Sigurna sinhronizacija';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Vaši Apple Health podaci se privatno sinhroniziraju s vašim Omi računom.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Pristup Apple Health-u je odbijen';
+
+  @override
+  String get appleHealthDeniedBody =>
+      'Omi nema dozvolu za čitanje vaših Apple Health podataka. Omogućite ga u iOS Postavke → Privatnost i sigurnost → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Zašto odlazite?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Vaše povratne informacije pomažu nam da Omi bude bolji za sve.';
+
+  @override
+  String get deleteReasonPrivacy => 'Brige o privatnosti';
+
+  @override
+  String get deleteReasonNotUsing => 'Ne koristim dovoljno često';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Nedostaju funkcije koje trebam';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Previše tehničkih problema';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Koristim nešto drugo';
+
+  @override
+  String get deleteReasonTakingBreak => 'Samo pravim pauzu';
+
+  @override
+  String get deleteReasonOther => 'Ostalo';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Recite nam više';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Šta bi učinilo da Omi radi za vas?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Opcionalno — vaše misli nam pomažu da napravimo bolji proizvod.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Ovo je trajno';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Nakon brisanja računa nije ga moguće vratiti.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Svaka aktivna pretplata će biti otkazana.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Vaš račun se ne može vratiti — čak ni preko podrške.';
+
+  @override
+  String get deleteTypeToConfirm => 'Upišite DELETE za potvrdu';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Trajno obriši račun';
+
+  @override
+  String get keepMyAccount => 'Zadrži moj račun';
+
+  @override
+  String get deleteAccountFailed => 'Brisanje vašeg računa nije uspjelo. Pokušajte ponovo.';
+
+  @override
+  String get planUpdate => 'Ažuriranje plana';
+
+  @override
+  String get planDeprecationMessage =>
+      'Vaš Unlimited plan se ukida. Pređite na Operator plan — iste odlične funkcije za \$49/mj. Vaš trenutni plan će nastaviti raditi u međuvremenu.';
+
+  @override
+  String get upgradeYourPlan => 'Nadogradite svoj plan';
+
+  @override
+  String get youAreOnAPaidPlan => 'Na plaćenom ste planu.';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get chatMessages => 'poruka';
+
+  @override
+  String get unlimitedChatThisMonth => 'Neograničene poruke ovog mjeseca';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used od $limit budžeta korišteno';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used od $limit poruka korišteno ovog mjeseca';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit korišteno';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Limit chata dostignut. Nadogradite za više poruka.';
+
+  @override
+  String get chatLimitReachedTitle => 'Limit chata dostignut';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Koristili ste $used od $limitDisplay na planu $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Resetuje se za $count dana';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Resetuje se za $count sati';
+  }
+
+  @override
+  String get resetsSoon => 'Uskoro se resetuje';
+
+  @override
+  String get upgradePlan => 'Nadogradi plan';
+
+  @override
+  String get billingMonthly => 'Mjesečno';
+
+  @override
+  String get billingYearly => 'Godišnje';
+
+  @override
+  String get savePercent => 'Uštedite ~17%';
+
+  @override
+  String get popular => 'Popularno';
+
+  @override
+  String get currentPlan => 'Trenutni';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count pitanja mjesečno';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count pitanja mjesečno';
+  }
+
+  @override
+  String get architectSubtitle => 'Napredni AI — hiljade razgovora + agentna automatizacija';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Chat: \$$used / \$$limit iskorišteno ovog mjeseca';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Chat: \$$used iskorišteno ovog mjeseca';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Chat: $used / $limit poruka ovog mjeseca';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Chat: $used poruka ovog mjeseca';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Dosegli ste svoj mjesečni limit. Nadogradite da nastavite razgovarati s Omi bez ograničenja.';
+
+  @override
+  String get voiceResponseAudio => 'Pročitaj Omi odgovor naglas';
+
+  @override
+  String get voiceResponseMode => 'Glasovni odgovor';
+
+  @override
+  String get voiceResponseModeTitle => 'Kada izgovarati odgovore';
+
+  @override
+  String get voiceResponseOff => 'Isključeno';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Samo slušalice';
+
+  @override
+  String get voiceResponseAlways => 'Uvijek';
+
+  @override
+  String get agreeAndContinue => 'Slažem se i nastavi';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

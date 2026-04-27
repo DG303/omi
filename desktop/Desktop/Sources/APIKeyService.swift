@@ -1,19 +1,60 @@
+import CryptoKit
 import Foundation
 
 /// Fetches API keys from the backend at runtime instead of bundling them in the app.
 /// Developer overrides (set in Settings) take precedence over backend-provided keys.
 ///
-/// NOTE: Deepgram and Gemini keys are NO LONGER fetched from the backend —
-/// they are proxied server-side (issue #5861). Anthropic, ElevenLabs, Firebase,
-/// and Calendar keys are still served via /v1/config/api-keys.
+/// Also hosts the Bring-Your-Own-Key (BYOK) free-plan flow: when the user supplies
+/// their own OpenAI, Anthropic, Gemini, and Deepgram keys, the app sends them along
+/// with every request and the backend skips subscription billing. Keys live in
+/// UserDefaults (reusing the existing dev-override AppStorage pattern); the backend
+/// only ever sees SHA-256 fingerprints for state tracking.
+///
+/// NOTE: Deepgram, Gemini, Anthropic keys are NO LONGER fetched from the backend —
+/// they are proxied server-side (issues #5861, #6594).
+/// NOTE: ElevenLabs key is NO LONGER fetched — proxied via /v1/tts/synthesize (issue #6622).
+/// Firebase and Calendar keys are still served via /v1/config/api-keys.
+
+/// Keys that participate in the BYOK free-plan flow.
+enum BYOKProvider: String, CaseIterable {
+    case openai
+    case anthropic
+    case gemini
+    case deepgram
+
+    var storageKey: String {
+        switch self {
+        case .openai: return "dev_openai_api_key"
+        case .anthropic: return "dev_anthropic_api_key"
+        case .gemini: return "dev_gemini_api_key"
+        case .deepgram: return "dev_deepgram_api_key"
+        }
+    }
+
+    var headerName: String {
+        switch self {
+        case .openai: return "X-BYOK-OpenAI"
+        case .anthropic: return "X-BYOK-Anthropic"
+        case .gemini: return "X-BYOK-Gemini"
+        case .deepgram: return "X-BYOK-Deepgram"
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .openai: return "OpenAI"
+        case .anthropic: return "Anthropic"
+        case .gemini: return "Gemini"
+        case .deepgram: return "Deepgram"
+        }
+    }
+}
 @MainActor
 final class APIKeyService: ObservableObject {
     static let shared = APIKeyService()
 
     // Backend-provided keys (in-memory only, never persisted to disk)
     @Published private(set) var geminiApiKey: String?
-    @Published private(set) var anthropicApiKey: String?
-    @Published private(set) var elevenLabsApiKey: String?
     @Published private(set) var firebaseApiKey: String?
     @Published private(set) var googleCalendarApiKey: String?
     @Published private(set) var isLoaded: Bool = false
@@ -42,14 +83,6 @@ final class APIKeyService: ObservableObject {
         nonEmpty(UserDefaults.standard.string(forKey: "dev_gemini_api_key")) ?? geminiApiKey
     }
 
-    var effectiveAnthropicKey: String? {
-        nonEmpty(UserDefaults.standard.string(forKey: "dev_anthropic_api_key")) ?? anthropicApiKey
-    }
-
-    var effectiveElevenLabsKey: String? {
-        nonEmpty(UserDefaults.standard.string(forKey: "dev_elevenlabs_api_key")) ?? elevenLabsApiKey
-    }
-
     var effectiveFirebaseApiKey: String? {
         firebaseApiKey
     }
@@ -67,8 +100,6 @@ final class APIKeyService: ObservableObject {
             do {
                 let keys = try await APIClient.shared.fetchApiKeys()
                 self.geminiApiKey = keys.geminiApiKey
-                self.anthropicApiKey = keys.anthropicApiKey
-                self.elevenLabsApiKey = keys.elevenLabsApiKey
                 self.firebaseApiKey = keys.firebaseApiKey
                 self.googleCalendarApiKey = keys.googleCalendarApiKey
                 self.isLoaded = true
@@ -76,7 +107,7 @@ final class APIKeyService: ObservableObject {
                 // Set env vars so existing getenv() consumers keep working during transition
                 applyToEnvironment()
 
-                log("APIKeyService: Fetched keys from backend (gemini=\(keys.geminiApiKey != nil), anthropic=\(keys.anthropicApiKey != nil), elevenlabs=\(keys.elevenLabsApiKey != nil), firebase=\(keys.firebaseApiKey != nil), calendar=\(keys.googleCalendarApiKey != nil))")
+                log("APIKeyService: Fetched keys from backend (gemini=\(keys.geminiApiKey != nil), firebase=\(keys.firebaseApiKey != nil), calendar=\(keys.googleCalendarApiKey != nil))")
                 return
             } catch {
                 let delay = pow(2.0, Double(attempt - 1))
@@ -97,16 +128,12 @@ final class APIKeyService: ObservableObject {
     /// Clear all keys (e.g. on sign-out)
     func clear() {
         geminiApiKey = nil
-        anthropicApiKey = nil
-        elevenLabsApiKey = nil
         firebaseApiKey = nil
         googleCalendarApiKey = nil
         isLoaded = false
         loadError = nil
 
         unsetenv("GEMINI_API_KEY")
-        unsetenv("ANTHROPIC_API_KEY")
-        unsetenv("ELEVENLABS_API_KEY")
         // NOTE: Do NOT unset FIREBASE_API_KEY — it's needed for the next sign-in
         // (auth bootstrap requires Firebase key before backend is reachable)
         unsetenv("GOOGLE_CALENDAR_API_KEY")
@@ -116,12 +143,6 @@ final class APIKeyService: ObservableObject {
     private func applyToEnvironment() {
         if let key = effectiveGeminiKey {
             setenv("GEMINI_API_KEY", key, 1)
-        }
-        if let key = effectiveAnthropicKey {
-            setenv("ANTHROPIC_API_KEY", key, 1)
-        }
-        if let key = effectiveElevenLabsKey {
-            setenv("ELEVENLABS_API_KEY", key, 1)
         }
         if let key = effectiveFirebaseApiKey {
             setenv("FIREBASE_API_KEY", key, 1)
@@ -145,24 +166,46 @@ final class APIKeyService: ObservableObject {
             ?? (getenv("GEMINI_API_KEY").flatMap { String(validatingUTF8: $0) })
     }
 
-    nonisolated static var currentAnthropicKey: String? {
-        nonEmptyStatic(UserDefaults.standard.string(forKey: "dev_anthropic_api_key"))
-            ?? (getenv("ANTHROPIC_API_KEY").flatMap { String(validatingUTF8: $0) })
-    }
-
-    nonisolated static var currentElevenLabsKey: String? {
-        nonEmptyStatic(UserDefaults.standard.string(forKey: "dev_elevenlabs_api_key"))
-            ?? (getenv("ELEVENLABS_API_KEY").flatMap { String(validatingUTF8: $0) })
-    }
-
     /// True when the app has enough configuration to start transcription and screen analysis.
-    /// In proxy mode (OMI_API_URL set), no client-side Deepgram/Gemini keys are needed.
+    /// In proxy mode (OMI_DESKTOP_API_URL set), no client-side Deepgram/Gemini keys are needed.
     nonisolated static var keysAvailable: Bool {
-        getenv("GEMINI_API_KEY") != nil || getenv("OMI_API_URL") != nil
+        getenv("GEMINI_API_KEY") != nil || getenv("OMI_DESKTOP_API_URL") != nil
     }
 
     private nonisolated static func nonEmptyStatic(_ s: String?) -> String? {
         guard let s, !s.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
         return s
+    }
+
+    // MARK: - BYOK (Bring Your Own Keys) — free plan
+
+    /// Read a BYOK key from UserDefaults. Returns nil if empty/whitespace.
+    nonisolated static func byokKey(_ provider: BYOKProvider) -> String? {
+        nonEmptyStatic(UserDefaults.standard.string(forKey: provider.storageKey))
+    }
+
+    /// True when the user has supplied keys for all four BYOK providers.
+    /// The subscription-bypass gate: when this is true, the user is on the free
+    /// plan and we attach their keys to every backend request.
+    nonisolated static var isByokActive: Bool {
+        BYOKProvider.allCases.allSatisfy { byokKey($0) != nil }
+    }
+
+    /// SHA-256 fingerprint of a key, used by the backend to detect when the
+    /// user rotated their keys without us ever storing the key itself.
+    nonisolated static func byokFingerprint(_ key: String) -> String {
+        let digest = SHA256.hash(data: Data(key.utf8))
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// Map of provider → (key, fingerprint) for every provider the user has configured.
+    nonisolated static var byokSnapshot: [BYOKProvider: (key: String, fingerprint: String)] {
+        var out: [BYOKProvider: (String, String)] = [:]
+        for provider in BYOKProvider.allCases {
+            if let key = byokKey(provider) {
+                out[provider] = (key, byokFingerprint(key))
+            }
+        }
+        return out
     }
 }

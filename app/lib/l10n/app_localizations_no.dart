@@ -2367,6 +2367,9 @@ class AppLocalizationsNo extends AppLocalizations {
   String get batteryLevel => 'Batterinivå';
 
   @override
+  String get charging => 'Lader';
+
+  @override
   String get productUpdate => 'Produktoppdatering';
 
   @override
@@ -2493,12 +2496,6 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => 'Spor dine personlige mål på startsiden';
-
-  @override
-  String get dailyReflection => 'Daglig refleksjon';
-
-  @override
-  String get get9PmReminderToReflect => 'Få en påminnelse kl. 21 for å reflektere over dagen din';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => 'Handlingselementbeskrivelse kan ikke være tom';
@@ -3918,10 +3915,6 @@ class AppLocalizationsNo extends AppLocalizations {
   String get trackPersonalGoals => 'Spor personlige mål på startsiden';
 
   @override
-  String get dailyReflectionDescription =>
-      'Få en påminnelse kl. 21 for å reflektere over dagen din og fange tankene dine.';
-
-  @override
   String get endpointURL => 'Endepunkt-URL';
 
   @override
@@ -4564,10 +4557,10 @@ class AppLocalizationsNo extends AppLocalizations {
   String get alreadyBestValuePlan => 'Du har allerede det beste verdi-abonnementet. Ingen endringer nødvendig.';
 
   @override
-  String get unableToLoadPlans => 'Kan ikke laste abonnementer';
+  String get unableToLoadPlans => 'Kunne ikke laste planer';
 
   @override
-  String get checkConnectionTryAgain => 'Sjekk tilkoblingen din og prøv igjen';
+  String get checkConnectionTryAgain => 'Sjekk tilkoblingen og prøv igjen';
 
   @override
   String get useFreePlan => 'Bruk gratis abonnement';
@@ -5101,7 +5094,7 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Ved å fortsette vil alle data du deler med denne appen (inkludert samtalene, opptakene og personlig informasjon) bli sikkert lagret på våre servere for å gi deg AI-drevne innsikter og aktivere alle appfunksjoner.';
+      'Ved å fortsette vil samtalene, opptakene og den personlige informasjonen din bli lagret sikkert på våre servere. Lydopptakene og transkripsjonene dine behandles av tredjeparts AI-tjenester (inkludert Deepgram for transkripsjon og OpenAI for analyse) for å gi deg AI-drevne innsikter og aktivere alle appfunksjoner.';
 
   @override
   String get tasksEmptyStateMessage => 'Oppgaver fra samtalene dine vil vises her.\nTrykk på + for å opprette manuelt.';
@@ -7180,12 +7173,6 @@ class AppLocalizationsNo extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Tid for daglig refleksjon';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Fortell meg om dagen din';
-
-  @override
   String get actionItemReminderTitle => 'Omi-påminnelse';
 
   @override
@@ -8298,6 +8285,12 @@ class AppLocalizationsNo extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Samtaleinnstillinger';
 
   @override
+  String get showPhoneCallButtonTitle => 'Vis anropsknapp';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Vis telefonanropsknapp på startskjermen';
+
+  @override
   String get yourVerifiedNumbers => 'Dine verifiserte numre';
 
   @override
@@ -8825,6 +8818,18 @@ class AppLocalizationsNo extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Batteri';
+
+  @override
+  String get noBatteryDataYet => 'Ingen batteridata ennå';
+
+  @override
+  String get day => 'Dag';
+
+  @override
+  String get week => 'Uke';
+
+  @override
   String get rollbackToStableFirmware => 'Rull tilbake til stabil firmware';
 
   @override
@@ -8889,4 +8894,268 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get continueAnyway => 'Fortsett';
+
+  @override
+  String get tasksClearCompleted => 'Fjern fullførte';
+
+  @override
+  String get tasksSelectAll => 'Velg alle';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return 'Slett $count oppgave(r)';
+  }
+
+  @override
+  String get tasksMarkComplete => 'Merket som fullført';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi får tilgang til Apple Health gjennom Apples HealthKit-rammeverk. Du kan når som helst trekke tilbake tilgangen i iOS-innstillingene.';
+
+  @override
+  String get appleHealthConnectCta => 'Koble til Apple Health';
+
+  @override
+  String get appleHealthDisconnectCta => 'Koble fra Apple Health';
+
+  @override
+  String get appleHealthConnectedBadge => 'Tilkoblet';
+
+  @override
+  String get appleHealthFeatureChatTitle => 'Chat om helsen din';
+
+  @override
+  String get appleHealthFeatureChatDesc => 'Spør Omi om skritt, søvn, puls og treningsøkter.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => 'Kun lesetilgang';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi skriver aldri til Apple Health eller endrer dataene dine.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => 'Sikker synkronisering';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Apple Health-dataene dine synkroniseres privat til Omi-kontoen din.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Apple Health-tilgang avvist';
+
+  @override
+  String get appleHealthDeniedBody =>
+      'Omi har ikke tillatelse til å lese Apple Health-dataene dine. Slå det på i iOS-innstillinger → Personvern og sikkerhet → Helse → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Hvorfor forlater du oss?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Tilbakemeldingen din hjelper oss å gjøre Omi bedre for alle.';
+
+  @override
+  String get deleteReasonPrivacy => 'Personvernhensyn';
+
+  @override
+  String get deleteReasonNotUsing => 'Bruker den ikke nok';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Mangler funksjoner jeg trenger';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'For mange tekniske problemer';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Bruker noe annet';
+
+  @override
+  String get deleteReasonTakingBreak => 'Tar bare en pause';
+
+  @override
+  String get deleteReasonOther => 'Annet';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Fortell oss mer';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Hva ville fått Omi til å fungere for deg?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Valgfritt — tankene dine hjelper oss å bygge et bedre produkt.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Dette er permanent';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Når du sletter kontoen din, kan den ikke gjenopprettes.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Aktive abonnementer vil bli kansellert.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Kontoen din kan ikke gjenopprettes — ikke engang av kundestøtte.';
+
+  @override
+  String get deleteTypeToConfirm => 'Skriv DELETE for å bekrefte';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Slett kontoen permanent';
+
+  @override
+  String get keepMyAccount => 'Behold kontoen min';
+
+  @override
+  String get deleteAccountFailed => 'Kunne ikke slette kontoen din. Prøv igjen.';
+
+  @override
+  String get planUpdate => 'Planoppdatering';
+
+  @override
+  String get planDeprecationMessage =>
+      'Ditt Unlimited-abonnement avvikles. Bytt til Operator-abonnementet — samme flotte funksjoner til \$49/md. Ditt nåværende abonnement vil fortsette å fungere i mellomtiden.';
+
+  @override
+  String get upgradeYourPlan => 'Oppgrader planen din';
+
+  @override
+  String get youAreOnAPaidPlan => 'Du er på en betalt plan.';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get chatMessages => 'meldinger';
+
+  @override
+  String get unlimitedChatThisMonth => 'Ubegrenset antall chatmeldinger denne måneden';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used av $limit beregningsbudsjett brukt';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used av $limit meldinger brukt denne måneden';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit brukt';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Chatgrense nådd. Oppgrader for flere meldinger.';
+
+  @override
+  String get chatLimitReachedTitle => 'Chatgrense nådd';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Du har brukt $used av dine $limitDisplay på $plan-planen.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Tilbakestilles om $count dager';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Tilbakestilles om $count timer';
+  }
+
+  @override
+  String get resetsSoon => 'Tilbakestilles snart';
+
+  @override
+  String get upgradePlan => 'Oppgrader plan';
+
+  @override
+  String get billingMonthly => 'Månedlig';
+
+  @override
+  String get billingYearly => 'Årlig';
+
+  @override
+  String get savePercent => 'Spar ~17%';
+
+  @override
+  String get popular => 'Populært';
+
+  @override
+  String get currentPlan => 'Nåværende';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count spørsmål per måned';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count spørsmål per måned';
+  }
+
+  @override
+  String get architectSubtitle => 'Avansert AI — tusenvis av samtaler + agentautomatisering';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Chat: \$$used / \$$limit brukt denne måneden';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Chat: \$$used brukt denne måneden';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Chat: $used / $limit meldinger denne måneden';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Chat: $used meldinger denne måneden';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Du har nådd din månedlige grense. Oppgrader for å fortsette å chatte med Omi uten begrensninger.';
+
+  @override
+  String get voiceResponseAudio => 'Les Omis svar høyt';
+
+  @override
+  String get voiceResponseMode => 'Stemmesvar';
+
+  @override
+  String get voiceResponseModeTitle => 'Når svar skal leses';
+
+  @override
+  String get voiceResponseOff => 'Av';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Bare hodetelefoner';
+
+  @override
+  String get voiceResponseAlways => 'Alltid';
+
+  @override
+  String get agreeAndContinue => 'Godta og fortsett';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

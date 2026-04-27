@@ -63,8 +63,7 @@ actor InsightAssistant: ProactiveAssistant {
     // MARK: - Initialization
 
     init(apiKey: String? = nil) throws {
-        // Use Gemini 3.1 Pro for better insight quality (3-pro-preview retires March 9, 2026)
-        self.geminiClient = try GeminiClient(apiKey: apiKey, model: "gemini-pro-latest")
+        self.geminiClient = try GeminiClient(apiKey: apiKey, model: ModelQoS.Gemini.insight)
 
         let (stream, continuation) = AsyncStream.makeStream(of: Void.self, bufferingPolicy: .bufferingNewest(1))
         self.frameSignal = stream
@@ -256,7 +255,12 @@ actor InsightAssistant: ProactiveAssistant {
             InsightAssistantSettings.shared.notificationsEnabled
         }
         if notificationsEnabled {
-            await sendInsightNotification(insight: extractedInsight, screenshotData: screenshotData)
+            await sendInsightNotification(
+                insight: extractedInsight,
+                result: adviceResult,
+                windowTitle: windowTitle,
+                screenshotData: screenshotData
+            )
         }
 
         // Send event to Flutter
@@ -345,14 +349,30 @@ actor InsightAssistant: ProactiveAssistant {
     }
 
     /// Send a notification for the insight (uses short headline for notification body)
-    private func sendInsightNotification(insight: ExtractedInsight, screenshotData: Data? = nil) async {
+    private func sendInsightNotification(
+        insight: ExtractedInsight,
+        result: InsightExtractionResult,
+        windowTitle: String?,
+        screenshotData: Data? = nil
+    ) async {
         let message = insight.headline ?? insight.insight
+        let context = FloatingBarNotificationContext(
+            sourceTitle: "Insight",
+            assistantId: identifier,
+            sourceApp: insight.sourceApp.isEmpty ? nil : insight.sourceApp,
+            windowTitle: windowTitle,
+            contextSummary: result.contextSummary,
+            currentActivity: result.currentActivity,
+            reasoning: insight.reasoning,
+            detail: insight.insight
+        )
 
         await MainActor.run {
             NotificationService.shared.sendNotification(
                 title: "Insight",
                 message: message,
                 assistantId: identifier,
+                context: context,
                 screenshotData: screenshotData
             )
         }

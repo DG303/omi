@@ -60,6 +60,13 @@ public class ProactiveAssistantsPlugin: NSObject {
     private var videoCallFrameCounter = 0
     private let videoCallThrottleFactor = 5  // Capture 1 out of every 5 frames (effective ~5s interval)
 
+    // Screenshot-app yielding: pause capture entirely while another screenshot/recording
+    // app is frontmost, and hold a short backoff after it resigns so its editor UI isn't
+    // disturbed. Prevents Omi's 3s capture loop from locking WindowServer at the moment
+    // the user is trying to take a screenshot (CleanShot, Shottr, macOS screenshot, etc.).
+    private var wasScreenshotAppFrontmost = false
+    private var screenshotAppBackoffUntil: Date = .distantPast
+
     // Change-gated distribution: only distribute frames to assistants when context changes.
     // Eliminates continuous polling when the user stays on the same app/window.
     private var lastDistributedApp: String?
@@ -79,6 +86,33 @@ public class ProactiveAssistantsPlugin: NSObject {
         "Cisco Webex Meetings",
         "GoTo Meeting",
         "GoToMeeting",
+    ]
+
+    /// Bundle IDs of third-party and system screenshot/screen-recording apps.
+    /// When one of these is frontmost, Omi's 3s capture loop contends with the
+    /// user's active capture (WindowServer locks + SCK arbitration), which can
+    /// freeze the other app's capture UI for 20-60 seconds. We pause Omi's
+    /// capture entirely while any of these is frontmost.
+    private static let screenshotAppBundleIDs: Set<String> = [
+        "pl.maketheweb.cleanshotx",          // CleanShot X
+        "cc.ffitch.shottr",                  // Shottr
+        "com.apple.screencaptureui",         // macOS screenshot.app overlay
+        "com.apple.screenshot.launcher",     // macOS screenshot hotkey launcher
+        "com.loom.desktop-app",              // Loom
+        "com.loom.desktop",                  // Loom (alt)
+        "com.techsmith.snagit2025",          // Snagit (current)
+        "com.techsmith.snagit2024",          // Snagit (prior)
+        "com.techsmith.snagit2023",          // Snagit (older)
+        "com.obsproject.obs-studio",         // OBS Studio
+        "com.screenium.Screenium3",          // Screenium
+        "com.kapeli.screenium",              // Screenium (alt)
+        "com.skitch.skitch",                 // Skitch
+        "com.evernote.skitch",               // Skitch (alt)
+        "com.monosnap.monosnap",             // Monosnap
+        "com.lightshot.app",                 // Lightshot
+        "com.capto.Capto",                   // Capto
+        "com.pixelmatorteam.screenshot",     // Pixelmator screenshot
+        "com.tencent.xin.lemon",             // WeCom screenshot
     ]
 
     /// Keywords in browser window titles that indicate a video call.
@@ -163,6 +197,8 @@ public class ProactiveAssistantsPlugin: NSObject {
                 break
             }
         }
+
+        DesktopBackendEnvironment.applyReleaseChannelDefaults()
     }
 
 
@@ -620,6 +656,27 @@ public class ProactiveAssistantsPlugin: NSObject {
             return
         }
 
+        // Skip capture while a screenshot / screen-recording app is frontmost.
+        // Both apps using ScreenCaptureKit at the same time contend for WindowServer
+        // locks, which can stall the user's capture UI for 20-60s. Yield to the user.
+        if isScreenshotAppFrontmost() {
+            if !wasScreenshotAppFrontmost {
+                log("ProactiveAssistantsPlugin: Screenshot app frontmost — pausing capture to avoid WindowServer contention")
+                wasScreenshotAppFrontmost = true
+            }
+            screenshotAppBackoffUntil = Date().addingTimeInterval(10)
+            return
+        } else if wasScreenshotAppFrontmost {
+            log("ProactiveAssistantsPlugin: Screenshot app no longer frontmost, holding backoff for \(Int(max(0, screenshotAppBackoffUntil.timeIntervalSinceNow)))s")
+            wasScreenshotAppFrontmost = false
+        }
+
+        // Continue honoring the backoff window after the screenshot app resigns so its
+        // post-capture editor UI (e.g. CleanShot's annotation window) isn't disturbed.
+        if Date() < screenshotAppBackoffUntil {
+            return
+        }
+
         // Get current window info (use real app name, not cached)
         let (realAppName, windowTitle, windowID) = await WindowMonitor.getActiveWindowInfoAsync()
 
@@ -688,10 +745,23 @@ public class ProactiveAssistantsPlugin: NSObject {
         if #available(macOS 14.0, *) {
             // Use the window ID already resolved above (line 624) to avoid stale cache hits
             // from a second getActiveWindowInfoAsync() call inside captureActiveWindowCGImage()
-            let cgImage: CGImage? = if let wid = windowID {
-                await screenCaptureService.captureWindowCGImage(windowID: wid)
+            var cgImage: CGImage? = nil
+            if let wid = windowID {
+                switch await screenCaptureService.captureWindowCGImage(windowID: wid) {
+                case .success(let image):
+                    cgImage = image
+                case .windowGone:
+                    // The window disappeared between resolution and capture (user closed
+                    // a tab, dismissed a modal, app destroyed the window). Re-resolve the
+                    // active window fresh and retry once — do NOT count this as a capture
+                    // failure. This used to trip the consecutive-failure counter and falsely
+                    // declare "screen recording permission lost" after normal user actions.
+                    cgImage = await screenCaptureService.captureActiveWindowCGImage()
+                case .failed:
+                    cgImage = nil
+                }
             } else {
-                await screenCaptureService.captureActiveWindowCGImage()
+                cgImage = await screenCaptureService.captureActiveWindowCGImage()
             }
             if let cgImage = cgImage,
                let appName = appName {
@@ -951,8 +1021,15 @@ public class ProactiveAssistantsPlugin: NSObject {
             name: NSNotification.Name("com.omi.test.focus"),
             object: nil
         )
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(handleNotificationTestNotification(_:)),
+            name: NSNotification.Name("com.omi.test.notification"),
+            object: nil
+        )
         log("InsightTestCLI: Notification observer registered")
         log("FocusTestCLI: Notification observer registered")
+        log("NotificationTestCLI: Notification observer registered")
     }
 
     @objc private func handleInsightTestNotification(_ notification: Notification) {
@@ -970,6 +1047,37 @@ public class ProactiveAssistantsPlugin: NSObject {
             let count = (notification.userInfo?["count"] as? String).flatMap { Int($0) } ?? 20
             log("FocusTestCLI: Received test trigger (hours=\(hours), count=\(count))")
             await FocusTestRunner.runCLITest(lookbackHours: hours, maxScreenshots: count)
+        }
+    }
+
+    @objc private func handleNotificationTestNotification(_ notification: Notification) {
+        Task { @MainActor in
+            let title = (notification.userInfo?["title"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let message = (notification.userInfo?["message"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let assistantId = (notification.userInfo?["assistantId"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let resolvedTitle = title?.isEmpty == false ? title! : "Insight"
+            let resolvedMessage = message?.isEmpty == false ? message! : "Test notification from Omi"
+            let resolvedAssistantId = assistantId?.isEmpty == false ? assistantId! : "insight"
+
+            let context = FloatingBarNotificationContext(
+                sourceTitle: resolvedTitle,
+                assistantId: resolvedAssistantId,
+                sourceApp: notification.userInfo?["sourceApp"] as? String,
+                windowTitle: notification.userInfo?["windowTitle"] as? String,
+                contextSummary: notification.userInfo?["contextSummary"] as? String,
+                currentActivity: notification.userInfo?["currentActivity"] as? String,
+                reasoning: notification.userInfo?["reasoning"] as? String,
+                detail: notification.userInfo?["detail"] as? String
+            )
+
+            log("NotificationTestCLI: Received test trigger (title=\(resolvedTitle), assistantId=\(resolvedAssistantId))")
+            NotificationService.shared.sendNotification(
+                title: resolvedTitle,
+                message: resolvedMessage,
+                assistantId: resolvedAssistantId,
+                context: context
+            )
         }
     }
 
@@ -1125,29 +1233,49 @@ public class ProactiveAssistantsPlugin: NSObject {
             return
         }
 
-        // Refresh permission state
+        // First pass: run a single permission test.
         refreshScreenRecordingPermission()
 
-        // Check if permission is actually lost
-        if !hasScreenRecordingPermission {
-            log("ProactiveAssistantsPlugin: Screen recording permission lost")
+        if hasScreenRecordingPermission {
+            // Permission appears granted but capture is failing
+            // This could be a transient issue - enter recovery mode instead of stopping
+            log("ProactiveAssistantsPlugin: Capture failing with permission granted, entering recovery mode")
+            enterRecoveryMode()
+            return
+        }
+
+        // First permission test failed. Do NOT declare permission lost yet —
+        // `/usr/sbin/screencapture` can transiently fail during app-switches,
+        // mid-animation, or while macOS is mid-context-switch. A single failed
+        // probe previously stopped monitoring + fired a scary "permission lost"
+        // notification even though real recording was still working.
+        // Re-test after a short delay; only stop if both tests fail.
+        log("ProactiveAssistantsPlugin: First permission test failed, re-testing to avoid false positive")
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_500_000_000)  // 1.5s
+            guard let self = self, self.isMonitoring else { return }
+
+            self.refreshScreenRecordingPermission()
+            if self.hasScreenRecordingPermission {
+                log("ProactiveAssistantsPlugin: Permission test recovered on second check — treating initial failure as transient, entering recovery mode")
+                self.enterRecoveryMode()
+                return
+            }
+
+            log("ProactiveAssistantsPlugin: Screen recording permission lost (confirmed by second test)")
 
             // Post notification for AppState to update UI
             NotificationCenter.default.post(name: .screenCapturePermissionLost, object: nil)
 
             // Stop monitoring since we can't capture
-            stopMonitoring()
+            self.stopMonitoring()
 
             // Send user notification
             NotificationService.shared.sendNotification(
                 title: "Screen Recording Permission Required",
-                message: "omi needs screen recording permission to continue monitoring. Please re-enable it in System Settings."
+                message: "omi needs screen recording permission to continue monitoring. Please re-enable it in System Settings.",
+                deliverSystemBanner: true
             )
-        } else {
-            // Permission appears granted but capture is failing
-            // This could be a transient issue - enter recovery mode instead of stopping
-            log("ProactiveAssistantsPlugin: Capture failing with permission granted, entering recovery mode")
-            enterRecoveryMode()
         }
     }
 
@@ -1173,6 +1301,20 @@ public class ProactiveAssistantsPlugin: NSObject {
         }
 
         return false
+    }
+
+    // MARK: - Screenshot App Detection
+
+    /// True when a known third-party / system screenshot or screen-recording app is
+    /// frontmost. While one is, Omi pauses its 3s capture loop so the user's capture
+    /// doesn't stall on WindowServer lock contention with Omi. See PR attached to
+    /// the "CleanShot lags 20-60s" investigation.
+    private func isScreenshotAppFrontmost() -> Bool {
+        guard let frontApp = NSWorkspace.shared.frontmostApplication,
+              let bundleID = frontApp.bundleIdentifier else {
+            return false
+        }
+        return Self.screenshotAppBundleIDs.contains(bundleID)
     }
 
     // MARK: - Special System Mode Detection
@@ -1439,7 +1581,8 @@ public class ProactiveAssistantsPlugin: NSObject {
 
             NotificationService.shared.sendNotification(
                 title: NotificationService.screenCaptureResetTitle,
-                message: "Screen recording permission needs to be re-enabled. Click to open Settings."
+                message: "Screen recording permission needs to be re-enabled. Click to open Settings.",
+                deliverSystemBanner: true
             )
             return
         }
@@ -1452,7 +1595,8 @@ public class ProactiveAssistantsPlugin: NSObject {
 
         NotificationService.shared.sendNotification(
             title: NotificationService.screenCaptureResetTitle,
-            message: "Screen recording permission needs to be re-enabled. Click to open Settings."
+            message: "Screen recording permission needs to be re-enabled. Click to open Settings.",
+            deliverSystemBanner: true
         )
     }
 }

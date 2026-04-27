@@ -2367,6 +2367,9 @@ class AppLocalizationsFi extends AppLocalizations {
   String get batteryLevel => 'Akun taso';
 
   @override
+  String get charging => 'Lataa';
+
+  @override
   String get productUpdate => 'Tuotepäivitys';
 
   @override
@@ -2493,12 +2496,6 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => 'Seuraa henkilökohtaisia tavoitteitasi etusivulla';
-
-  @override
-  String get dailyReflection => 'Päivittäinen reflektio';
-
-  @override
-  String get get9PmReminderToReflect => 'Saa muistutus klo 21 päiväsi pohtimiseen';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => 'Toimintokohteen kuvaus ei voi olla tyhjä';
@@ -3917,10 +3914,6 @@ class AppLocalizationsFi extends AppLocalizations {
   String get trackPersonalGoals => 'Seuraa henkilökohtaisia tavoitteita etusivulla';
 
   @override
-  String get dailyReflectionDescription =>
-      'Saa muistutus klo 21 reflektoidaksesi päivääsi ja tallentaaksesi ajatuksesi.';
-
-  @override
   String get endpointURL => 'Päätepisteen URL';
 
   @override
@@ -4562,10 +4555,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get alreadyBestValuePlan => 'Sinulla on jo paras hinta-laatusuhteen tilaus. Muutoksia ei tarvita.';
 
   @override
-  String get unableToLoadPlans => 'Tilauksia ei voida ladata';
+  String get unableToLoadPlans => 'Suunnitelmia ei voitu ladata';
 
   @override
-  String get checkConnectionTryAgain => 'Tarkista yhteytesi ja yritä uudelleen';
+  String get checkConnectionTryAgain => 'Tarkista yhteys ja yritä uudelleen';
 
   @override
   String get useFreePlan => 'Käytä ilmaista tilausta';
@@ -5099,7 +5092,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Jatkamalla kaikki tämän sovelluksen kanssa jakamasi tiedot (mukaan lukien keskustelusi, tallenteet ja henkilökohtaiset tietosi) tallennetaan turvallisesti palvelimillemme tarjotaksemme sinulle tekoälypohjaisia oivalluksia ja mahdollistaaksemme kaikki sovelluksen ominaisuudet.';
+      'Jatkamalla keskustelusi, tallenteet ja henkilötietosi tallennetaan turvallisesti palvelimillemme. Äänitallenteitasi ja transkriptioitasi käsittelevät kolmannen osapuolen tekoälypalvelut (mukaan lukien Deepgram transkriptiota ja OpenAI analyysiä varten) tarjotaksemme sinulle tekoälypohjaisia oivalluksia ja mahdollistaaksemme kaikki sovelluksen ominaisuudet.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7184,12 +7177,6 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Aika päivittäiselle reflektiolle';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Kerro minulle päivästäsi';
-
-  @override
   String get actionItemReminderTitle => 'Omi-muistutus';
 
   @override
@@ -8302,6 +8289,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Puheluasetukset';
 
   @override
+  String get showPhoneCallButtonTitle => 'Näytä puhelupainike';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Näytä puhelupainike aloitusnäytöllä';
+
+  @override
   String get yourVerifiedNumbers => 'Vahvistetut numerosi';
 
   @override
@@ -8829,6 +8822,18 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Akku';
+
+  @override
+  String get noBatteryDataYet => 'Ei vielä akkutietoja';
+
+  @override
+  String get day => 'Päivä';
+
+  @override
+  String get week => 'Viikko';
+
+  @override
   String get rollbackToStableFirmware => 'Palaa vakaaseen laiteohjelmistoon';
 
   @override
@@ -8892,4 +8897,268 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get continueAnyway => 'Jatka';
+
+  @override
+  String get tasksClearCompleted => 'Tyhjennä valmiit';
+
+  @override
+  String get tasksSelectAll => 'Valitse kaikki';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return 'Poista $count tehtävä(ä)';
+  }
+
+  @override
+  String get tasksMarkComplete => 'Merkitty valmiiksi';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi käyttää Apple Healthia Applen HealthKit-kehyksen kautta. Voit perua käyttöoikeuden milloin tahansa iOS-asetuksista.';
+
+  @override
+  String get appleHealthConnectCta => 'Yhdistä Apple Healthiin';
+
+  @override
+  String get appleHealthDisconnectCta => 'Katkaise yhteys Apple Healthiin';
+
+  @override
+  String get appleHealthConnectedBadge => 'Yhdistetty';
+
+  @override
+  String get appleHealthFeatureChatTitle => 'Keskustele terveydestäsi';
+
+  @override
+  String get appleHealthFeatureChatDesc => 'Kysy Omilta askelista, unesta, sykkeestä ja harjoituksista.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => 'Vain lukuoikeus';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi ei koskaan kirjoita Apple Healthiin tai muuta tietojasi.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => 'Turvallinen synkronointi';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Apple Health -tietosi synkronoidaan yksityisesti Omi-tilillesi.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Apple Health -käyttöoikeus evätty';
+
+  @override
+  String get appleHealthDeniedBody =>
+      'Omilla ei ole oikeutta lukea Apple Health -tietojasi. Ota se käyttöön: iOS-asetukset → Yksityisyys ja turvallisuus → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Miksi lähdet?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Palautteesi auttaa meitä parantamaan Omia kaikille.';
+
+  @override
+  String get deleteReasonPrivacy => 'Yksityisyyteen liittyvät huolet';
+
+  @override
+  String get deleteReasonNotUsing => 'En käytä sitä tarpeeksi';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Tarvitsemiani ominaisuuksia puuttuu';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Liian monta teknistä ongelmaa';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Käytän jotain muuta';
+
+  @override
+  String get deleteReasonTakingBreak => 'Pidän vain tauon';
+
+  @override
+  String get deleteReasonOther => 'Muu';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Kerro lisää';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Mikä olisi saanut Omin toimimaan sinulle?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Valinnainen — ajatuksesi auttavat meitä rakentamaan parempaa tuotetta.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Tämä on lopullista';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Kun poistat tilisi, sitä ei voi enää palauttaa.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Mahdolliset aktiiviset tilaukset peruutetaan.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Tiliäsi ei voi palauttaa — ei edes tuki voi tehdä sitä.';
+
+  @override
+  String get deleteTypeToConfirm => 'Kirjoita DELETE vahvistaaksesi';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Poista tili pysyvästi';
+
+  @override
+  String get keepMyAccount => 'Säilytä tilini';
+
+  @override
+  String get deleteAccountFailed => 'Tiliäsi ei voitu poistaa. Yritä uudelleen.';
+
+  @override
+  String get planUpdate => 'Tilauksen päivitys';
+
+  @override
+  String get planDeprecationMessage =>
+      'Unlimited-tilauksesi poistetaan käytöstä. Vaihda Operator-tilaukseen — samat loistavat ominaisuudet hintaan \$49/kk. Nykyinen tilauksesi jatkaa toimintaansa sillä välin.';
+
+  @override
+  String get upgradeYourPlan => 'Päivitä tilauksesi';
+
+  @override
+  String get youAreOnAPaidPlan => 'Sinulla on maksullinen tilaus.';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get chatMessages => 'viestiä';
+
+  @override
+  String get unlimitedChatThisMonth => 'Rajoittamattomasti chat-viestejä tässä kuussa';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used / $limit laskentabudjetista käytetty';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used / $limit viestiä käytetty tässä kuussa';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit käytetty';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Chat-raja saavutettu. Päivitä saadaksesi lisää viestejä.';
+
+  @override
+  String get chatLimitReachedTitle => 'Chat-raja saavutettu';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Olet käyttänyt $used / $limitDisplay $plan-suunnitelmassa.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Nollautuu $count päivän kuluttua';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Nollautuu $count tunnin kuluttua';
+  }
+
+  @override
+  String get resetsSoon => 'Nollautuu pian';
+
+  @override
+  String get upgradePlan => 'Päivitä suunnitelma';
+
+  @override
+  String get billingMonthly => 'Kuukausittain';
+
+  @override
+  String get billingYearly => 'Vuosittain';
+
+  @override
+  String get savePercent => 'Säästä ~17%';
+
+  @override
+  String get popular => 'Suosittu';
+
+  @override
+  String get currentPlan => 'Nykyinen';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count kysymystä kuukaudessa';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count kysymystä kuukaudessa';
+  }
+
+  @override
+  String get architectSubtitle => 'Tehokäyttäjän AI — tuhansia keskusteluja + agenttiautomatisointi';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Chat: \$$used / \$$limit käytetty tässä kuussa';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Chat: \$$used käytetty tässä kuussa';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Chat: $used / $limit viestiä tässä kuussa';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Chat: $used viestiä tässä kuussa';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Olet saavuttanut kuukausittaisen rajasi. Päivitä jatkaaksesi keskustelua Omin kanssa ilman rajoituksia.';
+
+  @override
+  String get voiceResponseAudio => 'Lue Omin vastaus ääneen';
+
+  @override
+  String get voiceResponseMode => 'Äänivastaus';
+
+  @override
+  String get voiceResponseModeTitle => 'Milloin vastaukset luetaan';
+
+  @override
+  String get voiceResponseOff => 'Pois';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Vain kuulokkeet';
+
+  @override
+  String get voiceResponseAlways => 'Aina';
+
+  @override
+  String get agreeAndContinue => 'Hyväksy ja jatka';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

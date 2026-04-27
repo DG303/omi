@@ -1800,7 +1800,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get rateOnGooglePlay => 'Đánh giá trên Google Play';
 
   @override
-  String get maybeLater => 'Có thể Sau';
+  String get maybeLater => 'Có thể sau';
 
   @override
   String get speechProfileIntro => 'Omi cần học mục tiêu và giọng nói của bạn. Bạn có thể sửa đổi sau.';
@@ -2372,6 +2372,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get batteryLevel => 'Mức Pin';
 
   @override
+  String get charging => 'Đang sạc';
+
+  @override
   String get productUpdate => 'Cập Nhật Sản Phẩm';
 
   @override
@@ -2498,12 +2501,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => 'Theo dõi mục tiêu cá nhân trên trang chủ';
-
-  @override
-  String get dailyReflection => 'Suy ngẫm hàng ngày';
-
-  @override
-  String get get9PmReminderToReflect => 'Nhận nhắc nhở lúc 9 giờ tối để suy ngẫm về ngày của bạn';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => 'Mô tả mục hành động không được để trống';
@@ -3925,10 +3922,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get trackPersonalGoals => 'Theo dõi mục tiêu cá nhân trên trang chủ';
 
   @override
-  String get dailyReflectionDescription =>
-      'Nhận nhắc nhở lúc 9 giờ tối để suy ngẫm về ngày của bạn và ghi lại suy nghĩ.';
-
-  @override
   String get endpointURL => 'URL Điểm cuối';
 
   @override
@@ -4573,7 +4566,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get unableToLoadPlans => 'Không thể tải các gói';
 
   @override
-  String get checkConnectionTryAgain => 'Vui lòng kiểm tra kết nối và thử lại';
+  String get checkConnectionTryAgain => 'Kiểm tra kết nối và thử lại';
 
   @override
   String get useFreePlan => 'Sử dụng gói miễn phí';
@@ -5108,7 +5101,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Bằng cách tiếp tục, tất cả dữ liệu bạn chia sẻ với ứng dụng này (bao gồm các cuộc trò chuyện, bản ghi và thông tin cá nhân của bạn) sẽ được lưu trữ an toàn trên máy chủ của chúng tôi để cung cấp cho bạn thông tin chi tiết được hỗ trợ bởi AI và kích hoạt tất cả các tính năng của ứng dụng.';
+      'Bằng cách tiếp tục, các cuộc trò chuyện, bản ghi âm và thông tin cá nhân của bạn sẽ được lưu trữ an toàn trên máy chủ của chúng tôi. Bản ghi âm và bản phiên âm của bạn được xử lý bởi các dịch vụ AI bên thứ ba (bao gồm Deepgram cho phiên âm và OpenAI cho phân tích) để cung cấp cho bạn thông tin chi tiết được hỗ trợ bởi AI và kích hoạt tất cả các tính năng ứng dụng.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7189,12 +7182,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Đến giờ suy ngẫm hàng ngày';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Kể cho tôi nghe về ngày của bạn';
-
-  @override
   String get actionItemReminderTitle => 'Nhắc nhở Omi';
 
   @override
@@ -8305,6 +8292,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Cài đặt cuộc gọi';
 
   @override
+  String get showPhoneCallButtonTitle => 'Hiển thị nút gọi điện';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Hiển thị nút gọi điện trên màn hình chính';
+
+  @override
   String get yourVerifiedNumbers => 'Số đã xác minh của bạn';
 
   @override
@@ -8830,6 +8823,18 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Pin';
+
+  @override
+  String get noBatteryDataYet => 'Chưa có dữ liệu pin';
+
+  @override
+  String get day => 'Ngày';
+
+  @override
+  String get week => 'Tuần';
+
+  @override
   String get rollbackToStableFirmware => 'Quay lại firmware ổn định';
 
   @override
@@ -8893,4 +8898,268 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get continueAnyway => 'Tiếp tục';
+
+  @override
+  String get tasksClearCompleted => 'Xóa hoàn thành';
+
+  @override
+  String get tasksSelectAll => 'Chọn tất cả';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return 'Xóa $count nhiệm vụ';
+  }
+
+  @override
+  String get tasksMarkComplete => 'Đã đánh dấu hoàn thành';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi truy cập Apple Health thông qua framework HealthKit của Apple. Bạn có thể thu hồi quyền truy cập bất cứ lúc nào trong Cài đặt iOS.';
+
+  @override
+  String get appleHealthConnectCta => 'Kết nối với Apple Health';
+
+  @override
+  String get appleHealthDisconnectCta => 'Ngắt kết nối Apple Health';
+
+  @override
+  String get appleHealthConnectedBadge => 'Đã kết nối';
+
+  @override
+  String get appleHealthFeatureChatTitle => 'Trò chuyện về sức khỏe của bạn';
+
+  @override
+  String get appleHealthFeatureChatDesc => 'Hỏi Omi về số bước, giấc ngủ, nhịp tim và bài tập của bạn.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => 'Quyền chỉ đọc';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi không bao giờ ghi vào Apple Health hoặc thay đổi dữ liệu của bạn.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => 'Đồng bộ an toàn';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Dữ liệu Apple Health của bạn được đồng bộ riêng tư vào tài khoản Omi.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Truy cập Apple Health bị từ chối';
+
+  @override
+  String get appleHealthDeniedBody =>
+      'Omi không có quyền đọc dữ liệu Apple Health của bạn. Bật tính năng này trong Cài đặt iOS → Quyền riêng tư & Bảo mật → Sức khỏe → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Vì sao bạn rời đi?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Phản hồi của bạn giúp chúng tôi cải thiện Omi cho mọi người.';
+
+  @override
+  String get deleteReasonPrivacy => 'Lo ngại về quyền riêng tư';
+
+  @override
+  String get deleteReasonNotUsing => 'Không sử dụng đủ nhiều';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Thiếu các tính năng tôi cần';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Quá nhiều vấn đề kỹ thuật';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Đang dùng thứ khác';
+
+  @override
+  String get deleteReasonTakingBreak => 'Chỉ nghỉ một thời gian';
+
+  @override
+  String get deleteReasonOther => 'Khác';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Hãy chia sẻ thêm';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Điều gì sẽ khiến Omi phù hợp với bạn?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Tùy chọn — suy nghĩ của bạn giúp chúng tôi xây dựng sản phẩm tốt hơn.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Đây là vĩnh viễn';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Khi bạn xóa tài khoản, không có cách nào để khôi phục.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Mọi gói đăng ký đang hoạt động sẽ bị hủy.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Tài khoản của bạn không thể khôi phục — ngay cả bộ phận hỗ trợ.';
+
+  @override
+  String get deleteTypeToConfirm => 'Nhập DELETE để xác nhận';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Xóa tài khoản vĩnh viễn';
+
+  @override
+  String get keepMyAccount => 'Giữ tài khoản của tôi';
+
+  @override
+  String get deleteAccountFailed => 'Không thể xóa tài khoản của bạn. Vui lòng thử lại.';
+
+  @override
+  String get planUpdate => 'Cập nhật gói';
+
+  @override
+  String get planDeprecationMessage =>
+      'Gói Unlimited của bạn đang được ngừng cung cấp. Chuyển sang gói Operator — cùng các tính năng tuyệt vời với giá \$49/tháng. Gói hiện tại của bạn sẽ tiếp tục hoạt động trong thời gian chờ đợi.';
+
+  @override
+  String get upgradeYourPlan => 'Nâng cấp gói của bạn';
+
+  @override
+  String get youAreOnAPaidPlan => 'Bạn đang sử dụng gói trả phí.';
+
+  @override
+  String get chatTitle => 'Trò chuyện';
+
+  @override
+  String get chatMessages => 'tin nhắn';
+
+  @override
+  String get unlimitedChatThisMonth => 'Tin nhắn trò chuyện không giới hạn tháng này';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used trong $limit ngân sách tính toán đã dùng';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used trong $limit tin nhắn đã dùng tháng này';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit đã dùng';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Đã đạt giới hạn trò chuyện. Nâng cấp để có thêm tin nhắn.';
+
+  @override
+  String get chatLimitReachedTitle => 'Đã đạt giới hạn trò chuyện';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Bạn đã sử dụng $used trong $limitDisplay của gói $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Đặt lại sau $count ngày';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Đặt lại sau $count giờ';
+  }
+
+  @override
+  String get resetsSoon => 'Sắp đặt lại';
+
+  @override
+  String get upgradePlan => 'Nâng cấp gói';
+
+  @override
+  String get billingMonthly => 'Hàng tháng';
+
+  @override
+  String get billingYearly => 'Hàng năm';
+
+  @override
+  String get savePercent => 'Tiết kiệm ~17%';
+
+  @override
+  String get popular => 'Phổ biến';
+
+  @override
+  String get currentPlan => 'Hiện tại';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count câu hỏi mỗi tháng';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count câu hỏi mỗi tháng';
+  }
+
+  @override
+  String get architectSubtitle => 'AI nâng cao — hàng nghìn cuộc trò chuyện + tự động hóa tác nhân';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Trò chuyện: \$$used / \$$limit đã dùng tháng này';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Trò chuyện: \$$used đã dùng tháng này';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Trò chuyện: $used / $limit tin nhắn tháng này';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Trò chuyện: $used tin nhắn tháng này';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Bạn đã đạt giới hạn hàng tháng. Nâng cấp để tiếp tục trò chuyện với Omi không giới hạn.';
+
+  @override
+  String get voiceResponseAudio => 'Đọc to phản hồi của Omi';
+
+  @override
+  String get voiceResponseMode => 'Phản hồi bằng giọng nói';
+
+  @override
+  String get voiceResponseModeTitle => 'Khi nào đọc phản hồi';
+
+  @override
+  String get voiceResponseOff => 'Tắt';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Chỉ tai nghe';
+
+  @override
+  String get voiceResponseAlways => 'Luôn luôn';
+
+  @override
+  String get agreeAndContinue => 'Đồng ý và tiếp tục';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

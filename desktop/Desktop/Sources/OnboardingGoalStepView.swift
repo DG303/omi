@@ -7,6 +7,7 @@ struct OnboardingGoalStepView: View {
   let stepIndex: Int
   let totalSteps: Int
   let onContinue: () -> Void
+  let onSkip: () -> Void
   let onForceComplete: (() -> Void)?
 
   @State private var customGoalSelected = false
@@ -20,7 +21,10 @@ struct OnboardingGoalStepView: View {
       totalSteps: totalSteps,
       eyebrow: "Goal",
       title: "Pick one goal.",
-      description: "Omi will optimize for this first.",
+      description:
+        "Selecting a correct and detailed goal is very important - Omi will optimize all advice to achieve that goal. Make sure your goal contains a number to measure progress.",
+      showsSkip: true,
+      onSkip: onSkip,
       onForceComplete: onForceComplete
     ) {
       VStack(alignment: .leading, spacing: 18) {
@@ -63,19 +67,21 @@ struct OnboardingGoalStepView: View {
             .foregroundColor(OmiColors.warning)
         }
 
-        Button(coordinator.isSavingGoal ? "Saving…" : "Continue") {
-          Task {
-            coordinator.goalSaved = false
-            await coordinator.saveGoalIfNeeded()
-            guard coordinator.goalSaved else { return }
-            let completed = await coordinator.completeIntro(appState: appState)
-            if completed {
-              onContinue()
+        if shouldShowContinue {
+          Button(coordinator.isSavingGoal ? "Saving…" : "Continue") {
+            Task {
+              coordinator.goalSaved = false
+              await coordinator.saveGoalIfNeeded()
+              guard coordinator.goalSaved else { return }
+              let completed = await coordinator.completeIntro(appState: appState)
+              if completed {
+                onContinue()
+              }
             }
           }
+          .buttonStyle(OnboardingCardButtonStyle(isPrimary: true))
+          .disabled(coordinator.isSavingGoal)
         }
-        .buttonStyle(OnboardingCardButtonStyle(isPrimary: true))
-        .disabled(coordinator.isSavingGoal || trimmedGoal.isEmpty)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .onAppear {
@@ -102,6 +108,10 @@ struct OnboardingGoalStepView: View {
 
   private var trimmedGoal: String {
     coordinator.goalDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private var shouldShowContinue: Bool {
+    !trimmedGoal.isEmpty
   }
 }
 

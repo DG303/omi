@@ -1508,54 +1508,6 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Divider(color: Colors.grey.shade800, height: 1),
                         ),
-                        // Follow-up Questions
-                        _buildExperimentalItem(
-                          title: context.l10n.followUpQuestions,
-                          description: context.l10n.suggestQuestionsAfterConversations,
-                          icon: FontAwesomeIcons.lightbulb,
-                          value: provider.followUpQuestionEnabled,
-                          onChanged: provider.onFollowUpQuestionChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
-                        // Goal Tracker
-                        _buildExperimentalItem(
-                          title: context.l10n.goalTracker,
-                          description: context.l10n.trackYourGoalsOnHomepage,
-                          icon: FontAwesomeIcons.bullseye,
-                          value: provider.showGoalTrackerEnabled,
-                          onChanged: provider.onShowGoalTrackerChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
-                        // Daily Score
-                        _buildExperimentalItem(
-                          title: context.l10n.dailyScore,
-                          description: context.l10n.showDailyScoreOnHomepage,
-                          icon: FontAwesomeIcons.chartLine,
-                          value: provider.showDailyScoreEnabled,
-                          onChanged: provider.onShowDailyScoreChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
-                        // Tasks
-                        _buildExperimentalItem(
-                          title: context.l10n.tasks,
-                          description: context.l10n.showTasksOnHomepage,
-                          icon: FontAwesomeIcons.listCheck,
-                          value: provider.showTasksEnabled,
-                          onChanged: provider.onShowTasksChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
                         // VAD Gate
                         _buildExperimentalItem(
                           title: 'VAD Gate',
@@ -1637,6 +1589,64 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
                                 activeColor: const Color(0xFF22C55E),
                               ),
                           ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Home Screen Section
+                  const SizedBox(height: 32),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, right: 4, bottom: 12),
+                    child: Text(
+                      'Home Screen',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(color: const Color(0xFF1C1C1E), borderRadius: BorderRadius.circular(14)),
+                    child: Column(
+                      children: [
+                        _buildExperimentalItem(
+                          title: context.l10n.goalTracker,
+                          description: context.l10n.trackYourGoalsOnHomepage,
+                          icon: FontAwesomeIcons.bullseye,
+                          value: provider.showGoalTrackerEnabled,
+                          onChanged: provider.onShowGoalTrackerChanged,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(color: Colors.grey.shade800, height: 1),
+                        ),
+                        _buildExperimentalItem(
+                          title: context.l10n.dailyScore,
+                          description: context.l10n.showDailyScoreOnHomepage,
+                          icon: FontAwesomeIcons.chartLine,
+                          value: provider.showDailyScoreEnabled,
+                          onChanged: provider.onShowDailyScoreChanged,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(color: Colors.grey.shade800, height: 1),
+                        ),
+                        _buildExperimentalItem(
+                          title: context.l10n.tasks,
+                          description: context.l10n.showTasksOnHomepage,
+                          icon: FontAwesomeIcons.listCheck,
+                          value: provider.showTasksEnabled,
+                          onChanged: provider.onShowTasksChanged,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(color: Colors.grey.shade800, height: 1),
+                        ),
+                        _buildExperimentalItem(
+                          title: context.l10n.showPhoneCallButtonTitle,
+                          description: context.l10n.showPhoneCallButtonDesc,
+                          icon: FontAwesomeIcons.phone,
+                          value: provider.showPhoneCallButton,
+                          onChanged: provider.onShowPhoneCallButtonChanged,
                         ),
                       ],
                     ),
@@ -1788,21 +1798,23 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
                   ],
 
                   // Manual Firmware Flash (only when device connected)
-                  Builder(builder: (context) {
-                    final deviceProvider = context.watch<DeviceProvider>();
-                    if (deviceProvider.isConnected && deviceProvider.pairedDevice != null) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 24),
-                          _buildSectionHeader('Firmware', subtitle: 'Flash custom firmware builds'),
-                          const SizedBox(height: 8),
-                          _buildManualFirmwareFlash(deviceProvider),
-                        ],
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  }),
+                  Builder(
+                    builder: (context) {
+                      final deviceProvider = context.watch<DeviceProvider>();
+                      if (deviceProvider.isConnected && deviceProvider.pairedDevice != null) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+                            _buildSectionHeader('Firmware', subtitle: 'Flash custom firmware builds'),
+                            const SizedBox(height: 8),
+                            _buildManualFirmwareFlash(deviceProvider),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
 
                   const SizedBox(height: 48),
                 ],
@@ -1824,11 +1836,7 @@ class _ManualFirmwareFlashPage extends StatefulWidget {
   final String fileName;
   final BtDevice device;
 
-  const _ManualFirmwareFlashPage({
-    required this.zipFilePath,
-    required this.fileName,
-    required this.device,
-  });
+  const _ManualFirmwareFlashPage({required this.zipFilePath, required this.fileName, required this.device});
 
   @override
   State<_ManualFirmwareFlashPage> createState() => _ManualFirmwareFlashPageState();
@@ -1883,10 +1891,7 @@ class _ManualFirmwareFlashPageState extends State<_ManualFirmwareFlashPage> with
             // File info
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C1C1E),
-                borderRadius: BorderRadius.circular(12),
-              ),
+              decoration: BoxDecoration(color: const Color(0xFF1C1C1E), borderRadius: BorderRadius.circular(12)),
               child: Row(
                 children: [
                   const FaIcon(FontAwesomeIcons.file, color: Colors.deepPurple, size: 20),
@@ -1895,11 +1900,15 @@ class _ManualFirmwareFlashPageState extends State<_ManualFirmwareFlashPage> with
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.fileName,
-                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                        Text(
+                          widget.fileName,
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Target: ${widget.device.name}',
-                            style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
+                        Text(
+                          'Target: ${widget.device.name}',
+                          style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                        ),
                       ],
                     ),
                   ),
@@ -1940,8 +1949,10 @@ class _ManualFirmwareFlashPageState extends State<_ManualFirmwareFlashPage> with
                     backgroundColor: Colors.deepPurple,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Flash Firmware',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: const Text(
+                    'Flash Firmware',
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
             ],
@@ -1973,8 +1984,10 @@ class _ManualFirmwareFlashPageState extends State<_ManualFirmwareFlashPage> with
                   children: [
                     Icon(Icons.check_circle, color: Colors.green, size: 64),
                     SizedBox(height: 16),
-                    Text('Firmware flashed successfully!',
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Firmware flashed successfully!',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
                     SizedBox(height: 8),
                     Text('Your device will restart.', style: TextStyle(color: Colors.grey, fontSize: 14)),
                   ],

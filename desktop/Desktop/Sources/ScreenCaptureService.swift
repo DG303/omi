@@ -36,66 +36,77 @@ final class ScreenCaptureService: Sendable {
   nonisolated(unsafe) private static var lastActiveWindowSnapshot: ActiveWindowSnapshot?
   nonisolated(unsafe) private static var isActiveWindowResolutionInFlight = false
 
+  /// Cache for SCShareableContent to avoid hammering the WindowServer every capture tick.
+  /// SCShareableContent.excludingDesktopWindows enumerates every on-screen window through
+  /// the WindowServer; calling it every 3 seconds contends with other screen-capture apps
+  /// (CleanShot, Zoom share, Loom, etc.) and causes UI stalls. Re-use a recent snapshot
+  /// for up to `sharedContentTTL` seconds; refresh on demand when a target window isn't
+  /// present in the cache.
+  private static let sharedContentLock = NSLock()
+  nonisolated(unsafe) private static var cachedSharedContent: Any?  // SCShareableContent, typed Any so this decl predates macOS 14 gate
+  nonisolated(unsafe) private static var sharedContentCachedAt: Date?
+  private static let sharedContentTTL: TimeInterval = 5.0
+
+  @available(macOS 14.0, *)
+  private static func sharedContent(forceRefresh: Bool = false) async throws -> SCShareableContent {
+    if !forceRefresh,
+      !UserDefaults.standard.bool(forKey: "rewindDisableContentCache")
+    {
+      let cached: SCShareableContent? = sharedContentLock.withLock {
+        guard let ts = sharedContentCachedAt,
+          Date().timeIntervalSince(ts) < sharedContentTTL,
+          let content = cachedSharedContent as? SCShareableContent
+        else { return nil }
+        return content
+      }
+      if let cached { return cached }
+    }
+
+    let content = try await SCShareableContent.excludingDesktopWindows(
+      false,
+      onScreenWindowsOnly: true
+    )
+    sharedContentLock.withLock {
+      cachedSharedContent = content
+      sharedContentCachedAt = Date()
+    }
+    return content
+  }
+
   init() {}
 
-  /// Check if we have screen recording permission by actually testing capture
-  /// CGPreflightScreenCaptureAccess can return stale data after code signing changes
+  /// Check whether macOS TCC says this app has Screen Recording permission.
+  ///
+  /// Do not spawn `/usr/sbin/screencapture` here. That helper process can fail
+  /// for reasons unrelated to this app's TCC grant, which made Omi show a red
+  /// "Screen Recording disabled" state while System Settings correctly showed
+  /// the app as allowed.
   static func checkPermission(forceActualTestIfPreflightDenied: Bool = false) -> Bool {
     let preflightGranted = CGPreflightScreenCaptureAccess()
 
     if !preflightGranted {
       log("Screen capture: CGPreflight says no permission")
 
-      guard forceActualTestIfPreflightDenied else {
-        return false
+      if forceActualTestIfPreflightDenied {
+        log("Screen capture: ignoring forced helper capture test; preflight is authoritative")
       }
-
-      log("Screen capture: running forced actual capture test despite denied preflight")
-      let actualPermission = testCapturePermission()
-      if actualPermission {
-        log("Screen capture: actual capture succeeded even though CGPreflight returned false")
-      }
-      return actualPermission
+      return false
     }
 
-    // CGPreflight can return stale data after rebuilds, so test actual capture
-    return testCapturePermission()
+    return true
   }
 
-  /// Test if screen capture actually works by attempting a real capture
-  /// This verifies the app has permission, not just cached permission data
+  /// Legacy synchronous permission probe. Keep this as a TCC preflight wrapper
+  /// so callers cannot accidentally make the UI depend on a child CLI process.
   static func testCapturePermission() -> Bool {
-    let tempPath = NSTemporaryDirectory() + "omi_permission_test_\(UUID().uuidString).jpg"
-    defer { try? FileManager.default.removeItem(atPath: tempPath) }
+    checkPermission()
+  }
 
-    // Try to capture the screen using screencapture CLI
-    // This requires Screen Recording permission to succeed
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-    process.arguments = ["-x", tempPath]  // Silent capture of entire screen
-
-    // Suppress any error output
-    process.standardError = FileHandle.nullDevice
-    process.standardOutput = FileHandle.nullDevice
-
-    do {
-      try process.run()
-      process.waitUntilExit()
-
-      // Check if capture succeeded and file was created with content
-      if process.terminationStatus == 0,
-        let data = try? Data(contentsOf: URL(fileURLWithPath: tempPath)),
-        data.count > 100
-      {
-        log("Screen capture test: SUCCESS")
-        return true
-      }
-      log("Screen capture test: FAILED (exit code: \(process.terminationStatus))")
-      return false
-    } catch {
-      logError("Screen capture test failed", error: error)
-      return false
-    }
+  /// Test whether ScreenCaptureKit can enumerate shareable content.
+  /// Use this only for capture-engine diagnostics, not for the permission badge.
+  @available(macOS 14.0, *)
+  static func testCaptureCapability() async -> Bool {
+    await testScreenCaptureKitPermission()
   }
 
   /// Open System Preferences to Screen Recording settings
@@ -198,15 +209,6 @@ final class ScreenCaptureService: Sendable {
     // cause macOS to grant permissions to the wrong app
     ensureLaunchServicesRegistration()
 
-    // 0.5. Detect stale TCC entry: TCC says granted but capture actually fails.
-    // This happens after a code signing identity change (e.g. Sparkle update).
-    // Do NOT auto-reset with tccutil — that removes the app from System Settings
-    // and leaves the user stuck. Instead, just log the stale state and let the user
-    // toggle off/on in System Settings, which refreshes the TCC entry in place.
-    if CGPreflightScreenCaptureAccess() && !testCapturePermission() {
-      log("Screen capture: stale TCC entry detected (signing identity changed). User should toggle off/on in System Settings.")
-    }
-
     // 1. Request traditional Screen Recording TCC permission
     CGRequestScreenCaptureAccess()
 
@@ -269,10 +271,11 @@ final class ScreenCaptureService: Sendable {
       log("Screen capture: SCK re-request did not succeed, testing actual capture...")
     }
 
-    // 3. Test if capture actually works now (covers cases where CGPreflight was stale)
-    let works = testCapturePermission()
-    log("Screen capture: Soft recovery capture test = \(works ? "SUCCESS" : "FAILED")")
-    return works
+    // 3. If ScreenCaptureKit is unavailable, fall back to TCC preflight. The
+    // permission indicator remains separate from capture-engine health.
+    let granted = checkPermission()
+    log("Screen capture: Soft recovery TCC preflight = \(granted ? "GRANTED" : "DENIED")")
+    return granted
   }
 
   /// Reset screen capture permission using tccutil (nuclear option).
@@ -530,11 +533,20 @@ final class ScreenCaptureService: Sendable {
       }
     }
 
-    guard let largest = appWindows.max(by: { $0.area < $1.area }) else {
+    guard !appWindows.isEmpty else {
       return (appName, nil, nil)
     }
 
-    return (appName, largest.title, largest.windowID)
+    // CGWindowListCopyWindowInfo returns windows in front-to-back z-order,
+    // so the first element for a given PID is the frontmost on screen.
+    // Among windows with the largest area, prefer the frontmost (first in the
+    // array) so we capture the window the user is looking at instead of the
+    // backmost equal-sized window (which is often the first one opened).
+    // Fixes: https://github.com/BasedHardware/omi/issues/6552
+    let maxArea = appWindows.map(\.area).max()!
+    let frontmost = appWindows.first(where: { $0.area == maxArea })!
+
+    return (appName, frontmost.title, frontmost.windowID)
   }
 
   /// Private API: get CGWindowID directly from an AXUIElement (avoids fragile position/size matching)
@@ -691,12 +703,13 @@ final class ScreenCaptureService: Sendable {
   @available(macOS 14.0, *)
   private func captureWithScreenCaptureKit(windowID: CGWindowID) async -> Data? {
     do {
-      let content = try await SCShareableContent.excludingDesktopWindows(
-        false,
-        onScreenWindowsOnly: true
-      )
-
-      guard let window = content.windows.first(where: { $0.windowID == windowID }) else {
+      var content = try await Self.sharedContent()
+      var window = content.windows.first(where: { $0.windowID == windowID })
+      if window == nil {
+        content = try await Self.sharedContent(forceRefresh: true)
+        window = content.windows.first(where: { $0.windowID == windowID })
+      }
+      guard let window else {
         log("Window not found in SCShareableContent")
         return nil
       }
@@ -742,16 +755,27 @@ final class ScreenCaptureService: Sendable {
 
   // MARK: - CGImage Capture (macOS 14+)
 
+  /// Result of an attempted per-window capture.
+  /// Distinguishes "the window went away" (normal — the user closed a tab / modal)
+  /// from a real capture engine failure (permission revoked, stream error, etc.).
+  enum WindowCaptureResult {
+    case success(CGImage)
+    case windowGone
+    case failed
+  }
+
   /// Capture the active window and return the raw CGImage (no JPEG encoding).
   /// Use this on macOS 14+ to avoid redundant encode/decode round-trips.
   @available(macOS 14.0, *)
-  /// Capture a specific window by ID (avoids re-resolving the active window)
-  func captureWindowCGImage(windowID: CGWindowID) async -> CGImage? {
+  /// Capture a specific window by ID (avoids re-resolving the active window).
+  /// Returns a detailed result so the caller can distinguish transient window
+  /// disappearance from real capture failures.
+  func captureWindowCGImage(windowID: CGWindowID) async -> WindowCaptureResult {
     do {
-      let content = try await SCShareableContent.excludingDesktopWindows(
-        false,
-        onScreenWindowsOnly: true
-      )
+      var content = try await Self.sharedContent()
+      if !content.windows.contains(where: { $0.windowID == windowID }) {
+        content = try await Self.sharedContent(forceRefresh: true)
+      }
 
       let filterAndConfig: (SCContentFilter, SCStreamConfiguration)? = autoreleasepool {
         guard let window = content.windows.first(where: { $0.windowID == windowID }) else {
@@ -777,17 +801,21 @@ final class ScreenCaptureService: Sendable {
       }
 
       guard let (filter, config) = filterAndConfig else {
-        log("Window \(windowID) not found in SCShareableContent")
-        return nil
+        // Window ID no longer exists — the user closed a tab, dismissed a modal,
+        // or the app destroyed the window between resolution and capture. This is
+        // routine, not a capture failure. Caller should re-resolve and retry.
+        log("Window \(windowID) not found in SCShareableContent (window closed)")
+        return .windowGone
       }
 
-      return try await SCScreenshotManager.captureImage(
+      let image = try await SCScreenshotManager.captureImage(
         contentFilter: filter,
         configuration: config
       )
+      return .success(image)
     } catch {
       log("ScreenCaptureKit CGImage error for window \(windowID): \(error.localizedDescription)")
-      return nil
+      return .failed
     }
   }
 
@@ -799,10 +827,10 @@ final class ScreenCaptureService: Sendable {
     }
 
     do {
-      let content = try await SCShareableContent.excludingDesktopWindows(
-        false,
-        onScreenWindowsOnly: true
-      )
+      var content = try await Self.sharedContent()
+      if !content.windows.contains(where: { $0.windowID == windowID }) {
+        content = try await Self.sharedContent(forceRefresh: true)
+      }
 
       // Wrap synchronous ScreenCaptureKit object processing in autoreleasepool.
       // SCShareableContent enumerates all windows, creating Obj-C objects that

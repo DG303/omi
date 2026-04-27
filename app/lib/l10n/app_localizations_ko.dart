@@ -2327,6 +2327,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get batteryLevel => '배터리 수준';
 
   @override
+  String get charging => '충전 중';
+
+  @override
   String get productUpdate => '제품 업데이트';
 
   @override
@@ -2453,12 +2456,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => '홈페이지에서 개인 목표 추적';
-
-  @override
-  String get dailyReflection => '일일 성찰';
-
-  @override
-  String get get9PmReminderToReflect => '오후 9시에 하루를 되돌아보는 알림 받기';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => '실행 항목 설명은 비워둘 수 없습니다';
@@ -3852,9 +3849,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get trackPersonalGoals => '홈페이지에서 개인 목표 추적';
 
   @override
-  String get dailyReflectionDescription => '오후 9시에 하루를 되돌아보고 생각을 기록하라는 알림을 받습니다.';
-
-  @override
   String get endpointURL => '엔드포인트 URL';
 
   @override
@@ -4481,10 +4475,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get alreadyBestValuePlan => '이미 가장 가성비 좋은 플랜을 사용 중입니다. 변경이 필요하지 않습니다.';
 
   @override
-  String get unableToLoadPlans => '플랜을 로드할 수 없습니다';
+  String get unableToLoadPlans => '플랜을 불러올 수 없습니다';
 
   @override
-  String get checkConnectionTryAgain => '연결을 확인하고 다시 시도해 주세요';
+  String get checkConnectionTryAgain => '연결을 확인하고 다시 시도하세요';
 
   @override
   String get useFreePlan => '무료 플랜 사용';
@@ -5003,7 +4997,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      '계속하면 이 앱과 공유하는 모든 데이터(대화, 녹음, 개인 정보 포함)가 당사 서버에 안전하게 저장되어 AI 기반 인사이트를 제공하고 모든 앱 기능을 활성화합니다.';
+      '계속하면 대화, 녹음 및 개인 정보가 서버에 안전하게 저장됩니다. 오디오 녹음 및 텍스트 변환은 제3자 AI 서비스(전사를 위한 Deepgram 및 분석을 위한 OpenAI 포함)에 의해 처리되어 AI 기반 인사이트를 제공하고 모든 앱 기능을 활성화합니다.';
 
   @override
   String get tasksEmptyStateMessage => '대화에서 생성된 작업이 여기에 표시됩니다.\n수동으로 만들려면 +를 탭하세요.';
@@ -7059,12 +7053,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => '일일 성찰 시간입니다';
-
-  @override
-  String get dailyReflectionNotificationBody => '오늘 하루에 대해 말해주세요';
-
-  @override
   String get actionItemReminderTitle => 'Omi 알림';
 
   @override
@@ -8165,6 +8153,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get phoneCallSettingsTitle => '통화 설정';
 
   @override
+  String get showPhoneCallButtonTitle => '통화 버튼 표시';
+
+  @override
+  String get showPhoneCallButtonDesc => '홈 화면에 전화 통화 버튼 표시';
+
+  @override
   String get yourVerifiedNumbers => '인증된 번호';
 
   @override
@@ -8683,6 +8677,18 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => '배터리';
+
+  @override
+  String get noBatteryDataYet => '아직 배터리 데이터가 없습니다';
+
+  @override
+  String get day => '일';
+
+  @override
+  String get week => '주';
+
+  @override
   String get rollbackToStableFirmware => '안정 펌웨어로 롤백';
 
   @override
@@ -8746,4 +8752,266 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get continueAnyway => '계속';
+
+  @override
+  String get tasksClearCompleted => '완료된 항목 지우기';
+
+  @override
+  String get tasksSelectAll => '모두 선택';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return '$count개 작업 삭제';
+  }
+
+  @override
+  String get tasksMarkComplete => '완료로 표시됨';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi는 Apple의 HealthKit 프레임워크를 통해 Apple Health에 접근합니다. iOS 설정에서 언제든지 접근 권한을 철회할 수 있습니다.';
+
+  @override
+  String get appleHealthConnectCta => 'Apple Health에 연결';
+
+  @override
+  String get appleHealthDisconnectCta => 'Apple Health 연결 해제';
+
+  @override
+  String get appleHealthConnectedBadge => '연결됨';
+
+  @override
+  String get appleHealthFeatureChatTitle => '건강에 대해 대화하기';
+
+  @override
+  String get appleHealthFeatureChatDesc => '걸음 수, 수면, 심박수, 운동에 대해 Omi에게 물어보세요.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => '읽기 전용 접근';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi는 Apple Health에 쓰거나 데이터를 수정하지 않습니다.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => '보안 동기화';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Apple Health 데이터는 비공개로 Omi 계정과 동기화됩니다.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Apple Health 접근이 거부됨';
+
+  @override
+  String get appleHealthDeniedBody => 'Omi에 Apple Health 데이터를 읽을 권한이 없습니다. iOS 설정 → 개인정보 보호 및 보안 → 건강 → Omi에서 활성화하세요.';
+
+  @override
+  String get deleteFlowReasonTitle => '왜 떠나시나요?';
+
+  @override
+  String get deleteFlowReasonSubtitle => '여러분의 의견은 모두를 위한 Omi를 개선하는 데 도움이 됩니다.';
+
+  @override
+  String get deleteReasonPrivacy => '개인정보 보호에 대한 우려';
+
+  @override
+  String get deleteReasonNotUsing => '충분히 사용하지 않음';
+
+  @override
+  String get deleteReasonMissingFeatures => '필요한 기능이 없음';
+
+  @override
+  String get deleteReasonTechnicalIssues => '기술적인 문제가 너무 많음';
+
+  @override
+  String get deleteReasonFoundAlternative => '다른 것을 사용 중';
+
+  @override
+  String get deleteReasonTakingBreak => '잠시 쉬고 싶을 뿐';
+
+  @override
+  String get deleteReasonOther => '기타';
+
+  @override
+  String get deleteFlowFeedbackTitle => '더 자세히 알려주세요';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => '무엇이 있었다면 Omi가 여러분께 도움이 되었을까요?';
+
+  @override
+  String get deleteFlowFeedbackHint => '선택 사항 — 여러분의 의견은 더 나은 제품을 만드는 데 도움이 됩니다.';
+
+  @override
+  String get deleteFlowConfirmTitle => '이 작업은 영구적입니다';
+
+  @override
+  String get deleteFlowConfirmSubtitle => '계정을 삭제하면 복구할 방법이 없습니다.';
+
+  @override
+  String get deleteConsequenceSubscription => '활성 구독은 모두 취소됩니다.';
+
+  @override
+  String get deleteConsequenceNoRecovery => '계정은 복구할 수 없습니다 — 고객 지원으로도 불가능합니다.';
+
+  @override
+  String get deleteTypeToConfirm => '확인하려면 DELETE를 입력하세요';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => '계정 영구 삭제';
+
+  @override
+  String get keepMyAccount => '내 계정 유지';
+
+  @override
+  String get deleteAccountFailed => '계정을 삭제할 수 없습니다. 다시 시도해 주세요.';
+
+  @override
+  String get planUpdate => '플랜 업데이트';
+
+  @override
+  String get planDeprecationMessage =>
+      'Unlimited 플랜이 중단됩니다. Operator 플랜으로 전환하세요 — 동일한 훌륭한 기능을 월 \$49에 이용할 수 있습니다. 현재 플랜은 당분간 계속 사용할 수 있습니다.';
+
+  @override
+  String get upgradeYourPlan => '플랜 업그레이드';
+
+  @override
+  String get youAreOnAPaidPlan => '유료 플랜을 사용 중입니다.';
+
+  @override
+  String get chatTitle => '채팅';
+
+  @override
+  String get chatMessages => '메시지';
+
+  @override
+  String get unlimitedChatThisMonth => '이번 달 무제한 채팅 메시지';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used / $limit 컴퓨트 예산 사용됨';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '이번 달 $used / $limit 메시지 사용됨';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit 사용됨';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => '채팅 한도에 도달했습니다. 업그레이드하세요.';
+
+  @override
+  String get chatLimitReachedTitle => '채팅 한도 도달';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return '$plan 플랜에서 $limitDisplay 중 $used을 사용했습니다.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return '$count일 후 초기화';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return '$count시간 후 초기화';
+  }
+
+  @override
+  String get resetsSoon => '곧 초기화';
+
+  @override
+  String get upgradePlan => '플랜 업그레이드';
+
+  @override
+  String get billingMonthly => '월간';
+
+  @override
+  String get billingYearly => '연간';
+
+  @override
+  String get savePercent => '~17% 절약';
+
+  @override
+  String get popular => '인기';
+
+  @override
+  String get currentPlan => '현재';
+
+  @override
+  String neoSubtitle(int count) {
+    return '월 $count개 질문';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '월 $count개 질문';
+  }
+
+  @override
+  String get architectSubtitle => '파워유저 AI — 수천 건의 채팅 + 에이전트 자동화';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return '채팅: \$$used / \$$limit 이번 달 사용량';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return '채팅: \$$used 이번 달 사용량';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return '채팅: $used / $limit 이번 달 메시지';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return '채팅: $used 이번 달 메시지';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply => '월간 한도에 도달했습니다. 제한 없이 Omi와 계속 채팅하려면 업그레이드하세요.';
+
+  @override
+  String get voiceResponseAudio => 'Omi의 응답 소리 내어 읽기';
+
+  @override
+  String get voiceResponseMode => '음성 응답';
+
+  @override
+  String get voiceResponseModeTitle => '응답을 말할 시점';
+
+  @override
+  String get voiceResponseOff => '끄기';
+
+  @override
+  String get voiceResponseHeadphonesOnly => '헤드폰만';
+
+  @override
+  String get voiceResponseAlways => '항상';
+
+  @override
+  String get agreeAndContinue => '동의하고 계속';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

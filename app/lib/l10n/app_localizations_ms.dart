@@ -1801,7 +1801,7 @@ class AppLocalizationsMs extends AppLocalizations {
   String get rateOnGooglePlay => 'Nilai di Google Play';
 
   @override
-  String get maybeLater => 'Mungkin Kemudian';
+  String get maybeLater => 'Mungkin nanti';
 
   @override
   String get speechProfileIntro => 'Omi perlu mempelajari matlamat dan suara anda. Anda boleh mengubahnya kemudian.';
@@ -2377,6 +2377,9 @@ class AppLocalizationsMs extends AppLocalizations {
   String get batteryLevel => 'Tahap Bateri';
 
   @override
+  String get charging => 'Mengecas';
+
+  @override
   String get productUpdate => 'Kemas Kini Produk';
 
   @override
@@ -2503,12 +2506,6 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => 'Jejaki matlamat peribadi anda di laman utama';
-
-  @override
-  String get dailyReflection => 'Refleksi Harian';
-
-  @override
-  String get get9PmReminderToReflect => 'Dapatkan peringatan jam 9 malam untuk merenung hari anda';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => 'Penerangan item tindakan tidak boleh kosong';
@@ -3930,10 +3927,6 @@ class AppLocalizationsMs extends AppLocalizations {
   String get trackPersonalGoals => 'Jejaki matlamat peribadi pada laman utama';
 
   @override
-  String get dailyReflectionDescription =>
-      'Terima peringatan pada jam 9 malam untuk merenung hari anda dan mencatat fikiran anda.';
-
-  @override
   String get endpointURL => 'URL Titik Akhir';
 
   @override
@@ -4579,10 +4572,10 @@ class AppLocalizationsMs extends AppLocalizations {
   String get alreadyBestValuePlan => 'Anda sudah mempunyai pelan nilai terbaik. Tiada perubahan diperlukan.';
 
   @override
-  String get unableToLoadPlans => 'Tidak dapat memuatkan pelan';
+  String get unableToLoadPlans => 'Gagal memuatkan pelan';
 
   @override
-  String get checkConnectionTryAgain => 'Sila semak sambungan anda dan cuba lagi';
+  String get checkConnectionTryAgain => 'Semak sambungan anda dan cuba lagi';
 
   @override
   String get useFreePlan => 'Gunakan Pelan Percuma';
@@ -5118,7 +5111,7 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Dengan meneruskan, semua data yang anda kongsi dengan aplikasi ini (termasuk perbualan, rakaman dan maklumat peribadi anda) akan disimpan dengan selamat di pelayan kami untuk memberikan anda cerapan berkuasa AI dan membolehkan semua ciri aplikasi.';
+      'Dengan meneruskan, perbualan, rakaman dan maklumat peribadi anda akan disimpan dengan selamat di pelayan kami. Rakaman audio dan transkrip anda diproses oleh perkhidmatan AI pihak ketiga (termasuk Deepgram untuk transkripsi dan OpenAI untuk analisis) untuk memberikan anda pandangan dikuasakan AI dan membolehkan semua ciri aplikasi.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7205,12 +7198,6 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Masa untuk Refleksi Harian';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Ceritakan tentang hari anda';
-
-  @override
   String get actionItemReminderTitle => 'Peringatan Omi';
 
   @override
@@ -8327,6 +8314,12 @@ class AppLocalizationsMs extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Tetapan panggilan';
 
   @override
+  String get showPhoneCallButtonTitle => 'Tunjuk Butang Panggilan';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Paparkan butang panggilan telefon pada skrin utama';
+
+  @override
   String get yourVerifiedNumbers => 'Nombor anda yang disahkan';
 
   @override
@@ -8854,6 +8847,18 @@ class AppLocalizationsMs extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Bateri';
+
+  @override
+  String get noBatteryDataYet => 'Tiada data bateri lagi';
+
+  @override
+  String get day => 'Hari';
+
+  @override
+  String get week => 'Minggu';
+
+  @override
   String get rollbackToStableFirmware => 'Kembali ke firmware stabil';
 
   @override
@@ -8917,4 +8922,268 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get continueAnyway => 'Teruskan';
+
+  @override
+  String get tasksClearCompleted => 'Kosongkan yang selesai';
+
+  @override
+  String get tasksSelectAll => 'Pilih semua';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return 'Padam $count tugas';
+  }
+
+  @override
+  String get tasksMarkComplete => 'Ditandai selesai';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi mengakses Apple Health melalui rangka kerja HealthKit Apple. Anda boleh membatalkan akses pada bila-bila masa dalam Tetapan iOS.';
+
+  @override
+  String get appleHealthConnectCta => 'Sambung ke Apple Health';
+
+  @override
+  String get appleHealthDisconnectCta => 'Putuskan Apple Health';
+
+  @override
+  String get appleHealthConnectedBadge => 'Disambungkan';
+
+  @override
+  String get appleHealthFeatureChatTitle => 'Berbual tentang kesihatan anda';
+
+  @override
+  String get appleHealthFeatureChatDesc => 'Tanyakan Omi tentang langkah, tidur, kadar jantung dan latihan anda.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => 'Akses baca sahaja';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi tidak pernah menulis ke Apple Health atau mengubah data anda.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => 'Penyegerakan selamat';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Data Apple Health anda disegerakkan secara peribadi ke akaun Omi.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Akses Apple Health ditolak';
+
+  @override
+  String get appleHealthDeniedBody =>
+      'Omi tidak mempunyai kebenaran membaca data Apple Health anda. Dayakan di Tetapan iOS → Privasi & Keselamatan → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Mengapa anda pergi?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Maklum balas anda membantu kami menambah baik Omi untuk semua orang.';
+
+  @override
+  String get deleteReasonPrivacy => 'Kebimbangan privasi';
+
+  @override
+  String get deleteReasonNotUsing => 'Tidak cukup kerap menggunakannya';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Ciri yang saya perlukan tiada';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Terlalu banyak masalah teknikal';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Menggunakan sesuatu yang lain';
+
+  @override
+  String get deleteReasonTakingBreak => 'Hanya berehat sebentar';
+
+  @override
+  String get deleteReasonOther => 'Lain-lain';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Beritahu kami lebih lanjut';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Apakah yang akan menjadikan Omi sesuai untuk anda?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Pilihan — pandangan anda membantu kami membina produk yang lebih baik.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Ini adalah kekal';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Setelah anda memadam akaun, tiada cara untuk memulihkannya.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Sebarang langganan aktif akan dibatalkan.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Akaun anda tidak boleh dipulihkan — walaupun oleh sokongan.';
+
+  @override
+  String get deleteTypeToConfirm => 'Taip DELETE untuk sahkan';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Padam akaun secara kekal';
+
+  @override
+  String get keepMyAccount => 'Kekalkan akaun saya';
+
+  @override
+  String get deleteAccountFailed => 'Tidak dapat memadam akaun anda. Sila cuba lagi.';
+
+  @override
+  String get planUpdate => 'Kemas Kini Pelan';
+
+  @override
+  String get planDeprecationMessage =>
+      'Pelan Unlimited anda sedang ditamatkan. Tukar ke pelan Operator — ciri-ciri hebat yang sama pada \$49/bulan. Pelan semasa anda akan terus berfungsi buat sementara waktu.';
+
+  @override
+  String get upgradeYourPlan => 'Naik Taraf Pelan Anda';
+
+  @override
+  String get youAreOnAPaidPlan => 'Anda menggunakan pelan berbayar.';
+
+  @override
+  String get chatTitle => 'Sembang';
+
+  @override
+  String get chatMessages => 'mesej';
+
+  @override
+  String get unlimitedChatThisMonth => 'Mesej sembang tanpa had bulan ini';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used daripada $limit bajet pengiraan digunakan';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used daripada $limit mesej digunakan bulan ini';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit digunakan';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Had sembang dicapai. Naik taraf untuk lebih banyak mesej.';
+
+  @override
+  String get chatLimitReachedTitle => 'Had sembang dicapai';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Anda telah menggunakan $used daripada $limitDisplay pada pelan $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Set semula dalam $count hari';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Set semula dalam $count jam';
+  }
+
+  @override
+  String get resetsSoon => 'Set semula tidak lama lagi';
+
+  @override
+  String get upgradePlan => 'Naik taraf pelan';
+
+  @override
+  String get billingMonthly => 'Bulanan';
+
+  @override
+  String get billingYearly => 'Tahunan';
+
+  @override
+  String get savePercent => 'Jimat ~17%';
+
+  @override
+  String get popular => 'Popular';
+
+  @override
+  String get currentPlan => 'Semasa';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count soalan sebulan';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count soalan sebulan';
+  }
+
+  @override
+  String get architectSubtitle => 'AI kuasa — ribuan sembang + automasi ejen';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Sembang: \$$used / \$$limit digunakan bulan ini';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Sembang: \$$used digunakan bulan ini';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Sembang: $used / $limit mesej bulan ini';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Sembang: $used mesej bulan ini';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Anda telah mencapai had bulanan. Naik taraf untuk terus bersembang dengan Omi tanpa sekatan.';
+
+  @override
+  String get voiceResponseAudio => 'Baca respons Omi dengan kuat';
+
+  @override
+  String get voiceResponseMode => 'Respons suara';
+
+  @override
+  String get voiceResponseModeTitle => 'Bila respons dituturkan';
+
+  @override
+  String get voiceResponseOff => 'Mati';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Fon kepala sahaja';
+
+  @override
+  String get voiceResponseAlways => 'Sentiasa';
+
+  @override
+  String get agreeAndContinue => 'Setuju & Teruskan';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

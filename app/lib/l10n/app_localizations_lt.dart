@@ -2368,6 +2368,9 @@ class AppLocalizationsLt extends AppLocalizations {
   String get batteryLevel => 'Baterijos lygis';
 
   @override
+  String get charging => 'Kraunama';
+
+  @override
   String get productUpdate => 'Produkto atnaujinimas';
 
   @override
@@ -2494,12 +2497,6 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => 'Sekite savo asmeninius tikslus pagrindiniame puslapyje';
-
-  @override
-  String get dailyReflection => 'Dienos refleksija';
-
-  @override
-  String get get9PmReminderToReflect => 'Gaukite priminimą 21 val. apmąstyti savo dieną';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => 'Veiksmo elemento aprašymas negali būti tuščias';
@@ -3918,9 +3915,6 @@ class AppLocalizationsLt extends AppLocalizations {
   String get trackPersonalGoals => 'Stebėti asmeninius tikslus pagrindiniame puslapyje';
 
   @override
-  String get dailyReflectionDescription => 'Gaukite priminimą 21 val. apmąstyti savo dieną ir užfiksuoti mintis.';
-
-  @override
   String get endpointURL => 'Galinio taško URL';
 
   @override
@@ -4561,7 +4555,7 @@ class AppLocalizationsLt extends AppLocalizations {
   String get alreadyBestValuePlan => 'Jau turite geriausios vertės planą. Pakeitimų nereikia.';
 
   @override
-  String get unableToLoadPlans => 'Nepavyksta įkelti planų';
+  String get unableToLoadPlans => 'Nepavyko įkelti planų';
 
   @override
   String get checkConnectionTryAgain => 'Patikrinkite ryšį ir bandykite dar kartą';
@@ -5100,7 +5094,7 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Tęsdami, visi duomenys, kuriuos bendrinate su šia programa (įskaitant jūsų pokalbius, įrašus ir asmeninę informaciją), bus saugiai saugomi mūsų serveriuose, kad galėtume teikti jums dirbtinio intelekto paremtas įžvalgas ir įjungti visas programos funkcijas.';
+      'Tęsdami, jūsų pokalbiai, įrašai ir asmeninė informacija bus saugiai saugomi mūsų serveriuose. Jūsų garso įrašai ir transkripcijos apdorojami trečiųjų šalių AI paslaugų (įskaitant Deepgram transkripcijai ir OpenAI analizei), kad suteiktų jums AI paremtas įžvalgas ir įgalintų visas programėlės funkcijas.';
 
   @override
   String get tasksEmptyStateMessage =>
@@ -7187,12 +7181,6 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
-  String get dailyReflectionNotificationTitle => 'Laikas dienos refleksijai';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Papasakok apie savo dieną';
-
-  @override
   String get actionItemReminderTitle => 'Omi priminimas';
 
   @override
@@ -8311,6 +8299,12 @@ class AppLocalizationsLt extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Skambuciu nustatymai';
 
   @override
+  String get showPhoneCallButtonTitle => 'Rodyti skambučio mygtuką';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Rodyti telefono skambučio mygtuką pradiniame ekrane';
+
+  @override
   String get yourVerifiedNumbers => 'Jusu patvirtinti numeriai';
 
   @override
@@ -8837,6 +8831,18 @@ class AppLocalizationsLt extends AppLocalizations {
   }
 
   @override
+  String get batteryHistory => 'Baterija';
+
+  @override
+  String get noBatteryDataYet => 'Kol kas nėra baterijos duomenų';
+
+  @override
+  String get day => 'Diena';
+
+  @override
+  String get week => 'Savaitė';
+
+  @override
   String get rollbackToStableFirmware => 'Grįžti prie stabilios programinės įrangos';
 
   @override
@@ -8901,4 +8907,268 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get continueAnyway => 'Tęsti';
+
+  @override
+  String get tasksClearCompleted => 'Išvalyti atliktus';
+
+  @override
+  String get tasksSelectAll => 'Pasirinkti viską';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return 'Ištrinti $count užduotį(is)';
+  }
+
+  @override
+  String get tasksMarkComplete => 'Pažymėta kaip atlikta';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi pasiekia Apple Health per Apple HealthKit sistemą. Prieigą galite bet kada atšaukti iOS nustatymuose.';
+
+  @override
+  String get appleHealthConnectCta => 'Prijungti Apple Health';
+
+  @override
+  String get appleHealthDisconnectCta => 'Atjungti Apple Health';
+
+  @override
+  String get appleHealthConnectedBadge => 'Prijungta';
+
+  @override
+  String get appleHealthFeatureChatTitle => 'Kalbėkitės apie savo sveikatą';
+
+  @override
+  String get appleHealthFeatureChatDesc => 'Klauskite Omi apie žingsnius, miegą, pulsą ir treniruotes.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => 'Prieiga tik skaitymui';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi niekada nerašo į Apple Health ir nekeičia jūsų duomenų.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => 'Saugus sinchronizavimas';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Jūsų Apple Health duomenys privačiai sinchronizuojami su Omi paskyra.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Prieiga prie Apple Health atmesta';
+
+  @override
+  String get appleHealthDeniedBody =>
+      'Omi neturi leidimo skaityti jūsų Apple Health duomenis. Įjunkite: iOS Nustatymai → Privatumas ir sauga → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Kodėl išeini?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Tavo atsiliepimai padeda mums tobulinti Omi visiems.';
+
+  @override
+  String get deleteReasonPrivacy => 'Privatumo problemos';
+
+  @override
+  String get deleteReasonNotUsing => 'Naudoju nepakankamai dažnai';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Trūksta funkcijų, kurių man reikia';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'Per daug techninių problemų';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Naudoju kažką kita';
+
+  @override
+  String get deleteReasonTakingBreak => 'Tiesiog darau pertrauką';
+
+  @override
+  String get deleteReasonOther => 'Kita';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Papasakok daugiau';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Kas būtų padarę Omi tinkamą tau?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Neprivaloma — tavo mintys padeda mums sukurti geresnį produktą.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Tai negrįžtama';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Ištrynus paskyrą jos nebus galima atkurti.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Bet kokia aktyvi prenumerata bus atšaukta.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Tavo paskyros negalima atkurti — net ir palaikymo komandai.';
+
+  @override
+  String get deleteTypeToConfirm => 'Norėdami patvirtinti, įveskite DELETE';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Visam laikui ištrinti paskyrą';
+
+  @override
+  String get keepMyAccount => 'Palikti mano paskyrą';
+
+  @override
+  String get deleteAccountFailed => 'Nepavyko ištrinti tavo paskyros. Bandyk dar kartą.';
+
+  @override
+  String get planUpdate => 'Plano atnaujinimas';
+
+  @override
+  String get planDeprecationMessage =>
+      'Jūsų Unlimited planas nutraukiamas. Pereikite prie Operator plano — tos pačios puikios funkcijos už \$49/mėn. Jūsų dabartinis planas tuo tarpu veiks toliau.';
+
+  @override
+  String get upgradeYourPlan => 'Atnaujinkite savo planą';
+
+  @override
+  String get youAreOnAPaidPlan => 'Jūs naudojate mokamą planą.';
+
+  @override
+  String get chatTitle => 'Pokalbis';
+
+  @override
+  String get chatMessages => 'žinučių';
+
+  @override
+  String get unlimitedChatThisMonth => 'Neriboti pokalbių pranešimai šį mėnesį';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used iš $limit skaičiavimo biudžeto panaudota';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used iš $limit žinučių panaudota šį mėnesį';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit panaudota';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Pokalbio limitas pasiektas. Atnaujinkite daugiau žinučių.';
+
+  @override
+  String get chatLimitReachedTitle => 'Pokalbio limitas pasiektas';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Panaudojote $used iš $limitDisplay plane $plan.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Atsistatys po $count dienų';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Atsistatys po $count valandų';
+  }
+
+  @override
+  String get resetsSoon => 'Greitai atsistatys';
+
+  @override
+  String get upgradePlan => 'Atnaujinti planą';
+
+  @override
+  String get billingMonthly => 'Mėnesinis';
+
+  @override
+  String get billingYearly => 'Metinis';
+
+  @override
+  String get savePercent => 'Sutaupykite ~17%';
+
+  @override
+  String get popular => 'Populiarus';
+
+  @override
+  String get currentPlan => 'Dabartinis';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count klausimų per mėnesį';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count klausimų per mėnesį';
+  }
+
+  @override
+  String get architectSubtitle => 'Pažangus AI — tūkstančiai pokalbių + agentinė automatizacija';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Pokalbis: \$$used / \$$limit panaudota šį mėnesį';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Pokalbis: \$$used panaudota šį mėnesį';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Pokalbis: $used / $limit žinučių šį mėnesį';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Pokalbis: $used žinučių šį mėnesį';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Pasiekėte savo mėnesinį limitą. Atnaujinkite, kad galėtumėte toliau bendrauti su Omi be apribojimų.';
+
+  @override
+  String get voiceResponseAudio => 'Skaityti Omi atsakymą garsiai';
+
+  @override
+  String get voiceResponseMode => 'Balso atsakymas';
+
+  @override
+  String get voiceResponseModeTitle => 'Kada įgarsinti atsakymus';
+
+  @override
+  String get voiceResponseOff => 'Išjungta';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Tik ausinėmis';
+
+  @override
+  String get voiceResponseAlways => 'Visada';
+
+  @override
+  String get agreeAndContinue => 'Sutinku ir tęsti';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }
