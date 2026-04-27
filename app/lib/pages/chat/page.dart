@@ -38,7 +38,7 @@ import 'package:omi/utils/other/temp.dart';
 import 'package:omi/widgets/dialog.dart';
 import 'package:omi/widgets/bottom_nav_bar.dart';
 
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
   final bool isPivotBottom;
   final String? autoMessage;
   final bool autoStartVoice;
@@ -46,26 +46,10 @@ class ChatPage extends StatelessWidget {
   const ChatPage({super.key, this.isPivotBottom = false, this.autoMessage, this.autoStartVoice = false});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => VoiceRecorderProvider()..checkPendingRecording(),
-      child: _ChatPageView(isPivotBottom: isPivotBottom, autoMessage: autoMessage, autoStartVoice: autoStartVoice),
-    );
-  }
+  State<ChatPage> createState() => ChatPageState();
 }
 
-class _ChatPageView extends StatefulWidget {
-  final bool isPivotBottom;
-  final String? autoMessage;
-  final bool autoStartVoice;
-
-  const _ChatPageView({this.isPivotBottom = false, this.autoMessage, this.autoStartVoice = false});
-
-  @override
-  State<_ChatPageView> createState() => ChatPageState();
-}
-
-class ChatPageState extends State<_ChatPageView> with AutomaticKeepAliveClientMixin {
+class ChatPageState extends State<ChatPage> with AutomaticKeepAliveClientMixin {
   TextEditingController textController = TextEditingController();
   late ScrollController scrollController;
   late FocusNode textFieldFocusNode;
