@@ -49,7 +49,7 @@ class ChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => VoiceRecorderProvider()..checkPendingRecording(),
-      child: _ChatPageView(isPivotBottom: isPivotBottom, autoMessage: autoMessage),
+      child: _ChatPageView(isPivotBottom: isPivotBottom, autoMessage: autoMessage, autoStartVoice: autoStartVoice),
     );
   }
 }
@@ -57,8 +57,9 @@ class ChatPage extends StatelessWidget {
 class _ChatPageView extends StatefulWidget {
   final bool isPivotBottom;
   final String? autoMessage;
+  final bool autoStartVoice;
 
-  const _ChatPageView({this.isPivotBottom = false, this.autoMessage});
+  const _ChatPageView({this.isPivotBottom = false, this.autoMessage, this.autoStartVoice = false});
 
   @override
   State<_ChatPageView> createState() => ChatPageState();
