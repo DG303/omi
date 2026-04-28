@@ -153,6 +153,18 @@ class OnboardingProvider extends BaseProvider with MessageNotifierMixin implemen
     }
   }
 
+  // iOS-only: ask for "Always" so background location updates work during
+  // BGTask windows. Android relies on FOREGROUND_SERVICE_LOCATION instead and
+  // never asks for ACCESS_BACKGROUND_LOCATION (Play Store prominent-disclosure
+  // requirement).
+  Future<bool> alwaysAllowLocation() async {
+    if (!Platform.isIOS) return false;
+    PermissionStatus locationStatus = await Permission.locationAlways.request();
+    Logger.debug('alwaysAllowLocation permission status: $locationStatus');
+    updateLocationPermission(locationStatus.isGranted);
+    return locationStatus.isGranted;
+  }
+
   Future askForMicrophonePermissions() async {
     PermissionStatus micStatus = await Permission.microphone.request();
     Logger.debug('micStatus: $micStatus');
