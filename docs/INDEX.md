@@ -72,9 +72,3 @@ Complete index of all documentation in the Omi codebase.
 
 - [docs.omi.me](https://docs.omi.me/) - Complete online documentation
 - [API Reference](api-reference/introduction.mdx) - API endpoint reference
-
-## Related Files
-
-- Cursor hooks: `.cursor/hooks.json`
-- Cursor MCP config: `.cursor/mcp.json`
-- Cursor rules: `.cursor/rules/`
