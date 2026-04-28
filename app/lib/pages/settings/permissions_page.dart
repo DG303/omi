@@ -129,7 +129,10 @@ class _PermissionsPageState extends State<PermissionsPage> with WidgetsBindingOb
         return;
       }
       final status = await Permission.locationWhenInUse.request();
-      if (status.isPermanentlyDenied) {
+      if (status.isGranted && Platform.isIOS) {
+        // iOS-only: chain Always so background location updates work.
+        await Permission.locationAlways.request();
+      } else if (status.isPermanentlyDenied) {
         await openAppSettings();
       }
       await _checkPermissions();
