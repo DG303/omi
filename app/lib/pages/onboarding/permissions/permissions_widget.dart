@@ -108,7 +108,14 @@ class _PermissionsWidgetState extends State<PermissionsWidget> {
                                     },
                                   );
                                 } else {
-                                  provider.updateLocationPermission(permissionStatus.isGranted);
+                                  bool wasGranted = permissionStatus.isGranted;
+                                  provider.updateLocationPermission(wasGranted);
+                                  // iOS-only: chain Always request so background
+                                  // location updates work in BGTask windows.
+                                  await provider.alwaysAllowLocation();
+                                  if (wasGranted) {
+                                    provider.updateLocationPermission(true);
+                                  }
                                 }
                               } else {
                                 provider.updateLocationPermission(false);
@@ -158,6 +165,9 @@ class _PermissionsWidgetState extends State<PermissionsWidget> {
                                   if (await Permission.location.serviceStatus.isEnabled) {
                                     final res = await Permission.locationWhenInUse.request();
                                     provider.updateLocationPermission(res.isGranted);
+                                    if (Platform.isIOS && res.isGranted) {
+                                      await provider.alwaysAllowLocation();
+                                    }
                                   }
                                   widget.goNext();
                                   provider.setLoading(false);
