@@ -153,13 +153,6 @@ class OnboardingProvider extends BaseProvider with MessageNotifierMixin implemen
     }
   }
 
-  Future<bool> alwaysAllowLocation() async {
-    PermissionStatus locationStatus = await Permission.locationAlways.request();
-    Logger.debug('alwaysAllowLocation permission status: $locationStatus');
-    updateLocationPermission(locationStatus.isGranted);
-    return locationStatus.isGranted;
-  }
-
   Future askForMicrophonePermissions() async {
     PermissionStatus micStatus = await Permission.microphone.request();
     Logger.debug('micStatus: $micStatus');
