@@ -1,8 +1,13 @@
 {
-  "unreleased": [
-    "Improved Ask Omi routing: questions now stay in the floating bar chat instead of incorrectly spawning background agents \u2014 Claude Haiku decides whether each message is a quick answer or a real task"
-  ],
+  "unreleased": [],
   "releases": [
+    {
+      "version": "0.11.370",
+      "date": "2026-04-29",
+      "changes": [
+        "Improved Ask Omi routing: questions now stay in the floating bar chat instead of incorrectly spawning background agents \u2014 Claude Haiku decides whether each message is a quick answer or a real task"
+      ]
+    },
     {
       "version": "0.11.369",
       "date": "2026-04-28",
