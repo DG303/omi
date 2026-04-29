@@ -15,10 +15,10 @@ struct GoalsWidget: View {
     @State private var isGeneratingGoal = false
 
     // AI Features
-    @State private var selectedGoalForAdvice: Goal? = nil
+    @State private var selectedGoalForInsight: Goal? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             // Header
             HStack {
                 Text("Goals")
@@ -26,18 +26,6 @@ struct GoalsWidget: View {
                     .foregroundColor(OmiColors.textPrimary)
 
                 Spacer()
-
-                // History button
-                GoalHeaderButton(icon: "clock.arrow.circlepath", tooltip: "Goal history", color: OmiColors.textTertiary) {
-                    showingHistory = true
-                }
-
-                // AI goal generation button (when there are goals but room for more)
-                if goals.count > 0 && goals.count < 4 {
-                    GoalHeaderButton(icon: "sparkles", tooltip: "Generate AI goal", color: OmiColors.purplePrimary.opacity(0.8), isLoading: isGeneratingGoal) {
-                        triggerGoalGeneration()
-                    }
-                }
 
                 // Add goal button (only if less than 3 goals)
                 if goals.count < 4 {
@@ -49,25 +37,11 @@ struct GoalsWidget: View {
 
 
             if goals.isEmpty {
-                // Empty state with AI suggestion
-                VStack(spacing: 16) {
-                    Button(action: { showingCreateSheet = true }) {
-                        HStack {
-                            Spacer()
-                            Image(systemName: "plus")
-                                .scaledFont(size: 14)
-                                .foregroundColor(OmiColors.textTertiary)
-                            Text("Tap to add goal")
-                                .scaledFont(size: 13)
-                                .foregroundColor(OmiColors.textTertiary)
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
-                    }
-                    .buttonStyle(.plain)
+                // Empty state — header already has a + button, so just offer
+                // the AI generation action centered in the empty area.
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
 
-                    // AI goal generation button
                     Button(action: { triggerGoalGeneration() }) {
                         HStack(spacing: 6) {
                             if isGeneratingGoal {
@@ -79,48 +53,49 @@ struct GoalsWidget: View {
                                     .scaledFont(size: 12)
                             }
                             Text(isGeneratingGoal ? "Generating..." : "Generate AI Goal")
-                                .scaledFont(size: 12, weight: .medium)
+                                .scaledFont(size: 13, weight: .medium)
                         }
                         .foregroundColor(OmiColors.purplePrimary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(OmiColors.purplePrimary.opacity(0.1))
-                        )
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 9)
+                        .omiControlSurface(fill: OmiColors.purplePrimary.opacity(0.12), radius: OmiChrome.chipRadius)
                     }
                     .buttonStyle(.plain)
                     .disabled(isGeneratingGoal)
+
+                    Spacer(minLength: 0)
                 }
-                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                // Goals list
-                VStack(spacing: 12) {
-                    ForEach(Array(goals.enumerated()), id: \.element.id) { index, goal in
-                        GoalRowView(
-                            goal: goal,
-                            index: index,
-                            onTap: { editingGoal = goal },
-                            onUpdateProgress: { value in onUpdateProgress(goal, value) },
-                            onDelete: { onDeleteGoal(goal) },
-                            onGetAdvice: {
-                                selectedGoalForAdvice = goal
-                            }
-                        )
+                // Goals list — centered vertically in remaining cell height
+                // so a shorter Goals list floats to the middle when the
+                // Tasks card determines the row's intrinsic height.
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+
+                    VStack(spacing: 14) {
+                        ForEach(Array(goals.enumerated()), id: \.element.id) { index, goal in
+                            GoalRowView(
+                                goal: goal,
+                                index: index,
+                                onTap: { editingGoal = goal },
+                                onUpdateProgress: { value in onUpdateProgress(goal, value) },
+                                onDelete: { onDeleteGoal(goal) },
+                                onGetInsight: {
+                                    selectedGoalForInsight = goal
+                                }
+                            )
+                        }
                     }
+
+                    Spacer(minLength: 0)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .padding(16)
-        .frame(maxHeight: .infinity, alignment: .topLeading)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(OmiColors.backgroundTertiary.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(OmiColors.backgroundTertiary.opacity(0.5), lineWidth: 1)
-                )
-        )
+        .padding(22)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .omiPanel(fill: OmiColors.backgroundSecondary)
         .sheet(isPresented: $showingCreateSheet) {
             GoalEditSheet(
                 goal: nil,
@@ -143,10 +118,10 @@ struct GoalsWidget: View {
                 onDismiss: { editingGoal = nil }
             )
         }
-        .sheet(item: $selectedGoalForAdvice) { goal in
-            GoalAdviceSheet(
+        .sheet(item: $selectedGoalForInsight) { goal in
+            GoalInsightSheet(
                 goal: goal,
-                onDismiss: { selectedGoalForAdvice = nil }
+                onDismiss: { selectedGoalForInsight = nil }
             )
         }
         .sheet(isPresented: $showingHistory) {
@@ -172,7 +147,7 @@ struct GoalRowView: View {
     let onTap: () -> Void
     let onUpdateProgress: (Double) -> Void
     let onDelete: () -> Void
-    var onGetAdvice: (() -> Void)? = nil
+    var onGetInsight: (() -> Void)? = nil
 
     @State private var isHovering = false
     @State private var isDragging = false
@@ -216,19 +191,19 @@ struct GoalRowView: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             // Emoji icon - tapping opens edit sheet
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(OmiColors.backgroundTertiary.opacity(0.6))
-                    .frame(width: 32, height: 32)
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(OmiColors.backgroundRaised.opacity(0.9))
+                    .frame(width: 36, height: 36)
                 Text(goalEmoji)
                     .scaledFont(size: 16)
             }
             .onTapGesture { onTap() }
 
             // Content
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text(goal.title)
                         .scaledFont(size: 13, weight: .medium)
@@ -253,8 +228,8 @@ struct GoalRowView: View {
                     }
 
                     // Advice button (shown on hover)
-                    if isHovering, let onGetAdvice = onGetAdvice {
-                        Button(action: onGetAdvice) {
+                    if isHovering, let onGetInsight = onGetInsight {
+                        Button(action: onGetInsight) {
                             Image(systemName: "lightbulb.fill")
                                 .scaledFont(size: 11)
                                 .foregroundColor(.yellow)
@@ -357,11 +332,11 @@ struct GoalRowView: View {
                 }
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(OmiColors.backgroundTertiary.opacity(isHovering ? 0.5 : 0.3))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(OmiColors.backgroundTertiary.opacity(isHovering ? 0.9 : 0.72))
         )
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -737,12 +712,12 @@ struct GoalEditSheet: View {
 
 // MARK: - Goal Advice Sheet
 
-struct GoalAdviceSheet: View {
+struct GoalInsightSheet: View {
     let goal: Goal
     let onDismiss: () -> Void
 
     @State private var isLoading = true
-    @State private var advice: String? = nil
+    @State private var insight: String? = nil
     @State private var errorMessage: String? = nil
 
     var body: some View {
@@ -753,7 +728,7 @@ struct GoalAdviceSheet: View {
                     Image(systemName: "lightbulb.fill")
                         .scaledFont(size: 16)
                         .foregroundColor(.yellow)
-                    Text("Goal Advice")
+                    Text("Goal Insight")
                         .scaledFont(size: 18, weight: .semibold)
                         .foregroundColor(OmiColors.textPrimary)
                 }
@@ -813,7 +788,7 @@ struct GoalAdviceSheet: View {
                     VStack(spacing: 12) {
                         ProgressView()
                             .scaleEffect(1.2)
-                        Text("Getting personalized advice...")
+                        Text("Getting personalized insight...")
                             .scaledFont(size: 13)
                             .foregroundColor(OmiColors.textTertiary)
                     }
@@ -829,13 +804,13 @@ struct GoalAdviceSheet: View {
                             .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let advice = advice {
+                } else if let insightText = insight {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("This week's action:")
                             .scaledFont(size: 12)
                             .foregroundColor(OmiColors.textTertiary)
 
-                        Text(advice)
+                        Text(insightText)
                             .scaledFont(size: 14)
                             .foregroundColor(OmiColors.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -852,7 +827,7 @@ struct GoalAdviceSheet: View {
             // Actions
             HStack(spacing: 12) {
                 // Refresh button
-                Button(action: loadAdvice) {
+                Button(action: loadInsight) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.clockwise")
                             .scaledFont(size: 12)
@@ -885,19 +860,19 @@ struct GoalAdviceSheet: View {
         .frame(width: 400, height: 380)
         .background(OmiColors.backgroundSecondary)
         .onAppear {
-            loadAdvice()
+            loadInsight()
         }
     }
 
-    private func loadAdvice() {
+    private func loadInsight() {
         isLoading = true
         errorMessage = nil
 
         Task {
             do {
-                let result = try await GoalsAIService.shared.getGoalAdvice(goal: goal)
+                let result = try await GoalsAIService.shared.getGoalInsight(goal: goal)
                 await MainActor.run {
-                    advice = result
+                    insight = result
                     isLoading = false
                 }
             } catch {

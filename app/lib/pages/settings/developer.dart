@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -10,17 +11,19 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:omi/backend/http/api/knowledge_graph_api.dart';
+import 'package:omi/backend/schema/bt_device/bt_device.dart';
+import 'package:omi/pages/home/firmware_mixin.dart';
 import 'package:omi/backend/http/api/users.dart';
 import 'package:omi/backend/preferences.dart';
 import 'package:omi/env/env.dart';
 import 'package:omi/models/stt_provider.dart';
-import 'package:omi/pages/persona/persona_profile.dart';
 import 'package:omi/pages/settings/conversation_timeout_dialog.dart';
 import 'package:omi/pages/settings/import_history_page.dart';
 import 'package:omi/pages/settings/transcription_settings_page.dart';
 import 'package:omi/pages/settings/widgets/create_mcp_api_key_dialog.dart';
 import 'package:omi/pages/settings/widgets/developer_api_keys_section.dart';
 import 'package:omi/pages/settings/widgets/mcp_api_key_list_item.dart';
+import 'package:omi/providers/device_provider.dart';
 import 'package:omi/providers/developer_mode_provider.dart';
 import 'package:omi/providers/mcp_provider.dart';
 import 'package:omi/utils/alerts/app_snackbar.dart';
@@ -29,14 +32,26 @@ import 'package:omi/utils/debug_log_manager.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/utils/logger.dart';
 
-class DeveloperSettingsPage extends StatefulWidget {
+class DeveloperSettingsPage extends StatelessWidget {
   const DeveloperSettingsPage({super.key});
 
   @override
-  State<DeveloperSettingsPage> createState() => _DeveloperSettingsPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => DeveloperModeProvider()..initialize(),
+      child: const _DeveloperSettingsPageView(),
+    );
+  }
 }
 
-class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
+class _DeveloperSettingsPageView extends StatefulWidget {
+  const _DeveloperSettingsPageView();
+
+  @override
+  State<_DeveloperSettingsPageView> createState() => _DeveloperSettingsPageState();
+}
+
+class _DeveloperSettingsPageState extends State<_DeveloperSettingsPageView> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -354,6 +369,53 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
   }
 
   @override
+  Widget _buildManualFirmwareFlash(DeviceProvider provider) {
+    return _buildSectionContainer(
+      children: [
+        GestureDetector(
+          onTap: () async {
+            final result = await FilePicker.platform.pickFiles(
+              type: FileType.custom,
+              allowedExtensions: ['zip'],
+              dialogTitle: 'Select firmware ZIP file',
+            );
+            if (result == null || result.files.isEmpty) return;
+            final file = result.files.first;
+            if (file.path == null) return;
+
+            if (!mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => _ManualFirmwareFlashPage(
+                  zipFilePath: file.path!,
+                  fileName: file.name,
+                  device: provider.pairedDevice!,
+                ),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Center(child: FaIcon(FontAwesomeIcons.microchip, color: Colors.white, size: 16)),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Text('Flash Custom Firmware', style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+                Icon(Icons.chevron_right, color: Colors.grey.shade600, size: 20),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -392,85 +454,6 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Persona Section
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const PersonaProfilePage(),
-                          settings: const RouteSettings(arguments: 'from_settings'),
-                        ),
-                      );
-                      MixpanelManager().pageOpened('Developer Persona Settings');
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1C1C1E),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2A2A2E),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Center(
-                              child: FaIcon(FontAwesomeIcons.solidCircleUser, color: Colors.grey.shade400, size: 16),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      context.l10n.persona,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        context.l10n.beta,
-                                        style: const TextStyle(
-                                          color: Colors.orange,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  context.l10n.configureAiPersona,
-                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-                                ),
-                              ],
-                            ),
-                          ),
-                          FaIcon(FontAwesomeIcons.chevronRight, color: Colors.grey.shade600, size: 14),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
                   // Transcription Section
                   GestureDetector(
                     onTap: () async {
@@ -1537,54 +1520,6 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Divider(color: Colors.grey.shade800, height: 1),
                         ),
-                        // Follow-up Questions
-                        _buildExperimentalItem(
-                          title: context.l10n.followUpQuestions,
-                          description: context.l10n.suggestQuestionsAfterConversations,
-                          icon: FontAwesomeIcons.lightbulb,
-                          value: provider.followUpQuestionEnabled,
-                          onChanged: provider.onFollowUpQuestionChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
-                        // Goal Tracker
-                        _buildExperimentalItem(
-                          title: context.l10n.goalTracker,
-                          description: context.l10n.trackYourGoalsOnHomepage,
-                          icon: FontAwesomeIcons.bullseye,
-                          value: provider.showGoalTrackerEnabled,
-                          onChanged: provider.onShowGoalTrackerChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
-                        // Daily Score
-                        _buildExperimentalItem(
-                          title: context.l10n.dailyScore,
-                          description: context.l10n.showDailyScoreOnHomepage,
-                          icon: FontAwesomeIcons.chartLine,
-                          value: provider.showDailyScoreEnabled,
-                          onChanged: provider.onShowDailyScoreChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
-                        // Tasks
-                        _buildExperimentalItem(
-                          title: context.l10n.tasks,
-                          description: context.l10n.showTasksOnHomepage,
-                          icon: FontAwesomeIcons.listCheck,
-                          value: provider.showTasksEnabled,
-                          onChanged: provider.onShowTasksChanged,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Divider(color: Colors.grey.shade800, height: 1),
-                        ),
                         // VAD Gate
                         _buildExperimentalItem(
                           title: 'VAD Gate',
@@ -1671,8 +1606,66 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
                     ),
                   ),
 
-                  // API Environment Section (TestFlight only)
-                  if (Env.isTestFlight) ...[
+                  // Home Screen Section
+                  const SizedBox(height: 32),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, right: 4, bottom: 12),
+                    child: Text(
+                      'Home Screen',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(color: const Color(0xFF1C1C1E), borderRadius: BorderRadius.circular(14)),
+                    child: Column(
+                      children: [
+                        _buildExperimentalItem(
+                          title: context.l10n.goalTracker,
+                          description: context.l10n.trackYourGoalsOnHomepage,
+                          icon: FontAwesomeIcons.bullseye,
+                          value: provider.showGoalTrackerEnabled,
+                          onChanged: provider.onShowGoalTrackerChanged,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(color: Colors.grey.shade800, height: 1),
+                        ),
+                        _buildExperimentalItem(
+                          title: context.l10n.dailyScore,
+                          description: context.l10n.showDailyScoreOnHomepage,
+                          icon: FontAwesomeIcons.chartLine,
+                          value: provider.showDailyScoreEnabled,
+                          onChanged: provider.onShowDailyScoreChanged,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(color: Colors.grey.shade800, height: 1),
+                        ),
+                        _buildExperimentalItem(
+                          title: context.l10n.tasks,
+                          description: context.l10n.showTasksOnHomepage,
+                          icon: FontAwesomeIcons.listCheck,
+                          value: provider.showTasksEnabled,
+                          onChanged: provider.onShowTasksChanged,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(color: Colors.grey.shade800, height: 1),
+                        ),
+                        _buildExperimentalItem(
+                          title: context.l10n.showPhoneCallButtonTitle,
+                          description: context.l10n.showPhoneCallButtonDesc,
+                          icon: FontAwesomeIcons.phone,
+                          value: provider.showPhoneCallButton,
+                          onChanged: provider.onShowPhoneCallButtonChanged,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // API Environment Section (TestFlight only, requires STAGING_API_URL env var)
+                  if (Env.isTestFlight && Env.isStagingConfigured) ...[
                     const SizedBox(height: 32),
                     _buildSectionHeader(context.l10n.apiEnvironment, subtitle: context.l10n.apiEnvironmentDescription),
                     Container(
@@ -1760,7 +1753,7 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            Uri.parse(Env.stagingApiUrl).host,
+                                            Uri.parse(Env.stagingApiUrl!).host,
                                             style: TextStyle(
                                               color: SharedPreferencesUtil().testFlightUseStagingApi
                                                   ? Colors.white70
@@ -1816,12 +1809,218 @@ class _DeveloperSettingsPageState extends State<DeveloperSettingsPage> {
                     ],
                   ],
 
+                  // Manual Firmware Flash (only when device connected)
+                  Builder(
+                    builder: (context) {
+                      final deviceProvider = context.watch<DeviceProvider>();
+                      if (deviceProvider.isConnected && deviceProvider.pairedDevice != null) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+                            _buildSectionHeader('Firmware', subtitle: 'Flash custom firmware builds'),
+                            const SizedBox(height: 8),
+                            _buildManualFirmwareFlash(deviceProvider),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+
                   const SizedBox(height: 48),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ============================================================
+// Manual Firmware Flash Page
+// ============================================================
+
+class _ManualFirmwareFlashPage extends StatefulWidget {
+  final String zipFilePath;
+  final String fileName;
+  final BtDevice device;
+
+  const _ManualFirmwareFlashPage({required this.zipFilePath, required this.fileName, required this.device});
+
+  @override
+  State<_ManualFirmwareFlashPage> createState() => _ManualFirmwareFlashPageState();
+}
+
+class _ManualFirmwareFlashPageState extends State<_ManualFirmwareFlashPage> with FirmwareMixin {
+  bool _confirmed = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    killMcuUpdateManager();
+    super.dispose();
+  }
+
+  Future<void> _startFlash() async {
+    setState(() {
+      _confirmed = true;
+      _error = null;
+    });
+    try {
+      // Manual flash always uses MCU DFU — modern firmware ZIPs contain
+      // manifest.json which NordicDfu (legacy) cannot parse.
+      await startMCUDfu(widget.device, zipFilePath: widget.zipFilePath);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = e.toString());
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: const Text('Flash Firmware', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // File info
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: const Color(0xFF1C1C1E), borderRadius: BorderRadius.circular(12)),
+              child: Row(
+                children: [
+                  const FaIcon(FontAwesomeIcons.file, color: Colors.deepPurple, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.fileName,
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Target: ${widget.device.name}',
+                          style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Warning
+            if (!_confirmed) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade900.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.shade700.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.orange.shade300, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Flashing custom firmware can brick your device. Make sure this is a valid Omi firmware build. Do not disconnect during the update.',
+                        style: TextStyle(color: Colors.orange.shade300, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _startFlash,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'Flash Firmware',
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+
+            // Progress
+            if (_confirmed && !isInstalled) ...[
+              const SizedBox(height: 16),
+              Text(
+                isInstalling ? 'Installing...' : 'Preparing...',
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 16),
+              LinearProgressIndicator(
+                value: installProgress / 100,
+                backgroundColor: const Color(0xFF2A2A2E),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+                minHeight: 8,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              const SizedBox(height: 8),
+              Text('${installProgress}%', style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
+            ],
+
+            // Success
+            if (isInstalled) ...[
+              const SizedBox(height: 32),
+              const Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green, size: 64),
+                    SizedBox(height: 16),
+                    Text(
+                      'Firmware flashed successfully!',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    SizedBox(height: 8),
+                    Text('Your device will restart.', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
+
+            // Error
+            if (_error != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade900.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(_error!, style: TextStyle(color: Colors.red.shade300, fontSize: 13)),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

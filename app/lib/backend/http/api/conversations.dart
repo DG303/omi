@@ -61,9 +61,8 @@ Future<List<ServerConversation>> getConversations({
   if (response.statusCode == 200) {
     // decode body bytes to utf8 string and then parse json so as to avoid utf8 char issues
     var body = utf8.decode(response.bodyBytes);
-    var memories = (jsonDecode(body) as List<dynamic>)
-        .map((conversation) => ServerConversation.fromJson(conversation))
-        .toList();
+    var memories =
+        (jsonDecode(body) as List<dynamic>).map((conversation) => ServerConversation.fromJson(conversation)).toList();
     Logger.debug('getConversations length: ${memories.length}');
     return memories;
   } else {
@@ -139,21 +138,6 @@ Future<bool> updateConversationSegmentText(String conversationId, String segment
   return response.statusCode == 200;
 }
 
-Future<List<ConversationPhoto>> getConversationPhotos(String conversationId) async {
-  var response = await makeApiCall(
-    url: '${Env.apiBaseUrl}v1/conversations/$conversationId/photos',
-    headers: {},
-    method: 'GET',
-    body: '',
-  );
-  if (response == null) return [];
-  Logger.debug('getConversationPhotos: ${response.body}');
-  if (response.statusCode == 200) {
-    return (jsonDecode(response.body) as List<dynamic>).map((photo) => ConversationPhoto.fromJson(photo)).toList();
-  }
-  return [];
-}
-
 class TranscriptsResponse {
   List<TranscriptSegment> deepgram;
   List<TranscriptSegment> soniox;
@@ -172,9 +156,8 @@ class TranscriptsResponse {
       deepgram: (json['deepgram'] as List<dynamic>).map((segment) => TranscriptSegment.fromJson(segment)).toList(),
       soniox: (json['soniox'] as List<dynamic>).map((segment) => TranscriptSegment.fromJson(segment)).toList(),
       whisperx: (json['whisperx'] as List<dynamic>).map((segment) => TranscriptSegment.fromJson(segment)).toList(),
-      speechmatics: (json['speechmatics'] as List<dynamic>)
-          .map((segment) => TranscriptSegment.fromJson(segment))
-          .toList(),
+      speechmatics:
+          (json['speechmatics'] as List<dynamic>).map((segment) => TranscriptSegment.fromJson(segment)).toList(),
     );
   }
 }
@@ -193,21 +176,6 @@ Future<TranscriptsResponse> getConversationTranscripts(String conversationId) as
     return TranscriptsResponse.fromJson(transcripts);
   }
   return TranscriptsResponse();
-}
-
-Future<bool> hasConversationRecording(String conversationId) async {
-  var response = await makeApiCall(
-    url: '${Env.apiBaseUrl}v1/conversations/$conversationId/recording',
-    headers: {},
-    method: 'GET',
-    body: '',
-  );
-  if (response == null) return false;
-  Logger.debug('hasConversationRecording: ${response.body}');
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body)['has_recording'] ?? false;
-  }
-  return false;
 }
 
 Future<bool> assignBulkConversationTranscriptSegments(
@@ -261,19 +229,6 @@ Future<bool> setConversationStarred(String conversationId, bool starred) async {
   return response.statusCode == 200;
 }
 
-Future<bool> setConversationEventsState(String conversationId, List<int> eventsIdx, List<bool> values) async {
-  print(jsonEncode({'events_idx': eventsIdx, 'values': values}));
-  var response = await makeApiCall(
-    url: '${Env.apiBaseUrl}v1/conversations/$conversationId/events',
-    headers: {},
-    method: 'PATCH',
-    body: jsonEncode({'events_idx': eventsIdx, 'values': values}),
-  );
-  if (response == null) return false;
-  Logger.debug('setConversationEventsState: ${response.body}');
-  return response.statusCode == 200;
-}
-
 Future<bool> setConversationActionItemState(String conversationId, List<int> actionItemsIdx, List<bool> values) async {
   print(jsonEncode({'items_idx': actionItemsIdx, 'values': values, 'conversation_id': conversationId}));
   var response = await makeApiCall(
@@ -317,41 +272,25 @@ Future<bool> deleteConversationActionItem(String conversationId, ActionItem item
   return response.statusCode == 204;
 }
 
-//this is expected to return complete memories
-Future<List<ServerConversation>> sendStorageToBackend(File file, String sdCardDateTimeString) async {
+Future<SyncLocalFilesResponse> syncLocalFiles(List<File> files, {UploadProgressCallback? onUploadProgress}) async {
   try {
     var response = await makeMultipartApiCall(
-      url: '${Env.apiBaseUrl}sdcard_memory?date_time=$sdCardDateTimeString',
-      files: [file],
-      fileFieldName: 'file',
+      url: '${Env.apiBaseUrl}v1/sync-local-files',
+      files: files,
+      onUploadProgress: onUploadProgress,
     );
 
-    if (response.statusCode == 200) {
-      Logger.debug('storageSend Response body: ${jsonDecode(response.body)}');
-    } else {
-      Logger.debug('Failed to storageSend. Status code: ${response.statusCode}');
-      return [];
-    }
-
-    var memories = (jsonDecode(response.body) as List<dynamic>)
-        .map((conversation) => ServerConversation.fromJson(conversation))
-        .toList();
-    Logger.debug('getMemories length: ${memories.length}');
-
-    return memories;
-  } catch (e) {
-    Logger.debug('An error occurred storageSend: $e');
-    return [];
-  }
-}
-
-Future<SyncLocalFilesResponse> syncLocalFiles(List<File> files) async {
-  try {
-    var response = await makeMultipartApiCall(url: '${Env.apiBaseUrl}v1/sync-local-files', files: files);
-
-    if (response.statusCode == 200) {
-      Logger.debug('syncLocalFile Response body: ${jsonDecode(response.body)}');
-      return SyncLocalFilesResponse.fromJson(jsonDecode(response.body));
+    if (response.statusCode == 200 || response.statusCode == 207) {
+      var result = SyncLocalFilesResponse.fromJson(jsonDecode(response.body));
+      if (response.statusCode == 207) {
+        Logger.debug(
+          'syncLocalFiles partial failure: ${result.failedSegments}/${result.totalSegments} segments failed, '
+          'errors: ${result.errors}',
+        );
+      } else {
+        Logger.debug('syncLocalFile Response body: ${jsonDecode(response.body)}');
+      }
+      return result;
     } else if (response.statusCode == 400) {
       throw Exception('Audio file could not be processed by server');
     } else if (response.statusCode == 413) {
@@ -363,6 +302,107 @@ Future<SyncLocalFilesResponse> syncLocalFiles(List<File> files) async {
     }
   } catch (e) {
     Logger.debug('syncLocalFiles error: $e');
+    rethrow;
+  }
+}
+
+/// v2 async sync: POST files → 202 with job_id, then poll until terminal.
+/// Returns the same SyncLocalFilesResponse as v1 once processing is confirmed complete.
+typedef SyncJobPollCallback = void Function(SyncJobStatusResponse status);
+
+Future<SyncLocalFilesResponse> syncLocalFilesV2(
+  List<File> files, {
+  UploadProgressCallback? onUploadProgress,
+  SyncJobPollCallback? onPollProgress,
+  String? conversationId,
+}) async {
+  try {
+    // Step 1: Submit files
+    var url = '${Env.apiBaseUrl}v2/sync-local-files';
+    if (conversationId != null) {
+      url += '?conversation_id=${Uri.encodeQueryComponent(conversationId)}';
+    }
+    var response = await makeMultipartApiCall(url: url, files: files, onUploadProgress: onUploadProgress);
+
+    // Fast-path responses (no async job created)
+    if (response.statusCode == 200) {
+      return SyncLocalFilesResponse.fromJson(jsonDecode(response.body));
+    }
+
+    if (response.statusCode != 202) {
+      if (response.statusCode == 400) {
+        throw Exception('Audio file could not be processed by server');
+      } else if (response.statusCode == 413) {
+        throw Exception('Audio file is too large to upload');
+      } else if (response.statusCode == 429) {
+        throw Exception('Rate limited or budget exhausted');
+      } else if (response.statusCode >= 500) {
+        throw Exception('Server is temporarily unavailable');
+      } else {
+        throw Exception('Upload failed unexpectedly');
+      }
+    }
+
+    // Step 2: Poll for completion
+    var startResponse = SyncJobStartResponse.fromJson(jsonDecode(response.body));
+    var jobId = startResponse.jobId;
+    var pollInterval = Duration(milliseconds: startResponse.pollAfterMs);
+
+    const maxPolls = 120; // 120 x 3s = 6 minutes max
+    for (var i = 0; i < maxPolls; i++) {
+      await Future.delayed(pollInterval);
+
+      var pollResponse = await makeApiCall(
+        url: '${Env.apiBaseUrl}v2/sync-local-files/$jobId',
+        headers: {},
+        method: 'GET',
+        body: '',
+      );
+
+      if (pollResponse == null) {
+        Logger.debug('syncLocalFilesV2 poll failed: null response');
+        continue; // Retry on transient errors
+      }
+
+      // Terminal errors — don't retry
+      if (pollResponse.statusCode == 404) {
+        throw Exception('Sync job not found or expired');
+      }
+      if (pollResponse.statusCode == 403) {
+        throw Exception('Not authorized to view this sync job');
+      }
+      if (pollResponse.statusCode != 200) {
+        Logger.debug('syncLocalFilesV2 poll failed: ${pollResponse.statusCode}');
+        continue; // Retry on transient errors
+      }
+
+      var jobStatus = SyncJobStatusResponse.fromJson(jsonDecode(pollResponse.body));
+
+      // Report poll progress to caller for UI updates
+      onPollProgress?.call(jobStatus);
+
+      if (jobStatus.isTerminal) {
+        // All segments failed → throw to match v1's 500 behavior (WAL stays retryable)
+        if (jobStatus.status == 'failed') {
+          throw Exception(jobStatus.error ?? 'Sync job failed');
+        }
+        // Success or partial failure → return result
+        if (jobStatus.result != null) {
+          return jobStatus.result!;
+        }
+        return SyncLocalFilesResponse(
+          newConversationIds: [],
+          updatedConversationIds: [],
+          failedSegments: jobStatus.failedSegments,
+          totalSegments: jobStatus.totalSegments,
+        );
+      }
+    }
+
+    // Polling timed out — don't mark as synced
+    throw Exception('Sync job timed out waiting for results');
+  } catch (e) {
+    Logger.debug('syncLocalFilesV2 error: $e');
     rethrow;
   }
 }
@@ -459,10 +499,6 @@ Future<List<App>> getConversationSuggestedApps(String conversationId) async {
     return (data['suggested_apps'] as List<dynamic>).map((appData) => App.fromJson(appData)).toList();
   }
   return [];
-}
-
-Future<bool> updateActionItemStateByMetadata(String conversationId, int itemIndex, bool newState) async {
-  return await setConversationActionItemState(conversationId, [itemIndex], [newState]);
 }
 
 // *********************************

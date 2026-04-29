@@ -79,6 +79,8 @@ ingress:
   #      - chart-example.local
 
 env:
+  - name: USE_VERTEX_AI
+    value: "true"
   - name: GEMINI_API_KEY
     valueFrom:
       secretKeyRef:
@@ -106,11 +108,6 @@ env:
       secretKeyRef:
         name: prod-omi-backend-secrets
         key: GROQ_API_KEY
-  - name: SONIOX_API_KEY
-    valueFrom:
-      secretKeyRef:
-        name: prod-omi-backend-secrets
-        key: SONIOX_API_KEY
   - name: HOSTED_VAD_API_URL
     value: "http://vad.omi.me:80/v1/vad"
   - name: HOSTED_SPEECH_PROFILE_API_URL
@@ -151,11 +148,6 @@ env:
       secretKeyRef:
         name: prod-omi-backend-secrets
         key: GOOGLE_MAPS_API_KEY
-  - name: WORKFLOW_API_KEY
-    valueFrom:
-      secretKeyRef:
-        name: prod-omi-backend-secrets
-        key: WORKFLOW_API_KEY
   - name: NO_SOCKET_TIMEOUT
     value: "true"
   - name: BUCKET_TEMPORAL_SYNC_LOCAL
@@ -276,10 +268,14 @@ env:
     value: "price_1RtJPm1F8wnoWYvwhVJ38kLb"
   - name: STRIPE_UNLIMITED_ANNUAL_PRICE_ID
     value: "price_1RtJQ71F8wnoWYvwKMPaGlGY"
-  - name: STRIPE_PRO_MONTHLY_PRICE_ID
-    value: ""
-  - name: STRIPE_PRO_ANNUAL_PRICE_ID
-    value: ""
+  - name: STRIPE_ARCHITECT_MONTHLY_PRICE_ID
+    value: "price_1TAfBB1F8wnoWYvw8XBFM1dX"
+  - name: STRIPE_ARCHITECT_ANNUAL_PRICE_ID
+    value: "price_1TLFac1F8wnoWYvwtPxZhtzE"
+  - name: STRIPE_OPERATOR_MONTHLY_PRICE_ID
+    value: "price_1TMxVM1F8wnoWYvw9uaoYX7V"
+  - name: STRIPE_OPERATOR_ANNUAL_PRICE_ID
+    value: "price_1TMxVM1F8wnoWYvwNfXdF6LW"
   - name: SUBSCRIPTION_LAUNCH_DATE
     value: "2025-08-21"
   - name: BUCKET_PRIVATE_CLOUD_SYNC
@@ -360,28 +356,34 @@ resources:
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
-  tcpSocket:
+  httpGet:
+    path: /v1/health
     port: 8080
-  failureThreshold: 30
+  failureThreshold: 5
   periodSeconds: 10
+  timeoutSeconds: 5
 
 readinessProbe:
-  tcpSocket:
+  httpGet:
+    path: /v1/health
     port: 8080
-  failureThreshold: 30
+  failureThreshold: 3
   periodSeconds: 10
+  timeoutSeconds: 5
 
 startupProbe:
-  tcpSocket:
+  httpGet:
+    path: /v1/health
     port: 8080
   failureThreshold: 30
   periodSeconds: 10
+  timeoutSeconds: 5
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: true
   minReplicas: 20
-  maxReplicas: 40
+  maxReplicas: 60
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 600
@@ -394,19 +396,19 @@ autoscaling:
         periodSeconds: 120
       selectPolicy: Min
     scaleUp:
-      stabilizationWindowSeconds: 120
+      stabilizationWindowSeconds: 30
       policies:
       - type: Percent
-        value: 30
-        periodSeconds: 60
+        value: 50
+        periodSeconds: 15
       - type: Pods
         value: 5
-        periodSeconds: 60
+        periodSeconds: 15
       selectPolicy: Max
   # targetCPUUtilizationPercentage: 70
   # targetMemoryUtilizationPercentage: 70
-  # requestsPerPod: 10
   # failedResponseCode: 10
+  requestsPerPod: 10
   activeConnectionsPerPod: 22
 
 podDisruptionBudget:

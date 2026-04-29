@@ -140,38 +140,44 @@ struct OMIApp: App {
 
       // Sidebar navigation shortcuts: Cmd+1..6 for main pages, Cmd+, for Settings
       CommandGroup(after: .sidebar) {
-        Button("Dashboard") {
-          NotificationCenter.default.post(name: .navigateToSidebarItem, object: nil,
+        Button("Home") {
+          NotificationCenter.default.post(
+            name: .navigateToSidebarItem, object: nil,
             userInfo: ["rawValue": SidebarNavItem.dashboard.rawValue])
         }
         .keyboardShortcut("1", modifiers: .command)
 
-        Button("Chat") {
-          NotificationCenter.default.post(name: .navigateToSidebarItem, object: nil,
-            userInfo: ["rawValue": SidebarNavItem.chat.rawValue])
+        Button("Conversations") {
+          NotificationCenter.default.post(
+            name: .navigateToSidebarItem, object: nil,
+            userInfo: ["rawValue": SidebarNavItem.conversations.rawValue])
         }
         .keyboardShortcut("2", modifiers: .command)
 
         Button("Memories") {
-          NotificationCenter.default.post(name: .navigateToSidebarItem, object: nil,
+          NotificationCenter.default.post(
+            name: .navigateToSidebarItem, object: nil,
             userInfo: ["rawValue": SidebarNavItem.memories.rawValue])
         }
         .keyboardShortcut("3", modifiers: .command)
 
         Button("Tasks") {
-          NotificationCenter.default.post(name: .navigateToSidebarItem, object: nil,
+          NotificationCenter.default.post(
+            name: .navigateToSidebarItem, object: nil,
             userInfo: ["rawValue": SidebarNavItem.tasks.rawValue])
         }
         .keyboardShortcut("4", modifiers: .command)
 
         Button("Rewind") {
-          NotificationCenter.default.post(name: .navigateToSidebarItem, object: nil,
+          NotificationCenter.default.post(
+            name: .navigateToSidebarItem, object: nil,
             userInfo: ["rawValue": SidebarNavItem.rewind.rawValue])
         }
         .keyboardShortcut("5", modifiers: .command)
 
         Button("Apps") {
-          NotificationCenter.default.post(name: .navigateToSidebarItem, object: nil,
+          NotificationCenter.default.post(
+            name: .navigateToSidebarItem, object: nil,
             userInfo: ["rawValue": SidebarNavItem.apps.rawValue])
         }
         .keyboardShortcut("6", modifiers: .command)
@@ -179,10 +185,18 @@ struct OMIApp: App {
         Divider()
 
         Button("Settings") {
-          NotificationCenter.default.post(name: .navigateToSidebarItem, object: nil,
+          NotificationCenter.default.post(
+            name: .navigateToSidebarItem, object: nil,
             userInfo: ["rawValue": SidebarNavItem.settings.rawValue])
         }
         .keyboardShortcut(",", modifiers: .command)
+      }
+
+      CommandGroup(after: .toolbar) {
+        Button("Refresh") {
+          NotificationCenter.default.post(name: .refreshAllData, object: nil)
+        }
+        .keyboardShortcut("r", modifiers: .command)
       }
     }
 
@@ -202,11 +216,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   private var globalHotkeyMonitor: Any?
   private var localHotkeyMonitor: Any?
   private var windowObservers: [NSObjectProtocol] = []
+  private var userDefaultsObserver: NSObjectProtocol?
   private var statusBarItem: NSStatusItem?
   private var screenCaptureSwitch: NSSwitch?
   private var audioRecordingSwitch: NSSwitch?
+  private var relaunchOnLoginSuppressedForOnboarding = false
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    if ViewExporter.shouldExport() {
+      ViewExporter.run()
+      return
+    }
+
     // Ignore SIGPIPE so broken-pipe writes return errors instead of crashing the app.
     // Without this, writing to a dead FFmpeg stdin or agent-bridge pipe kills the process.
     signal(SIGPIPE, SIG_IGN)
@@ -295,8 +316,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // (e.g. proactive assistants cancelling in-flight Gemini requests on context switch)
         if let exceptions = event.exceptions,
           exceptions.contains(where: { exc in
-            exc.type == "NSURLErrorDomain" && exc.value.contains("Code=-999")
-              || exc.type == "NSURLErrorDomain" && exc.value.contains("Code: -999")
+            let value = exc.value ?? ""
+            return exc.type == "NSURLErrorDomain" && (
+              value.contains("Code=-999") || value.contains("Code: -999")
+            )
           })
         {
           return nil
@@ -306,7 +329,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // UserDefaults; the 30s refresh timer will retry. Not actionable as a Sentry error.
         if let exceptions = event.exceptions,
           exceptions.contains(where: { exc in
-            exc.type == "Omi_Computer.AuthError" && exc.value.contains("notSignedIn")
+            exc.type == "Omi_Computer.AuthError" && (exc.value ?? "").contains("notSignedIn")
           })
         {
           return nil
@@ -328,6 +351,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // Initialize analytics (MixPanel + PostHog)
     AnalyticsManager.shared.initialize()
+    AnalyticsManager.shared.detectAndReportCrash()
     AnalyticsManager.shared.appLaunched()
     AnalyticsManager.shared.trackDisplayInfo()
 
@@ -378,7 +402,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
       AuthService.shared.fetchConversations()
 
       // Fetch API keys from backend (keys are not bundled in the app)
-      APIKeyService.shared.fetchTask = Task { await APIKeyService.shared.fetchKeys() }
+      APIKeyService.shared.startFetchingKeys()
+
+      // Fetch subscription plan for floating bar usage limits
+      Task { await FloatingBarUsageLimiter.shared.fetchPlan() }
 
       // Check tier eligibility (at most once per day)
       Task {
@@ -397,6 +424,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // One-time migration: Rename app bundle from legacy names to "omi.app"
     migrateAppName()
+
+    updateOnboardingLifecyclePolicy(reason: "launch")
+    userDefaultsObserver = NotificationCenter.default.addObserver(
+      forName: UserDefaults.didChangeNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.updateOnboardingLifecyclePolicy(reason: "user_defaults_changed")
+    }
 
     // Track launch at login status once per app launch
     Task { @MainActor in
@@ -1006,8 +1042,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   }
 
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-    // Keep app running in menu bar when all windows are closed
-    return false
+    let shouldTerminate = !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+    if shouldTerminate {
+      log(
+        "AppDelegate: Last onboarding window closed — terminating instead of keeping a background menu bar process"
+      )
+    }
+    return shouldTerminate
   }
 
   func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool
@@ -1026,11 +1067,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   }
 
   func applicationWillTerminate(_ notification: Notification) {
+    // Mark clean exit so crash detection works on next launch
+    UserDefaults.standard.set(true, forKey: "lastSessionCleanExit")
+
     // Remove window observers
     for observer in windowObservers {
       NotificationCenter.default.removeObserver(observer)
     }
     windowObservers.removeAll()
+    if let observer = userDefaultsObserver {
+      NotificationCenter.default.removeObserver(observer)
+      userDefaultsObserver = nil
+    }
     // Remove hotkey monitors
     if let monitor = globalHotkeyMonitor {
       NSEvent.removeMonitor(monitor)
@@ -1087,7 +1135,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
       // Bring app to foreground after OAuth redirect — Safari stays in front otherwise.
       // NSApp.activate() alone doesn't switch macOS Spaces; ordering a window front does.
       NSApp.activate()
-      if let window = NSApp.windows.first(where: { $0.isVisible && !$0.isMiniaturized }) ?? NSApp.windows.first(where: { !$0.isMiniaturized }) {
+      if let window = NSApp.windows.first(where: { $0.isVisible && !$0.isMiniaturized })
+        ?? NSApp.windows.first(where: { !$0.isMiniaturized })
+      {
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
       }
@@ -1129,6 +1179,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         log("LaunchAtLogin migration: Already enabled, skipping")
       }
     }
+  }
+
+  private func updateOnboardingLifecyclePolicy(reason: String) {
+    let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+
+    if hasCompletedOnboarding {
+      guard relaunchOnLoginSuppressedForOnboarding else { return }
+      NSApp.enableRelaunchOnLogin()
+      relaunchOnLoginSuppressedForOnboarding = false
+      log("AppDelegate: Re-enabled relaunch on login after onboarding completed (\(reason))")
+      return
+    }
+
+    guard !relaunchOnLoginSuppressedForOnboarding else { return }
+    NSApp.disableRelaunchOnLogin()
+    relaunchOnLoginSuppressedForOnboarding = true
+    log("AppDelegate: Disabled relaunch on login while onboarding is incomplete (\(reason))")
   }
 
   private func migrateAppName() {

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:intl_phone_field/countries.dart';
+import 'package:intl_country_data/intl_country_data.dart';
 import 'package:provider/provider.dart';
 
+import 'package:omi/backend/schema/phone_call.dart';
 import 'package:omi/pages/phone_calls/active_call_page.dart';
 import 'package:omi/pages/phone_calls/phone_setup_intro_page.dart';
+import 'package:omi/pages/settings/phone_call_settings_page.dart';
 import 'package:omi/providers/phone_call_provider.dart';
+import 'package:omi/providers/usage_provider.dart';
 import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/utils/l10n_extensions.dart';
 
@@ -93,6 +96,15 @@ class _PhoneCallsPageState extends State<PhoneCallsPage> with SingleTickerProvid
 
     var provider = context.read<PhoneCallProvider>();
 
+    // Block if already on a call
+    if (provider.callState != PhoneCallState.idle && provider.callState != PhoneCallState.ended) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.callAlreadyInProgress)),
+      );
+      return;
+    }
+
     if (provider.verifiedNumbers.isEmpty) {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PhoneSetupIntroPage()));
       return;
@@ -151,6 +163,14 @@ class _PhoneCallsPageState extends State<PhoneCallsPage> with SingleTickerProvid
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PhoneCallSettingsPage()),
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -164,7 +184,14 @@ class _PhoneCallsPageState extends State<PhoneCallsPage> with SingleTickerProvid
           ],
         ),
       ),
-      body: TabBarView(controller: _tabController, children: [_buildContactsTab(), _buildKeypadTab()]),
+      body: Column(
+        children: [
+          const _FreeQuotaBanner(),
+          Expanded(
+            child: TabBarView(controller: _tabController, children: [_buildContactsTab(), _buildKeypadTab()]),
+          ),
+        ],
+      ),
     );
   }
 
@@ -398,11 +425,12 @@ class _PhoneCallsPageState extends State<PhoneCallsPage> with SingleTickerProvid
   String? _extractCountryCode(String e164Number) {
     if (!e164Number.startsWith('+')) return null;
     var digits = e164Number.substring(1); // strip '+'
+    var allCountries = IntlCountryData.all();
     // Try longest match first (country codes are 1-3 digits)
     for (var len = 3; len >= 1; len--) {
       if (digits.length <= len) continue;
       var candidate = digits.substring(0, len);
-      if (countries.any((c) => c.fullCountryCode == candidate)) {
+      if (allCountries.any((c) => c.telephoneCode == candidate)) {
         return '+$candidate';
       }
     }
@@ -449,6 +477,44 @@ class _ContactRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FreeQuotaBanner extends StatelessWidget {
+  const _FreeQuotaBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<UsageProvider>(
+      builder: (context, usage, _) {
+        final quota = usage.phoneCallQuota;
+        if (quota == null || quota.isPaid) return const SizedBox.shrink();
+        final limit = quota.monthlyLimit;
+        if (limit == null || limit <= 0) return const SizedBox.shrink();
+        final remaining = quota.remaining ?? (limit - quota.monthlyUsed);
+        final maxMinutes = (quota.maxDurationSeconds ?? 0) ~/ 60;
+        final durationSuffix = maxMinutes > 0 ? ' · up to $maxMinutes min each' : '';
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          color: const Color(0xFF1F1F25),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Colors.grey[500]),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  remaining > 0
+                      ? '$remaining of $limit free calls remaining this month$durationSuffix'
+                      : 'Monthly free call limit reached — resets next month',
+                  style: TextStyle(color: Colors.grey[300], fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

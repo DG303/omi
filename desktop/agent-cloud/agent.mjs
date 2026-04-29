@@ -129,21 +129,21 @@ DATABASE SCHEMA:
 ${schema}
 
 TOOLS:
-- **execute_sql**: Run SQL queries on the database. SELECT auto-limits to 200 rows. Use for structured queries (app usage, time ranges, task management, aggregations).
+- **execute_sql**: Run SQL queries on the database. SELECT auto-limits to 200 rows. Supports FTS5 MATCH for keyword search. Use for structured queries (app usage, time ranges, task management, aggregations).
 - **semantic_search**: Vector similarity search on screenshot OCR text. Use for fuzzy/conceptual queries where exact keywords won't work.
 - **get_daily_recap**: Pre-formatted activity recap (apps, conversations, tasks) for a given time range. Use for "what did I do today/yesterday/this week" — single tool call, much faster than multiple SQL queries.
 - **Playwright browser tools**: You can navigate websites, click elements, fill forms, take screenshots, etc. Use when the user asks you to do something on the web.
 - **Backend tools** (calendar, gmail, health, conversations, memories, action items, web search, etc.): Use these when the user asks about their calendar events, emails, health data, past conversations, or wants to search the web. These tools connect to the user's real accounts.
 
 GUIDELINES:
-- For "what did I do today/yesterday/this week" queries, use get_daily_recap — it's a single tool call that returns a formatted summary of apps, conversations, and tasks. Much faster than multiple execute_sql calls.
+- For "what did I do today/yesterday/this week" queries, use get_daily_recap — it's a single tool call that returns a formatted summary. Much faster than multiple execute_sql calls.
 - Only use get_conversations_tool when the user asks about specific conversation transcripts or content details. For activity summaries, get_daily_recap is faster.
 - For time-filtered queries on screenshots, prefer range comparisons: WHERE timestamp >= datetime('now', 'start of day', '-1 day', 'localtime') AND timestamp < datetime('now', 'start of day', 'localtime'). Avoid wrapping the column in date() or strftime() in WHERE clauses — it's slower on large tables.
-- Screenshots have: timestamp, appName, windowTitle, ocrText, embedding (600K+ rows — always filter by timestamp range)
-- Action items have: description, completed, deleted, priority, category, source, dueAt, createdAt
-- Transcription sessions have: title, overview, startedAt, finishedAt, source
-- For task queries, use action_items table
+- Key tables: screenshots (timestamp, appName, windowTitle, ocrText — 600K+ rows, always filter by timestamp), action_items (description, completed, priority, category, dueAt), memories (content, category, source), transcription_sessions (title, overview, startedAt, finishedAt), transcription_segments (sessionId, speaker, text), focus_sessions (status, appOrSite, durationSeconds), observations (appName, contextSummary, currentActivity), goals (title, goalType, targetValue, currentValue), staged_tasks (description, priority), indexed_files (path, filename, fileType, folder), live_notes (sessionId, text), ai_user_profiles (profileText, generatedAt)
+- FTS tables for keyword search: screenshots_fts(ocrText, windowTitle, appName), action_items_fts(description), staged_tasks_fts(description), task_chat_messages_fts(messageText)
+- For task queries, use action_items table (or FTS: action_items_fts MATCH 'keyword')
 - For conversation queries, use transcription_sessions + transcription_segments
+- For personal facts/preferences, query the memories table first
 - For calendar, email, health data — use the backend tools (get_calendar_events_tool, get_gmail_messages_tool, etc.)
 - Be concise and helpful. Format results clearly.`;
 
@@ -289,11 +289,25 @@ async function performSemanticSearch(searchQuery, days = 7, appFilter = null) {
 
 const executeSqlTool = tool(
   "execute_sql",
-  `Run SQL on the user's omi.db SQLite database.
-Supports: SELECT, INSERT, UPDATE, DELETE.
-SELECT auto-limits to 200 rows. UPDATE/DELETE require WHERE. DROP/ALTER/CREATE blocked.
-Use for: app usage stats, time queries, task management, aggregations, anything structured.`,
-  { query: z.string().describe("SQL query to execute") },
+  `Run SQL on the user's local omi.db SQLite database for structured data queries.
+
+Use when:
+- User asks for app usage stats, screen time, or activity counts
+- Time-based queries like "how long did I spend on X?"
+- Task management: looking up action items, checking completion status
+- Aggregations, rankings, or structured filters on local data
+
+Don't use when (if those tools are available):
+- User asks about conversation content or transcripts (prefer get_conversations or search_conversations)
+- User asks about their preferences or facts about themselves (prefer get_memories)
+- User asks fuzzy/conceptual questions (use semantic_search instead)
+- If backend tools are not available, fall back to execute_sql on the local transcription_sessions table
+
+Note: Database is read-only (SELECT only). SELECT queries auto-limit to 200 rows.
+Supports FTS5 MATCH queries for keyword search (e.g., WHERE screenshots_fts MATCH 'keyword').
+
+Key tables: screenshots (appName, windowTitle, ocrText, timestamp), transcription_sessions (title, overview, startedAt, finishedAt), transcription_segments (sessionId, speaker, text, startTime), action_items (description, completed, priority, dueAt, category), memories (content, category, source), staged_tasks (description, priority, source), focus_sessions (status, appOrSite, durationSeconds), observations (appName, contextSummary, currentActivity), goals (title, goalType, targetValue, currentValue), indexed_files (path, filename, fileType, folder), live_notes (sessionId, text, timestamp), ai_user_profiles (profileText, generatedAt).`,
+  { query: z.string().describe("SQL query to execute against omi.db") },
   async ({ query }) => {
     const result = executeSqlQuery(query);
     return { content: [{ type: "text", text: result }] };
@@ -302,13 +316,26 @@ Use for: app usage stats, time queries, task management, aggregations, anything 
 
 const semanticSearchTool = tool(
   "semantic_search",
-  `Vector similarity search on screen history.
-Use for: fuzzy conceptual queries where exact SQL keywords won't work.
-e.g. "reading about machine learning", "working on design mockups"`,
+  `Vector similarity search on the user's screen history (what they saw on their computer).
+
+Use when:
+- Fuzzy or conceptual queries where exact SQL keywords won't work
+- User asks "when was I reading about X?" or "find where I was working on Y"
+- Theme-based recall: "design mockups", "code reviews", "email about project Z"
+
+Don't use when:
+- User asks about spoken conversations or transcripts (prefer search_conversations if available)
+- User asks for structured counts or stats (use execute_sql)
+- User wants a broad daily recap (use get_daily_recap)
+
+Parameter guidance:
+- days: Start with 7 (default). Use 1-3 for recent activity, 14-30 for older searches.
+- app_filter: Set when user specifies an app (e.g., "in Chrome", "in VS Code"). Omit for cross-app searches.
+- Results are ranked by semantic similarity — top 15 returned.`,
   {
-    query: z.string().describe("Natural language search query"),
-    days: z.number().optional().default(7).describe("Number of days to search back (default: 7)"),
-    app_filter: z.string().optional().describe("Filter results to a specific app name"),
+    query: z.string().describe("Natural language search query describing what the user was doing or viewing"),
+    days: z.number().optional().default(7).describe("Days to search back: 1-3 for recent, 7 default, 14-30 for older"),
+    app_filter: z.string().optional().describe("Filter to a specific app (e.g., 'Chrome', 'VS Code'). Omit for all apps"),
   },
   async ({ query, days, app_filter }) => {
     const result = await performSemanticSearch(query, days, app_filter);
@@ -318,11 +345,26 @@ e.g. "reading about machine learning", "working on design mockups"`,
 
 const getDailyRecapTool = tool(
   "get_daily_recap",
-  `Get a pre-formatted daily activity recap from the local database.
-Use for: "what did I do today/yesterday/this week", activity summaries, daily reviews.
-Runs app usage, conversations, and action items queries in one call — much faster than multiple execute_sql calls.`,
+  `Get a pre-formatted daily activity recap combining app usage, conversations, and tasks.
+
+Use when:
+- User asks "what did I do today/yesterday/this week?"
+- Broad activity summaries or daily reviews
+- User wants a quick overview without specifying a topic
+
+Don't use when:
+- User asks about a specific topic or event (prefer search_conversations if available)
+- User needs detailed transcript content (prefer get_conversations if available)
+- User wants structured data or counts (use execute_sql)
+
+This tool runs three queries in one call (apps, conversations, tasks) — much faster than multiple execute_sql calls.
+
+Parameter guidance:
+- days_ago=0: today's activity so far
+- days_ago=1: yesterday (default, most common)
+- days_ago=7: past week overview`,
   {
-    days_ago: z.number().optional().default(1).describe("0=today, 1=yesterday, 7=past week"),
+    days_ago: z.number().optional().default(1).describe("0=today, 1=yesterday, 7=past week. Default 1"),
   },
   async ({ days_ago }) => {
     if (!db) return { content: [{ type: "text", text: "Database not loaded." }] };

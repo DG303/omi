@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Onboarding step that shows what proactive notifications look like.
-/// Uses a static example tip — no Gemini call needed.
+/// Uses a static example insight — no Gemini call needed.
 struct OnboardingNotificationStepView: View {
     @ObservedObject var appState: AppState
     @ObservedObject var chatProvider: ChatProvider
@@ -12,8 +12,8 @@ struct OnboardingNotificationStepView: View {
     @State private var notificationSent = false
     @State private var pulseAnimation = false
 
-    private let tipHeadline = "Tip"
-    private let tipText = "I'll watch your screen and send you proactive tips like this"
+    private let insightHeadline = "Insight"
+    private let insightText = "I'll watch your screen and send you proactive insights like this"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -45,7 +45,7 @@ struct OnboardingNotificationStepView: View {
                 // Icon with glow
                 ZStack {
                     Circle()
-                        .fill(OmiColors.purplePrimary.opacity(0.15))
+                        .fill(Color.white.opacity(0.15))
                         .frame(width: 100, height: 100)
                         .blur(radius: 20)
                         .scaleEffect(pulseAnimation ? 1.2 : 1.0)
@@ -55,7 +55,7 @@ struct OnboardingNotificationStepView: View {
                         .font(.system(size: 44))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [OmiColors.purplePrimary, OmiColors.purpleSecondary],
+                                colors: [Color.white, Color.gray],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -93,7 +93,7 @@ struct OnboardingNotificationStepView: View {
                 VStack(spacing: 12) {
                     HStack(spacing: 6) {
                         Image(systemName: "bell.badge.fill")
-                            .foregroundColor(OmiColors.purplePrimary)
+                            .foregroundColor(Color.white)
                             .font(.system(size: 12))
                         Text("Notification shown below Ask omi")
                             .font(.system(size: 12))
@@ -103,10 +103,10 @@ struct OnboardingNotificationStepView: View {
                     Button(action: onContinue) {
                         Text("Continue")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .frame(maxWidth: 280)
                             .padding(.vertical, 12)
-                            .background(OmiColors.purplePrimary)
+                            .background(Color.white)
                             .cornerRadius(12)
                     }
                     .buttonStyle(.plain)
@@ -129,8 +129,8 @@ struct OnboardingNotificationStepView: View {
 
                 // Send a real macOS notification
                 NotificationService.shared.sendNotification(
-                    title: tipHeadline,
-                    message: tipText,
+                    title: insightHeadline,
+                    message: insightText,
                     assistantId: "onboarding"
                 )
 
@@ -153,7 +153,7 @@ struct OnboardingNotificationStepView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(
                         LinearGradient(
-                            colors: [OmiColors.purplePrimary, OmiColors.purpleAccent],
+                            colors: [Color.black, Color.gray],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -178,12 +178,12 @@ struct OnboardingNotificationStepView: View {
                         .foregroundColor(.gray)
                 }
 
-                Text(tipHeadline)
+                Text(insightHeadline)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.black.opacity(0.85))
                     .lineLimit(1)
 
-                Text(tipText)
+                Text(insightText)
                     .font(.system(size: 12))
                     .foregroundColor(.black.opacity(0.7))
                     .lineLimit(2)

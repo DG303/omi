@@ -224,10 +224,24 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
       return false
     }
 
+    if let lastSpeech = VADGateService.lastSpeechAt {
+      let secondsSinceSpeech = Date().timeIntervalSince(lastSpeech)
+      if secondsSinceSpeech < UpdaterDelegate.activeCallSilenceWindow {
+        logSync(
+          "Sparkle: Deferring update v\(version) — speech detected \(Int(secondsSinceSpeech))s ago (active recording)"
+        )
+        return false
+      }
+    }
+
     logSync("Sparkle: Triggering immediate installation for v\(version)")
     installationBlock()
     return true
   }
+
+  /// Minimum seconds of VAD silence required before an auto-install is allowed.
+  /// Matches the typical pause threshold at which a real conversation has wound down.
+  fileprivate static let activeCallSilenceWindow: TimeInterval = 120
 }
 
 /// View model for managing Sparkle auto-updates
@@ -312,6 +326,13 @@ final class UpdaterViewModel: ObservableObject {
   }
 
   private init() {
+    // Restore beta for users whose preference was overwritten by the March 27 bug
+    AppBuild.migrateBetaChannelOverwrite()
+
+    if UserDefaults.standard.string(forKey: kUpdateChannelKey) == nil {
+      AppBuild.syncUpdateChannelOnFirstLaunch()
+    }
+
     // Initialize the updater controller with our delegate
     updaterController = SPUStandardUpdaterController(
       startingUpdater: true,
@@ -324,9 +345,9 @@ final class UpdaterViewModel: ObservableObject {
     automaticallyDownloadsUpdates = updaterController.updater.automaticallyDownloadsUpdates
 
     // Initialize update channel from UserDefaults
-    // Normalize legacy "staging" → "beta" for users upgrading from older builds
+    // Normalize legacy "staging" → "beta" and "better" → "beta"
     var storedChannel = UserDefaults.standard.string(forKey: kUpdateChannelKey) ?? "stable"
-    if storedChannel == "staging" { storedChannel = "beta" }
+    if storedChannel == "staging" || storedChannel == "better" { storedChannel = "beta" }
     updateChannel = UpdateChannel(rawValue: storedChannel) ?? .stable
 
     // Wire up delegate back-reference

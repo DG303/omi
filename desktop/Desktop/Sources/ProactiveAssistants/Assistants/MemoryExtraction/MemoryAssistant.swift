@@ -58,8 +58,8 @@ actor MemoryAssistant: ProactiveAssistant {
     // MARK: - Initialization
 
     init(apiKey: String? = nil) throws {
-        // Use Gemini 3 Pro for better memory extraction quality
-        self.geminiClient = try GeminiClient(apiKey: apiKey, model: "gemini-pro-latest")
+        // Use Gemini Flash for memory extraction (text+vision, no tool loop — Flash-safe)
+        self.geminiClient = try GeminiClient(apiKey: apiKey)
 
         let (stream, continuation) = AsyncStream.makeStream(of: Void.self, bufferingPolicy: .bufferingNewest(1))
         self.frameSignal = stream
@@ -205,7 +205,11 @@ actor MemoryAssistant: ProactiveAssistant {
             MemoryAssistantSettings.shared.notificationsEnabled
         }
         if notificationsEnabled {
-            await sendMemoryNotification(memory: memory)
+            await sendMemoryNotification(
+                memory: memory,
+                result: memoryResult,
+                windowTitle: windowTitle
+            )
         }
 
         // Send event to Flutter
@@ -273,15 +277,30 @@ actor MemoryAssistant: ProactiveAssistant {
     }
 
     /// Send a notification for the extracted memory
-    private func sendMemoryNotification(memory: ExtractedMemory) async {
+    private func sendMemoryNotification(
+        memory: ExtractedMemory,
+        result: MemoryExtractionResult,
+        windowTitle: String?
+    ) async {
         let title = memory.category == .interesting ? "Wisdom Captured" : "Memory Saved"
-        let message = memory.content
+        let message = "New memory: \(memory.content)"
+        let context = FloatingBarNotificationContext(
+            sourceTitle: title,
+            assistantId: identifier,
+            sourceApp: memory.sourceApp.isEmpty ? nil : memory.sourceApp,
+            windowTitle: windowTitle,
+            contextSummary: result.contextSummary,
+            currentActivity: result.currentActivity,
+            reasoning: nil,
+            detail: memory.content
+        )
 
         await MainActor.run {
             NotificationService.shared.sendNotification(
                 title: title,
                 message: message,
-                assistantId: identifier
+                assistantId: identifier,
+                context: context
             )
         }
     }

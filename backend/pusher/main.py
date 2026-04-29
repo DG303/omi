@@ -8,6 +8,7 @@ import firebase_admin
 from fastapi import FastAPI
 
 from routers import pusher, metrics
+from utils.http_client import close_all_clients
 
 if os.environ.get('SERVICE_ACCOUNT_JSON'):
     service_account_info = json.loads(os.environ["SERVICE_ACCOUNT_JSON"])
@@ -26,6 +27,11 @@ for path in paths:
         os.makedirs(path)
 
 
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_all_clients()
+
+
 @app.get('/health')
-def health_check():
+async def health_check():
     return {"status": "healthy"}

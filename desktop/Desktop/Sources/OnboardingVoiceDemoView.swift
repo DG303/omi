@@ -7,6 +7,7 @@ struct OnboardingVoiceDemoView: View {
     @ObservedObject var chatProvider: ChatProvider
     var onComplete: () -> Void
     var onSkip: () -> Void
+    var onForceComplete: (() -> Void)?
 
     @ObservedObject private var pttManager = PushToTalkManager.shared
     @ObservedObject private var shortcutSettings = ShortcutSettings.shared
@@ -14,14 +15,14 @@ struct OnboardingVoiceDemoView: View {
     @State private var observedShortcutPress = false
     @State private var waitingForResponse = false
     @State private var showContinue = false
+    @State private var previousTranscriptionMode: ShortcutSettings.PTTTranscriptionMode?
+    @State private var voiceResponsesEnabled: Bool = ShortcutSettings.shared.floatingBarVoiceAnswersEnabled
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("Ask omi a question with your voice")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(OmiColors.textPrimary)
+                OnboardingLogoMark(onForceComplete: onForceComplete)
 
                 Spacer()
 
@@ -42,7 +43,7 @@ struct OnboardingVoiceDemoView: View {
 
             VStack(spacing: 24) {
                 VStack(spacing: 12) {
-                    Text("Hold and Ask")
+                    Text("Hold \(shortcutSettings.pttShortcut.displayLabel) and Ask")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(OmiColors.textPrimary)
 
@@ -52,6 +53,24 @@ struct OnboardingVoiceDemoView: View {
                         .multilineTextAlignment(.center)
                 }
 
+                // Voice responses checkbox
+                HStack(spacing: 8) {
+                    Toggle("", isOn: $voiceResponsesEnabled)
+                        .toggleStyle(.checkbox)
+                        .onChange(of: voiceResponsesEnabled) { _, newValue in
+                            ShortcutSettings.shared.floatingBarVoiceAnswersEnabled = newValue
+                            SettingsSyncManager.shared.pushPartialUpdate(
+                                AssistantSettingsResponse(
+                                    floatingBar: FloatingBarSettingsResponse(voiceAnswersEnabled: newValue)
+                                )
+                            )
+                        }
+                    Text("Speak answers aloud for voice questions")
+                        .font(.system(size: 14))
+                        .foregroundColor(OmiColors.textSecondary)
+                }
+                .padding(.top, 4)
+
                 if !observedShortcutPress {
                     VStack(spacing: 12) {
                         Text("Hold the shortcut, speak, then release")
@@ -59,7 +78,9 @@ struct OnboardingVoiceDemoView: View {
                             .foregroundColor(OmiColors.textTertiary)
 
                         HStack(spacing: 6) {
-                            keyCap(shortcutSettings.pttKey.symbol)
+                            ForEach(Array(shortcutSettings.pttShortcut.displayTokens.enumerated()), id: \.offset) { _, token in
+                                keyCap(token)
+                            }
                             Text("hold")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(OmiColors.textTertiary)
@@ -83,10 +104,10 @@ struct OnboardingVoiceDemoView: View {
                 Button(action: onComplete) {
                     Text("Continue")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                         .frame(maxWidth: 280)
                         .padding(.vertical, 12)
-                        .background(OmiColors.purplePrimary)
+                        .background(Color.white)
                         .cornerRadius(12)
                 }
                 .buttonStyle(.plain)
@@ -98,14 +119,20 @@ struct OnboardingVoiceDemoView: View {
         .background(OmiColors.backgroundPrimary)
         .onAppear {
             FloatingControlBarManager.shared.setup(appState: appState, chatProvider: chatProvider)
+            resetFloatingBarConversation()
             if let barState = FloatingControlBarManager.shared.barState {
                 PushToTalkManager.shared.setup(barState: barState)
             }
+            previousTranscriptionMode = shortcutSettings.pttTranscriptionMode
+            shortcutSettings.pttTranscriptionMode = .live
+            Task {
+                await chatProvider.warmupBridge()
+            }
         }
         .onDisappear {
-            if FloatingControlBarManager.shared.barState?.showingAIConversation == true {
-                FloatingControlBarManager.shared.toggleAIInput()
-            }
+            shortcutSettings.pttTranscriptionMode = previousTranscriptionMode ?? .batch
+            resetFloatingBarConversation()
+            PushToTalkManager.shared.cleanup()
         }
         .onChange(of: pttManager.state) { _, newState in
             if newState != .idle {
@@ -127,12 +154,19 @@ struct OnboardingVoiceDemoView: View {
             showContinueNow()
             return
         }
-        // Poll every 0.5s for up to 60s
-        for _ in 0..<120 {
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            if barState.showingAIResponse,
-               let msg = barState.currentAIMessage,
-               !msg.isStreaming {
+        // Poll every 0.25s for up to 20s. Unlock as soon as the send cycle finishes,
+        // even if the network or bridge failed, so onboarding does not get stuck here.
+        for _ in 0..<80 {
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            if let msg = barState.currentAIMessage,
+               !msg.isStreaming,
+               !msg.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                showContinueNow()
+                return
+            }
+            if !chatProvider.isSending,
+               observedShortcutPress,
+               (chatProvider.errorMessage != nil || barState.currentAIMessage != nil) {
                 showContinueNow()
                 return
             }
@@ -145,6 +179,17 @@ struct OnboardingVoiceDemoView: View {
         withAnimation(.easeInOut(duration: 0.3)) {
             showContinue = true
         }
+    }
+
+    private func resetFloatingBarConversation() {
+        guard let barState = FloatingControlBarManager.shared.barState else { return }
+        barState.showingAIConversation = false
+        barState.showingAIResponse = false
+        barState.aiInputText = ""
+        barState.currentAIMessage = nil
+        barState.chatHistory = []
+        barState.isVoiceFollowUp = false
+        barState.voiceFollowUpTranscript = ""
     }
 
     private func keyCap(_ label: String) -> some View {

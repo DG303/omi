@@ -20,31 +20,40 @@ import database.trends as trends_db
 import database.action_items as action_items_db
 import database.folders as folders_db
 import database.calendar_meetings as calendar_db
-from database.vector_db import find_similar_memories, upsert_memory_vector, delete_memory_vector
+from database.vector_db import (
+    find_similar_memories,
+    upsert_memory_vector,
+    delete_memory_vector,
+    upsert_action_item_vectors_batch,
+    delete_action_item_vectors_batch,
+    find_similar_action_items,
+)
 from utils.llm.memories import resolve_memory_conflict
 from database.apps import record_app_usage, get_omi_personas_by_uid_db, get_app_by_id_db
 from database.vector_db import upsert_vector2, update_vector_metadata
 from models.app import App, UsageHistoryType
 from models.memories import MemoryDB, Memory
-from models.conversation import *
+from models.calendar_context import CalendarMeetingContext
 from models.conversation import (
-    ExternalIntegrationCreateConversation,
+    AppResult,
     Conversation,
     CreateConversation,
-    ConversationSource,
+    ExternalIntegrationCreateConversation,
 )
-from utils.notifications import send_important_conversation_message
-from models.conversation import CalendarMeetingContext
+from models.conversation_enums import ConversationSource, ConversationStatus, ExternalIntegrationConversationSource
+from utils.conversations.factory import deserialize_conversation
 from models.other import Person
+from models.structured import Structured
+from utils.notifications import send_important_conversation_message
 from models.task import Task, TaskStatus, TaskAction, TaskActionProvider
 from models.trend import Trend
 from models.notification_message import NotificationMessage
-from utils.apps import get_available_apps, update_personas_async, sync_update_persona_prompt
+from utils.apps import get_available_apps, update_personas_async, update_persona_prompt
+from utils.executors import critical_executor
 from utils.llm.conversation_processing import (
     get_transcript_structure,
     get_app_result,
     should_discard_conversation,
-    select_best_app_for_conversation,
     get_suggested_apps_for_conversation,
     get_reprocess_transcript_structure,
     assign_conversation_to_folder,
@@ -75,6 +84,44 @@ from utils.other.storage import precache_conversation_audio
 logger = logging.getLogger(__name__)
 
 
+def _fetch_dedup_candidates(uid: str, structured: Structured) -> List[dict]:
+    """
+    Fetch open action items semantically related to this conversation, active
+    in the past week, for the LLM extraction prompt to consider as potential
+    duplicates. Replaces the older time-windowed fetch (past 2 days, limit
+    50). Returns [] if Pinecone is down or there's no overview to query —
+    extraction then proceeds with no dedup context, same as for a new user.
+    """
+    if not structured or not structured.overview:
+        return []
+
+    try:
+        similar = find_similar_action_items(uid, structured.overview, threshold=0.6, limit=10)
+        if not similar:
+            return []
+
+        items = action_items_db.get_action_items_by_ids(uid, [s['action_item_id'] for s in similar])
+        cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+
+        eligible = []
+        for item in items:
+            if item.get('completed', False):
+                continue
+            last_active = item.get('updated_at') or item.get('created_at')
+            if last_active is None or last_active < cutoff:
+                continue
+            eligible.append(item)
+
+        logger.info(
+            f'dedup_candidates uid={uid} similar={len(similar)} '
+            f'eligible={len(eligible)} top_score={similar[0]["score"]}'
+        )
+        return eligible
+    except Exception as e:
+        logger.exception(f'_fetch_dedup_candidates failed uid={uid}: {e}')
+        return []
+
+
 def _get_structured(
     uid: str,
     language_code: str,
@@ -84,14 +131,7 @@ def _get_structured(
 ) -> Tuple[Structured, bool]:
     try:
         tz = notification_db.get_user_time_zone(uid)
-
-        # Fetch existing action items from past 2 days for deduplication
-        existing_action_items = None
-        try:
-            two_days_ago = datetime.now(timezone.utc) - timedelta(days=2)
-            existing_action_items = action_items_db.get_action_items(uid=uid, start_date=two_days_ago, limit=50)
-        except Exception as e:
-            logger.error(f"Error fetching existing action items for deduplication: {e}")
+        user_language = users_db.get_user_language_preference(uid) or language_code
 
         # Extract calendar context from external_data
         calendar_context = None
@@ -111,7 +151,9 @@ def _get_structured(
                         conversation.started_at,
                         language_code,
                         tz,
+                        uid,
                         calendar_meeting_context=calendar_context,
+                        output_language_code=user_language,
                     )
                 with track_usage(uid, Features.CONVERSATION_ACTION_ITEMS):
                     structured.action_items = extract_action_items(
@@ -119,15 +161,21 @@ def _get_structured(
                         conversation.started_at,
                         language_code,
                         tz,
-                        existing_action_items=existing_action_items,
+                        existing_action_items=_fetch_dedup_candidates(uid, structured),
                         calendar_meeting_context=calendar_context,
+                        output_language_code=user_language,
                     )
                 return structured, False
 
             if conversation.text_source == ExternalIntegrationConversationSource.message:
                 with track_usage(uid, Features.CONVERSATION_STRUCTURE):
                     structured = get_message_structure(
-                        conversation.text, conversation.started_at, language_code, tz, conversation.text_source_spec
+                        conversation.text,
+                        conversation.started_at,
+                        language_code,
+                        tz,
+                        conversation.text_source_spec,
+                        output_language_code=user_language,
                     )
                 return structured, False
 
@@ -152,6 +200,7 @@ def _get_structured(
                     tz,
                     conversation.structured.title,
                     photos=conversation.photos,
+                    output_language_code=user_language,
                 )
             with track_usage(uid, Features.CONVERSATION_ACTION_ITEMS):
                 structured.action_items = extract_action_items(
@@ -160,7 +209,8 @@ def _get_structured(
                     language_code,
                     tz,
                     photos=conversation.photos,
-                    existing_action_items=existing_action_items,
+                    existing_action_items=_fetch_dedup_candidates(uid, structured),
+                    output_language_code=user_language,
                 )
             return structured, False
 
@@ -182,8 +232,10 @@ def _get_structured(
                 conversation.started_at,
                 language_code,
                 tz,
+                uid,
                 photos=conversation.photos,
                 calendar_meeting_context=calendar_context,
+                output_language_code=user_language,
             )
         with track_usage(uid, Features.CONVERSATION_ACTION_ITEMS):
             structured.action_items = extract_action_items(
@@ -192,8 +244,9 @@ def _get_structured(
                 language_code,
                 tz,
                 photos=conversation.photos,
-                existing_action_items=existing_action_items,
+                existing_action_items=_fetch_dedup_candidates(uid, structured),
                 calendar_meeting_context=calendar_context,
+                output_language_code=user_language,
             )
         return structured, False
     except Exception as e:
@@ -351,11 +404,12 @@ def _trigger_apps(
         if not is_reprocess:
             record_app_usage(uid, app.id, UsageHistoryType.memory_created_prompt, conversation_id=conversation.id)
 
-    for app in filtered_apps:
-        threads.append(threading.Thread(target=execute_app, args=(app,)))
-
-    [t.start() for t in threads]
-    [t.join() for t in threads]
+    futures = [critical_executor.submit(execute_app, app) for app in filtered_apps]
+    for future in futures:
+        try:
+            future.result()
+        except Exception as e:
+            logger.error(f"Error executing app: {e}")
 
 
 def _update_goal_progress(uid: str, conversation: Conversation):
@@ -476,7 +530,7 @@ def _extract_memories_inner(uid: str, conversation: Conversation):
             from database.memories import set_memory_kg_extracted
 
             for memory_db_obj in parsed_memories:
-                if memory_db_obj.kg_extracted:
+                if memory_db_obj.kg_extracted or memory_db_obj.is_locked:
                     continue
                 try:
                     result = extract_knowledge_from_memory(uid, memory_db_obj.content, memory_db_obj.id, user_name)
@@ -504,9 +558,9 @@ def send_new_memories_notification(user_id: str, memories: [MemoryDB]):
 
 def _extract_trends(uid: str, conversation: Conversation):
     with track_usage(uid, Features.TRENDS):
-        extracted_items = trends_extractor(uid, conversation)
+        extracted_items = trends_extractor(uid, conversation.transcript_segments, conversation.get_person_ids())
         parsed = [Trend(category=item.category, topics=[item.topic], type=item.type) for item in extracted_items]
-        trends_db.save_trends(conversation, parsed)
+        trends_db.save_trends(conversation.id, parsed)
 
 
 def _save_action_items(uid: str, conversation: Conversation):
@@ -535,7 +589,11 @@ def _save_action_items(uid: str, conversation: Conversation):
         action_items_data.append(action_item_data)
 
     if action_items_data:
-        # Delete existing action items for this conversation first (in case of reprocessing)
+        # Delete existing action items and their vectors first (in case of reprocessing)
+        old_items = action_items_db.get_action_items_by_conversation(uid, conversation.id)
+        old_ids = [item['id'] for item in old_items]
+        if old_ids:
+            delete_action_item_vectors_batch(uid, old_ids)
         action_items_db.delete_action_items_for_conversation(uid, conversation.id)
         # Save new action items
         action_item_ids = action_items_db.create_action_items_batch(uid, action_items_data)
@@ -552,13 +610,21 @@ def _save_action_items(uid: str, conversation: Conversation):
                     due_at=action_item.due_at.isoformat(),
                 )
 
+        upsert_action_item_vectors_batch(
+            uid,
+            [
+                {'action_item_id': aid, 'description': data['description']}
+                for aid, data in zip(action_item_ids, action_items_data)
+            ],
+        )
+
         # Auto-sync to task integration
         created_items = [{"id": aid, **data} for aid, data in zip(action_item_ids, action_items_data)]
 
         def _run_auto_sync():
             asyncio.run(auto_sync_action_items_batch(uid, created_items))
 
-        threading.Thread(target=_run_auto_sync, daemon=True).start()
+        critical_executor.submit(_run_auto_sync)
 
 
 def save_structured_vector(uid: str, conversation: Conversation, update_only: bool = False):
@@ -590,7 +656,7 @@ def save_structured_vector(uid: str, conversation: Conversation, update_only: bo
 
     if not update_only:
         logger.info('save_structured_vector creating vector')
-        upsert_vector2(uid, conversation, vector, metadata)
+        upsert_vector2(uid, conversation.id, vector, metadata)
     else:
         logger.info('save_structured_vector updating metadata')
         update_vector_metadata(uid, conversation.id, metadata)
@@ -600,12 +666,16 @@ def _update_personas_async(uid: str):
     logger.info(f"[PERSONAS] Starting persona updates in background thread for uid={uid}")
     personas = get_omi_personas_by_uid_db(uid)
     if personas:
-        threads = []
-        for persona in personas:
-            threads.append(threading.Thread(target=sync_update_persona_prompt, args=(persona,)))
 
-        [t.start() for t in threads]
-        [t.join() for t in threads]
+        async def _batch():
+            await asyncio.gather(*[update_persona_prompt(persona) for persona in personas])
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(_batch())
+        finally:
+            loop.close()
         logger.info(f"[PERSONAS] Finished persona updates in background thread for uid={uid}")
 
 
@@ -701,21 +771,12 @@ def process_conversation(
         _trigger_apps(
             uid, conversation, is_reprocess=is_reprocess, app_id=app_id, language_code=language_code, people=people
         )
-        (
-            threading.Thread(
-                target=save_structured_vector,
-                args=(
-                    uid,
-                    conversation,
-                ),
-            ).start()
-            if not is_reprocess
-            else None
-        )
-        threading.Thread(target=_extract_memories, args=(uid, conversation)).start()
-        threading.Thread(target=_extract_trends, args=(uid, conversation)).start()
-        threading.Thread(target=_save_action_items, args=(uid, conversation)).start()
-        threading.Thread(target=_update_goal_progress, args=(uid, conversation)).start()
+        if not is_reprocess:
+            critical_executor.submit(save_structured_vector, uid, conversation)
+        critical_executor.submit(_extract_memories, uid, conversation)
+        critical_executor.submit(_extract_trends, uid, conversation)
+        critical_executor.submit(_save_action_items, uid, conversation)
+        critical_executor.submit(_update_goal_progress, uid, conversation)
 
     # Create audio files from chunks if private cloud sync was enabled
     if not is_reprocess and conversation.private_cloud_sync_enabled:
@@ -739,15 +800,13 @@ def process_conversation(
         folders_db.update_folder_conversation_count(uid, assigned_folder_id)
 
     if not is_reprocess:
-        threading.Thread(
-            target=conversation_created_webhook,
-            args=(
-                uid,
-                conversation,
-            ),
-        ).start()
+
+        def _run_webhook():
+            asyncio.run(conversation_created_webhook(uid, conversation))
+
+        critical_executor.submit(_run_webhook)
         # Update persona prompts with new conversation
-        threading.Thread(target=update_personas_async, args=(uid,)).start()
+        critical_executor.submit(update_personas_async, uid)
 
         # Disable important conversation for now
         # Send important conversation notification for long conversations (>30 minutes)
@@ -893,7 +952,7 @@ def process_user_expression_measurement_callback(provider: str, request_id: str,
         logger.warning(f"Conversation is not found. Uid: {uid}. Conversation: {task.memory_id}")
         return
 
-    conversation = Conversation(**conversation_data)
+    conversation = deserialize_conversation(conversation_data)
 
     # Get prediction
     predictions = callback.predictions
@@ -943,7 +1002,9 @@ def process_user_expression_measurement_callback(provider: str, request_id: str,
     title = "omi"
     context_str, _ = retrieve_rag_conversation_context(uid, conversation)
 
-    response: str = obtain_emotional_message(uid, conversation, context_str, emotion)
+    response: str = obtain_emotional_message(
+        uid, conversation.transcript_segments, conversation.get_person_ids(), context_str, emotion
+    )
     message = response
 
     # Send the notification

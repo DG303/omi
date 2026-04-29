@@ -113,6 +113,7 @@ enum ChatContentBlock: Identifiable {
         switch cleanName {
         case "execute_sql": return "Querying database"
         case "semantic_search": return "Searching conversations"
+        case "search_tasks": return "Searching tasks"
         case "Read": return "Reading file"
         case "Write": return "Writing file"
         case "Edit": return "Editing file"
@@ -164,6 +165,8 @@ enum ChatContentBlock: Identifiable {
             }
         case "semantic_search":
             summary = input["query"] as? String
+        case "search_tasks":
+            summary = input["query"] as? String
         case "request_permission":
             summary = input["type"] as? String
         case "ask_followup":
@@ -195,6 +198,154 @@ enum ToolCallStatus {
 
 // MARK: - Chat Message Model
 
+/// Metadata about the context and resources used to generate an AI response
+struct MessageMetadata {
+    var model: String?
+    var inputTokens: Int?
+    var outputTokens: Int?
+    var cacheReadTokens: Int?
+    var cacheWriteTokens: Int?
+    var costUsd: Double?
+    var systemPrompt: String?
+    var hasScreenshot: Bool
+    var screenshotSizeBytes: Int?
+    var toolNames: [String]
+    /// Total rows returned across all execute_sql tool calls during this response
+    var sqlRowsReturned: Int
+    /// Number of execute_sql tool calls made during this response
+    var sqlQueryCount: Int
+
+    var totalTokens: Int? {
+        guard let input = inputTokens, let output = outputTokens else { return nil }
+        return input + output + (cacheReadTokens ?? 0) + (cacheWriteTokens ?? 0)
+    }
+
+    // MARK: - Dynamic context sections from system prompt
+
+    /// A single tagged section found in the system prompt
+    struct PromptSection {
+        let tag: String
+        let itemCount: Int
+        let charCount: Int
+
+        /// Human-readable label derived from the XML tag name
+        var label: String {
+            tag.replacingOccurrences(of: "_", with: " ")
+                .localizedCapitalized
+        }
+    }
+
+    /// Dynamically discovers all XML-tagged sections in the system prompt and counts items in each.
+    /// This is future-proof: any new `<some_tag>...</some_tag>` section automatically appears.
+    var promptSections: [PromptSection] {
+        guard let prompt = systemPrompt else { return [] }
+        var sections: [PromptSection] = []
+        var seen = Set<String>()
+
+        // Find all <tag>...</tag> pairs
+        let pattern = try! NSRegularExpression(pattern: #"<([a-z][a-z0-9_]*)>"#, options: [])
+        let matches = pattern.matches(in: prompt, range: NSRange(prompt.startIndex..., in: prompt))
+
+        for match in matches {
+            guard let tagRange = Range(match.range(at: 1), in: prompt) else { continue }
+            let tag = String(prompt[tagRange])
+
+            // Skip duplicates
+            guard !seen.contains(tag) else { continue }
+            seen.insert(tag)
+
+            let openTag = "<\(tag)>"
+            let closeTag = "</\(tag)>"
+            guard let openRange = prompt.range(of: openTag),
+                  let closeRange = prompt.range(of: closeTag),
+                  openRange.upperBound < closeRange.lowerBound else { continue }
+
+            let content = String(prompt[openRange.upperBound..<closeRange.lowerBound])
+            let charCount = content.count
+
+            // Count meaningful lines (items starting with "- ", or role-prefixed lines for conversation)
+            let lines = content.components(separatedBy: "\n")
+            let itemCount: Int
+            if tag == "conversation_history" {
+                itemCount = lines.filter { $0.hasPrefix("User:") || $0.hasPrefix("Assistant:") }.count
+            } else {
+                let bulletLines = lines.filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("- ") }.count
+                // If no bullet items, count non-empty non-header lines
+                if bulletLines > 0 {
+                    itemCount = bulletLines
+                } else {
+                    itemCount = lines.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count
+                }
+            }
+
+            sections.append(PromptSection(tag: tag, itemCount: itemCount, charCount: charCount))
+        }
+
+        return sections
+    }
+
+    // Backward-compatible summary counts used by the floating-bar metadata popover.
+    // These intentionally keep the older semantics instead of exposing every raw XML section.
+    var memoriesCount: Int {
+        guard let prompt = systemPrompt,
+              let factsStart = prompt.range(of: "<user_facts>"),
+              let factsEnd = prompt.range(of: "</user_facts>") else { return 0 }
+        let factsSection = String(prompt[factsStart.upperBound..<factsEnd.lowerBound])
+        return factsSection
+            .components(separatedBy: "\n")
+            .filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("- ") }
+            .count
+    }
+
+    var conversationTurns: Int {
+        guard let prompt = systemPrompt,
+              let histStart = prompt.range(of: "<conversation_history>"),
+              let histEnd = prompt.range(of: "</conversation_history>") else { return 0 }
+        let histSection = String(prompt[histStart.upperBound..<histEnd.lowerBound])
+        return histSection
+            .components(separatedBy: "\n")
+            .filter { $0.hasPrefix("User:") || $0.hasPrefix("Assistant:") }
+            .count
+    }
+
+    var tasksCount: Int {
+        guard let prompt = systemPrompt,
+              let tasksStart = prompt.range(of: "<user_tasks>"),
+              let tasksEnd = prompt.range(of: "</user_tasks>") else { return 0 }
+        let tasksSection = String(prompt[tasksStart.upperBound..<tasksEnd.lowerBound])
+        return tasksSection
+            .components(separatedBy: "\n")
+            .filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("- ") }
+            .count
+    }
+
+    var goalsCount: Int {
+        guard let prompt = systemPrompt,
+              let goalsStart = prompt.range(of: "<user_goals>"),
+              let goalsEnd = prompt.range(of: "</user_goals>") else { return 0 }
+        let goalsSection = String(prompt[goalsStart.upperBound..<goalsEnd.lowerBound])
+        return goalsSection
+            .components(separatedBy: "\n")
+            .filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("- ") }
+            .count
+    }
+
+    var availableToolsCount: Int {
+        guard let prompt = systemPrompt else { return 0 }
+        return [
+            "execute_sql",
+            "semantic_search",
+            "search_tasks",
+            "get_daily_recap",
+            "complete_task",
+            "delete_task",
+            "save_knowledge_graph"
+        ]
+        .filter { prompt.contains("**\($0)**") }
+        .count
+    }
+}
+
 /// A single chat message
 struct ChatMessage: Identifiable {
     var id: String  // Mutable to sync with server-generated ID
@@ -210,8 +361,14 @@ struct ChatMessage: Identifiable {
     var citations: [Citation]
     /// Structured content blocks for AI messages (text interspersed with tool calls)
     var contentBlocks: [ChatContentBlock]
+    /// Metadata about context used to generate this response (AI messages only)
+    var metadata: MessageMetadata?
+    /// Context text for proactive notification messages (not shown to user, sent to Claude)
+    var notificationContext: String?
+    /// Screenshot JPEG data captured when a proactive notification was generated
+    var notificationScreenshot: Data?
 
-    init(id: String = UUID().uuidString, text: String, createdAt: Date = Date(), sender: ChatSender, isStreaming: Bool = false, rating: Int? = nil, isSynced: Bool = false, citations: [Citation] = [], contentBlocks: [ChatContentBlock] = []) {
+    init(id: String = UUID().uuidString, text: String, createdAt: Date = Date(), sender: ChatSender, isStreaming: Bool = false, rating: Int? = nil, isSynced: Bool = false, citations: [Citation] = [], contentBlocks: [ChatContentBlock] = [], metadata: MessageMetadata? = nil, notificationContext: String? = nil, notificationScreenshot: Data? = nil) {
         self.id = id
         self.text = text
         self.createdAt = createdAt
@@ -221,6 +378,9 @@ struct ChatMessage: Identifiable {
         self.isSynced = isSynced
         self.citations = citations
         self.contentBlocks = contentBlocks
+        self.metadata = metadata
+        self.notificationContext = notificationContext
+        self.notificationScreenshot = notificationScreenshot
     }
 }
 
@@ -281,8 +441,12 @@ class ChatProvider: ObservableObject {
 ================================================================================
 🚨 FLOATING BAR MODE — READ THIS FIRST BEFORE ANYTHING ELSE 🚨
 ================================================================================
+ALWAYS check the user's memories and facts using available tools (get_memories, search_memories, execute_sql) before answering ANY question. The user expects personalized answers based on what you know about them.
+NEVER ask follow-up questions or ask for clarification. ALWAYS give a direct, concrete answer immediately using whatever you know about the user from their memories, context, and facts. If memories mention their devices, preferences, work, budget, or interests — use that to give a specific recommendation, not a generic one.
 If the question contains a product name, software name, or proper noun — search the web for it before answering, even if you think you know what it is.
-Respond in exactly 1 sentence. No lists. No headers. No follow-up questions.
+If a screenshot is attached and the user asks a deictic question like "which one", "which option", "which suits me", "what should I choose", or "what's on my screen", ground the answer in the visible options first and prefer what is actually on screen over unrelated context.
+If the screenshot already clearly shows the relevant options, do not ignore it just because the query is short or ambiguous.
+Respond concisely in 1-2 sentences. No lists. No headers. NEVER ask follow-up questions — just answer.
 A screenshot may be attached — use it silently only if relevant. Never mention or acknowledge it.
 ================================================================================
 """
@@ -299,6 +463,12 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     @Published var isStopping = false
     @Published var isClearing = false
     @Published var errorMessage: String?
+
+    /// Monotonically-incremented id for each sendMessage / stopAgent cycle.
+    /// Watchdog tasks capture their gen and only reset state if it still
+    /// matches — so a watchdog fired by a stuck send #N won't cancel a
+    /// later, healthy send #N+1. See sendMessage() and stopAgent().
+    private var sendGeneration: Int = 0
 
     /// Set to true during onboarding so the ACP session ID is persisted for restart recovery.
     var isOnboarding = false
@@ -337,24 +507,45 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     /// When true, user can create multiple chat sessions
     @AppStorage("multiChatEnabled") var multiChatEnabled = false
 
-    // MARK: - Bridge (ACP-only, passApiKey controls OMI vs user's account)
+    // MARK: - Bridge
     // NOTE: initialized lazily so it reads the persisted bridgeMode from UserDefaults,
     // not always defaulting to Omi mode on cold start.
-    private lazy var acpBridge: ACPBridge = {
-        let isOmi = (UserDefaults.standard.string(forKey: "chatBridgeMode") ?? BridgeMode.omiAI.rawValue) != BridgeMode.userClaude.rawValue
-        return ACPBridge(passApiKey: isOmi)
+    //
+    // Default harness: piMono (Omi AI via the bundled pi-mono subprocess, authenticated
+    // with the user's Firebase ID token). Claude Code remains as an opt-in harness that
+    // uses the user's own Claude OAuth.
+    private lazy var agentBridge: AgentBridge = {
+        let mode = UserDefaults.standard.string(forKey: "chatBridgeMode") ?? BridgeMode.piMono.rawValue
+        let harness = mode == BridgeMode.piMono.rawValue ? "piMono" : "acp"
+        activeBridgeHarness = harness
+        return AgentBridge(harnessMode: harness)
     }()
-    private var acpBridgeStarted = false
+    private var agentBridgeStarted = false
+    /// Tracks the harness mode the bridge is actually running (NOT the @AppStorage preference).
+    /// @AppStorage("chatBridgeMode") can be updated by other views sharing the same key,
+    /// so comparing against it in switchBridgeMode() would always match → no-op.
+    private var activeBridgeHarness: String = "piMono"
+    /// True while switchBridgeMode is in the critical section between stopping the old
+    /// bridge and starting the new one.  sendMessage checks this to avoid racing.
+    private var modeSwitchInProgress = false
+    /// Continuations for callers waiting on an in-flight mode switch. Supports
+    /// arbitrary overlap (A→B→A→B) without losing waiters.
+    private var modeSwitchWaiters: [CheckedContinuation<Void, Never>] = []
 
     enum BridgeMode: String {
-        case omiAI = "agentSDK"
+        case omiAI = "agentSDK"     // Legacy, auto-migrated to piMono
         case userClaude = "claudeCode"
+        case piMono = "piMono"
     }
-    @AppStorage("chatBridgeMode") var bridgeMode: String = BridgeMode.omiAI.rawValue
+    @AppStorage("chatBridgeMode") var bridgeMode: String = BridgeMode.piMono.rawValue
 
-    /// Whether the ACP bridge requires authentication (shown as sheet in UI)
+    var isUsingOmiAccountProvider: Bool {
+        bridgeMode != BridgeMode.userClaude.rawValue
+    }
+
+    /// Whether the agent bridge requires authentication (shown as sheet in UI)
     @Published var isClaudeAuthRequired = false
-    /// Auth methods returned by ACP bridge
+    /// Auth methods returned by agent bridge
     @Published var claudeAuthMethods: [[String: Any]] = []
     /// OAuth URL to open in browser (sent by bridge when auth is needed)
     @Published var claudeAuthUrl: String?
@@ -373,12 +564,10 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     private var multiChatObserver: AnyCancellable?
     private var playwrightExtensionObserver: AnyCancellable?
     private var sessionGroupingObserver: AnyCancellable?
+    private var activationObserver: AnyCancellable?
+    private var systemWakeObserver: AnyCancellable?
 
-    // MARK: - Cross-Platform Message Polling
-    /// Polls for new messages from other platforms (mobile) every 15 seconds.
-    /// Similar to TasksStore's 30-second polling pattern.
-    private var messagePollTimer: AnyCancellable?
-    private static let messagePollInterval: TimeInterval = 15.0
+    private var refreshAllObserver: AnyCancellable?
 
     // MARK: - Streaming Buffer
     /// Accumulates text deltas during streaming and flushes them to the published
@@ -387,7 +576,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     private var streamingThinkingBuffer: String = ""
     private var streamingBufferMessageId: String?
     private var streamingFlushWorkItem: DispatchWorkItem?
-    private let streamingFlushInterval: TimeInterval = 0.1
+    private let streamingFlushInterval: TimeInterval = 0.035
 
     // MARK: - Filtered Sessions
     var filteredSessions: [ChatSession] {
@@ -464,6 +653,16 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     init() {
         log("ChatProvider initialized, will start Claude bridge on first use")
 
+        // Migrate legacy "agentSDK" persisted mode to the new default "piMono".
+        // Pre-6594 installs may have the old agentSDK tag saved; the settings
+        // picker no longer offers it, so leaving it stored would leave the UI
+        // in an inconsistent state.
+        let stored = UserDefaults.standard.string(forKey: "chatBridgeMode")
+        if stored == BridgeMode.omiAI.rawValue {
+            UserDefaults.standard.set(BridgeMode.piMono.rawValue, forKey: "chatBridgeMode")
+            log("ChatProvider: migrated legacy agentSDK bridgeMode -> piMono")
+        }
+
         // Observe changes to multiChatEnabled setting
         multiChatObserver = UserDefaults.standard.publisher(for: \.multiChatEnabled)
             .dropFirst() // Skip initial value
@@ -474,9 +673,48 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 }
             }
 
-        // Poll for new messages from other platforms (mobile) every 15 seconds
-        messagePollTimer = Timer.publish(every: Self.messagePollInterval, on: .main, in: .common)
-            .autoconnect()
+        // Refresh messages when app becomes active
+        activationObserver = NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.pollForNewMessages()
+                }
+            }
+
+        // After the system wakes from sleep, the ACP bridge's internal state is
+        // stale — auth tokens expired, pipes half-dead, session context rotted.
+        // First query after wake often hangs because the bridge silently drops
+        // "stray turn_end" messages and the Swift waitForMessage() sits on an
+        // unbounded await forever. Preemptively restart the bridge on wake so
+        // the next query starts with a fresh subprocess. Skipped if a query is
+        // actively running (rare for user to wake mid-query).
+        systemWakeObserver = NSWorkspace.shared.notificationCenter
+            .publisher(for: NSWorkspace.didWakeNotification)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    guard let self = self else { return }
+                    guard self.agentBridgeStarted else { return }
+                    guard !self.isSending else {
+                        log("ChatProvider: system woke but query in progress — skipping bridge restart")
+                        return
+                    }
+                    guard !self.modeSwitchInProgress else {
+                        log("ChatProvider: system woke but mode switch in progress — skipping bridge restart")
+                        return
+                    }
+                    log("ChatProvider: system woke — restarting agent bridge to clear stale session")
+                    self.agentBridgeStarted = false
+                    do {
+                        try await self.agentBridge.restart()
+                        self.agentBridgeStarted = true
+                    } catch {
+                        logError("ChatProvider: bridge restart after wake failed", error: error)
+                    }
+                }
+            }
+
+        // Cmd+R: refresh messages on demand
+        refreshAllObserver = NotificationCenter.default.publisher(for: .refreshAllData)
             .sink { [weak self] _ in
                 Task { @MainActor in
                     await self?.pollForNewMessages()
@@ -494,15 +732,19 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                         log("ChatProvider: Skipping bridge restart — query in progress")
                         return
                     }
-                    guard self.acpBridgeStarted else { return }
-                    log("ChatProvider: Playwright extension setting changed, restarting ACP bridge")
-                    self.acpBridgeStarted = false
+                    guard !self.modeSwitchInProgress else {
+                        log("ChatProvider: Playwright setting changed but mode switch in progress — skipping bridge restart")
+                        return
+                    }
+                    guard self.agentBridgeStarted else { return }
+                    log("ChatProvider: Playwright extension setting changed, restarting agent bridge")
+                    self.agentBridgeStarted = false
                     do {
-                        try await self.acpBridge.restart()
-                        self.acpBridgeStarted = true
-                        log("ChatProvider: ACP bridge restarted with new Playwright settings")
+                        try await self.agentBridge.restart()
+                        self.agentBridgeStarted = true
+                        log("ChatProvider: agent bridge restarted with new Playwright settings")
                     } catch {
-                        logError("Failed to restart ACP bridge after Playwright setting change", error: error)
+                        logError("Failed to restart agent bridge after Playwright setting change", error: error)
                     }
                 }
             }
@@ -515,14 +757,14 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 self.groupedSessions = self.computeGroupedSessions()
             }
 
-        // Kill ACP bridge subprocess on app quit to prevent orphaned Node.js processes
+        // Kill agent bridge subprocess on app quit to prevent orphaned Node.js processes
         terminationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification,
             object: nil, queue: .main
         ) { [weak self] _ in
             guard let self else { return }
             Task { @MainActor in
-                await self.acpBridge.stop()
+                await self.agentBridge.stop()
             }
         }
     }
@@ -531,23 +773,35 @@ A screenshot may be attached — use it silently only if relevant. Never mention
 
     /// Pre-start the active bridge so the first query doesn't wait for process launch
     func warmupBridge() async {
+        await preparePromptContextIfNeeded()
         _ = await ensureBridgeStarted()
+    }
+
+    /// Drop a cached ACP session so the next query recreates it with fresh prompt context.
+    func invalidateAgentSession(sessionKey: String) async {
+        guard agentBridgeStarted else { return }
+        await agentBridge.invalidateSession(sessionKey: sessionKey)
     }
 
     /// Test that the Playwright Chrome extension is connected and working.
     /// Ensures the bridge is started (restarting if needed to pick up new token),
     /// then sends a lightweight test query that triggers a browser_snapshot tool call.
     func testPlaywrightConnection() async throws -> Bool {
-        // Restart bridge to pick up new extension token
-        acpBridgeStarted = false
-        do {
-            try await acpBridge.restart()
-            acpBridgeStarted = true
-        } catch {
-            try await acpBridge.start()
-            acpBridgeStarted = true
+        // Don't restart bridge during a mode switch — caller should retry after switch completes
+        guard !modeSwitchInProgress else {
+            log("ChatProvider: testPlaywrightConnection skipped — mode switch in progress")
+            return false
         }
-        return try await acpBridge.testPlaywrightConnection()
+        // Restart bridge to pick up new extension token
+        agentBridgeStarted = false
+        do {
+            try await agentBridge.restart()
+            agentBridgeStarted = true
+        } catch {
+            try await agentBridge.start()
+            agentBridgeStarted = true
+        }
+        return try await agentBridge.testPlaywrightConnection()
     }
 
     /// Whether we're currently in user's Claude account mode
@@ -555,28 +809,39 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         bridgeMode == BridgeMode.userClaude.rawValue
     }
 
-    /// Ensure the ACP bridge is started (restarts if the process died)
-    private func ensureBridgeStarted() async -> Bool {
-        if acpBridgeStarted {
-            let alive = await acpBridge.isAlive
-            if !alive {
-                log("ChatProvider: ACP bridge process died, will restart")
-                acpBridgeStarted = false
+    /// Ensure the agent bridge is started (restarts if the process died).
+    /// - Parameter fromModeSwitch: true when called from within switchBridgeMode,
+    ///   which already holds modeSwitchInProgress. External callers (sendMessage)
+    ///   pass false (the default) and will wait for any in-flight switch.
+    private func ensureBridgeStarted(fromModeSwitch: Bool = false) async -> Bool {
+        // Wait for any in-flight mode switch to finish before touching the bridge.
+        // Without this, a query arriving mid-switch could restart the OLD bridge
+        // with the wrong harness mode. Skipped when called from switchBridgeMode
+        // itself (which holds the flag). External callers join the waiters array
+        // and are woken when the switch (including warmup) completes — no timeout.
+        while !fromModeSwitch && modeSwitchInProgress {
+            log("ChatProvider: ensureBridgeStarted waiting for mode switch to complete")
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                modeSwitchWaiters.append(c)
             }
         }
-        guard !acpBridgeStarted else { return true }
-        // Wait for API keys before starting the bridge — the subprocess reads
-        // ANTHROPIC_API_KEY from environment on launch. Without this, Mode B
-        // (no key / OAuth) is used even when the user should be on Mode A.
-        if acpBridge.passApiKey {
-            await APIKeyService.shared.waitForKeys()
+        if agentBridgeStarted {
+            let alive = await agentBridge.isAlive
+            if !alive {
+                log("ChatProvider: agent bridge process died, will restart")
+                agentBridgeStarted = false
+            }
         }
+        guard !agentBridgeStarted else { return true }
+        // Wait for API keys (Firebase, Calendar) before starting the bridge.
+        await APIKeyService.shared.waitForKeys()
         do {
-            try await acpBridge.start()
-            acpBridgeStarted = true
-            log("ChatProvider: ACP bridge started successfully")
+            await preparePromptContextIfNeeded()
+            try await agentBridge.start()
+            agentBridgeStarted = true
+            log("ChatProvider: agent bridge started successfully")
             // Set up global auth handlers so auth_required during warmup is handled
-            await acpBridge.setGlobalAuthHandlers(
+            await agentBridge.setGlobalAuthHandlers(
                 onAuthRequired: { [weak self] methods, authUrl in
                     Task { @MainActor [weak self] in
                         self?.claudeAuthMethods = methods
@@ -594,15 +859,18 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             // Pre-warm ACP sessions with their respective system prompts.
             // This is the only place the system prompt is built and applied.
             let mainSystemPrompt = buildSystemPrompt(contextString: formatMemoriesSection())
-            cachedMainSystemPrompt = mainSystemPrompt
             let floatingSystemPrompt = Self.floatingBarSystemPromptPrefix + "\n\n" + mainSystemPrompt
-            await acpBridge.warmupSession(cwd: workingDirectory, sessions: [
-                .init(key: "main", model: "claude-opus-4-6", systemPrompt: mainSystemPrompt),
-                .init(key: "floating", model: "claude-sonnet-4-6", systemPrompt: floatingSystemPrompt)
+            let floatingModel = ShortcutSettings.shared.selectedModel.isEmpty
+                ? ModelQoS.Claude.defaultSelection
+                : ShortcutSettings.shared.selectedModel
+            cachedMainSystemPrompt = mainSystemPrompt
+            await agentBridge.warmupSession(cwd: workingDirectory, sessions: [
+                .init(key: "main", model: ModelQoS.Claude.chat, systemPrompt: mainSystemPrompt),
+                .init(key: "floating", model: floatingModel, systemPrompt: floatingSystemPrompt)
             ])
             return true
         } catch {
-            logError("Failed to start ACP bridge", error: error)
+            logError("Failed to start agent bridge", error: error)
             let rawError = String(describing: error)
             AnalyticsManager.shared.chatAgentError(error: "AI not available: bridge failed to start", rawError: rawError)
             errorMessage = "AI not available: \(error.localizedDescription)"
@@ -610,31 +878,80 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         }
     }
 
-    /// Switch between bridge modes (Omi AI vs user's Claude account)
+    /// Ensures all prompt-backed local context is loaded before we build and cache the ACP session prompt.
+    private func preparePromptContextIfNeeded() async {
+        await loadMemoriesIfNeeded()
+        await loadGoalsIfNeeded()
+        await loadTasksIfNeeded()
+        await loadAIProfileIfNeeded()
+        await loadSchemaIfNeeded()
+    }
+
+    /// Switch between bridge modes (Omi AI via piMono, or user's Claude OAuth)
     func switchBridgeMode(to mode: BridgeMode) async {
-        // Compare against the actual running bridge state, not bridgeMode (@AppStorage updates
-        // immediately when the Picker changes, so bridgeMode already equals `mode` by the time
-        // this function is called — the old string comparison always exits early).
-        guard (mode == .omiAI) != acpBridge.passApiKey else { return }
-        let oldMode = bridgeMode
-        log("ChatProvider: Switching bridge mode from \(bridgeMode) to \(mode.rawValue)")
+        // Normalize legacy omiAI to piMono
+        let resolvedMode: BridgeMode = (mode == .omiAI) ? .piMono : mode
+        let newHarness = resolvedMode == .piMono ? "piMono" : "acp"
+        let previousHarness = activeBridgeHarness
+        // Compare against the actual running harness, NOT @AppStorage (which may
+        // already reflect the new value because another view wrote the same key).
+        guard newHarness != previousHarness else { return }
 
-        // Stop the current bridge
-        await acpBridge.stop()
-        acpBridgeStarted = false
+        // Serialize overlapping switches. The SettingsPage picker fires onChange
+        // in a new Task on each toggle, so rapid A→B→A→B can overlap multiple calls.
+        // Without serialization, overlapping calls could overwrite agentBridge and
+        // leak intermediate bridge processes. Loop re-checks after waking because
+        // another waiter may have started a new switch before this one resumes.
+        while modeSwitchInProgress {
+            log("ChatProvider: switchBridgeMode waiting for in-flight switch to finish")
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in
+                modeSwitchWaiters.append(c)
+            }
+        }
 
-        // Switch mode and recreate bridge with appropriate passApiKey
-        bridgeMode = mode.rawValue
-        acpBridge = ACPBridge(passApiKey: mode == .omiAI)
-        AnalyticsManager.shared.chatBridgeModeChanged(from: oldMode, to: mode.rawValue)
+        // Re-check after waiting — the in-flight switch may have already reached
+        // the same target mode we wanted.
+        guard newHarness != activeBridgeHarness else { return }
+
+        log("ChatProvider: Switching bridge mode from \(activeBridgeHarness) to \(resolvedMode.rawValue)")
+
+        // Update activeBridgeHarness immediately so a rapid second flip (e.g. user
+        // toggles back before the first switch finishes) sees the correct target
+        // mode in the guard above and doesn't no-op incorrectly.
+        activeBridgeHarness = newHarness
+
+        // Block queries during the transition so sendMessage doesn't race and
+        // restart the OLD bridge while we're replacing it.
+        modeSwitchInProgress = true
+
+        // Stop the current bridge and wait for the subprocess to fully terminate.
+        // This is critical: without the wait, the old Node.js process can still be
+        // alive when the new one starts, causing log confusion and session reuse.
+        await agentBridge.stopAndWaitForExit()
+        agentBridgeStarted = false
+
+        // Switch mode and recreate bridge
+        bridgeMode = resolvedMode.rawValue
+        agentBridge = AgentBridge(harnessMode: newHarness)
+        AnalyticsManager.shared.chatBridgeModeChanged(from: previousHarness, to: resolvedMode.rawValue)
 
         // Check Claude connection status when switching to user's Claude account
         if mode == .userClaude {
             checkClaudeConnectionStatus()
         }
 
-        // Warm up the new bridge
-        _ = await ensureBridgeStarted()
+        // Warm up the new bridge. Keep modeSwitchInProgress = true so external
+        // callers (sendMessage) block until warmup completes. Pass fromModeSwitch
+        // so ensureBridgeStarted skips its own mode-switch wait.
+        let started = await ensureBridgeStarted(fromModeSwitch: true)
+        log("ChatProvider: Bridge mode switch complete — \(resolvedMode.rawValue) started=\(started)")
+
+        // Unblock queries and wake all waiting switches now that the bridge
+        // is fully started and warmed.
+        modeSwitchInProgress = false
+        let waiters = modeSwitchWaiters
+        modeSwitchWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
     }
 
     /// Start Claude OAuth authentication (Mode B)
@@ -680,15 +997,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         }
     }
 
-    /// Disconnect from Claude: stop bridge, clear OAuth token, switch back to free mode
+    /// Disconnect from Claude: clear OAuth token, switch back to free mode via serialized path
     func disconnectClaude() async {
         log("ChatProvider: Disconnecting Claude account")
 
-        // 1. Stop the ACP bridge
-        await acpBridge.stop()
-        acpBridgeStarted = false
-
-        // 2. Clear the OAuth token from config file
+        // 1. Clear the OAuth token from config file
         let configPath = NSString(string: "~/Library/Application Support/Claude/config.json").expandingTildeInPath
         if let data = FileManager.default.contents(atPath: configPath),
            var json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
@@ -698,7 +1011,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             }
         }
 
-        // 3. Clear OAuth credentials from macOS Keychain
+        // 2. Clear OAuth credentials from macOS Keychain
         //    The Keychain item is owned by Claude Desktop/CLI, so SecItemDelete fails
         //    with errSecInvalidOwnerEdit. Use the `security` CLI which runs as the user.
         let secProcess = Process()
@@ -718,12 +1031,13 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             log("ChatProvider: Failed to run security command: \(error.localizedDescription)")
         }
 
-        // 4. Update state
+        // 3. Update state
         isClaudeConnected = false
 
-        // 5. Switch back to Omi AI mode and recreate bridge with API key
-        bridgeMode = BridgeMode.omiAI.rawValue
-        acpBridge = ACPBridge(passApiKey: true)
+        // 4. Switch back to piMono through the serialized switchBridgeMode path
+        //    so all bridge lifecycle state (activeBridgeHarness, modeSwitchInProgress,
+        //    waiters) stays consistent.
+        await switchBridgeMode(to: .piMono)
     }
 
     // MARK: - Session Management
@@ -1159,10 +1473,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         var lines: [String] = ["**Database schema (omi.db):**", ""]
 
         for (name, sql) in tables {
-            // Skip internal/FTS tables
+            // Skip internal tables
             if ChatPrompts.excludedTables.contains(name) { continue }
             if ChatPrompts.excludedTablePrefixes.contains(where: { name.hasPrefix($0) }) { continue }
-            if name.contains("_fts") { continue } // catches all FTS virtual + internal tables
+            // Skip FTS virtual and shadow tables — documented in schemaFooter with MATCH patterns instead
+            if name.contains("_fts") { continue }
 
             // Extract column names only, stripping types, constraints, and infrastructure columns
             let columnNames = extractColumns(from: sql).compactMap { col -> String? in
@@ -1177,12 +1492,23 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             let header = annotation.isEmpty ? name : "\(name) — \(annotation)"
             lines.append(header)
 
-            // Column names as compact one-liner
-            lines.append("  \(columnNames.joined(separator: ", "))")
+            // Columns with annotations (key columns get descriptions, others are just names)
+            let tableAnnotations = ChatPrompts.columnAnnotations[name] ?? [:]
+            if tableAnnotations.isEmpty {
+                lines.append("  \(columnNames.joined(separator: ", "))")
+            } else {
+                let annotated = columnNames.map { col in
+                    if let desc = tableAnnotations[col] {
+                        return "\(col) — \(desc)"
+                    }
+                    return col
+                }
+                lines.append("  \(annotated.joined(separator: ", "))")
+            }
             lines.append("")
         }
 
-        // Append FTS table note
+        // Append FTS documentation, relationships, and footer
         lines.append(ChatPrompts.schemaFooter)
 
         return lines.joined(separator: "\n")
@@ -1374,6 +1700,69 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     }
 
 
+    // MARK: - Chat Lab Helpers
+
+    /// Build a system prompt for the Chat Lab using a custom template but real user context.
+    func labBuildSystemPrompt(floatingPrefix: String, mainTemplate: String) -> String {
+        let userName = AuthService.shared.displayName.isEmpty ? "User" : AuthService.shared.givenName
+
+        var prompt = floatingPrefix + "\n\n" + mainTemplate
+        prompt = prompt.replacingOccurrences(of: "{user_name}", with: userName)
+        prompt = prompt.replacingOccurrences(of: "{tz}", with: TimeZone.current.identifier)
+
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        prompt = prompt.replacingOccurrences(of: "{current_datetime_str}", with: df.string(from: Date()))
+
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.timeZone = TimeZone.current
+        prompt = prompt.replacingOccurrences(of: "{current_datetime_iso}", with: isoFormatter.string(from: Date()))
+
+        let utcFormatter = DateFormatter()
+        utcFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        utcFormatter.timeZone = TimeZone(identifier: "UTC")
+        prompt = prompt.replacingOccurrences(of: "{current_datetime_utc}", with: utcFormatter.string(from: Date()))
+
+        prompt = prompt.replacingOccurrences(of: "{memories_section}", with: formatMemoriesSection())
+        prompt = prompt.replacingOccurrences(of: "{goal_section}", with: formatGoalSection())
+        prompt = prompt.replacingOccurrences(of: "{tasks_section}", with: formatTasksSection())
+        prompt = prompt.replacingOccurrences(of: "{ai_profile_section}", with: formatAIProfileSection())
+        prompt = prompt.replacingOccurrences(of: "{database_schema}", with: cachedDatabaseSchema)
+
+        return prompt
+    }
+
+    /// Run a single question through the agent bridge for Chat Lab evaluation.
+    /// Uses a unique session key so it doesn't interfere with the real chat.
+    func labRunQuestion(question: String, systemPrompt: String, sessionKey: String) async -> String {
+        // Ensure bridge is running
+        guard await ensureBridgeStarted() else {
+            return "[Bridge not available]"
+        }
+
+        do {
+            let result = try await agentBridge.query(
+                prompt: question,
+                systemPrompt: systemPrompt,
+                sessionKey: sessionKey,
+                model: ModelQoS.Claude.chatLabQuery,
+                onTextDelta: { _ in },
+                onToolCall: { callId, name, input in
+                    let toolCall = ToolCall(name: name, arguments: input, thoughtSignature: nil)
+                    let result = await ChatToolExecutor.execute(toolCall)
+                    log("ChatLab: tool \(name) executed")
+                    return result
+                },
+                onToolActivity: { _, _, _, _ in },
+                onThinkingDelta: { _ in }
+            )
+            return result.text
+        } catch {
+            log("ChatLab: query error: \(error)")
+            return "[Error: \(error.localizedDescription)]"
+        }
+    }
+
     /// Formats the last 10 non-empty messages in the current session as a conversation history string.
     /// Used to seed new ACP sessions with context from the existing chat UI history.
     private func buildConversationHistory() -> String {
@@ -1395,7 +1784,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 self.omiAICumulativeCostUsd = serverCost
                 log("ChatProvider: Seeded Omi AI cumulative cost from backend: $\(String(format: "%.4f", serverCost))")
                 // Show upgrade prompt if over threshold but don't block chat
-                if self.bridgeMode == BridgeMode.omiAI.rawValue && serverCost >= 50.0 {
+                if self.bridgeMode != BridgeMode.userClaude.rawValue && serverCost >= 50.0 {
                     log("ChatProvider: Omi AI cost at $\(String(format: "%.2f", serverCost)) on startup — showing upgrade prompt")
                     self.showOmiThresholdAlert = true
                 }
@@ -1661,11 +2050,17 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         isLoading = false
     }
 
-    // MARK: - Cross-Platform Message Polling
+    // MARK: - Cross-Platform Message Sync
 
-    /// Poll for new messages from other platforms (e.g. mobile).
+    /// Prevents overlapping fetches when activation + Cmd+R fire back-to-back.
+    private let pollGate = ReentrancyGate()
+
+    /// Fetch new messages from other platforms (e.g. mobile).
     /// Merges new messages into the existing array without disrupting the UI.
     private func pollForNewMessages() async {
+        // Prevent overlapping fetches from activation + Cmd+R firing together
+        guard pollGate.tryEnter() else { return }
+        defer { pollGate.exit() }
         // Skip if user is signed out (tokens are cleared)
         guard AuthState.shared.isSignedIn else { return }
         // Skip if in auth backoff period (recent 401 errors)
@@ -1757,8 +2152,25 @@ A screenshot may be attached — use it silently only if relevant. Never mention
     func stopAgent() {
         guard isSending else { return }
         isStopping = true
+        sendGeneration += 1
+        let myGen = sendGeneration
         Task {
-            await acpBridge.interrupt()
+            await agentBridge.interrupt()
+            // Normal path: interrupt → bridge emits final result or .stopped →
+            // sendMessage's do/catch resets isSending via its finally (line 2631).
+            // Fallback: if the bridge drops the turn_end as "stray" (known
+            // sleep/wake flake — see PR where this watchdog was added), the
+            // for-await in sendMessage hangs forever and isSending stays true.
+            // After a short grace, force-release so the user's next query isn't
+            // silently swallowed by the guard at sendMessage:start.
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            await MainActor.run {
+                if self.isSending && self.sendGeneration == myGen {
+                    log("ChatProvider: interrupt didn't close stream in 3s — force-resetting isSending")
+                    self.isSending = false
+                    self.isStopping = false
+                }
+            }
         }
         // Result flows back normally through the bridge with partial text
     }
@@ -1805,8 +2217,43 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         // When sendMessage finishes (due to the interrupt), it checks
         // pendingFollowUpText and chains a new full query automatically.
         pendingFollowUpText = trimmedText
-        await acpBridge.interrupt()
+        await agentBridge.interrupt()
         log("ChatProvider: follow-up queued, interrupt sent")
+    }
+
+    @discardableResult
+    func appendAssistantMessage(_ text: String, notificationContext: String? = nil, notificationScreenshot: Data? = nil) -> ChatMessage? {
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else { return nil }
+
+        let aiMessage = ChatMessage(text: trimmedText, sender: .ai, notificationContext: notificationContext, notificationScreenshot: notificationScreenshot)
+        let localId = aiMessage.id
+        let capturedSessionId = isInDefaultChat ? nil : currentSessionId
+        let capturedAppId = overrideAppId ?? selectedAppId
+
+        messages.append(aiMessage)
+
+        Task { [weak self] in
+            do {
+                let response = try await APIClient.shared.saveMessage(
+                    text: trimmedText,
+                    sender: "ai",
+                    appId: capturedAppId,
+                    sessionId: capturedSessionId
+                )
+                await MainActor.run {
+                    if let index = self?.messages.firstIndex(where: { $0.id == localId }) {
+                        self?.messages[index].id = response.id
+                        self?.messages[index].isSynced = true
+                    }
+                }
+                log("Saved assistant message to backend: \(response.id)")
+            } catch {
+                logError("Failed to persist assistant message", error: error)
+            }
+        }
+
+        return aiMessage
     }
 
     // MARK: - Send Message
@@ -1828,6 +2275,23 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             return
         }
 
+        // Monthly free-tier limit shared with the floating bar (30 messages/month).
+        // Block the send, surface the popup, and let the user upgrade.
+        let usageLimiter = FloatingBarUsageLimiter.shared
+        if isUsingOmiAccountProvider {
+            if usageLimiter.isLimitReached {
+                log("ChatProvider: sendMessage blocked — free-tier monthly chat limit reached")
+                errorMessage = "You've reached \(usageLimiter.limitDescription). Upgrade to keep chatting."
+                NotificationCenter.default.post(
+                    name: .showUsageLimitPopup,
+                    object: nil,
+                    userInfo: ["reason": "chat"]
+                )
+                return
+            }
+            usageLimiter.recordQuery()
+        }
+
         // Ensure bridge is running
         guard await ensureBridgeStarted() else {
             errorMessage = "AI not available"
@@ -1835,7 +2299,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         }
 
         // Show upgrade prompt if over threshold but don't block the message
-        if bridgeMode == BridgeMode.omiAI.rawValue && omiAICumulativeCostUsd >= 50.0 {
+        if bridgeMode != BridgeMode.userClaude.rawValue && omiAICumulativeCostUsd >= 50.0 {
             showOmiThresholdAlert = true
         }
 
@@ -1857,6 +2321,26 @@ A screenshot may be attached — use it silently only if relevant. Never mention
 
         isSending = true
         errorMessage = nil
+        sendGeneration += 1
+        let sendGen = sendGeneration
+
+        // Safety-net watchdog: if this specific send is still "in flight"
+        // 3 minutes from now, something in the bridge / stream pipeline has
+        // hung (commonly: stale ACP subprocess after laptop sleep emits a
+        // "stray turn_end" that Swift's waitForMessage never sees). Force-
+        // release isSending so the user's next query isn't silently dropped
+        // by the "already sending" guard. The generation check means the
+        // watchdog only fires if no later send has replaced this one.
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 180_000_000_000)
+            await MainActor.run {
+                guard let self = self, self.isSending, self.sendGeneration == sendGen else { return }
+                log("ChatProvider: send watchdog fired at 180s — bridge is stuck; force-resetting")
+                self.isSending = false
+                self.isStopping = false
+                self.errorMessage = "Response took too long. Try again."
+            }
+        }
 
         // Save user message to backend and add to UI.
         // (skip for follow-ups — sendFollowUp already did both)
@@ -1927,9 +2411,11 @@ A screenshot may be attached — use it silently only if relevant. Never mention
         let queryStartTime = Date()
         var toolNames: [String] = []
         var toolStartTimes: [String: Date] = [:]
+        var sqlRowsReturned = 0
+        var sqlQueryCount = 0
 
         do {
-            // Use the system prompt built at warmup. The ACP bridge applies it only
+            // Use the system prompt built at warmup. The agent bridge applies it only
             // at session/new; for the normal reused-session path it is ignored.
             // Passing it here ensures it is applied if the session was invalidated
             // (e.g. cwd change) and a new session/new is triggered mid-conversation.
@@ -1949,20 +2435,45 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 systemPrompt += "\n\n" + suffix
             }
 
+            // Auto-inject notification context: if the most recent AI message before
+            // the user's new message is a proactive notification, tell Claude about it
+            // so it can answer follow-up questions about the notification.
+            var effectiveImageData = imageData
+            if systemPromptSuffix == nil {
+                // Find the last AI message before the user's current message
+                let aiMessages = messages.filter { $0.sender == .ai && !$0.isStreaming }
+                if let lastAI = aiMessages.last, let ctx = lastAI.notificationContext {
+                    systemPrompt += "\n\n" + ctx
+                    // Attach the notification screenshot if no other image is provided
+                    if effectiveImageData == nil, let screenshotData = lastAI.notificationScreenshot {
+                        effectiveImageData = screenshotData
+                    }
+                }
+            }
+
             // Query the active bridge with streaming
-            // Callbacks for ACP bridge
-            let textDeltaHandler: ACPBridge.TextDeltaHandler = { [weak self] delta in
+            // Callbacks for agent bridge
+            let textDeltaHandler: AgentBridge.TextDeltaHandler = { [weak self] delta in
                 Task { @MainActor [weak self] in
                     self?.appendToMessage(id: aiMessageId, text: delta)
                 }
             }
-            let toolCallHandler: ACPBridge.ToolCallHandler = { callId, name, input in
+            let toolCallHandler: AgentBridge.ToolCallHandler = { callId, name, input in
                 let toolCall = ToolCall(name: name, arguments: input, thoughtSignature: nil)
                 let result = await ChatToolExecutor.execute(toolCall)
                 log("OMI tool \(name) executed for callId=\(callId)")
+                // Track SQL query stats for metadata
+                if name == "execute_sql" {
+                    sqlQueryCount += 1
+                    // Parse row count from result (format: "\nN row(s)" at end)
+                    if let match = result.range(of: #"(\d+) row\(s\)"#, options: .regularExpression) {
+                        let numStr = result[match].components(separatedBy: " ").first ?? "0"
+                        sqlRowsReturned += Int(numStr) ?? 0
+                    }
+                }
                 return result
             }
-            let toolActivityHandler: ACPBridge.ToolActivityHandler = { [weak self] name, status, toolUseId, input in
+            let toolActivityHandler: AgentBridge.ToolActivityHandler = { [weak self] name, status, toolUseId, input in
                 Task { @MainActor [weak self] in
                     self?.addToolActivity(
                         messageId: aiMessageId,
@@ -2004,18 +2515,18 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                     }
                 }
             }
-            let thinkingDeltaHandler: ACPBridge.ThinkingDeltaHandler = { [weak self] text in
+            let thinkingDeltaHandler: AgentBridge.ThinkingDeltaHandler = { [weak self] text in
                 Task { @MainActor [weak self] in
                     self?.appendThinking(messageId: aiMessageId, text: text)
                 }
             }
-            let toolResultDisplayHandler: ACPBridge.ToolResultDisplayHandler = { [weak self] toolUseId, name, output in
+            let toolResultDisplayHandler: AgentBridge.ToolResultDisplayHandler = { [weak self] toolUseId, name, output in
                 Task { @MainActor [weak self] in
                     self?.addToolResult(messageId: aiMessageId, toolUseId: toolUseId, name: name, output: output)
                 }
             }
 
-            let queryResult = try await acpBridge.query(
+            let queryResult = try await agentBridge.query(
                 prompt: trimmedText,
                 systemPrompt: systemPrompt,
                 sessionKey: isOnboarding ? "onboarding" : (sessionKey ?? "main"),
@@ -2023,7 +2534,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 mode: chatMode.rawValue,
                 model: model ?? modelOverride,
                 resume: resume,
-                imageData: imageData,
+                imageData: effectiveImageData,
                 onTextDelta: textDeltaHandler,
                 onToolCall: toolCallHandler,
                 onToolActivity: toolActivityHandler,
@@ -2056,6 +2567,20 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 messageText = messages[index].text.isEmpty ? queryResult.text : messages[index].text
                 messages[index].text = messageText
                 messages[index].isStreaming = false
+                messages[index].metadata = MessageMetadata(
+                    model: model ?? modelOverride,
+                    inputTokens: queryResult.inputTokens,
+                    outputTokens: queryResult.outputTokens,
+                    cacheReadTokens: queryResult.cacheReadTokens,
+                    cacheWriteTokens: queryResult.cacheWriteTokens,
+                    costUsd: queryResult.costUsd,
+                    systemPrompt: systemPrompt,
+                    hasScreenshot: imageData != nil,
+                    screenshotSizeBytes: imageData?.count,
+                    toolNames: toolNames,
+                    sqlRowsReturned: sqlRowsReturned,
+                    sqlQueryCount: sqlQueryCount
+                )
                 completeRemainingToolCalls(messageId: aiMessageId)
             } else {
                 // Message no longer in memory (user switched away from this session).
@@ -2142,19 +2667,25 @@ A screenshot may be attached — use it silently only if relevant. Never mention
                 messageLength: responseLength
             )
 
-            let isOmiMode = bridgeMode == BridgeMode.omiAI.rawValue
-            let accountType = isOmiMode ? "omi" : "personal"
-            let r = queryResult
-            Task.detached(priority: .background) {
-                await APIClient.shared.recordLlmUsage(
-                    inputTokens: r.inputTokens,
-                    outputTokens: r.outputTokens,
-                    cacheReadTokens: r.cacheReadTokens,
-                    cacheWriteTokens: r.cacheWriteTokens,
-                    totalTokens: r.inputTokens + r.outputTokens + r.cacheReadTokens + r.cacheWriteTokens,
-                    costUsd: r.costUsd,
-                    account: accountType
-                )
+            // Skip client-side usage recording for piMono — the backend already
+            // logs usage server-side via POST /v2/chat/completions, so recording
+            // here would double-count.
+            let isOmiMode = bridgeMode != BridgeMode.userClaude.rawValue
+            let isPiMono = bridgeMode == BridgeMode.piMono.rawValue
+            if !isPiMono {
+                let accountType = isOmiMode ? "omi" : "personal"
+                let r = queryResult
+                Task.detached(priority: .background) {
+                    await APIClient.shared.recordLlmUsage(
+                        inputTokens: r.inputTokens,
+                        outputTokens: r.outputTokens,
+                        cacheReadTokens: r.cacheReadTokens,
+                        cacheWriteTokens: r.cacheWriteTokens,
+                        totalTokens: r.inputTokens + r.outputTokens + r.cacheReadTokens + r.cacheWriteTokens,
+                        costUsd: r.costUsd,
+                        account: accountType
+                    )
+                }
             }
             if isOmiMode {
                 sessionTokensUsed += queryResult.inputTokens + queryResult.outputTokens
@@ -2174,7 +2705,7 @@ A screenshot may be attached — use it silently only if relevant. Never mention
             // On timeout, cancel the stuck ACP session so it's not left dangling
             if let bridgeError = error as? BridgeError, case .timeout = bridgeError {
                 log("ChatProvider: ACP query timed out, sending interrupt to cancel stuck session")
-                await acpBridge.interrupt()
+                await agentBridge.interrupt()
             }
 
             // Flush any remaining buffered streaming text before handling the error

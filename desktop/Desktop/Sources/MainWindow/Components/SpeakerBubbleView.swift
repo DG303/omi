@@ -57,9 +57,13 @@ struct SpeakerBubbleView: View {
                                     .scaledFont(size: 10)
                             }
                         }
+                        .padding(.vertical, 2)
+                        .contentShape(Rectangle())
                         .foregroundColor(personName != nil ? OmiColors.purplePrimary : OmiColors.textTertiary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("transcript_speaker_button_\(segment.id)")
+                    .accessibilityLabel("Transcript speaker \(speakerLabel)")
                     .onHover { hovering in
                         if hovering {
                             NSCursor.pointingHand.push()
@@ -87,6 +91,22 @@ struct SpeakerBubbleView: View {
                         RoundedRectangle(cornerRadius: 18)
                             .fill(bubbleColor)
                     )
+
+                // Translations from backend
+                if !segment.translations.isEmpty {
+                    ForEach(segment.translations, id: \.lang) { translation in
+                        Text(translation.text)
+                            .scaledFont(size: 13)
+                            .foregroundColor(OmiColors.textSecondary)
+                            .italic()
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .fill(bubbleColor.opacity(0.5))
+                            )
+                    }
+                }
 
                 // Timestamp
                 Text(formatTime(segment.start))

@@ -37,17 +37,13 @@ import 'package:omi/l10n/app_localizations.dart';
 import 'package:omi/pages/apps/providers/add_app_provider.dart';
 import 'package:omi/pages/conversation_detail/conversation_detail_provider.dart';
 import 'package:omi/pages/payments/payment_method_provider.dart';
-import 'package:omi/pages/persona/persona_provider.dart';
-import 'package:omi/pages/settings/ai_app_generator_provider.dart';
 import 'package:omi/providers/action_items_provider.dart';
 import 'package:omi/providers/announcement_provider.dart';
 import 'package:omi/providers/app_provider.dart';
 import 'package:omi/providers/auth_provider.dart';
-import 'package:omi/providers/calendar_provider.dart';
 import 'package:omi/providers/capture_provider.dart';
 import 'package:omi/providers/connectivity_provider.dart';
 import 'package:omi/providers/conversation_provider.dart';
-import 'package:omi/providers/developer_mode_provider.dart';
 import 'package:omi/providers/device_provider.dart';
 import 'package:omi/providers/folder_provider.dart';
 import 'package:omi/providers/goals_provider.dart';
@@ -80,7 +76,6 @@ import 'package:omi/utils/environment_detector.dart';
 import 'package:omi/pages/settings/developer.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:omi/utils/platform/platform_manager.dart';
-import 'package:omi/utils/platform/platform_service.dart';
 
 /// Background message handler for FCM data messages
 @pragma('vm:entry-point')
@@ -121,15 +116,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future _init() async {
   // Env
-  if (PlatformService.isWindows) {
-    // Windows does not support flavors`
+  if (F.env == Environment.prod) {
     Env.init(ProdEnv());
   } else {
-    if (F.env == Environment.prod) {
-      Env.init(ProdEnv());
-    } else {
-      Env.init(DevEnv());
-    }
+    Env.init(DevEnv());
   }
 
   FlutterForegroundTask.initCommunicationPort();
@@ -139,7 +129,7 @@ Future _init() async {
 
   // Firebase
   if (Firebase.apps.isEmpty) {
-    final options = (PlatformService.isWindows || F.env == Environment.prod)
+    final options = F.env == Environment.prod
         ? prod.DefaultFirebaseOptions.currentPlatform
         : dev.DefaultFirebaseOptions.currentPlatform;
     await Firebase.initializeApp(options: options);
@@ -164,8 +154,13 @@ Future _init() async {
     if (isTestFlight) {
       Env.isTestFlight = true;
       if (SharedPreferencesUtil().testFlightUseStagingApi) {
-        Env.overrideApiBaseUrl(Env.stagingApiUrl);
-        debugPrint('TestFlight detected: using staging backend (${Env.stagingApiUrl})');
+        final staging = Env.stagingApiUrl;
+        if (staging != null) {
+          Env.overrideApiBaseUrl(staging);
+          debugPrint('TestFlight detected: using staging backend ($staging)');
+        } else {
+          debugPrint('TestFlight detected: staging preferred but STAGING_API_URL not configured, using production');
+        }
       } else {
         debugPrint('TestFlight detected: user chose production backend');
       }
@@ -186,22 +181,15 @@ Future _init() async {
       print('DEBUG main: After restore - onboardingCompleted=${SharedPreferencesUtil().onboardingCompleted}');
     }
   }
-  if (PlatformService.isMobile) initOpus(await opus_flutter.load());
+  initOpus(await opus_flutter.load());
 
   await GrowthbookUtil.init();
-  if (!PlatformService.isWindows && !PlatformService.isMobile) {
-    ble.FlutterBluePlus.setOptions(restoreState: true);
-    ble.FlutterBluePlus.setLogLevel(ble.LogLevel.info, color: true);
-  }
-
   // Register native BLE bridge
-  if (PlatformService.isMobile) {
-    BleFlutterApi.setUp(BleBridge.instance);
+  BleFlutterApi.setUp(BleBridge.instance);
 
-    BleBridge.instance.stateRestoredCallback = (List<String> peripheralUuids) {
-      Logger.debug('main: restored ${peripheralUuids.length} BLE peripherals');
-    };
-  }
+  BleBridge.instance.stateRestoredCallback = (List<String> peripheralUuids) {
+    Logger.debug('main: restored ${peripheralUuids.length} BLE peripherals');
+  };
 
   await CrashlyticsManager.init();
   if (isAuth) {
@@ -327,37 +315,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           update: (BuildContext context, app, conversation, ConversationDetailProvider? previous) =>
               (previous?..setProviders(app, conversation)) ?? ConversationDetailProvider(),
         ),
-        ChangeNotifierProvider(create: (context) => DeveloperModeProvider()..initialize()),
-        ChangeNotifierProvider(create: (context) => McpProvider()),
         ChangeNotifierProxyProvider<AppProvider, AddAppProvider>(
           create: (context) => AddAppProvider(),
           update: (BuildContext context, value, AddAppProvider? previous) =>
               (previous?..setAppProvider(value)) ?? AddAppProvider(),
         ),
-        ChangeNotifierProxyProvider<AppProvider, AiAppGeneratorProvider>(
-          create: (context) => AiAppGeneratorProvider(),
-          update: (BuildContext context, value, AiAppGeneratorProvider? previous) =>
-              (previous?..setAppProvider(value)) ?? AiAppGeneratorProvider(),
-        ),
-        ChangeNotifierProvider(create: (context) => PaymentMethodProvider()),
-        ChangeNotifierProvider(create: (context) => PersonaProvider()),
         ChangeNotifierProxyProvider<ConnectivityProvider, MemoriesProvider>(
           create: (context) => MemoriesProvider(),
           update: (context, connectivity, previous) =>
               (previous?..setConnectivityProvider(connectivity)) ?? MemoriesProvider(),
         ),
         ChangeNotifierProvider(create: (context) => UserProvider()),
-        ChangeNotifierProvider(create: (context) => ActionItemsProvider()),
-        ChangeNotifierProvider(create: (context) => GoalsProvider()..init()),
+        ChangeNotifierProvider(lazy: true, create: (context) => ActionItemsProvider()),
+        ChangeNotifierProvider(lazy: true, create: (context) => GoalsProvider()..init()),
         ChangeNotifierProvider(create: (context) => SyncProvider()),
-        ChangeNotifierProvider(create: (context) => TaskIntegrationProvider()),
-        ChangeNotifierProvider(create: (context) => IntegrationProvider()),
-        ChangeNotifierProvider(create: (context) => CalendarProvider(), lazy: false),
-        ChangeNotifierProvider(create: (context) => FolderProvider()),
+        ChangeNotifierProvider(lazy: true, create: (context) => TaskIntegrationProvider()),
+        ChangeNotifierProvider(lazy: true, create: (context) => IntegrationProvider()),
+        ChangeNotifierProvider(lazy: true, create: (context) => FolderProvider()),
+        ChangeNotifierProvider(lazy: true, create: (context) => McpProvider()),
+        ChangeNotifierProvider(lazy: true, create: (context) => PaymentMethodProvider()),
+        ChangeNotifierProvider(create: (context) => VoiceRecorderProvider()..checkPendingRecording()),
         ChangeNotifierProvider(create: (context) => LocaleProvider()),
-        ChangeNotifierProvider(create: (context) => VoiceRecorderProvider()),
         ChangeNotifierProvider(create: (context) => AnnouncementProvider()),
-        ChangeNotifierProvider(create: (context) => PhoneCallProvider()),
+        ChangeNotifierProvider(lazy: true, create: (context) => PhoneCallProvider()),
       ],
       builder: (context, child) {
         return WithForegroundTask(

@@ -29,8 +29,10 @@ struct DesktopHomeView: View {
   // Settings sidebar state
   @State private var selectedSettingsSection: SettingsContentView.SettingsSection = .general
   @State private var highlightedSettingId: String? = nil
+  @State private var showTryAskingPopup = false
   @State private var previousIndexBeforeSettings: Int = 0
   @State private var logoPulse = false
+  @State private var lastActivationRefresh = Date.distantPast
 
   // Pre-loaded hero logo to avoid NSImage init crashes during SwiftUI body evaluation
   private static let heroLogoImage: NSImage? = {
@@ -94,12 +96,40 @@ struct DesktopHomeView: View {
             .onAppear {
               if UserDefaults.standard.bool(forKey: "onboardingJustCompleted") {
                 UserDefaults.standard.removeObject(forKey: "onboardingJustCompleted")
-                log("DesktopHomeView: Onboarding just completed — navigating to Tasks page")
-                selectedIndex = SidebarNavItem.tasks.rawValue
+                log("DesktopHomeView: Onboarding just completed — navigating to Dashboard")
+                selectedIndex = SidebarNavItem.dashboard.rawValue
               }
             }
           mainContent
             .opacity(viewModelContainer.isInitialLoadComplete ? 1 : 0)
+            .overlay {
+              if appState.showUsageLimitPopup {
+                UsageLimitPopupView(
+                  reason: appState.usageLimitReason,
+                  onUpgrade: {
+                    appState.showUsageLimitPopup = false
+                    selectedSettingsSection = .planUsage
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                      selectedIndex = SidebarNavItem.settings.rawValue
+                    }
+                  },
+                  onDismiss: {
+                    appState.showUsageLimitPopup = false
+                  },
+                  onBringYourOwnKeys: {
+                    appState.showUsageLimitPopup = false
+                    selectedSettingsSection = .advanced
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                      selectedIndex = SidebarNavItem.settings.rawValue
+                    }
+                  }
+                )
+              }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .showUsageLimitPopup)) { notification in
+              let reason = notification.userInfo?["reason"] as? String ?? ""
+              appState.triggerUsageLimitPopup(reason: reason)
+            }
             .onAppear {
               log("DesktopHomeView: Showing mainContent (signed in and onboarded)")
               // Check all permissions on launch
@@ -198,7 +228,12 @@ struct DesktopHomeView: View {
             .onReceive(
               NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
             ) { _ in
-              Task { await appState.refreshConversations() }
+              // Cooldown: only refresh conversations if last activation was 60+ seconds ago
+              let now = Date()
+              if PollingConfig.shouldAllowActivationRefresh(now: now, lastRefresh: lastActivationRefresh) {
+                lastActivationRefresh = now
+                Task { await appState.refreshConversations() }
+              }
               // Auto-start monitoring when returning to app if screen analysis is enabled
               // but monitoring is not running. Handles the case where the user granted
               // screen recording permission in System Settings and switched back.
@@ -233,8 +268,8 @@ struct DesktopHomeView: View {
                 }
               }
             }
-            // Periodic refresh every 30s to pick up conversations from other devices (e.g. Omi Glass)
-            .onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in
+            // Cmd+R: refresh all data (conversations, chat, tasks, memories)
+            .onReceive(NotificationCenter.default.publisher(for: .refreshAllData)) { _ in
               Task { await appState.refreshConversations() }
             }
             // On sign-out: reset @AppStorage-backed onboarding flag and stop transcription.
@@ -422,7 +457,8 @@ struct DesktopHomeView: View {
     ]
     if currentTierLevel >= 2 { visibleRawValues.insert(SidebarNavItem.memories.rawValue) }
     if currentTierLevel >= 3 { visibleRawValues.insert(SidebarNavItem.tasks.rawValue) }
-    if currentTierLevel >= 4 { visibleRawValues.insert(SidebarNavItem.chat.rawValue) }
+    // Conversations replaced Chat in the sidebar; tier 1 unlocks it.
+    if currentTierLevel >= 1 { visibleRawValues.insert(SidebarNavItem.conversations.rawValue) }
 
     if !visibleRawValues.contains(selectedIndex) {
       selectedIndex = SidebarNavItem.dashboard.rawValue
@@ -515,8 +551,8 @@ struct DesktopHomeView: View {
       return .tasks
     case "focus":
       return .focus
-    case "advice":
-      return .advice
+    case "insight":
+      return .insight
     case "rewind":
       return .rewind
     case "apps", "integrations":
@@ -597,13 +633,22 @@ struct DesktopHomeView: View {
       // Main content area with rounded container
       ZStack {
         // Content container background
-        RoundedRectangle(cornerRadius: 16)
-          .fill(OmiColors.backgroundSecondary.opacity(0.4))
-          .overlay(
-            RoundedRectangle(cornerRadius: 16)
-              .stroke(OmiColors.backgroundTertiary.opacity(0.3), lineWidth: 1)
+        RoundedRectangle(cornerRadius: OmiChrome.windowRadius, style: .continuous)
+          .fill(
+            LinearGradient(
+              colors: [
+                OmiColors.backgroundSecondary.opacity(0.96),
+                OmiColors.backgroundPrimary.opacity(0.96),
+              ],
+              startPoint: .topLeading,
+              endPoint: .bottomTrailing
+            )
           )
-          .shadow(color: .black.opacity(0.05), radius: 20, x: 0, y: 4)
+          .overlay(
+            RoundedRectangle(cornerRadius: OmiChrome.windowRadius, style: .continuous)
+              .stroke(OmiColors.border.opacity(0.22), lineWidth: 1)
+          )
+          .shadow(color: .black.opacity(0.22), radius: 26, x: 0, y: 14)
 
         // Page content - switch recreates views on tab change
         // Extracted into a separate struct so that pages like TasksPage
@@ -619,13 +664,36 @@ struct DesktopHomeView: View {
         .id(selectedIndex)
         .transition(.opacity.combined(with: .move(edge: .trailing)))
         .animation(.easeInOut(duration: 0.2), value: selectedIndex)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: OmiChrome.windowRadius, style: .continuous))
       }
-      .padding(12)
+      .padding(14)
     }
     .overlay {
       // Goal completion celebration overlay
       GoalCelebrationView()
+    }
+    .overlay {
+      if showTryAskingPopup {
+        let suggestions = PostOnboardingPromptSuggestions.suggestions()
+        if !suggestions.isEmpty {
+          TryAskingPopupView(
+            suggestions: suggestions,
+            onAsk: { suggestion in
+              showTryAskingPopup = false
+              PostOnboardingPromptSuggestions.shouldShowPopup = false
+              FloatingControlBarManager.shared.openAIInputWithQuery(suggestion)
+            },
+            onDismiss: {
+              showTryAskingPopup = false
+              PostOnboardingPromptSuggestions.shouldShowPopup = false
+              PostOnboardingPromptSuggestions.isDismissed = true
+            }
+          )
+        }
+      }
+    }
+    .onReceive(NotificationCenter.default.publisher(for: .showTryAskingPopup)) { _ in
+      showTryAskingPopup = true
     }
     .onReceive(NotificationCenter.default.publisher(for: .navigateToRewindSettings)) { _ in
       // Set the section directly and navigate to settings
@@ -654,7 +722,7 @@ struct DesktopHomeView: View {
       }
     }
     .onReceive(NotificationCenter.default.publisher(for: .navigateToAIChatSettings)) { _ in
-      selectedSettingsSection = .aiChat
+      selectedSettingsSection = .advanced
       withAnimation(.easeInOut(duration: 0.2)) {
         selectedIndex = SidebarNavItem.settings.rawValue
       }
@@ -677,8 +745,9 @@ struct DesktopHomeView: View {
       }
     }
     .onReceive(NotificationCenter.default.publisher(for: .navigateToChat)) { _ in
+      // Chat now lives on the Dashboard page.
       withAnimation(.easeInOut(duration: 0.2)) {
-        selectedIndex = SidebarNavItem.chat.rawValue
+        selectedIndex = SidebarNavItem.dashboard.rawValue
       }
     }
     .onReceive(NotificationCenter.default.publisher(for: .navigateToTasks)) { _ in
@@ -732,12 +801,13 @@ private struct PageContentView: View {
       switch selectedIndex {
       case 0:
         DashboardPage(
-          viewModel: viewModelContainer.dashboardViewModel, appState: appState,
+          viewModel: viewModelContainer.dashboardViewModel,
+          appState: appState,
+          appProvider: viewModelContainer.appProvider,
+          chatProvider: viewModelContainer.chatProvider,
           selectedIndex: $selectedTabIndex)
       case 1:
-        DashboardPage(
-          viewModel: viewModelContainer.dashboardViewModel, appState: appState,
-          selectedIndex: $selectedTabIndex)
+        ConversationsPageHost(appState: appState)
       case 2:
         ChatPage(
           appProvider: viewModelContainer.appProvider, chatProvider: viewModelContainer.chatProvider
@@ -752,11 +822,11 @@ private struct PageContentView: View {
       case 5:
         FocusPage()
       case 6:
-        AdvicePage()
+        InsightPage()
       case 7:
         RewindPage(appState: appState)
       case 8:
-        AppsPage(appProvider: viewModelContainer.appProvider)
+        AppsPage(appProvider: viewModelContainer.appProvider, appState: appState)
       case 9:
         SettingsPage(
           appState: appState,
@@ -772,10 +842,24 @@ private struct PageContentView: View {
         HelpPage()
       default:
         DashboardPage(
-          viewModel: viewModelContainer.dashboardViewModel, appState: appState,
+          viewModel: viewModelContainer.dashboardViewModel,
+          appState: appState,
+          appProvider: viewModelContainer.appProvider,
+          chatProvider: viewModelContainer.chatProvider,
           selectedIndex: $selectedTabIndex)
       }
     }
+  }
+}
+
+/// Hosts the standalone Conversations page with its own selection state
+/// so tapping a row navigates to the detail view.
+private struct ConversationsPageHost: View {
+  let appState: AppState
+  @State private var selectedConversation: ServerConversation? = nil
+
+  var body: some View {
+    ConversationsPage(appState: appState, selectedConversation: $selectedConversation)
   }
 }
 

@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, create_model
 from langchain_core.tools import StructuredTool
 from langchain_core.runnables import RunnableConfig
 
+from database.redis_db import get_cached_user_geolocation
 from models.app import ChatTool
 from utils.mcp_client import call_mcp_tool
 import logging
@@ -177,6 +178,13 @@ async def _call_tool_endpoint(kwargs: dict, config: Optional[RunnableConfig], ap
     if not uid:
         return f"Error: User ID not found for {app_tool.name}"
 
+    # Get geolocation from cache
+    geolocation = None
+    try:
+        geolocation = get_cached_user_geolocation(uid)
+    except Exception:
+        pass
+
     # Prepare request payload
     payload = {
         **kwargs,
@@ -184,6 +192,8 @@ async def _call_tool_endpoint(kwargs: dict, config: Optional[RunnableConfig], ap
         'app_id': app_id,
         'tool_name': app_tool.name,
     }
+    if geolocation:
+        payload['geolocation'] = geolocation
 
     # Prepare headers
     headers = {
@@ -228,6 +238,15 @@ async def _call_tool_endpoint(kwargs: dict, config: Optional[RunnableConfig], ap
                 except ValueError:
                     return response.text
             else:
+                # Auth errors (401/403) almost always mean the app's API key or
+                # credentials are misconfigured on the app developer's side.
+                # Return a clean message so Claude doesn't echo raw API key errors
+                # (like "Invalid API key · Fix external API key") back to the user.
+                if response.status_code in (401, 403):
+                    return (
+                        f"The {app_tool.name} tool is temporarily unavailable due to a "
+                        f"configuration issue on the app's side. Please try again later "
+                    )
                 error_msg = f"Error calling {app_tool.name}: HTTP {response.status_code}"
                 try:
                     error_detail = response.json()

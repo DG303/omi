@@ -64,6 +64,12 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     /// Title that identifies screen capture reset notifications
     static let screenCaptureResetTitle = "Screen Recording Needs Reset"
 
+    /// UserDefaults key that records whether the screen capture reset notification
+    /// has already been shown in the current broken-capture episode. Cleared by
+    /// `AppState.checkScreenRecordingPermission()` as soon as capture recovers,
+    /// so a new breakage re-notifies exactly once.
+    static let screenCaptureResetShownKey = "screenCaptureResetNotificationShown"
+
     /// Stores metadata for sent notifications so we can retrieve it in delegate callbacks
     /// Key: notification identifier, Value: (title, assistantId)
     private var notificationMetadata: [String: (title: String, assistantId: String)] = [:]
@@ -151,7 +157,8 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                 AnalyticsManager.shared.notificationClicked(
                     notificationId: notificationId,
                     title: title,
-                    assistantId: assistantId
+                    assistantId: assistantId,
+                    surface: "system_notification"
                 )
 
                 // If this is a screen capture reset notification, trigger the reset
@@ -165,7 +172,8 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                 AnalyticsManager.shared.notificationDismissed(
                     notificationId: notificationId,
                     title: title,
-                    assistantId: assistantId
+                    assistantId: assistantId,
+                    surface: "system_notification"
                 )
 
             case Self.resetNowActionId:
@@ -174,7 +182,8 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                 AnalyticsManager.shared.notificationClicked(
                     notificationId: notificationId,
                     title: title,
-                    assistantId: assistantId
+                    assistantId: assistantId,
+                    surface: "system_notification"
                 )
                 self.handleScreenCaptureResetAction(source: "notification_action_button")
 
@@ -197,16 +206,57 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         ScreenCaptureService.resetScreenCapturePermissionAndRestart()
     }
 
-    func sendNotification(title: String, message: String, assistantId: String = "default", sound: NotificationSound = .default) {
+    /// Send a notification via the floating bar, and optionally as a native macOS system banner.
+    ///
+    /// `deliverSystemBanner` defaults to `false` because proactive AI notifications are
+    /// floating-bar only — users who disabled the floating bar reported clicking the
+    /// top-right system banner and getting no conversation context, which was confusing.
+    /// Functional notifications (Crisp support replies, screen-recording permission
+    /// prompts with a repair action) must pass `deliverSystemBanner: true` so they
+    /// still surface as a system banner — they either have no floating-bar equivalent
+    /// or must reach the user even when the floating bar is hidden/snoozed.
+    func sendNotification(
+        title: String,
+        message: String,
+        assistantId: String = "default",
+        sound: NotificationSound = .default,
+        context: FloatingBarNotificationContext? = nil,
+        screenshotData: Data? = nil,
+        deliverSystemBanner: Bool = false
+    ) {
+        // Rate-limit the screen-capture reset notification to one per broken-capture
+        // episode. The recovery loop in ProactiveAssistantsPlugin.attemptAutoReset
+        // re-fires this on every session (soft-recovery + app restart), which buried
+        // users in duplicate banners when a stale TCC csreq from an auto-update made
+        // the capture path unrecoverable without a manual toggle in System Settings.
+        if title == Self.screenCaptureResetTitle {
+            if UserDefaults.standard.bool(forKey: Self.screenCaptureResetShownKey) {
+                log("NotificationService: suppressing duplicate screen capture reset notification")
+                return
+            }
+            UserDefaults.standard.set(true, forKey: Self.screenCaptureResetShownKey)
+        }
+
+        // Honor the floating-bar snooze for both the in-bar preview and the native
+        // macOS banner — the user opted into "no notifications for 2h".
+        if FloatingControlBarManager.shared.isSnoozed {
+            log("NotificationService: suppressing notification because floating bar is snoozed")
+            return
+        }
+
         FloatingControlBarManager.shared.showNotification(
             title: title,
             message: message,
             assistantId: assistantId,
-            sound: sound
+            sound: sound,
+            context: context,
+            screenshotData: screenshotData
         )
 
-        // Keep the floating-bar preview, but still deliver the real macOS
-        // notification when authorization is available.
+        // Default path: floating-bar only. Functional callers opt-in via
+        // `deliverSystemBanner: true` (see the parameter doc above).
+        guard deliverSystemBanner else { return }
+
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             Task { @MainActor in
                 guard settings.authorizationStatus == .authorized else {
@@ -278,7 +328,8 @@ class NotificationService: NSObject, UNUserNotificationCenterDelegate {
                     AnalyticsManager.shared.notificationSent(
                         notificationId: notificationId,
                         title: title,
-                        assistantId: assistantId
+                        assistantId: assistantId,
+                        surface: "system_notification"
                     )
                 }
             }

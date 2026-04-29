@@ -249,16 +249,14 @@ async fn get_chat_context(
         None
     };
 
-    // Get API key for LLM calls
-    let api_key = match &state.config.gemini_api_key {
-        Some(key) => key.clone(),
-        None => {
-            tracing::warn!("No Gemini API key configured, returning basic context");
-            return get_basic_context(&state.firestore, &user.uid, user.name.as_deref().unwrap_or("User"), &request).await;
-        }
-    };
+    // Get LLM client (Vertex AI or API key — always pass real key for fallback)
+    let api_key = state.config.gemini_api_key.clone().unwrap_or_default();
+    if state.vertex_auth.is_none() && api_key.is_empty() {
+        tracing::warn!("No Gemini API key configured, returning basic context");
+        return get_basic_context(&state.firestore, &user.uid, user.name.as_deref().unwrap_or("User"), &request).await;
+    }
 
-    let llm = LlmClient::new(api_key);
+    let llm = LlmClient::new(api_key).with_vertex(state.vertex_auth.clone());
 
     // Format conversation history for context-aware decisions
     let user_name = user.name.as_deref().unwrap_or("User");
@@ -361,24 +359,21 @@ async fn generate_initial_message(
         request.app_id
     );
 
-    // Get API key for LLM calls
-    let api_key = match &state.config.gemini_api_key {
-        Some(key) => key.clone(),
-        None => {
-            tracing::warn!("No Gemini API key configured, returning default greeting");
-            // Save and return default greeting
-            return save_and_return_greeting(
-                &state,
-                &user.uid,
-                &request.session_id,
-                request.app_id.as_deref(),
-                "Hello! I'm here to help. What's on your mind?",
-            )
-            .await;
-        }
-    };
+    // Get LLM client (Vertex AI or API key — always pass real key for fallback)
+    let api_key = state.config.gemini_api_key.clone().unwrap_or_default();
+    if state.vertex_auth.is_none() && api_key.is_empty() {
+        tracing::warn!("No Gemini API key configured, returning default greeting");
+        return save_and_return_greeting(
+            &state,
+            &user.uid,
+            &request.session_id,
+            request.app_id.as_deref(),
+            "Hello! I'm here to help. What's on your mind?",
+        )
+        .await;
+    }
 
-    let llm = LlmClient::new(api_key);
+    let llm = LlmClient::new(api_key).with_vertex(state.vertex_auth.clone());
 
     // Fetch user memories (top 10)
     let memories: Vec<String> = match state.firestore.get_memories(&user.uid, 10).await {
@@ -477,18 +472,16 @@ async fn generate_session_title(
         request.messages.len()
     );
 
-    // Get API key for LLM calls
-    let api_key = match &state.config.gemini_api_key {
-        Some(key) => key.clone(),
-        None => {
-            tracing::warn!("No Gemini API key configured, returning default title");
-            return Ok(Json(GenerateTitleResponse {
-                title: "New Chat".to_string(),
-            }));
-        }
-    };
+    // Get LLM client (Vertex AI or API key — always pass real key for fallback)
+    let api_key = state.config.gemini_api_key.clone().unwrap_or_default();
+    if state.vertex_auth.is_none() && api_key.is_empty() {
+        tracing::warn!("No Gemini API key configured, returning default title");
+        return Ok(Json(GenerateTitleResponse {
+            title: "New Chat".to_string(),
+        }));
+    }
 
-    let llm = LlmClient::new(api_key);
+    let llm = LlmClient::new(api_key).with_vertex(state.vertex_auth.clone());
 
     // Convert messages to the format expected by the LLM
     let messages: Vec<(String, String)> = request

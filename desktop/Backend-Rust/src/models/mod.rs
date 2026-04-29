@@ -17,6 +17,7 @@ pub mod message;
 pub mod person;
 pub mod persona;
 pub mod request;
+pub mod chat_completions;
 pub mod screen_activity;
 pub mod user_settings;
 
@@ -57,7 +58,7 @@ pub use user_settings::{
     UpdateLanguageRequest, UpdateNotificationSettingsRequest, UpdateTranscriptionPreferencesRequest,
     UpdateUserProfileRequest, UserLanguage, UserProfile, UserSettingsStatusResponse,
     AssistantSettingsData, SharedAssistantSettingsData, FocusSettingsData, TaskSettingsData,
-    AdviceSettingsData, MemorySettingsData,
+    AdviceSettingsData, MemorySettingsData, FloatingBarSettingsData,
 };
 pub use chat_session::{
     ChatSessionDB, ChatSessionStatusResponse, CreateChatSessionRequest, GetChatSessionsQuery,

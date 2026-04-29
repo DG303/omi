@@ -2,6 +2,1143 @@
   "unreleased": [],
   "releases": [
     {
+      "version": "0.11.371",
+      "date": "2026-04-29",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.370",
+      "date": "2026-04-29",
+      "changes": [
+        "Improved Ask Omi routing: questions now stay in the floating bar chat instead of incorrectly spawning background agents \u2014 Claude Haiku decides whether each message is a quick answer or a real task"
+      ]
+    },
+    {
+      "version": "0.11.369",
+      "date": "2026-04-28",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.368",
+      "date": "2026-04-27",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.367",
+      "date": "2026-04-26",
+      "changes": [
+        "Stop creating up to 5 tasks (and notifications) on every app launch \u2014 task promotion now happens at the natural cadence (when you complete a task, or every 5 minutes at most one at a time)"
+      ]
+    },
+    {
+      "version": "0.11.366",
+      "date": "2026-04-26",
+      "changes": [
+        "Fixed beta build creating empty Firebase accounts on sign-in by routing back to production backend"
+      ]
+    },
+    {
+      "version": "0.11.365",
+      "date": "2026-04-26",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.364",
+      "date": "2026-04-26",
+      "changes": [
+        "Added agent pills: action-y Ask Omi requests (typed or voice) now spawn small floating-bar agents that run in parallel; hover any pill to see live progress and open in chat",
+        "Added Execute button on floating-bar notification cards and task rows \u2014 one click spawns an agent that handles the item end-to-end"
+      ]
+    },
+    {
+      "version": "0.11.363",
+      "date": "2026-04-26",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.362",
+      "date": "2026-04-26",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.361",
+      "date": "2026-04-26",
+      "changes": [
+        "Proactive notifications now only appear in the floating bar, not as macOS system banners",
+        "Made the entire floating bar notification clickable (previously only the text opened the chat)"
+      ]
+    },
+    {
+      "version": "0.11.358",
+      "date": "2026-04-23",
+      "changes": [
+        "Fixed AI provider switch not restarting the agent bridge session"
+      ]
+    },
+    {
+      "version": "0.11.357",
+      "date": "2026-04-23",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.356",
+      "date": "2026-04-23",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.355",
+      "date": "2026-04-23",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.354",
+      "date": "2026-04-23",
+      "changes": [
+        "Removed Anthropic API key from client, added Omi AI branding in Settings, improved harness switching"
+      ]
+    },
+    {
+      "version": "0.11.353",
+      "date": "2026-04-23",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.352",
+      "date": "2026-04-21",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.351",
+      "date": "2026-04-21",
+      "changes": [
+        "Added Pi-Mono as an alternative AI provider with server-side cost tracking via Omi API"
+      ]
+    },
+    {
+      "version": "0.11.350",
+      "date": "2026-04-21",
+      "changes": [
+        "Auto-updates no longer install during an active conversation \u2014 the app waits for 2 minutes of silence before restarting"
+      ]
+    },
+    {
+      "version": "0.11.349",
+      "date": "2026-04-21",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.348",
+      "date": "2026-04-21",
+      "changes": [
+        "Dashboard Tasks/Goals cards now shrink to fit content instead of stretching to fill the screen",
+        "Usage-based overage on Operator plan \u2014 chat past 500 questions is billed as real provider cost + 15% at end of cycle"
+      ]
+    },
+    {
+      "version": "0.11.343",
+      "date": "2026-04-20",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.341",
+      "date": "2026-04-20",
+      "changes": [
+        "Added Bring-Your-Own-Keys free plan: paste OpenAI, Anthropic, Gemini, and Deepgram keys to use Omi with no subscription",
+        "Fixed screen recording showing as disabled (red) even when granted in System Settings"
+      ]
+    },
+    {
+      "version": "0.11.340",
+      "date": "2026-04-19",
+      "changes": [
+        "Added Bring-Your-Own-Keys free plan: paste OpenAI, Anthropic, Gemini, and Deepgram keys to use Omi with no subscription"
+      ]
+    },
+    {
+      "version": "0.11.339",
+      "date": "2026-04-19",
+      "changes": [
+        "Added a Skip button to the onboarding goal step and made it resilient to transient 429 errors",
+        "Added a Skip button to the onboarding exports step (Put your memories where you work)"
+      ]
+    },
+    {
+      "version": "0.11.337",
+      "date": "2026-04-19",
+      "changes": [
+        "Right-click the floating bar to snooze it (and notifications) for 2 hours"
+      ]
+    },
+    {
+      "version": "0.11.336",
+      "date": "2026-04-19",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.335",
+      "date": "2026-04-19",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.334",
+      "date": "2026-04-18",
+      "changes": [
+        "Pause Rewind screen capture while screenshot apps (CleanShot, Shottr, macOS screenshot, Loom, OBS, etc.) are frontmost so their capture no longer stalls on WindowServer contention"
+      ]
+    },
+    {
+      "version": "0.11.332",
+      "date": "2026-04-18",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.330",
+      "date": "2026-04-17",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.329",
+      "date": "2026-04-17",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.328",
+      "date": "2026-04-17",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.326",
+      "date": "2026-04-17",
+      "changes": [
+        "Chat limits now use server-side quota instead of local counter",
+        "Added deprecation notice for Unlimited plan subscribers with Operator upgrade option"
+      ]
+    },
+    {
+      "version": "0.11.324",
+      "date": "2026-04-16",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.323",
+      "date": "2026-04-16",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.322",
+      "date": "2026-04-16",
+      "changes": [
+        "Fixed Rewind screen capture contending with other screenshot apps (e.g. CleanShot) and causing brief UI stalls"
+      ]
+    },
+    {
+      "version": "0.11.321",
+      "date": "2026-04-16",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.320",
+      "date": "2026-04-16",
+      "changes": [
+        "Floating bar voice picker now plays a short sample when you switch voices"
+      ]
+    },
+    {
+      "version": "0.11.319",
+      "date": "2026-04-16",
+      "changes": [
+        "Added a voice picker in the floating bar settings with 10 ElevenLabs voices to choose from"
+      ]
+    },
+    {
+      "version": "0.11.318",
+      "date": "2026-04-15",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.316",
+      "date": "2026-04-15",
+      "changes": [
+        "Restored crash reporting and error telemetry (Sentry DSN was pointing at an inaccessible org since 2026-03-22, silently dropping every event)"
+      ]
+    },
+    {
+      "version": "0.11.314",
+      "date": "2026-04-15",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.313",
+      "date": "2026-04-14",
+      "changes": [
+        "Fixed floating bar Copy button copying the wrong message when multiple responses are visible"
+      ]
+    },
+    {
+      "version": "0.11.312",
+      "date": "2026-04-14",
+      "changes": [
+        "Fixed silent recordings when Bluetooth headphones are connected while another app plays audio, and included system audio in the conversation transcript"
+      ]
+    },
+    {
+      "version": "0.11.311",
+      "date": "2026-04-14",
+      "changes": [
+        "Added usage-limit popup when free-tier transcription or chat quota is hit, with one-click upgrade to Plan & Usage",
+        "Lowered free-tier chat limit to 30 messages/month shared between main chat and the floating bar"
+      ]
+    },
+    {
+      "version": "0.11.310",
+      "date": "2026-04-14",
+      "changes": [
+        "Fixed screen recording randomly stopping with a false Permission Required notification after closing a tab or dismissing a popup"
+      ]
+    },
+    {
+      "version": "0.11.309",
+      "date": "2026-04-14",
+      "changes": [
+        "Tightened Gemini proxy security with model allowlist, request body size limit, and input validation"
+      ]
+    },
+    {
+      "version": "0.11.308",
+      "date": "2026-04-14",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.307",
+      "date": "2026-04-14",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.305",
+      "date": "2026-04-14",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.304",
+      "date": "2026-04-14",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.303",
+      "date": "2026-04-14",
+      "changes": [
+        "Task, memory, and focus notifications now open the floating bar with full provenance and sync into home chat history, so follow-up questions can reference the source app, window, and context"
+      ]
+    },
+    {
+      "version": "0.11.302",
+      "date": "2026-04-13",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.301",
+      "date": "2026-04-13",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.300",
+      "date": "2026-04-13",
+      "changes": [
+        "Added a Cancel link on the sign-in screen so a failed web OAuth attempt no longer leaves the sign-in buttons permanently disabled"
+      ]
+    },
+    {
+      "version": "0.11.299",
+      "date": "2026-04-13",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.298",
+      "date": "2026-04-13",
+      "changes": [
+        "Minimized pauses when Omi reads long voice responses out loud",
+        "Fixed duplicate Screen Recording permission warnings flooding the floating bar after auto-update",
+        "Improved chat tool discoverability: richer database schema with column descriptions, table relationships, FTS search patterns, new search_tasks tool, and enriched daily recap with focus sessions, memories, and observations"
+      ]
+    },
+    {
+      "version": "0.11.296",
+      "date": "2026-04-13",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.295",
+      "date": "2026-04-13",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.294",
+      "date": "2026-04-13",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.293",
+      "date": "2026-04-12",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.291",
+      "date": "2026-04-11",
+      "changes": [
+        "Fixed floating bar close button requiring multiple clicks by enlarging the hit area"
+      ]
+    },
+    {
+      "version": "0.11.289",
+      "date": "2026-04-11",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.287",
+      "date": "2026-04-11",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.286",
+      "date": "2026-04-10",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.285",
+      "date": "2026-04-10",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.284",
+      "date": "2026-04-10",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.282",
+      "date": "2026-04-10",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.281",
+      "date": "2026-04-10",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.279",
+      "date": "2026-04-10",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.277",
+      "date": "2026-04-10",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.276",
+      "date": "2026-04-09",
+      "changes": [
+        "Replaced Conversations on Dashboard with embedded Chat (Ask omi anything) and moved the Conversations list to its own sidebar page"
+      ]
+    },
+    {
+      "version": "0.11.275",
+      "date": "2026-04-09",
+      "changes": [
+        "Fixed call recordings being labeled as a single speaker by re-enabling system audio capture (now with drift compensation, no more crackling)"
+      ]
+    },
+    {
+      "version": "0.11.273",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.272",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.271",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.270",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.269",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.268",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.267",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.266",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.265",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.264",
+      "date": "2026-04-09",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.262",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.261",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.260",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.259",
+      "date": "2026-04-08",
+      "changes": [
+        "Fixed date-based tool queries failing for users in positive UTC timezones (UTC+1 through UTC+14)"
+      ]
+    },
+    {
+      "version": "0.11.258",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.257",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.256",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.255",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.254",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.253",
+      "date": "2026-04-08",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.251",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.249",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.247",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.245",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.243",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.242",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.241",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.240",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.239",
+      "date": "2026-04-07",
+      "changes": [
+        "Migrated data APIs to production backend for improved reliability and feature parity"
+      ]
+    },
+    {
+      "version": "0.11.238",
+      "date": "2026-04-07",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.237",
+      "date": "2026-04-06",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.236",
+      "date": "2026-04-06",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.235",
+      "date": "2026-04-06",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.234",
+      "date": "2026-04-06",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.233",
+      "date": "2026-04-06",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.232",
+      "date": "2026-04-06",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.231",
+      "date": "2026-04-06",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.230",
+      "date": "2026-04-05",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.229",
+      "date": "2026-04-05",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.228",
+      "date": "2026-04-05",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.227",
+      "date": "2026-04-05",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.226",
+      "date": "2026-04-04",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.225",
+      "date": "2026-04-04",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.224",
+      "date": "2026-04-04",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.223",
+      "date": "2026-04-04",
+      "changes": [
+        "Fixed speaker diarization in Take Note by migrating live transcription to production backend"
+      ]
+    },
+    {
+      "version": "0.11.222",
+      "date": "2026-04-03",
+      "changes": [
+        "Fixed floating bar screenshots not capturing screen content when screen recording permission was revoked after app update"
+      ]
+    },
+    {
+      "version": "0.11.221",
+      "date": "2026-04-02",
+      "changes": [
+        "Fixed speaker diarization in Take Note by migrating live transcription to production backend"
+      ]
+    },
+    {
+      "version": "0.11.220",
+      "date": "2026-04-02",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.219",
+      "date": "2026-04-02",
+      "changes": [
+        "Fixed WebSocket transcription disconnects: proper handshake detection, unlimited retry with backoff, and thread-safe connection state"
+      ]
+    },
+    {
+      "version": "0.11.218",
+      "date": "2026-04-02",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.217",
+      "date": "2026-04-01",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.215",
+      "date": "2026-04-01",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.214",
+      "date": "2026-04-01",
+      "changes": [
+        "Fixed 2s+ UI freezes caused by dock tile updates during chat polling"
+      ]
+    },
+    {
+      "version": "0.11.213",
+      "date": "2026-04-01",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.212",
+      "date": "2026-04-01",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.210",
+      "date": "2026-04-01",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.209",
+      "date": "2026-04-01",
+      "changes": [
+        "Added copy and share buttons to floating bar AI responses for quick Q&A sharing"
+      ]
+    },
+    {
+      "version": "0.11.208",
+      "date": "2026-04-01",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.207",
+      "date": "2026-04-01",
+      "changes": [
+        "Added \"How did you hear about us?\" onboarding step for K-factor tracking"
+      ]
+    },
+    {
+      "version": "0.11.206",
+      "date": "2026-04-01",
+      "changes": [
+        "Fixed floating bar follow-up input not auto-focusing when restoring a conversation"
+      ]
+    },
+    {
+      "version": "0.11.205",
+      "date": "2026-03-31",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.204",
+      "date": "2026-03-31",
+      "changes": [
+        "Fixed transcription not auto-starting after proxy migration"
+      ]
+    },
+    {
+      "version": "0.11.203",
+      "date": "2026-03-31",
+      "changes": [
+        "Fixed batch transcription failing on long speech (50s+) by splitting large audio chunks automatically"
+      ]
+    },
+    {
+      "version": "0.11.202",
+      "date": "2026-03-31",
+      "changes": [
+        "Fixed WebSocket transcription disconnects: proper handshake detection, unlimited retry with backoff, and thread-safe connection state",
+        "Fixed UI freezes caused by dock tile updates when receiving support messages"
+      ]
+    },
+    {
+      "version": "0.11.200",
+      "date": "2026-03-31",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.199",
+      "date": "2026-03-30",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.198",
+      "date": "2026-03-30",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.197",
+      "date": "2026-03-30",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.196",
+      "date": "2026-03-30",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.195",
+      "date": "2026-03-29",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.194",
+      "date": "2026-03-28",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.193",
+      "date": "2026-03-28",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.192",
+      "date": "2026-03-28",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.191",
+      "date": "2026-03-28",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.190",
+      "date": "2026-03-28",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.189",
+      "date": "2026-03-27",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.188",
+      "date": "2026-03-27",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.186",
+      "date": "2026-03-27",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.184",
+      "date": "2026-03-27",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.183",
+      "date": "2026-03-26",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.182",
+      "date": "2026-03-26",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.181",
+      "date": "2026-03-25",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.179",
+      "date": "2026-03-25",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.178",
+      "date": "2026-03-25",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.177",
+      "date": "2026-03-25",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
+      "version": "0.11.176",
+      "date": "2026-03-25",
+      "changes": [
+        "Bug fixes and improvements"
+      ]
+    },
+    {
       "version": "0.11.175",
       "date": "2026-03-24",
       "changes": [

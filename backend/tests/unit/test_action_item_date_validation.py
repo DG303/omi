@@ -153,6 +153,7 @@ llm_clients_stub.llm_mini = MagicMock()
 llm_clients_stub.parser = MagicMock()
 llm_clients_stub.llm_high = MagicMock()
 llm_clients_stub.llm_medium_experiment = MagicMock()
+llm_clients_stub.get_llm = MagicMock(return_value=MagicMock())
 
 # Load models first
 _stub_package("models")
@@ -375,7 +376,7 @@ class TestExtractActionItemsPostValidation:
 
     def test_clears_past_due_dates_from_extraction(self):
         """Due dates more than 1 day in the past should be cleared after extraction."""
-        from models.conversation import ActionItem, ActionItemsExtraction
+        from models.structured import ActionItem, ActionItemsExtraction
 
         past_due = datetime(2025, 9, 15, 10, 0, tzinfo=timezone.utc)
         future_due = datetime.now(timezone.utc) + timedelta(days=3)
@@ -398,12 +399,12 @@ class TestExtractActionItemsPostValidation:
                 BACKEND_DIR / "utils" / "llm" / "conversation_processing.py",
             )
 
-        with patch.object(conv_proc, 'llm_medium_experiment') as mock_llm, patch.object(
+        mock_llm = MagicMock()
+        mock_llm.bind.return_value = mock_llm
+        mock_llm.__or__ = MagicMock(return_value=mock_chain)
+        with patch.object(conv_proc, 'get_llm', return_value=mock_llm) as mock_get_llm, patch.object(
             conv_proc, 'PydanticOutputParser'
         ) as mock_parser_cls, patch.object(conv_proc, 'ChatPromptTemplate') as mock_prompt_cls:
-
-            mock_llm.bind.return_value = mock_llm
-            mock_llm.__or__ = MagicMock(return_value=mock_chain)
 
             mock_parser = MagicMock()
             mock_parser.get_format_instructions.return_value = "format"
@@ -426,7 +427,7 @@ class TestExtractActionItemsPostValidation:
 
     def test_passes_current_time_to_invoke(self):
         """extract_action_items should pass current_time in the invoke payload."""
-        from models.conversation import ActionItemsExtraction
+        from models.structured import ActionItemsExtraction
 
         mock_response = ActionItemsExtraction(action_items=[])
         mock_chain = MagicMock()
@@ -440,12 +441,12 @@ class TestExtractActionItemsPostValidation:
                 BACKEND_DIR / "utils" / "llm" / "conversation_processing.py",
             )
 
-        with patch.object(conv_proc, 'llm_medium_experiment') as mock_llm, patch.object(
+        mock_llm = MagicMock()
+        mock_llm.bind.return_value = mock_llm
+        mock_llm.__or__ = MagicMock(return_value=mock_chain)
+        with patch.object(conv_proc, 'get_llm', return_value=mock_llm) as mock_get_llm, patch.object(
             conv_proc, 'PydanticOutputParser'
         ) as mock_parser_cls, patch.object(conv_proc, 'ChatPromptTemplate') as mock_prompt_cls:
-
-            mock_llm.bind.return_value = mock_llm
-            mock_llm.__or__ = MagicMock(return_value=mock_chain)
 
             mock_parser = MagicMock()
             mock_parser.get_format_instructions.return_value = "format"
@@ -468,7 +469,7 @@ class TestExtractActionItemsPostValidation:
 
     def test_preserves_none_due_dates(self):
         """Action items with no due date should remain unchanged."""
-        from models.conversation import ActionItem, ActionItemsExtraction
+        from models.structured import ActionItem, ActionItemsExtraction
 
         mock_response = ActionItemsExtraction(action_items=[ActionItem(description="No due date task", due_at=None)])
         mock_chain = MagicMock()
@@ -482,12 +483,12 @@ class TestExtractActionItemsPostValidation:
                 BACKEND_DIR / "utils" / "llm" / "conversation_processing.py",
             )
 
-        with patch.object(conv_proc, 'llm_medium_experiment') as mock_llm, patch.object(
+        mock_llm = MagicMock()
+        mock_llm.bind.return_value = mock_llm
+        mock_llm.__or__ = MagicMock(return_value=mock_chain)
+        with patch.object(conv_proc, 'get_llm', return_value=mock_llm) as mock_get_llm, patch.object(
             conv_proc, 'PydanticOutputParser'
         ) as mock_parser_cls, patch.object(conv_proc, 'ChatPromptTemplate') as mock_prompt_cls:
-
-            mock_llm.bind.return_value = mock_llm
-            mock_llm.__or__ = MagicMock(return_value=mock_chain)
 
             mock_parser = MagicMock()
             mock_parser.get_format_instructions.return_value = "format"
@@ -509,7 +510,7 @@ class TestExtractActionItemsPostValidation:
 
     def test_preserves_due_date_within_grace_boundary(self):
         """Due date 23h ago should be preserved (within 1-day grace window)."""
-        from models.conversation import ActionItem, ActionItemsExtraction
+        from models.structured import ActionItem, ActionItemsExtraction
 
         boundary_due = datetime.now(timezone.utc) - timedelta(hours=23)
         mock_response = ActionItemsExtraction(
@@ -526,12 +527,12 @@ class TestExtractActionItemsPostValidation:
                 BACKEND_DIR / "utils" / "llm" / "conversation_processing.py",
             )
 
-        with patch.object(conv_proc, 'llm_medium_experiment') as mock_llm, patch.object(
+        mock_llm = MagicMock()
+        mock_llm.bind.return_value = mock_llm
+        mock_llm.__or__ = MagicMock(return_value=mock_chain)
+        with patch.object(conv_proc, 'get_llm', return_value=mock_llm) as mock_get_llm, patch.object(
             conv_proc, 'PydanticOutputParser'
         ) as mock_parser_cls, patch.object(conv_proc, 'ChatPromptTemplate') as mock_prompt_cls:
-
-            mock_llm.bind.return_value = mock_llm
-            mock_llm.__or__ = MagicMock(return_value=mock_chain)
 
             mock_parser = MagicMock()
             mock_parser.get_format_instructions.return_value = "format"

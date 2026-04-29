@@ -6,12 +6,13 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from urllib.parse import urlparse
 from pydantic import BaseModel as PydanticBaseModel, ValidationError
-import requests
 from ulid import ULID
 from fastapi import APIRouter, Depends, Form, UploadFile, File, HTTPException, Header, Query
 from fastapi.responses import HTMLResponse
 
 from utils.apps import fetch_app_chat_tools_from_manifest
+from utils.executors import storage_executor
+from utils.http_client import get_webhook_client
 from utils.mcp_client import (
     discover_oauth_metadata,
     register_oauth_client,
@@ -124,6 +125,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def _write_file(path: str, data: bytes):
+    """Write bytes to file — offloaded to storage_executor."""
+    with open(path, 'wb') as f:
+        f.write(data)
+
+
 def _process_chat_tools_manifest(external_integration: dict, app_dict: dict) -> dict:
     """Fetch and process chat tools manifest, updating and returning app_dict.
 
@@ -216,7 +223,7 @@ def get_user_enabled_apps(uid: str = Depends(auth.get_current_user_uid)):
 def get_apps_v2(
     capability: str | None = Query(default=None, description='Filter by capability id'),
     offset: int = Query(default=0, ge=0),
-    limit: int = Query(default=20, ge=1, le=50),
+    limit: int = Query(default=20, ge=1, le=100),
     include_reviews: bool = Query(default=False),
 ):
     """Public omi apps, paginated by capability groups.
@@ -559,8 +566,9 @@ async def create_persona(
     data['description'] = generate_persona_desc(uid, data['name'])
     os.makedirs(f'_temp/apps', exist_ok=True)
     file_path = f"_temp/apps/{file.filename}"
-    with open(file_path, 'wb') as f:
-        f.write(file.file.read())
+    contents = await file.read()
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(storage_executor, _write_file, file_path, contents)
     img_url = upload_app_logo(file_path, data['id'])
     data['image'] = img_url
     data['created_at'] = datetime.now(timezone.utc)
@@ -599,8 +607,9 @@ async def update_persona(
             delete_app_logo(persona['image'])
         os.makedirs(f'_temp/apps', exist_ok=True)
         file_path = f"_temp/apps/{file.filename}"
-        with open(file_path, 'wb') as f:
-            f.write(file.file.read())
+        contents = await file.read()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(storage_executor, _write_file, file_path, contents)
         img_url = upload_app_logo(file_path, persona_id)
         data['image'] = img_url
 
@@ -694,19 +703,6 @@ async def get_or_create_user_persona(uid: str = Depends(auth.get_current_user_ui
     add_app_to_db(persona_create.model_dump(exclude_unset=True))
 
     return persona_data
-
-
-@router.get('/v1/apps/check-username', tags=['v1'])
-def check_username(username: str, uid: str = Depends(auth.get_current_user_uid)):
-    is_taken = is_username_taken(username)
-    return {'is_taken': is_taken}
-
-
-@router.get('/v1/personas/generate-username', tags=['v1'])
-def generate_username(handle: str, uid: str = Depends(auth.get_current_user_uid)):
-    username = handle.replace(' ', '')
-    username = increment_username(username)
-    return {'username': username}
 
 
 @router.patch('/v1/apps/{app_id}', tags=['v1'])
@@ -1149,12 +1145,14 @@ def generate_description_and_emoji_endpoint(data: dict, uid: str = Depends(auth.
 
 
 @router.get('/v1/app/generate-prompts', tags=['v1'])
-async def generate_sample_prompts_endpoint(uid: str = Depends(auth.get_current_user_uid)):
+async def generate_sample_prompts_endpoint(
+    uid: str = Depends(auth.with_rate_limit(auth.get_current_user_uid, "apps:generate_prompts")),
+):
     """
     Generate sample app prompts for the AI app generator.
     Uses a fast model to generate creative suggestions.
     """
-    from utils.llm.clients import llm_mini
+    from utils.llm.clients import get_llm
     import json
 
     system_prompt = """Generate 5 creative and diverse ideas for apps that are either:
@@ -1175,7 +1173,7 @@ Be creative, fun, and varied. No generic ideas."""
 
     try:
         with track_usage(uid, Features.APP_GENERATOR):
-            response = await llm_mini.ainvoke(
+            response = await get_llm('app_integration').ainvoke(
                 [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": "Generate 5 creative app ideas now"},
@@ -1732,7 +1730,7 @@ async def refresh_mcp_tools(app_id: str, uid: str = Depends(auth.get_current_use
 
 
 @router.post('/v1/apps/enable')
-def enable_app_endpoint(app_id: str, uid: str = Depends(auth.get_current_user_uid)):
+async def enable_app_endpoint(app_id: str, uid: str = Depends(auth.get_current_user_uid)):
     app = get_available_app_by_id(app_id, uid)
     app = App(**app) if app else None
     if not app:
@@ -1741,7 +1739,8 @@ def enable_app_endpoint(app_id: str, uid: str = Depends(auth.get_current_user_ui
         if app.private and app.uid != uid and not is_tester(uid):
             raise HTTPException(status_code=403, detail='You are not authorized to perform this action')
     if app.works_externally() and app.external_integration.setup_completed_url:
-        res = requests.get(app.external_integration.setup_completed_url + f'?uid={uid}')
+        client = get_webhook_client()
+        res = await client.get(app.external_integration.setup_completed_url + f'?uid={uid}')
         logger.info(f'enable_app_endpoint {res.status_code} {res.content}')
         if res.status_code != 200 or not res.json().get('is_setup_completed', False):
             raise HTTPException(status_code=400, detail='App setup is not completed')
@@ -1891,8 +1890,9 @@ async def upload_app_thumbnail_endpoint(file: UploadFile = File(...), uid: str =
     temp_path = f'_temp/thumbnails/{thumbnail_id}.jpg'
 
     try:
-        with open(temp_path, 'wb') as f:
-            f.write(await file.read())
+        contents = await file.read()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(storage_executor, _write_file, temp_path, contents)
 
         # Upload to cloud storage
         url = upload_app_thumbnail(temp_path, thumbnail_id)

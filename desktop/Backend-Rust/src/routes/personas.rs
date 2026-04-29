@@ -107,8 +107,9 @@ async fn create_persona(
 
     // Generate persona prompt if we have memories
     let (description, persona_prompt) = if !memories.is_empty() {
-        if let Some(api_key) = &state.config.gemini_api_key {
-            let llm = LlmClient::new(api_key.clone());
+        if state.vertex_auth.is_some() || state.config.gemini_api_key.is_some() {
+            let llm = LlmClient::new(state.config.gemini_api_key.clone().unwrap_or_default())
+                .with_vertex(state.vertex_auth.clone());
             match llm.generate_persona_from_memories(&request.name, &memories).await {
                 Ok(result) => (result.description, Some(result.persona_prompt)),
                 Err(e) => {
@@ -299,12 +300,15 @@ async fn generate_prompt(
     }
 
     // Generate new prompt
-    let api_key = state.config.gemini_api_key.as_ref().ok_or((
-        StatusCode::INTERNAL_SERVER_ERROR,
-        "Gemini API key not configured".to_string(),
-    ))?;
+    if state.vertex_auth.is_none() && state.config.gemini_api_key.is_none() {
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Gemini API key not configured".to_string(),
+        ));
+    }
 
-    let llm = LlmClient::new(api_key.clone());
+    let llm = LlmClient::new(state.config.gemini_api_key.clone().unwrap_or_default())
+        .with_vertex(state.vertex_auth.clone());
     let result = llm
         .generate_persona_from_memories(&persona.name, &memories)
         .await

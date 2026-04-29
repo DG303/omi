@@ -16,20 +16,17 @@ final class BleHostApiImpl: BleHostApi {
         bleManager.stopScan()
     }
 
-    func connectPeripheral(uuid: String) throws {
+    func manageDevice(uuid: String, requiresBond: Bool) throws {
         bleManager.connectPeripheral(uuid: uuid)
     }
 
-    func disconnectPeripheral(uuid: String) throws {
+    func unmanageDevice(uuid: String) throws {
         bleManager.disconnectPeripheral(uuid: uuid)
     }
 
-    func reconnectKnownPeripheral(uuid: String) throws {
-        bleManager.reconnectKnownPeripheral(uuid: uuid)
-    }
-
-    func discoverServices(peripheralUuid: String) throws {
-        bleManager.discoverServices(peripheralUuid: peripheralUuid)
+    func requestBond(uuid: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        // iOS handles bonding automatically at the OS level
+        completion(.success(true))
     }
 
     func readCharacteristic(
@@ -76,6 +73,24 @@ final class BleHostApiImpl: BleHostApi {
 
     func isPeripheralConnected(uuid: String) throws -> Bool {
         return bleManager.isPeripheralConnected(uuid: uuid)
+    }
+
+    // ── Diagnostics ──
+
+    func startRssiStreaming(uuid: String) throws {
+        bleManager.isRssiStreamingEnabled = true
+    }
+
+    func stopRssiStreaming(uuid: String) throws {
+        bleManager.isRssiStreamingEnabled = false
+    }
+
+    func getDeviceDiagnostics(uuid: String, completion: @escaping (Result<BleDeviceDiagnostics, Error>) -> Void) {
+        completion(.success(bleManager.getDeviceDiagnostics(uuid: uuid)))
+    }
+
+    func getBatteryHistory(uuid: String, completion: @escaping (Result<[BleBatteryPoint], Error>) -> Void) {
+        completion(.success(bleManager.getBatteryHistory(uuid: uuid)))
     }
 
     func hasCompanionDeviceAssociation() throws -> Bool {

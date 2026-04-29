@@ -636,9 +636,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get saving => 'Gemmer...';
 
   @override
-  String get personaConfig => 'Konfigurer din AI-persona';
-
-  @override
   String get beta => 'Beta';
 
   @override
@@ -2353,6 +2350,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get batteryLevel => 'Batteriniveau';
 
   @override
+  String get charging => 'Oplader';
+
+  @override
   String get productUpdate => 'Produktopdatering';
 
   @override
@@ -2405,12 +2405,6 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get createKeyToGetStarted => 'Opret en nøgle for at komme i gang';
-
-  @override
-  String get persona => 'Persona';
-
-  @override
-  String get configureYourAiPersona => 'Konfigurer din AI-persona';
 
   @override
   String get configureSttProvider => 'Konfigurer STT-udbyder';
@@ -2485,12 +2479,6 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get trackPersonalGoalsOnHomepage => 'Spor dine personlige mål på startsiden';
-
-  @override
-  String get dailyReflection => 'Daglig refleksion';
-
-  @override
-  String get get9PmReminderToReflect => 'Få en påmindelse kl. 21 om at reflektere over din dag';
 
   @override
   String get actionItemDescriptionCannotBeEmpty => 'Handlingselementbeskrivelse kan ikke være tom';
@@ -2927,9 +2915,6 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get aboutTheApp => 'Om appen';
-
-  @override
-  String get aboutThePersona => 'Om personaen';
 
   @override
   String get chatPersonality => 'Chat-personlighed';
@@ -3468,9 +3453,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get changeYourName => 'Skift dit navn';
 
   @override
-  String get manageYourOmiPersona => 'Administrer din Omi-persona';
-
-  @override
   String get voiceAndPeople => 'Stemme og Personer';
 
   @override
@@ -3880,9 +3862,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get shortcutChangeInstruction => 'Klik på en genvej for at ændre den. Tryk på Escape for at annullere.';
 
   @override
-  String get configurePersonaDescription => 'Konfigurer din AI-persona';
-
-  @override
   String get configureSTTProvider => 'Konfigurer STT-udbyder';
 
   @override
@@ -3918,10 +3897,6 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get trackPersonalGoals => 'Spor personlige mål på startsiden';
-
-  @override
-  String get dailyReflectionDescription =>
-      'Få en påmindelse kl. 21 om at reflektere over din dag og fange dine tanker.';
 
   @override
   String get endpointURL => 'Endepunkts-URL';
@@ -4236,16 +4211,7 @@ class AppLocalizationsDa extends AppLocalizations {
   String get createAndShareYourApp => 'Opret og del din app';
 
   @override
-  String get createMyClone => 'Opret min klon';
-
-  @override
-  String get createYourDigitalClone => 'Opret din digitale klon';
-
-  @override
   String get itemApp => 'App';
-
-  @override
-  String get itemPersona => 'Persona';
 
   @override
   String keepItemPublic(String item) {
@@ -4274,9 +4240,6 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get manageApp => 'Administrer app';
-
-  @override
-  String get updatePersonaDetails => 'Opdater persona-detaljer';
 
   @override
   String deleteItemTitle(String item) {
@@ -4578,10 +4541,10 @@ class AppLocalizationsDa extends AppLocalizations {
   String get alreadyBestValuePlan => 'Du har allerede det bedste abonnement. Ingen ændringer nødvendige.';
 
   @override
-  String get unableToLoadPlans => 'Kan ikke indlæse abonnementer';
+  String get unableToLoadPlans => 'Kunne ikke indlæse planer';
 
   @override
-  String get checkConnectionTryAgain => 'Tjek venligst din forbindelse og prøv igen';
+  String get checkConnectionTryAgain => 'Tjek din forbindelse og prøv igen';
 
   @override
   String get useFreePlan => 'Brug gratis abonnement';
@@ -5115,7 +5078,7 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get consentDataMessage =>
-      'Ved at fortsætte vil alle data, du deler med denne app (inklusive dine samtaler, optagelser og personlige oplysninger), blive sikkert gemt på vores servere for at give dig AI-drevne indsigter og aktivere alle app-funktioner.';
+      'Ved at fortsætte vil dine samtaler, optagelser og personlige oplysninger blive sikkert gemt på vores servere. Dine lydoptagelser og udskrifter behandles af tredjeparts AI-tjenester (herunder Deepgram til transskription og OpenAI til analyse) for at give dig AI-drevne indsigter og aktivere alle appfunktioner.';
 
   @override
   String get tasksEmptyStateMessage => 'Opgaver fra dine samtaler vises her.\nTryk på + for at oprette en manuelt.';
@@ -5798,9 +5761,6 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get chooseFile => 'Vælg fil';
-
-  @override
-  String get configureAiPersona => 'Konfigurer din AI-persona';
 
   @override
   String get connectAiAssistantsToYourData => 'Forbind AI-assistenter til dine data';
@@ -6514,29 +6474,10 @@ class AppLocalizationsDa extends AppLocalizations {
   String get sharePublicLink => 'Del offentligt link';
 
   @override
-  String get makePersonaPublic => 'Gør persona offentlig';
-
-  @override
   String get connectedKnowledgeData => 'Tilsluttede vidensdata';
 
   @override
   String get enterName => 'Indtast navn';
-
-  @override
-  String get disconnectTwitter => 'Frakobl Twitter';
-
-  @override
-  String get disconnectTwitterConfirmation =>
-      'Er du sikker på, at du vil frakoble din Twitter-konto? Din persona vil ikke længere have adgang til dine Twitter-data.';
-
-  @override
-  String get getOmiDeviceDescription => 'Få en Omi-enhed for at begynde';
-
-  @override
-  String get getOmi => 'Få Omi';
-
-  @override
-  String get iHaveOmiDevice => 'Jeg har en Omi-enhed';
 
   @override
   String get goal => 'MÅL';
@@ -7084,49 +7025,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get addAppPersonaConflictWithCapabilities => 'Persona kan ikke vælges med andre funktioner';
 
   @override
-  String get personaTwitterHandleNotFound => 'Twitter-konto ikke fundet';
-
-  @override
-  String get personaTwitterHandleSuspended => 'Twitter-konto er suspenderet';
-
-  @override
-  String get personaFailedToVerifyTwitter => 'Kunne ikke verificere Twitter-konto';
-
-  @override
-  String get personaFailedToFetch => 'Kunne ikke hente din persona';
-
-  @override
-  String get personaFailedToCreate => 'Kunne ikke oprette persona';
-
-  @override
-  String get personaConnectKnowledgeSource => 'Tilslut mindst én datakilde (Omi eller Twitter)';
-
-  @override
-  String get personaUpdatedSuccessfully => 'Persona opdateret succesfuldt';
-
-  @override
-  String get personaFailedToUpdate => 'Kunne ikke opdatere persona';
-
-  @override
-  String get personaPleaseSelectImage => 'Vælg et billede';
-
-  @override
-  String get personaFailedToCreateTryLater => 'Kunne ikke oprette persona. Prøv igen senere.';
-
-  @override
-  String personaFailedToCreateWithError(String error) {
-    return 'Kunne ikke oprette persona: $error';
-  }
-
-  @override
-  String get personaFailedToEnable => 'Kunne ikke aktivere persona';
-
-  @override
-  String personaErrorEnablingWithError(String error) {
-    return 'Fejl ved aktivering af persona: $error';
-  }
-
-  @override
   String get paymentFailedToFetchCountries => 'Kunne ikke hente understøttede lande. Prøv igen senere.';
 
   @override
@@ -7201,21 +7099,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get aiGenPleaseGenerateAppFirst => 'Generer venligst en app først';
 
   @override
-  String get xHandleTitle => 'Hvad er dit X-brugernavn?';
-
-  @override
-  String get xHandleDescription => 'Indtast dit X-brugernavn (uden @) for at forbinde din profil.';
-
-  @override
-  String get xHandleHint => 'Dit X-brugernavn';
-
-  @override
-  String get xHandlePleaseEnter => 'Indtast venligst dit X-brugernavn';
-
-  @override
-  String get xHandlePleaseEnterValid => 'Indtast venligst et gyldigt X-brugernavn';
-
-  @override
   String get nextButton => 'Næste';
 
   @override
@@ -7272,12 +7155,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String mergeConversationsSuccessBody(int count) {
     return '$count samtaler er blevet flettet';
   }
-
-  @override
-  String get dailyReflectionNotificationTitle => 'Tid til daglig refleksion';
-
-  @override
-  String get dailyReflectionNotificationBody => 'Fortæl mig om din dag';
 
   @override
   String get actionItemReminderTitle => 'Omi-påmindelse';
@@ -7827,9 +7704,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get categoryConversationAnalysis => 'Samtaleanalyse';
 
   @override
-  String get categoryPersonalityClone => 'Personlighedsklon';
-
-  @override
   String get categoryHealth => 'Sundhed';
 
   @override
@@ -7930,9 +7804,6 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get capabilityIntegrations => 'Integrationer';
-
-  @override
-  String get categoryPersonalityClones => 'Personlighedskloner';
 
   @override
   String get categoryProductivityLifestyle => 'Produktivitet og livsstil';
@@ -8138,6 +8009,14 @@ class AppLocalizationsDa extends AppLocalizations {
   @override
   String uploadingToCloud(int current, int total) {
     return 'Uploader $current af $total';
+  }
+
+  @override
+  String get processingOnServer => 'Behandler på serveren...';
+
+  @override
+  String processingOnServerProgress(int current, int total) {
+    return 'Behandler... $current/$total segmenter';
   }
 
   @override
@@ -8394,6 +8273,12 @@ class AppLocalizationsDa extends AppLocalizations {
   String get phoneCallSettingsTitle => 'Opkaldsindstillinger';
 
   @override
+  String get showPhoneCallButtonTitle => 'Vis telefonopkaldsknap';
+
+  @override
+  String get showPhoneCallButtonDesc => 'Vis knap til telefonopkald på startskærmen';
+
+  @override
   String get yourVerifiedNumbers => 'Dine verificerede numre';
 
   @override
@@ -8630,4 +8515,637 @@ class AppLocalizationsDa extends AppLocalizations {
   String clockSkewWarning(int minutes) {
     return 'Dit enheds ur er forskudt ~$minutes min. Tjek dine dato- og tidsindstillinger.';
   }
+
+  @override
+  String get omisStorage => 'Omis lager';
+
+  @override
+  String get phoneStorage => 'Telefonlager';
+
+  @override
+  String get cloudStorage => 'Skylager';
+
+  @override
+  String get howSyncingWorks => 'Sådan fungerer synkronisering';
+
+  @override
+  String get noSyncedRecordings => 'Ingen synkroniserede optagelser endnu';
+
+  @override
+  String get recordingsSyncAutomatically => 'Optagelser synkroniseres automatisk — ingen handling nødvendig.';
+
+  @override
+  String get filesDownloadedUploadedNextTime => 'Allerede downloadede filer vil blive uploadet næste gang.';
+
+  @override
+  String nConversationsCreated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count samtaler oprettet',
+      one: '1 samtale oprettet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tapToView => 'Tryk for at se';
+
+  @override
+  String get syncFailed => 'Synkronisering mislykkedes';
+
+  @override
+  String get keepSyncing => 'Fortsæt synkronisering';
+
+  @override
+  String get cancelSyncQuestion => 'Annuller synkronisering?';
+
+  @override
+  String get omisStorageDesc =>
+      'Når din Omi ikke er forbundet til din telefon, gemmer den lyd lokalt i sin indbyggede hukommelse. Du mister aldrig en optagelse.';
+
+  @override
+  String get phoneStorageDesc =>
+      'Når Omi genopretter forbindelsen, overføres optagelser automatisk til din telefon som midlertidig opbevaring før upload.';
+
+  @override
+  String get cloudStorageDesc =>
+      'Når de er uploadet, behandles og transskriberes dine optagelser. Samtaler vil være tilgængelige inden for et minut.';
+
+  @override
+  String get tipKeepPhoneNearby => 'Hold din telefon i nærheden for hurtigere synkronisering';
+
+  @override
+  String get tipStableInternet => 'Stabilt internet fremskynder cloud-uploads';
+
+  @override
+  String get tipAutoSync => 'Optagelser synkroniseres automatisk';
+
+  @override
+  String get storageSection => 'LAGER';
+
+  @override
+  String get permissions => 'Tilladelser';
+
+  @override
+  String get permissionEnabled => 'Aktiveret';
+
+  @override
+  String get permissionEnable => 'Aktivér';
+
+  @override
+  String get permissionsPageDescription =>
+      'Disse tilladelser er centrale for Omis funktion. De aktiverer nøglefunktioner som notifikationer, placeringsbaserede oplevelser og lydoptagelse.';
+
+  @override
+  String get permissionsRequiredDescription =>
+      'Omi har brug for nogle tilladelser for at fungere korrekt. Giv dem venligst for at fortsætte.';
+
+  @override
+  String get permissionsSetupTitle => 'Få den bedste oplevelse';
+
+  @override
+  String get permissionsSetupDescription => 'Aktivér nogle tilladelser, så Omi kan udfolde sin magi.';
+
+  @override
+  String get permissionsChangeAnytime => 'Du kan ændre disse når som helst i Indstillinger > Tilladelser';
+
+  @override
+  String get location => 'Placering';
+
+  @override
+  String get microphone => 'Mikrofon';
+
+  @override
+  String get whyAreYouCanceling => 'Hvorfor annullerer du?';
+
+  @override
+  String get cancelReasonSubtitle => 'Kan du fortælle os, hvorfor du forlader?';
+
+  @override
+  String get cancelReasonTooExpensive => 'For dyrt';
+
+  @override
+  String get cancelReasonNotUsing => 'Bruger det ikke nok';
+
+  @override
+  String get cancelReasonMissingFeatures => 'Manglende funktioner';
+
+  @override
+  String get cancelReasonAudioQuality => 'Lyd-/transskriptionskvalitet';
+
+  @override
+  String get cancelReasonBatteryDrain => 'Bekymringer om batteriforbrug';
+
+  @override
+  String get cancelReasonFoundAlternative => 'Fandt et alternativ';
+
+  @override
+  String get cancelReasonOther => 'Andet';
+
+  @override
+  String get tellUsMore => 'Fortæl os mere (valgfrit)';
+
+  @override
+  String get cancelReasonDetailHint => 'Vi sætter pris på enhver feedback...';
+
+  @override
+  String get justAMoment => 'Et øjeblik, tak';
+
+  @override
+  String get cancelConsequencesSubtitle =>
+      'Vi anbefaler stærkt at udforske dine andre muligheder i stedet for at annullere.';
+
+  @override
+  String cancelBillingPeriodInfo(String date) {
+    return 'Din plan forbliver aktiv indtil $date. Derefter vil du blive flyttet til den gratis version med begrænsede funktioner.';
+  }
+
+  @override
+  String get ifYouCancel => 'Hvis du annullerer:';
+
+  @override
+  String get cancelConsequenceNoAccess =>
+      'Du vil ikke længere have ubegrænset adgang ved slutningen af din faktureringsperiode.';
+
+  @override
+  String get cancelConsequenceBattery => '7x mere batteriforbrug (behandling på enheden)';
+
+  @override
+  String get cancelConsequenceQuality => '30% lavere transskriptionskvalitet (modeller på enheden)';
+
+  @override
+  String get cancelConsequenceDelay => '5-7 sekunders behandlingsforsinkelse (modeller på enheden)';
+
+  @override
+  String get cancelConsequenceSpeakers => 'Kan ikke identificere talere.';
+
+  @override
+  String get confirmAndCancel => 'Bekræft og annuller';
+
+  @override
+  String get cancelConsequencePhoneCalls => 'Ingen realtids transskription af telefonopkald';
+
+  @override
+  String get feedbackTitleTooExpensive => 'Hvilken pris ville passe dig?';
+
+  @override
+  String get feedbackTitleMissingFeatures => 'Hvilke funktioner mangler du?';
+
+  @override
+  String get feedbackTitleAudioQuality => 'Hvilke problemer oplevede du?';
+
+  @override
+  String get feedbackTitleBatteryDrain => 'Fortæl os om batteriproblemer';
+
+  @override
+  String get feedbackTitleFoundAlternative => 'Hvad skifter du til?';
+
+  @override
+  String get feedbackTitleNotUsing => 'Hvad ville få dig til at bruge Omi mere?';
+
+  @override
+  String get feedbackSubtitleTooExpensive => 'Din feedback hjælper os med at finde den rigtige balance.';
+
+  @override
+  String get feedbackSubtitleMissingFeatures => 'Vi bygger altid — dette hjælper os med at prioritere.';
+
+  @override
+  String get feedbackSubtitleAudioQuality => 'Vi vil gerne forstå, hvad der gik galt.';
+
+  @override
+  String get feedbackSubtitleBatteryDrain => 'Dette hjælper vores hardwareteam med at forbedre sig.';
+
+  @override
+  String get feedbackSubtitleFoundAlternative => 'Vi vil gerne vide, hvad der fangede dit øje.';
+
+  @override
+  String get feedbackSubtitleNotUsing => 'Vi vil gøre Omi mere nyttig for dig.';
+
+  @override
+  String get deviceDiagnostics => 'Enhedsdiagnostik';
+
+  @override
+  String get signalStrength => 'Signalstyrke';
+
+  @override
+  String get connectionUptime => 'Oppetid';
+
+  @override
+  String get reconnections => 'Genforbindelser';
+
+  @override
+  String get disconnectHistory => 'Afbrydelseshistorik';
+
+  @override
+  String get noDisconnectsRecorded => 'Ingen afbrydelser registreret';
+
+  @override
+  String get diagnostics => 'Diagnostik';
+
+  @override
+  String get waitingForData => 'Venter på data...';
+
+  @override
+  String get liveRssiOverTime => 'Live RSSI over tid';
+
+  @override
+  String get noRssiDataYet => 'Ingen RSSI-data endnu';
+
+  @override
+  String get collectingData => 'Indsamler data...';
+
+  @override
+  String get cleanDisconnect => 'Ren afbrydelse';
+
+  @override
+  String get connectionTimeout => 'Forbindelsestimeout';
+
+  @override
+  String get remoteDeviceTerminated => 'Fjernenheden afbrød forbindelsen';
+
+  @override
+  String get pairedToAnotherPhone => 'Parret med en anden telefon';
+
+  @override
+  String get linkKeyMismatch => 'Uoverensstemmelse i forbindelsesnøgle';
+
+  @override
+  String get connectionFailed => 'Forbindelse mislykkedes';
+
+  @override
+  String get appClosed => 'App lukket';
+
+  @override
+  String get manualDisconnect => 'Manuel afbrydelse';
+
+  @override
+  String lastNEvents(int count) {
+    return 'Sidste $count begivenheder';
+  }
+
+  @override
+  String get signal => 'Signal';
+
+  @override
+  String get battery => 'Batteri';
+
+  @override
+  String get excellent => 'Fremragende';
+
+  @override
+  String get good => 'God';
+
+  @override
+  String get fair => 'Rimelig';
+
+  @override
+  String get weak => 'Svag';
+
+  @override
+  String gattError(String code) {
+    return 'GATT-fejl ($code)';
+  }
+
+  @override
+  String get batteryHistory => 'Batteri';
+
+  @override
+  String get noBatteryDataYet => 'Ingen batteridata endnu';
+
+  @override
+  String get day => 'Dag';
+
+  @override
+  String get week => 'Uge';
+
+  @override
+  String get rollbackToStableFirmware => 'Rul tilbage til stabil firmware';
+
+  @override
+  String get rollbackConfirmTitle => 'Rul firmware tilbage?';
+
+  @override
+  String rollbackConfirmMessage(String version) {
+    return 'Dette vil erstatte din nuværende firmware med den seneste stabile version ($version). Din enhed genstarter efter opdateringen.';
+  }
+
+  @override
+  String get stableFirmware => 'Stabil firmware';
+
+  @override
+  String get fetchingStableFirmware => 'Henter seneste stabile firmware...';
+
+  @override
+  String get noStableFirmwareFound => 'Kunne ikke finde en stabil firmwareversion til din enhed.';
+
+  @override
+  String get installStableFirmware => 'Installer stabil firmware';
+
+  @override
+  String get alreadyOnStableFirmware => 'Du er allerede på den seneste stabile version.';
+
+  @override
+  String audioSavedLocally(String duration) {
+    return '$duration lyd gemt lokalt';
+  }
+
+  @override
+  String get willSyncAutomatically => 'synkroniseres automatisk';
+
+  @override
+  String get enableLocationTitle => 'Aktivér placering';
+
+  @override
+  String get enableLocationDescription =>
+      'Placeringstilladelse er nødvendig for at finde Bluetooth-enheder i nærheden.';
+
+  @override
+  String get voiceRecordingFound => 'Optagelse fundet';
+
+  @override
+  String get transcriptionConnecting => 'Forbinder transskription...';
+
+  @override
+  String get transcriptionReconnecting => 'Genopretter transskription...';
+
+  @override
+  String get transcriptionUnavailable => 'Transskription ikke tilgængelig';
+
+  @override
+  String get audioOutput => 'Lydudgang';
+
+  @override
+  String get firmwareWarningTitle => 'Vigtigt: Læs inden opdatering';
+
+  @override
+  String get firmwareFormatWarning =>
+      'Denne firmware vil formatere SD-kortet. Sørg venligst for, at alle offline-data er synkroniseret inden opgradering.\n\nHvis du ser et blinkende rødt lys efter installation af denne version, skal du ikke bekymre dig. Tilslut blot enheden til appen, og den skulle blive blå. Det røde lys betyder, at enhedens ur endnu ikke er synkroniseret.';
+
+  @override
+  String get continueAnyway => 'Fortsæt';
+
+  @override
+  String get tasksClearCompleted => 'Ryd afsluttede';
+
+  @override
+  String get tasksSelectAll => 'Vælg alle';
+
+  @override
+  String tasksDeleteSelected(int count) {
+    return 'Slet $count opgave(r)';
+  }
+
+  @override
+  String get tasksMarkComplete => 'Markeret som fuldført';
+
+  @override
+  String get appleHealthManageNote =>
+      'Omi tilgår Apple Health via Apples HealthKit-framework. Du kan til enhver tid tilbagekalde adgangen i iOS-indstillingerne.';
+
+  @override
+  String get appleHealthConnectCta => 'Forbind til Apple Health';
+
+  @override
+  String get appleHealthDisconnectCta => 'Afbryd Apple Health';
+
+  @override
+  String get appleHealthConnectedBadge => 'Forbundet';
+
+  @override
+  String get appleHealthFeatureChatTitle => 'Chat om dit helbred';
+
+  @override
+  String get appleHealthFeatureChatDesc => 'Spørg Omi om dine skridt, søvn, puls og træninger.';
+
+  @override
+  String get appleHealthFeatureReadOnlyTitle => 'Kun læseadgang';
+
+  @override
+  String get appleHealthFeatureReadOnlyDesc => 'Omi skriver aldrig til Apple Health eller ændrer dine data.';
+
+  @override
+  String get appleHealthFeatureSecureTitle => 'Sikker synkronisering';
+
+  @override
+  String get appleHealthFeatureSecureDesc => 'Dine Apple Health-data synkroniseres privat til din Omi-konto.';
+
+  @override
+  String get appleHealthDeniedTitle => 'Adgang til Apple Health nægtet';
+
+  @override
+  String get appleHealthDeniedBody =>
+      'Omi har ikke tilladelse til at læse dine Apple Health-data. Aktivér det i iOS-indstillinger → Anonymitet og sikkerhed → Health → Omi.';
+
+  @override
+  String get deleteFlowReasonTitle => 'Hvorfor forlader du os?';
+
+  @override
+  String get deleteFlowReasonSubtitle => 'Din feedback hjælper os med at gøre Omi bedre for alle.';
+
+  @override
+  String get deleteReasonPrivacy => 'Bekymringer om privatliv';
+
+  @override
+  String get deleteReasonNotUsing => 'Bruger den ikke nok';
+
+  @override
+  String get deleteReasonMissingFeatures => 'Mangler funktioner, jeg har brug for';
+
+  @override
+  String get deleteReasonTechnicalIssues => 'For mange tekniske problemer';
+
+  @override
+  String get deleteReasonFoundAlternative => 'Bruger noget andet';
+
+  @override
+  String get deleteReasonTakingBreak => 'Tager bare en pause';
+
+  @override
+  String get deleteReasonOther => 'Andet';
+
+  @override
+  String get deleteFlowFeedbackTitle => 'Fortæl os mere';
+
+  @override
+  String get deleteFlowFeedbackSubtitle => 'Hvad ville have fået Omi til at fungere for dig?';
+
+  @override
+  String get deleteFlowFeedbackHint => 'Valgfrit — dine tanker hjælper os med at bygge et bedre produkt.';
+
+  @override
+  String get deleteFlowConfirmTitle => 'Dette er permanent';
+
+  @override
+  String get deleteFlowConfirmSubtitle => 'Når du sletter din konto, kan den ikke gendannes.';
+
+  @override
+  String get deleteConsequenceSubscription => 'Eventuelle aktive abonnementer annulleres.';
+
+  @override
+  String get deleteConsequenceNoRecovery => 'Din konto kan ikke gendannes — ikke engang af supporten.';
+
+  @override
+  String get deleteTypeToConfirm => 'Skriv DELETE for at bekræfte';
+
+  @override
+  String get deleteConfirmationWord => 'DELETE';
+
+  @override
+  String get deleteAccountPermanently => 'Slet konto permanent';
+
+  @override
+  String get keepMyAccount => 'Behold min konto';
+
+  @override
+  String get deleteAccountFailed => 'Kunne ikke slette din konto. Prøv igen.';
+
+  @override
+  String get planUpdate => 'Planopdatering';
+
+  @override
+  String get planDeprecationMessage =>
+      'Dit Unlimited-abonnement bliver udfaset. Skift til Operator-abonnementet — samme fantastiske funktioner til \$49/md. Dit nuværende abonnement vil fortsætte med at fungere i mellemtiden.';
+
+  @override
+  String get upgradeYourPlan => 'Opgrader din plan';
+
+  @override
+  String get youAreOnAPaidPlan => 'Du er på en betalt plan.';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get chatMessages => 'beskeder';
+
+  @override
+  String get unlimitedChatThisMonth => 'Ubegrænsede chatbeskeder denne måned';
+
+  @override
+  String chatUsedOfLimitCompute(String used, String limit) {
+    return '$used af $limit beregningsbudget brugt';
+  }
+
+  @override
+  String chatUsedOfLimitMessages(String used, String limit) {
+    return '$used af $limit beskeder brugt denne måned';
+  }
+
+  @override
+  String chatUsageProgress(String used, String limit) {
+    return '$used / $limit brugt';
+  }
+
+  @override
+  String get chatLimitReachedUpgrade => 'Chatgrænse nået. Opgrader for flere beskeder.';
+
+  @override
+  String get chatLimitReachedTitle => 'Chatgrænse nået';
+
+  @override
+  String chatUsageDescription(String used, String limitDisplay, String plan) {
+    return 'Du har brugt $used af dine $limitDisplay på $plan-planen.';
+  }
+
+  @override
+  String resetsInDays(int count) {
+    return 'Nulstilles om $count dage';
+  }
+
+  @override
+  String resetsInHours(int count) {
+    return 'Nulstilles om $count timer';
+  }
+
+  @override
+  String get resetsSoon => 'Nulstilles snart';
+
+  @override
+  String get upgradePlan => 'Opgrader plan';
+
+  @override
+  String get billingMonthly => 'Månedlig';
+
+  @override
+  String get billingYearly => 'Årlig';
+
+  @override
+  String get savePercent => 'Spar ~17%';
+
+  @override
+  String get popular => 'Populært';
+
+  @override
+  String get currentPlan => 'Nuværende';
+
+  @override
+  String neoSubtitle(int count) {
+    return '$count spørgsmål om måneden';
+  }
+
+  @override
+  String operatorSubtitle(int count) {
+    return '$count spørgsmål om måneden';
+  }
+
+  @override
+  String get architectSubtitle => 'Avanceret AI — tusindvis af chats + agentautomatisering';
+
+  @override
+  String chatUsageCost(String used, String limit) {
+    return 'Chat: \$$used / \$$limit brugt denne måned';
+  }
+
+  @override
+  String chatUsageCostNoLimit(String used) {
+    return 'Chat: \$$used brugt denne måned';
+  }
+
+  @override
+  String chatUsageMessages(String used, String limit) {
+    return 'Chat: $used / $limit beskeder denne måned';
+  }
+
+  @override
+  String chatUsageMessagesNoLimit(String used) {
+    return 'Chat: $used beskeder denne måned';
+  }
+
+  @override
+  String get chatQuotaSubtitle => 'AI chat messages used with Omi this month.';
+
+  @override
+  String get chatQuotaExceededReply =>
+      'Du har nået din månedlige grænse. Opgrader for at fortsætte med at chatte med Omi uden begrænsninger.';
+
+  @override
+  String get voiceResponseAudio => 'Læs Omis svar højt';
+
+  @override
+  String get voiceResponseMode => 'Stemmesvar';
+
+  @override
+  String get voiceResponseModeTitle => 'Hvornår svar skal læses';
+
+  @override
+  String get voiceResponseOff => 'Fra';
+
+  @override
+  String get voiceResponseHeadphonesOnly => 'Kun hovedtelefoner';
+
+  @override
+  String get voiceResponseAlways => 'Altid';
+
+  @override
+  String get agreeAndContinue => 'Accepter og fortsæt';
+
+  @override
+  String get startVoiceRecording => 'Start voice recording';
+
+  @override
+  String get startCallRecording => 'Start call recording';
+
+  @override
+  String get mindMap => 'Mind Map';
 }

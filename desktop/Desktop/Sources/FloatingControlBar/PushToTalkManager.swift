@@ -1,12 +1,14 @@
 import AVFoundation
 import Cocoa
 import Combine
+import CoreAudio
 
 /// Push-to-talk manager for voice input via the Option (⌥) key.
 ///
 /// State machine:
 ///   idle → [Option down] → listening → [Option up] → finalizing → sends query → idle
-///   idle → [Option tap+tap within 400ms] → lockedListening → [Option tap] → finalizing → idle
+///   idle → [Quick tap] → pendingLockDecision → [tap again within 400ms] → lockedListening
+///   pendingLockDecision → [timeout] → finalizing → sends query → idle
 @MainActor
 class PushToTalkManager: ObservableObject {
   static let shared = PushToTalkManager()
@@ -16,6 +18,7 @@ class PushToTalkManager: ObservableObject {
   enum PTTState {
     case idle
     case listening
+    case pendingLockDecision
     case lockedListening
     case finalizing
   }
@@ -32,6 +35,7 @@ class PushToTalkManager: ObservableObject {
   private var lastOptionDownTime: TimeInterval = 0
   private var lastOptionUpTime: TimeInterval = 0
   private let doubleTapThreshold: TimeInterval = 0.4
+  private let tapToLockMaxHoldDuration: TimeInterval = 0.22
 
   // Transcription
   private var transcriptionService: TranscriptionService?
@@ -40,6 +44,9 @@ class PushToTalkManager: ObservableObject {
   private var lastInterimText: String = ""
   private var finalizeWorkItem: DispatchWorkItem?
   private var hasMicPermission: Bool = false
+  private var isCurrentSessionFollowUp = false
+  private var currentContextSnapshot: PTTContextSnapshot?
+  private var contextCaptureTask: Task<Void, Never>?
 
   // Batch mode: accumulate raw audio for post-recording transcription
   private var batchAudioBuffer = Data()
@@ -72,18 +79,20 @@ class PushToTalkManager: ObservableObject {
     // Remove any existing monitors to make setup() safely re-entrant
     removeEventMonitors()
 
+    let monitorMask: NSEvent.EventTypeMask = [.flagsChanged, .keyDown, .keyUp]
+
     // Global monitor — fires when OTHER apps are focused
-    globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) {
+    globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: monitorMask) {
       [weak self] event in
       Task { @MainActor in
-        self?.handleFlagsChanged(event)
+        self?.handleShortcutEvent(event)
       }
     }
 
     // Local monitor — fires when THIS app is focused
-    localMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+    localMonitor = NSEvent.addLocalMonitorForEvents(matching: monitorMask) { [weak self] event in
       Task { @MainActor in
-        self?.handleFlagsChanged(event)
+        self?.handleShortcutEvent(event)
       }
       return event
     }
@@ -102,25 +111,29 @@ class PushToTalkManager: ObservableObject {
     }
   }
 
-  // MARK: - Option Key Handling
+  // MARK: - Shortcut Handling
 
-  private func handleFlagsChanged(_ event: NSEvent) {
-    let settings = ShortcutSettings.shared
+  private func handleShortcutEvent(_ event: NSEvent) {
+    guard ShortcutSettings.shared.pttEnabled else { return }
+    let shortcut = ShortcutSettings.shared.pttShortcut
 
     let pttActive: Bool
-    switch settings.pttKey {
-    case .option:
-      // Ignore if other modifiers are held (Cmd, Ctrl, Shift)
-      let otherModifiers: NSEvent.ModifierFlags = [.command, .control, .shift]
-      guard event.modifierFlags.intersection(otherModifiers) == [] else { return }
-      pttActive = event.modifierFlags.contains(.option)
-    case .rightCommand:
-      // Right Cmd: keyCode 54. flagsChanged fires for both left/right Cmd.
-      // Only trigger on right Cmd (keyCode 54), not left (55).
-      guard event.keyCode == 54 || event.keyCode == 55 else { return }
-      pttActive = event.modifierFlags.contains(.command) && event.keyCode == 54
-    case .fn:
-      pttActive = event.modifierFlags.contains(.function)
+    switch event.type {
+    case .flagsChanged:
+      guard shortcut.modifierOnly else { return }
+      pttActive = shortcut.matchesFlagsChanged(event)
+    case .keyDown:
+      guard !shortcut.modifierOnly, !event.isARepeat else { return }
+      pttActive = shortcut.matchesKeyDown(event)
+    case .keyUp:
+      guard !shortcut.modifierOnly else { return }
+      pttActive = false
+      if shortcut.matchesKeyUp(event) {
+        handleShortcutUp()
+      }
+      return
+    default:
+      return
     }
 
     // Let the first shortcut press reveal the compact bar instead of requiring it
@@ -133,19 +146,20 @@ class PushToTalkManager: ObservableObject {
     guard FloatingControlBarManager.shared.isVisible else { return }
 
     if pttActive {
-      handleOptionDown()
-    } else {
-      handleOptionUp()
+      handleShortcutDown()
+    } else if shortcut.modifierOnly {
+      handleShortcutUp()
     }
   }
 
-  private func handleOptionDown() {
+  private func handleShortcutDown() {
     let now = ProcessInfo.processInfo.systemUptime
 
     switch state {
     case .idle:
       // Check for double-tap: if last Option-up was recent, enter locked mode
       if ShortcutSettings.shared.doubleTapForLock && (now - lastOptionUpTime) < doubleTapThreshold {
+        lastOptionUpTime = 0
         enterLockedListening()
       } else {
         lastOptionDownTime = now
@@ -156,6 +170,10 @@ class PushToTalkManager: ObservableObject {
       // Already listening (hold mode), ignore repeated flagsChanged
       break
 
+    case .pendingLockDecision:
+      stopListening()
+      enterLockedListening()
+
     case .lockedListening:
       // Tap while locked → finalize
       finalize()
@@ -165,44 +183,43 @@ class PushToTalkManager: ObservableObject {
     }
   }
 
-  private func handleOptionUp() {
+  private func handleShortcutUp() {
     let now = ProcessInfo.processInfo.systemUptime
 
     switch state {
     case .listening:
       let holdDuration = now - lastOptionDownTime
-      lastOptionUpTime = now
 
-      if ShortcutSettings.shared.doubleTapForLock && holdDuration < doubleTapThreshold {
-        // Short tap — delay briefly to allow double-tap detection
-        let workItem = DispatchWorkItem { [weak self] in
-          Task { @MainActor in
-            guard let self = self, self.state == .listening else { return }
-            self.finalize()
-          }
-        }
-        finalizeWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + doubleTapThreshold, execute: workItem)
+      if ShortcutSettings.shared.doubleTapForLock && holdDuration < tapToLockMaxHoldDuration {
+        lastOptionUpTime = now
+        enterPendingLockDecision()
       } else {
+        lastOptionUpTime = 0
         // Long hold released — finalize immediately
         finalize()
       }
 
+    case .pendingLockDecision:
+      break
+
     case .lockedListening:
       // In locked mode, Option-up is ignored (we finalize on next Option-down)
-      lastOptionUpTime = now
+      break
 
     case .idle, .finalizing:
-      lastOptionUpTime = now
+      break
     }
   }
 
   // MARK: - Listening Lifecycle
 
   private func startListening() {
+    FloatingBarVoicePlaybackService.shared.interruptCurrentResponse()
     state = .listening
+    isCurrentSessionFollowUp = barState?.showingAIResponse == true
     transcriptSegments = []
     lastInterimText = ""
+    currentContextSnapshot = nil
     finalizeWorkItem?.cancel()
     finalizeWorkItem = nil
 
@@ -213,25 +230,21 @@ class PushToTalkManager: ObservableObject {
       sound?.play()
     }
 
-    // Check if an AI conversation is already active — enter follow-up mode
-    let isFollowUp = barState?.showingAIResponse == true
-    if isFollowUp {
-      barState?.isVoiceFollowUp = true
-      barState?.voiceFollowUpTranscript = ""
-    }
-
+    let isFollowUp = isCurrentSessionFollowUp
     AnalyticsManager.shared.floatingBarPTTStarted(mode: isFollowUp ? "follow_up_hold" : "hold")
+    let preOverlayImage = ScreenCaptureManager.captureScreenImage()
     updateBarState()
 
-
-    startAudioTranscription()
+    captureContextAndStartAudio(preOverlayImage: preOverlayImage)
     log("PushToTalkManager: started listening (hold mode, followUp=\(isFollowUp))")
   }
 
   private func enterLockedListening() {
+    FloatingBarVoicePlaybackService.shared.interruptCurrentResponse()
     finalizeWorkItem?.cancel()
     finalizeWorkItem = nil
     state = .lockedListening
+    isCurrentSessionFollowUp = barState?.showingAIResponse == true
 
     // Play start-of-PTT sound for locked mode
     if ShortcutSettings.shared.pttSoundsEnabled {
@@ -240,13 +253,7 @@ class PushToTalkManager: ObservableObject {
       sound?.play()
     }
 
-    // Check if an AI conversation is already active — enter follow-up mode
-    let isFollowUp = barState?.showingAIResponse == true
-    if isFollowUp {
-      barState?.isVoiceFollowUp = true
-      barState?.voiceFollowUpTranscript = ""
-    }
-
+    let isFollowUp = isCurrentSessionFollowUp
     AnalyticsManager.shared.floatingBarPTTStarted(mode: isFollowUp ? "follow_up_locked" : "locked")
 
     // If we were already listening from the first tap, keep going.
@@ -254,13 +261,30 @@ class PushToTalkManager: ObservableObject {
     if transcriptionService == nil {
       transcriptSegments = []
       lastInterimText = ""
-
-
-      startAudioTranscription()
+      currentContextSnapshot = nil
+      let preOverlayImage = ScreenCaptureManager.captureScreenImage()
+      captureContextAndStartAudio(preOverlayImage: preOverlayImage)
     }
 
     updateBarState()
     log("PushToTalkManager: entered locked listening mode (followUp=\(isFollowUp))")
+  }
+
+  private func enterPendingLockDecision() {
+    guard state == .listening else { return }
+
+    state = .pendingLockDecision
+    audioCaptureService?.stopCapture()
+    updateBarState()
+
+    let workItem = DispatchWorkItem { [weak self] in
+      Task { @MainActor in
+        guard let self, self.state == .pendingLockDecision else { return }
+        self.finalize()
+      }
+    }
+    finalizeWorkItem = workItem
+    DispatchQueue.main.asyncAfter(deadline: .now() + doubleTapThreshold, execute: workItem)
   }
 
   private func stopListening() {
@@ -268,13 +292,17 @@ class PushToTalkManager: ObservableObject {
     finalizeWorkItem = nil
     liveFinalizationTimeout?.cancel()
     liveFinalizationTimeout = nil
+    contextCaptureTask?.cancel()
+    contextCaptureTask = nil
     stopAudioTranscription()
     state = .idle
     transcriptSegments = []
     lastInterimText = ""
+    currentContextSnapshot = nil
     batchAudioLock.lock()
     batchAudioBuffer = Data()
     batchAudioLock.unlock()
+    isCurrentSessionFollowUp = false
     updateBarState()
   }
 
@@ -282,16 +310,15 @@ class PushToTalkManager: ObservableObject {
   func cancelListening() {
     guard state != .idle else { return }
     log("PushToTalkManager: cancelling listening")
-    barState?.isVoiceFollowUp = false
-    barState?.voiceFollowUpTranscript = ""
     stopListening()
   }
 
   private var finalizedMode: String = "hold"
 
   private func finalize() {
-    guard state == .listening || state == .lockedListening else { return }
+    guard state == .listening || state == .lockedListening || state == .pendingLockDecision else { return }
 
+    lastOptionUpTime = 0
     finalizedMode = state == .lockedListening ? "locked" : "hold"
     state = .finalizing
     finalizeWorkItem?.cancel()
@@ -331,16 +358,37 @@ class PushToTalkManager: ObservableObject {
 
       Task {
         do {
-          let language = AssistantSettings.shared.effectiveTranscriptionLanguage
-          let transcript = try await TranscriptionService.batchTranscribe(
+          await self.contextCaptureTask?.value
+          let language = self.pttBatchTranscriptionLanguage()
+          let audioSeconds = Double(audioData.count) / (16000.0 * 2.0)
+          log("PushToTalkManager: batch audio \(audioData.count) bytes (\(String(format: "%.1f", audioSeconds))s), pttLanguage=\(language), selectedLanguage=\(AssistantSettings.shared.transcriptionLanguage), autoDetect=\(AssistantSettings.shared.transcriptionAutoDetect)")
+
+          var transcript = try await TranscriptionService.batchTranscribe(
             audioData: audioData,
-            language: language
+            language: language,
+            contextKeywords: self.currentContextSnapshot?.keywords ?? []
           )
+
+          if (transcript == nil || transcript?.isEmpty == true) && language != "en" && audioSeconds < 5.0 {
+            log("PushToTalkManager: selected language returned empty on short audio, retrying with 'en'")
+            transcript = try await TranscriptionService.batchTranscribe(
+              audioData: audioData,
+              language: "en",
+              contextKeywords: self.currentContextSnapshot?.keywords ?? []
+            )
+          }
+
           if let transcript, !transcript.isEmpty {
             self.transcriptSegments = [transcript]
+          } else {
+            log("PushToTalkManager: transcription returned empty after retry")
           }
         } catch {
           logError("PushToTalkManager: batch transcription failed", error: error)
+          let message = (error as? TranscriptionService.TranscriptionError)?.errorDescription ?? "Transcription failed"
+          barState?.voiceTranscript = "⚠️ \(message)"
+          try? await Task.sleep(nanoseconds: 3_000_000_000)
+          barState?.voiceTranscript = ""
         }
         self.sendTranscript()
       }
@@ -362,6 +410,15 @@ class PushToTalkManager: ObservableObject {
     }
   }
 
+  private func pttBatchTranscriptionLanguage() -> String {
+    let selected = AssistantSettings.shared.transcriptionLanguage
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    if selected.isEmpty || selected == "multi" || selected == "auto" {
+      return "en"
+    }
+    return selected
+  }
+
   private func sendTranscript() {
     stopAudioTranscription()
 
@@ -371,8 +428,12 @@ class PushToTalkManager: ObservableObject {
     if query.isEmpty {
       query = lastInterimText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+    let contextKeywords = currentContextSnapshot?.keywords ?? []
+    if !query.isEmpty {
+      query = PTTTranscriptContextualCorrector.correct(query, keywords: contextKeywords)
+    }
     let hasQuery = !query.isEmpty
-    let wasFollowUp = barState?.isVoiceFollowUp == true
+    let wasFollowUp = isCurrentSessionFollowUp
 
     AnalyticsManager.shared.floatingBarPTTEnded(
       mode: finalizedMode,
@@ -380,9 +441,7 @@ class PushToTalkManager: ObservableObject {
       transcriptLength: query.count
     )
 
-    // Clear follow-up state
-    barState?.isVoiceFollowUp = false
-    barState?.voiceFollowUpTranscript = ""
+    isCurrentSessionFollowUp = false
 
     // Reset state — skip PTT collapse resize when we have a query,
     // because openAIInputWithQuery will resize to the correct size.
@@ -390,6 +449,7 @@ class PushToTalkManager: ObservableObject {
     state = .idle
     transcriptSegments = []
     lastInterimText = ""
+    currentContextSnapshot = nil
     updateBarState(skipResize: hasQuery || wasFollowUp)
 
     guard hasQuery else {
@@ -397,16 +457,39 @@ class PushToTalkManager: ObservableObject {
       return
     }
 
+    Task { [weak self, query, contextKeywords, wasFollowUp] in
+      let cleanedQuery = await PTTTranscriptCleanupService.shared.cleanup(query, keywords: contextKeywords)
+      await MainActor.run {
+        self?.sendQuery(cleanedQuery, wasFollowUp: wasFollowUp)
+      }
+    }
+  }
+
+  private func sendQuery(_ query: String, wasFollowUp: Bool) {
     if wasFollowUp {
       log("PushToTalkManager: sending follow-up query (\(query.count) chars): \(query)")
-      FloatingControlBarManager.shared.sendFollowUpQuery(query)
+      FloatingControlBarManager.shared.sendFollowUpQuery(query, fromVoice: true)
     } else {
       log("PushToTalkManager: sending query (\(query.count) chars): \(query)")
-      FloatingControlBarManager.shared.openAIInputWithQuery(query)
+      FloatingControlBarManager.shared.openAIInputWithQuery(query, fromVoice: true)
     }
   }
 
   // MARK: - Audio Transcription (Dedicated Session)
+
+  private func captureContextAndStartAudio(preOverlayImage: CGImage? = nil) {
+    contextCaptureTask?.cancel()
+    startAudioTranscription()
+    let captureStartedAt = Date()
+    contextCaptureTask = Task { [weak self] in
+      let snapshot = await PTTContextVocabularyProvider.capture(at: captureStartedAt, preOverlayImage: preOverlayImage)
+      await MainActor.run {
+        guard let self, !Task.isCancelled else { return }
+        guard self.state == .listening || self.state == .lockedListening || self.state == .finalizing else { return }
+        self.currentContextSnapshot = snapshot
+      }
+    }
+  }
 
   private func startAudioTranscription() {
     // Always re-check permission (it can be granted at any time via System Settings)
@@ -442,15 +525,20 @@ class PushToTalkManager: ObservableObject {
 
       do {
         let language = AssistantSettings.shared.effectiveTranscriptionLanguage
-        let service = try TranscriptionService(language: language, channels: 1)
+        let service = try TranscriptionService(
+          language: language,
+          channels: 1,
+          contextKeywords: currentContextSnapshot?.keywords ?? []
+        )
         transcriptionService = service
 
         service.start(
-          onTranscript: { [weak self] segment in
+          onSegments: { [weak self] segments in
             Task { @MainActor in
-              self?.handleTranscript(segment)
+              self?.handleTranscriptSegments(segments)
             }
           },
+          onEvent: { _ in },  // PTT doesn't use events
           onError: { [weak self] error in
             Task { @MainActor in
               logError("PushToTalkManager: transcription error", error: error)
@@ -459,7 +547,7 @@ class PushToTalkManager: ObservableObject {
           },
           onConnected: {
             Task { @MainActor in
-              log("PushToTalkManager: DeepGram connected")
+              log("PushToTalkManager: backend connected")
             }
           }
         )
@@ -470,11 +558,23 @@ class PushToTalkManager: ObservableObject {
     }
   }
 
-  private func startMicCapture(batchMode: Bool = false) {
+  private func startMicCapture(batchMode: Bool = false, overrideDeviceID: AudioDeviceID? = nil) {
     if audioCaptureService == nil {
-      audioCaptureService = AudioCaptureService()
+      if let override = overrideDeviceID {
+        audioCaptureService = AudioCaptureService(overrideDeviceID: override)
+      } else {
+        audioCaptureService = AudioCaptureService()
+      }
     }
     guard let capture = audioCaptureService else { return }
+
+    // Silent-mic watchdog: Bluetooth input often returns zero samples while another app
+    // holds A2DP output. Fall back to the built-in mic so PTT still captures the user.
+    capture.onSilentMicDetected = { [weak self] in
+      Task { @MainActor in
+        self?.handleSilentMicFallback(batchMode: batchMode)
+      }
+    }
 
     Task { @MainActor [weak self] in
       guard let self else { return }
@@ -502,41 +602,43 @@ class PushToTalkManager: ObservableObject {
     }
   }
 
+  /// Swap the current capture for one pinned to the built-in mic when the silent-mic
+  /// watchdog detects a dead Bluetooth input (A2DP profile conflict).
+  @MainActor
+  private func handleSilentMicFallback(batchMode: Bool) {
+    guard state == .listening || state == .lockedListening || state == .pendingLockDecision else {
+      return
+    }
+    guard let builtInID = AudioCaptureService.findBuiltInMicDeviceID() else {
+      log("PushToTalkManager: silent-mic detected but no built-in mic to fall back to")
+      return
+    }
+    log("PushToTalkManager: silent-mic fallback — switching to built-in mic (deviceID=\(builtInID))")
+    audioCaptureService?.stopCapture()
+    audioCaptureService = nil
+    startMicCapture(batchMode: batchMode, overrideDeviceID: builtInID)
+  }
+
   private func stopAudioTranscription() {
     audioCaptureService?.stopCapture()
     transcriptionService?.stop()
     transcriptionService = nil
   }
 
-  private func handleTranscript(_ segment: TranscriptionService.TranscriptSegment) {
-    guard state == .listening || state == .lockedListening || state == .finalizing else { return }
+  private func handleTranscriptSegments(_ segments: [TranscriptionService.BackendSegment]) {
+    guard
+      state == .listening || state == .lockedListening || state == .pendingLockDecision
+        || state == .finalizing
+    else { return }
 
-    if segment.speechFinal || segment.isFinal {
+    for segment in segments {
       transcriptSegments.append(segment.text)
-      lastInterimText = ""
-    } else {
-      // Track latest interim text as fallback
-      lastInterimText = segment.text
     }
+    lastInterimText = ""
 
-    // Update live transcript in the bar
-    let liveText: String
-    if segment.speechFinal || segment.isFinal {
-      liveText = transcriptSegments.joined(separator: " ")
-    } else {
-      let committed = transcriptSegments.joined(separator: " ")
-      liveText = committed.isEmpty ? segment.text : committed + " " + segment.text
-    }
-    barState?.voiceTranscript = liveText
-
-    // Also update follow-up transcript if in follow-up mode
-    if barState?.isVoiceFollowUp == true {
-      barState?.voiceFollowUpTranscript = liveText
-    }
-
-    // In finalizing state, a final segment means Deepgram is done — send immediately
-    if state == .finalizing && (segment.speechFinal || segment.isFinal) {
-      log("PushToTalkManager: received final transcript during finalization — sending now")
+    // In finalizing state, segments mean backend is done — send immediately
+    if state == .finalizing {
+      log("PushToTalkManager: received transcript during finalization — sending now")
       liveFinalizationTimeout?.cancel()
       liveFinalizationTimeout = nil
       sendTranscript()
@@ -548,15 +650,19 @@ class PushToTalkManager: ObservableObject {
   private func updateBarState(skipResize: Bool = false) {
     guard let barState = barState else { return }
     let wasListening = barState.isVoiceListening
-    barState.isVoiceListening =
-      (state == .listening || state == .lockedListening || state == .finalizing)
+    let isShowingVoiceUI = (state == .listening || state == .lockedListening)
+    barState.isVoiceListening = isShowingVoiceUI
     barState.isVoiceLocked = (state == .lockedListening)
-    if state == .idle {
+    barState.isVoiceFollowUp = isCurrentSessionFollowUp && isShowingVoiceUI
+    if !isShowingVoiceUI {
       barState.voiceTranscript = ""
+      barState.voiceFollowUpTranscript = ""
     }
 
-    // Skip resize when in follow-up mode or expanded AI conversation (already at full size)
-    guard !skipResize && !barState.isVoiceFollowUp && !barState.showingAIConversation else { return }
+    // Skip resize when in follow-up mode, expanded AI conversation, or during onboarding
+    // (during onboarding the floating bar shouldn't appear as a separate window)
+    let isOnboarding = !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+    guard !skipResize && !barState.isVoiceFollowUp && !barState.showingAIConversation && !isOnboarding else { return }
     if barState.isVoiceListening && !wasListening {
       FloatingControlBarManager.shared.resizeForPTT(expanded: true)
     } else if !barState.isVoiceListening && wasListening {

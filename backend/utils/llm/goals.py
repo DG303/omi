@@ -14,7 +14,7 @@ import database.memories as memories_db
 import database.conversations as conversations_db
 import database.chat as chat_db
 from database.vector_db import query_vectors as vector_search
-from utils.llm.clients import llm_mini, llm_medium
+from utils.llm.clients import get_llm
 from utils.llm.usage_tracker import track_usage, Features
 import logging
 
@@ -39,7 +39,7 @@ def _get_goal_context(uid: str, goal_title: str) -> Dict[str, str]:
         relevant_ids = vector_search(query=goal_title, uid=uid, k=10)
         if relevant_ids:
             relevant_convs = conversations_db.get_conversations_by_id(uid, relevant_ids)
-            for conv in relevant_convs[:5]:  # Top 5 most relevant
+            for conv in [c for c in relevant_convs if not c.get('is_locked')][:5]:
                 conv_id = conv.get('id')
                 if conv_id and conv_id not in seen_ids:
                     seen_ids.add(conv_id)
@@ -55,7 +55,7 @@ def _get_goal_context(uid: str, goal_title: str) -> Dict[str, str]:
         recent_convs = conversations_db.get_conversations(
             uid=uid, limit=20, statuses=['completed'], include_discarded=False
         )
-        for conv in recent_convs:
+        for conv in [c for c in recent_convs if not c.get('is_locked')]:
             conv_id = conv.get('id')
             created = conv.get('created_at')
             if conv_id and conv_id not in seen_ids:
@@ -89,7 +89,9 @@ def _get_goal_context(uid: str, goal_title: str) -> Dict[str, str]:
     memory_context = ""
     try:
         memories = memories_db.get_memories(uid, limit=30, offset=0)
-        memory_texts = [m.get('content', '')[:150] for m in memories[:15] if m.get('content')]
+        memory_texts = [
+            m.get('content', '')[:150] for m in memories[:15] if m.get('content') and not m.get('is_locked')
+        ]
         memory_context = '\n'.join(memory_texts)
     except Exception as e:
         logger.error(f"[GOAL-ADVICE] Memories error: {e}")
@@ -118,8 +120,8 @@ def suggest_goal(uid: str) -> Dict:
                 'reasoning': 'Start tracking your daily learning progress!',
             }
 
-        # Prepare memory context for AI
-        memory_texts = [m.get('content', '') for m in memories[:50] if m.get('content')]
+        # Prepare memory context for AI — exclude locked memories
+        memory_texts = [m.get('content', '') for m in memories[:50] if m.get('content') and not m.get('is_locked')]
         memory_context = '\n'.join(memory_texts[:20])  # Limit context size
 
         prompt = f"""Based on the user's memories and interests, suggest ONE meaningful personal goal they could track.
@@ -145,7 +147,7 @@ Choose a goal type:
 Make the goal specific, measurable, and relevant to their interests."""
 
         with track_usage(uid, Features.GOALS):
-            response = llm_mini.invoke(prompt).content
+            response = get_llm('goals').invoke(prompt).content
 
         # Find JSON in response
         json_match = re.search(r'\{[^{}]*\}', response, re.DOTALL)
@@ -225,7 +227,7 @@ Give ONE specific action in 1-2 sentences. Be concise but complete. No generic a
 
         # Use the better model for high-quality advice
         with track_usage(uid, Features.GOALS):
-            advice = llm_medium.invoke(prompt).content
+            advice = get_llm('goals_advice').invoke(prompt).content
 
         # Clean up quotes but keep full text
         advice = advice.strip().strip('"').strip("'")
@@ -288,7 +290,7 @@ Example output: [{{"goal_id": "goal_abc123", "found": true, "value": 2500, "reas
 Only include a goal if you're confident the message is about that SPECIFIC goal."""
 
         with track_usage(uid, Features.GOALS):
-            response = llm_mini.invoke(prompt).content
+            response = get_llm('goals').invoke(prompt).content
 
         # Parse JSON array from response using non-greedy extraction
         results = _parse_json_array(response)

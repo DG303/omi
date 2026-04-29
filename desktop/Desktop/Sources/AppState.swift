@@ -4,14 +4,25 @@ import Combine
 import SwiftUI
 import UserNotifications
 
+/// Translation from backend (e.g., Japanese speech translated to English)
+struct SegmentTranslation: Identifiable {
+  var id: String { lang }
+  let lang: String
+  let text: String
+}
+
 /// Speaker segment for diarized transcription
 struct SpeakerSegment: Identifiable {
-  /// Stable identity derived from speaker + start time (unique per segment)
-  var id: String { "\(speaker)-\(start)" }
+  /// Stable identity — uses backend segment ID when available, otherwise speaker + start time
+  var id: String { segmentId ?? "\(speaker)-\(start)" }
+  var segmentId: String?   // Backend-assigned UUID
   var speaker: Int
   var text: String
   var start: Double
   var end: Double
+  var isUser: Bool = false
+  var personId: String?    // Backend-assigned person ID from speaker identification
+  var translations: [SegmentTranslation] = []
 }
 
 /// Result of finalizing a conversation
@@ -23,10 +34,17 @@ enum FinishConversationResult {
 
 @MainActor
 class AppState: ObservableObject {
+  /// Weak reference to the current AppState instance, set on init.
+  /// Used by background services (e.g. TranscriptionRetryService) to check recording state.
+  static weak var current: AppState?
+
   @AppStorage("hasCompletedOnboarding") var hasCompletedOnboarding = false
 
   // Transcription state
   @Published var isTranscribing = false
+  /// Monotonically increasing counter — incremented each time a new recording starts.
+  /// Used to detect if a new recording began during the post-stop force-process delay.
+  private(set) var recordingGeneration: UInt64 = 0
   @Published var isSavingConversation = false
   // currentTranscript is internal-only (not observed by views), so no @Published needed
   private var currentTranscript: String = ""
@@ -38,6 +56,10 @@ class AppState: ObservableObject {
   @Published var audioSource: AudioSource = .microphone
   /// Tracks the source for the current recording (for API tagging)
   private var currentConversationSource: ConversationSource = .desktop
+
+  /// Guards against re-entering the silent-mic fallback path multiple times in a single session.
+  /// The user-visible banner lives in `SilentMicNoticeMonitor.shared`.
+  private var silentMicFallbackInProgress: Bool = false
 
   // Audio levels moved to AudioLevelMonitor to avoid triggering global re-renders
   // Access via AudioLevelMonitor.shared.microphoneLevel / .systemLevel
@@ -87,8 +109,8 @@ class AppState: ObservableObject {
   private var lastNotificationAlertStyle: String?
   private var lastNotificationSoundEnabled: Bool?
   private var lastNotificationBadgeEnabled: Bool?
-  @Published var isScreenCaptureKitBroken = false  // TCC says yes but ScreenCaptureKit says no
-  @Published var isScreenRecordingStale = false  // TCC says yes but capture fails (developer signing changed)
+  @Published var isScreenCaptureKitBroken = false  // Capture engine issue; not the source of permission truth
+  @Published var isScreenRecordingStale = false  // Deprecated: no longer inferred from capture failures
   var screenRecordingGrantAttempts = 0  // Track how many times user clicked Grant without success
   @Published var hasAutomationPermission = false
   @Published var automationPermissionError: OSStatus = 0  // Non-zero when check fails unexpectedly (e.g. -600 procNotFound)
@@ -96,6 +118,19 @@ class AppState: ObservableObject {
   @Published var hasAccessibilityPermission = false
   @Published var isAccessibilityBroken = false  // TCC says yes but AX calls actually fail (common after macOS updates/app re-signs)
   @Published var hasFullDiskAccess = false
+
+  /// Usage-limit popup state. Set by `triggerUsageLimitPopup(reason:)` when the
+  /// user hits a free-tier cap (transcription minutes, monthly chat messages, etc).
+  /// The popup is mounted as an overlay in `DesktopHomeView` and is closable.
+  @Published var showUsageLimitPopup: Bool = false
+  @Published var usageLimitReason: String = ""
+
+  /// Trigger the monthly-limit popup. Safe to call repeatedly — SwiftUI's
+  /// `@Published` dedupes identical-value writes automatically.
+  func triggerUsageLimitPopup(reason: String) {
+    usageLimitReason = reason
+    showUsageLimitPopup = true
+  }
 
   /// True if notifications are enabled but won't show visual banners
   var isNotificationBannerDisabled: Bool {
@@ -106,7 +141,7 @@ class AppState: ObservableObject {
   var missingPermissions: [String] {
     var missing: [String] = []
     if !hasMicrophonePermission { missing.append("Microphone") }
-    if !hasScreenRecordingPermission || isScreenCaptureKitBroken || isScreenRecordingStale {
+    if !hasScreenRecordingPermission || isScreenRecordingStale {
       missing.append("Screen Recording")
     }
     if !hasNotificationPermission {
@@ -147,10 +182,6 @@ class AppState: ObservableObject {
   private var audioMixer: AudioMixer?
   private var vadGateService: VADGateService?
 
-  // Batch transcription mode
-  private var useBatchTranscription: Bool = false
-  private var recordingStartCATime: Double = 0  // CACurrentMediaTime at recording start
-
   // Speaker segments for diarized transcription (sliding window — older segments are in SQLite)
   private var speakerSegments: [SpeakerSegment] = []
   private let maxInMemorySegments = 200
@@ -168,6 +199,10 @@ class AppState: ObservableObject {
 
   // Crash-safe transcription storage
   private var currentSessionId: Int64?
+  /// Session ID captured before rotation in finishConversation(), consumed by memory_created handler
+  private var finishedSessionId: Int64?
+  /// Recording start time captured before rotation, used by memory_created handler for accurate duration analytics
+  private var finishedRecordingStartTime: Date?
 
   // Observers for app lifecycle
   private var willTerminateObserver: NSObjectProtocol?
@@ -192,6 +227,12 @@ class AppState: ObservableObject {
   private var bluetoothStateCancellable: AnyCancellable?
 
   init() {
+    // Register as the current instance so background services can check recording state
+    AppState.current = self
+
+    // Resolve beta/stable before loading backend URLs so beta releases use dev services.
+    AppBuild.prepareUpdateChannelForBackendRouting()
+
     // Load API key from environment or .env file
     loadEnvironment()
 
@@ -210,9 +251,12 @@ class AppState: ObservableObject {
       queue: .main
     ) { [weak self] _ in
       Task { @MainActor in
-        self?.hasScreenRecordingPermission = false
+        let granted = ScreenCaptureService.checkPermission()
+        self?.hasScreenRecordingPermission = ScreenRecordingPermissionPolicy.uiPermissionGranted(
+          tccGranted: granted)
         self?.isScreenCaptureKitBroken = false  // Not broken, just lost
-        log("AppState: Screen recording permission lost")
+        self?.isScreenRecordingStale = false
+        log("AppState: Screen recording permission lost notification; TCC granted=\(granted)")
       }
     }
 
@@ -223,9 +267,13 @@ class AppState: ObservableObject {
       queue: .main
     ) { [weak self] _ in
       Task { @MainActor in
-        self?.hasScreenRecordingPermission = false
-        self?.isScreenCaptureKitBroken = true  // Needs reset
-        log("AppState: ScreenCaptureKit broken - needs reset")
+        let granted = ScreenCaptureService.checkPermission()
+        self?.hasScreenRecordingPermission = ScreenRecordingPermissionPolicy.uiPermissionGranted(
+          tccGranted: granted)
+        self?.isScreenCaptureKitBroken = ScreenRecordingPermissionPolicy.shouldMarkCaptureKitBroken(
+          tccGranted: granted)
+        self?.isScreenRecordingStale = false
+        log("AppState: ScreenCaptureKit broken notification; TCC granted=\(granted)")
       }
     }
 
@@ -292,8 +340,8 @@ class AppState: ObservableObject {
       guard let self = self else { return }
       Task { @MainActor in
         if self.isTranscribing {
-          log("App terminating - finalizing conversation")
-          _ = await self.finalizeConversation()
+          log("App terminating - stopping transcription (backend handles conversation)")
+          self.stopAudioCapture()
           self.clearTranscriptionState()
         }
       }
@@ -309,8 +357,7 @@ class AppState: ObservableObject {
       Task { @MainActor in
         self.wasTranscribingBeforeSleep = self.isTranscribing
         if self.isTranscribing {
-          log("Computer sleeping - finalizing conversation (will restart on wake)")
-          _ = await self.finalizeConversation()
+          log("Computer sleeping - stopping transcription (backend handles conversation)")
           self.stopAudioCapture()
           self.clearTranscriptionState()
         }
@@ -421,7 +468,7 @@ class AppState: ObservableObject {
             guard !key.hasPrefix("#") else { continue }
             // API keys are fetched from the backend at runtime (APIKeyService).
             // Do NOT load them from .env — defer entirely to APIKeyService.fetchKeys().
-            let backendServedKeys = ["DEEPGRAM_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_CALENDAR_API_KEY"]
+            let backendServedKeys = ["GEMINI_API_KEY", "GOOGLE_CALENDAR_API_KEY"]
             if backendServedKeys.contains(key) {
               log("  Skipped \(key) (fetched from backend via APIKeyService)")
               continue
@@ -438,6 +485,8 @@ class AppState: ObservableObject {
         // Don't break - load all .env files to merge keys
       }
     }
+
+    DesktopBackendEnvironment.applyReleaseChannelDefaults()
 
     log("Environment loaded (API keys will be fetched from backend after auth)")
   }
@@ -594,7 +643,7 @@ class AppState: ObservableObject {
         log("AUTOMATION_TRIGGER: AppleScript succeeded, permission may have been granted")
       }
 
-      // Re-check permission status before opening settings
+      // Re-check permission status after the TCC dialog
       await MainActor.run { [weak self] in
         self?.checkAutomationPermission()
       }
@@ -602,12 +651,17 @@ class AppState: ObservableObject {
       // Small delay to let the check complete
       try? await Task.sleep(nanoseconds: 300_000_000)
 
-      // Open settings so user can toggle if needed
-      await MainActor.run {
-        if let url = URL(
-          string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")
-        {
-          NSWorkspace.shared.open(url)
+      // Only open Settings if the TCC dialog didn't grant permission
+      let granted = await MainActor.run { [weak self] in
+        self?.hasAutomationPermission ?? false
+      }
+      if !granted {
+        await MainActor.run {
+          if let url = URL(
+            string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation")
+          {
+            NSWorkspace.shared.open(url)
+          }
         }
       }
     }
@@ -720,7 +774,11 @@ class AppState: ObservableObject {
 
   /// Check notification permission status and alert style
   func checkNotificationPermission() {
-    UNUserNotificationCenter.current().getNotificationSettings { settings in
+    // Dispatch async to avoid calling UNUserNotificationCenter.current() during
+    // SwiftUI view body evaluation, which triggers an assertion in UserNotifications.
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      UNUserNotificationCenter.current().getNotificationSettings { settings in
       DispatchQueue.main.async {
         let isNowGranted = settings.authorizationStatus == .authorized
         self.hasNotificationPermission = isNowGranted
@@ -788,68 +846,27 @@ class AppState: ObservableObject {
 
       }
     }
+    }  // end DispatchQueue.main.async
   }
 
   /// Check screen recording permission status
   func checkScreenRecordingPermission() {
-    let tccGranted = CGPreflightScreenCaptureAccess()
+    let permissionGranted = ScreenCaptureService.checkPermission()
+    hasScreenRecordingPermission = ScreenRecordingPermissionPolicy.uiPermissionGranted(
+      tccGranted: permissionGranted)
 
-    if !tccGranted {
-      hasScreenRecordingPermission = false
+    if !permissionGranted {
       isScreenCaptureKitBroken = false
-      // If user already tried Grant once and permission is still not granted,
-      // the TCC entry is likely corrupted (e.g. after developer account change
-      // + tccutil reset). Show stale UI with toggle off/on instructions.
-      if screenRecordingGrantAttempts > 0 && !isScreenRecordingStale {
-        log(
-          "Screen capture: Grant attempted but permission still denied — showing recovery instructions"
-        )
-        isScreenRecordingStale = true
-      }
+      isScreenRecordingStale = false
       return
     }
 
-    // TCC says granted. If the permission alert is currently showing (permission was
-    // previously false or broken or stale), do a real capture test to verify the stale TCC case
-    // (e.g. after developer account change). This avoids spawning a screencapture process
-    // on every didBecomeActive when everything is fine.
-    if !hasScreenRecordingPermission || isScreenCaptureKitBroken || isScreenRecordingStale {
-      let realPermission = ScreenCaptureService.checkPermission()
-      hasScreenRecordingPermission = realPermission
-
-      // Stale TCC entry from old developer signing: CGPreflight says granted but
-      // actual capture fails. The user must toggle OFF then ON in System Settings
-      // to update the code signing requirement (csreq) stored in the TCC database.
-      if !realPermission && !isScreenRecordingStale {
-        log("Screen capture: stale TCC entry detected (developer signing changed)")
-        isScreenRecordingStale = true
-        // Try tccutil reset in case it works (it may not on macOS 15+ for system TCC)
-        Task.detached {
-          ScreenCaptureService.ensureLaunchServicesRegistrationSync()
-          _ = ScreenCaptureService.resetScreenCapturePermission()
-        }
-      } else if realPermission {
-        // Permission recovered (user toggled off/on in System Settings)
-        isScreenRecordingStale = false
-        screenRecordingGrantAttempts = 0
-      }
-
-      if isScreenCaptureKitBroken {
-        // Re-check if SCK has recovered (user toggled permission in System Settings)
-        if #available(macOS 14.0, *) {
-          Task {
-            let sckWorks = await ScreenCaptureService.testScreenCaptureKitPermission()
-            if sckWorks {
-              log("AppState: ScreenCaptureKit recovered — clearing broken flag")
-              self.isScreenCaptureKitBroken = false
-              self.hasScreenRecordingPermission = true
-            }
-          }
-        }
-      }
-    } else {
-      hasScreenRecordingPermission = true
-    }
+    // Permission is granted. Capture-engine failures are handled by the
+    // monitoring pipeline and must not make the permission badge red.
+    isScreenRecordingStale = false
+    isScreenCaptureKitBroken = false
+    screenRecordingGrantAttempts = 0
+    UserDefaults.standard.removeObject(forKey: NotificationService.screenCaptureResetShownKey)
   }
 
   /// Check automation permission without triggering a prompt
@@ -1237,23 +1254,12 @@ class AppState: ObservableObject {
     do {
       // Get effective language from settings (handles auto-detect vs single language)
       let effectiveLanguage = AssistantSettings.shared.effectiveTranscriptionLanguage
-      let vocabulary = AssistantSettings.shared.effectiveVocabulary
       log(
         "Transcription: Using language=\(effectiveLanguage) (autoDetect=\(AssistantSettings.shared.transcriptionAutoDetect), selected=\(AssistantSettings.shared.transcriptionLanguage))"
       )
-      log("Transcription: Custom vocabulary: \(vocabulary.joined(separator: ", "))")
 
-      // Determine transcription mode
-      useBatchTranscription =
-        AssistantSettings.shared.batchTranscriptionEnabled && effectiveSource == .microphone
-
-      if !useBatchTranscription {
-        // Streaming mode: initialize WebSocket transcription service
-        transcriptionService = try TranscriptionService(
-          language: effectiveLanguage, vocabulary: vocabulary)
-      } else {
-        log("Transcription: Batch mode enabled — skipping WebSocket")
-      }
+      // Always streaming via Python backend /v4/listen
+      transcriptionService = try TranscriptionService(language: effectiveLanguage)
 
       // Set conversation source based on audio source
       if effectiveSource == .bleDevice, let device = DeviceProvider.shared.connectedDevice {
@@ -1272,24 +1278,8 @@ class AppState: ObservableObject {
         // Initialize audio mixer for combining mic and system audio
         audioMixer = AudioMixer()
 
-        // VAD gate is always needed for batch mode (chunk boundaries),
-        // and optional for streaming mode (silence gating)
-        if useBatchTranscription || AssistantSettings.shared.vadGateEnabled {
-          let gate = VADGateService()
-          if useBatchTranscription && !gate.modelAvailable {
-            // Batch mode requires working VAD — fall back to streaming
-            log("Transcription: VAD models unavailable, falling back from batch to streaming mode")
-            useBatchTranscription = false
-            vadGateService = nil
-            transcriptionService = try TranscriptionService(
-              language: effectiveLanguage, vocabulary: vocabulary)
-          } else {
-            vadGateService = gate
-            log("Transcription: VAD gate enabled\(useBatchTranscription ? " (batch mode)" : "")")
-          }
-        } else {
-          vadGateService = nil
-        }
+        // VAD gate not used for Python backend streaming (backend handles its own VAD)
+        vadGateService = nil
 
         // Initialize system audio capture if supported (macOS 14.4+)
         // Can be disabled via: defaults write com.omi.desktop-dev disableSystemAudioCapture -bool true
@@ -1308,41 +1298,39 @@ class AppState: ObservableObject {
       }
       // For BLE device, BleAudioService will be used in startAudioCapture
 
-      if useBatchTranscription {
-        // Batch mode: start audio capture directly (no WebSocket to wait for)
-        recordingStartCATime = CACurrentMediaTime()
-        Task { @MainActor [weak self] in
-          await self?.startAudioCapture(source: effectiveSource)
-        }
-      } else {
-        // Streaming mode: start transcription service first, then audio on connect
-        transcriptionService?.start(
-          onTranscript: { [weak self] segment in
-            Task { @MainActor in
-              self?.handleTranscriptSegment(segment)
-            }
-          },
-          onError: { [weak self] error in
-            Task { @MainActor in
-              logError("Transcription error", error: error)
-              AnalyticsManager.shared.recordingError(error: error.localizedDescription)
-              self?.stopTranscription()
-            }
-          },
-          onConnected: { [weak self] in
-            Task { @MainActor in
-              log("Transcription: Connected to DeepGram")
-              // Start audio capture once connected
-              await self?.startAudioCapture(source: effectiveSource)
-            }
-          },
-          onDisconnected: {
-            log("Transcription: Disconnected from DeepGram")
+      // Streaming mode: start transcription service first, then audio on connect
+      transcriptionService?.start(
+        onSegments: { [weak self] segments in
+          Task { @MainActor in
+            self?.handleBackendSegments(segments)
           }
-        )
-      }
+        },
+        onEvent: { [weak self] event in
+          Task { @MainActor in
+            self?.handleListenEvent(event)
+          }
+        },
+        onError: { [weak self] error in
+          Task { @MainActor in
+            logError("Transcription error", error: error)
+            AnalyticsManager.shared.recordingError(error: error.localizedDescription)
+            self?.stopTranscription()
+          }
+        },
+        onConnected: { [weak self] in
+          Task { @MainActor in
+            log("Transcription: Connected to Python backend")
+            // Start audio capture once connected
+            await self?.startAudioCapture(source: effectiveSource)
+          }
+        },
+        onDisconnected: {
+          log("Transcription: Disconnected from Python backend")
+        }
+      )
 
       isTranscribing = true
+      recordingGeneration &+= 1
       AssistantSettings.shared.transcriptionEnabled = true
       audioSource = effectiveSource
       currentTranscript = ""
@@ -1386,9 +1374,8 @@ class AppState: ObservableObject {
       ) { [weak self] _ in
         Task { @MainActor in
           guard let self = self, self.isTranscribing else { return }
-          log("Transcription: 4-hour limit reached - finalizing conversation")
-          _ = await self.finalizeConversation()
-          // Start a new recording session automatically
+          log("Transcription: 4-hour limit reached - restarting session")
+          // Stop and restart (WebSocket close triggers backend conversation processing)
           self.stopAudioCapture()
           self.clearTranscriptionState()
           self.startTranscription()
@@ -1418,45 +1405,30 @@ class AppState: ObservableObject {
     }
   }
 
-  /// Start microphone audio capture (original implementation)
+  /// Start microphone + system audio capture — mixes mic and system audio into a single
+  /// mono stream (via AudioMixer) and sends it to the Python backend (`channels=1`).
+  /// This way anything playing through the Mac's speakers (YouTube, calls, music)
+  /// ends up in the conversation transcript alongside the user's voice.
   private func startMicrophoneAudioCapture() async {
-    guard let audioCaptureService = audioCaptureService,
-      let audioMixer = audioMixer
-    else { return }
+    guard let audioCaptureService = audioCaptureService else { return }
 
-    // Start the audio mixer - it will send stereo audio to transcription service
-    // Branch on batch vs streaming mode
-    audioMixer.start { [weak self] stereoData in
-      guard let self = self else { return }
-      if self.useBatchTranscription {
-        // Batch mode: accumulate audio in VAD gate, transcribe on silence
-        guard let gate = self.vadGateService else { return }
-        let output = gate.processAudioBatch(stereoData)
-        if output.isComplete, let audioBuffer = output.audioBuffer {
-          let wallStartTime = output.speechStartWallTime
-          Task { @MainActor [weak self] in
-            await self?.batchTranscribeChunk(audioBuffer: audioBuffer, wallStartTime: wallStartTime)
-          }
-        }
-      } else if let gate = self.vadGateService {
-        // Streaming mode with VAD gate
-        let output = gate.processAudio(stereoData)
-        if !output.audioToSend.isEmpty {
-          self.transcriptionService?.sendAudio(output.audioToSend)
-        } else if gate.needsKeepalive() {
-          self.transcriptionService?.sendKeepalivePublic()
-        }
-        if output.shouldFinalize {
-          self.transcriptionService?.sendFinalize()
-        }
-      } else {
-        // Streaming mode without VAD gate
-        self.transcriptionService?.sendAudio(stereoData)
+    // Silent-mic watchdog: on A2DP profile conflict the Bluetooth input device returns
+    // zero samples even though CoreAudio reports healthy capture. Fall back to the
+    // built-in mic when the watchdog fires.
+    audioCaptureService.onSilentMicDetected = { [weak self] in
+      Task { @MainActor in
+        self?.handleSilentMicFallback()
       }
     }
 
+    // Start the mixer — it sums mic + system into a mono stream and forwards it to
+    // the transcription WebSocket.
+    audioMixer?.start { [weak self] monoMixed in
+      self?.transcriptionService?.sendAudio(monoMixed)
+    }
+
     do {
-      // Start microphone capture - sends to mixer channel 0 (left/user)
+      // Microphone capture → mixer (mic channel). Level still drives the UI.
       try await audioCaptureService.startCapture(
         onAudioChunk: { [weak self] audioData in
           self?.audioMixer?.setMicAudio(audioData)
@@ -1466,9 +1438,12 @@ class AppState: ObservableObject {
           AudioLevelMonitor.shared.updateMicrophoneLevel(level)
         }
       )
-      log("Transcription: Microphone capture started")
+      log("Transcription: Microphone capture started (→ mixer, Python backend mono)")
 
-      // Start system audio capture if available (macOS 14.4+)
+      // Start system audio capture if available (macOS 14.4+). When present, its
+      // samples are mixed into the same mono stream so YouTube/calls/music end up
+      // in the transcript too. If unavailable or it fails, we simply keep mic-only
+      // audio flowing through the mixer.
       if #available(macOS 14.4, *) {
         if let systemService = systemAudioCaptureService as? SystemAudioCaptureService {
           do {
@@ -1477,23 +1452,51 @@ class AppState: ObservableObject {
                 self?.audioMixer?.setSystemAudio(audioData)
               },
               onAudioLevel: { level in
-                // Use dedicated monitor to avoid triggering AppState re-renders
                 AudioLevelMonitor.shared.updateSystemLevel(level)
               }
             )
-            log("Transcription: System audio capture started")
+            log("Transcription: System audio capture started (→ mixer, mono sum)")
           } catch {
-            // System audio is optional - continue with mic only
+            // System audio is optional — continue with mic only (mixer will just
+            // emit mic samples summed with zero system samples).
             logError(
               "Transcription: System audio capture failed (continuing with mic only)", error: error)
           }
         }
       }
 
-      log("Transcription: Audio capture started (multichannel)")
+      log("Transcription: Audio capture started (mic + system → mono mix → Python backend)")
     } catch {
       logError("Transcription: Failed to start audio capture", error: error)
       stopTranscription()
+    }
+  }
+
+  /// Fall back from a silent Bluetooth mic to the built-in microphone.
+  /// Triggered by `AudioCaptureService.onSilentMicDetected`.
+  @MainActor
+  private func handleSilentMicFallback() {
+    guard isTranscribing, !silentMicFallbackInProgress else { return }
+    silentMicFallbackInProgress = true
+
+    guard let builtInID = AudioCaptureService.findBuiltInMicDeviceID() else {
+      log("Transcription: silent-mic detected but no built-in microphone available — leaving capture as-is")
+      silentMicFallbackInProgress = false
+      return
+    }
+
+    log("Transcription: silent-mic fallback — switching to built-in mic (deviceID=\(builtInID))")
+
+    // Tear down the dead Bluetooth capture and spin a new one pinned to the built-in mic.
+    // Silent healing — no user-facing UI, the recording just keeps working.
+    audioCaptureService?.stopCapture()
+    audioCaptureService = AudioCaptureService(overrideDeviceID: builtInID)
+    recordingInputDeviceName =
+      AudioCaptureService.getCurrentMicrophoneName() ?? "Built-in Microphone"
+
+    Task { @MainActor in
+      await self.startMicrophoneAudioCapture()
+      self.silentMicFallbackInProgress = false
     }
   }
 
@@ -1557,13 +1560,10 @@ class AppState: ObservableObject {
       log("Transcription: Single tap - no action configured")
 
     case 2:
-      // Double tap - finalize conversation and continue recording
-      log("Transcription: Double tap - finalizing conversation")
+      // Double tap - finish conversation and continue recording
+      log("Transcription: Double tap - finishing conversation")
       Task {
-        _ = await finalizeConversation()
-        clearTranscriptionState()
-        // Restart with same source
-        startTranscription(source: audioSource)
+        _ = await finishConversation()
       }
 
     case 3:
@@ -1582,34 +1582,128 @@ class AppState: ObservableObject {
     buttonStreamTask = nil
   }
 
-  /// Stop real-time transcription and finalize the conversation
+  /// Stop real-time transcription
+  /// The Python backend handles conversation lifecycle automatically — disconnecting the WebSocket
+  /// triggers conversation processing on the backend side. We also call force-process to ensure
+  /// the conversation is finalized, preventing the retry service from creating duplicates.
   func stopTranscription() {
-    // Immediately stop audio capture but show saving state
+    // Capture session metadata BEFORE clearing state (clearTranscriptionState sets sessionId to nil)
+    let capturedSessionId = currentSessionId
+    let capturedStartTime = recordingStartTime
+    let generationAtStop = recordingGeneration
+
     stopAudioCapture()
-    isSavingConversation = true
+    clearTranscriptionState()
+    silentMicFallbackInProgress = false
 
+    // After WS close, the Python backend processes the conversation automatically.
+    // Call force-process to ensure finalization and get the backend conversation ID.
+    // This prevents the retry service from picking up the pendingUpload session.
     Task {
-      _ = await finalizeConversation()
-      isSavingConversation = false
-      clearTranscriptionState()
+      try? await Task.sleep(nanoseconds: 3_000_000_000)  // 3s for backend to process after WS close
 
-      // Refresh conversations after stopping
+      // If a new recording started during the delay, skip force-process — it would
+      // finalize the NEW conversation instead of the one we just stopped.
+      // The retry service will reconcile the old session by timestamp matching.
+      guard self.recordingGeneration == generationAtStop else {
+        log("Transcription: New recording started during delay, skipping force-process for session \(capturedSessionId.map(String.init) ?? "nil")")
+        return
+      }
+
+      do {
+        if let conversation = try await APIClient.shared.forceProcessConversation() {
+          // Validate the returned conversation matches the session we just stopped
+          if let sessionId = capturedSessionId, let startTime = capturedStartTime,
+             let convStarted = conversation.startedAt,
+             abs(convStarted.timeIntervalSince(startTime)) < 10,
+             conversation.source == .desktop {
+            try? await TranscriptionStorage.shared.markSessionCompleted(
+              id: sessionId, backendId: conversation.id)
+            log("Transcription: Force-processed conversation \(conversation.id), session \(sessionId) completed")
+          } else if let sessionId = capturedSessionId, let startTime = capturedStartTime {
+            // Force-process returned a different conversation — fall back to reconciliation
+            log("Transcription: Force-processed conversation \(conversation.id) does not match session \(sessionId), reconciling by timestamp")
+            await reconcileSession(sessionId: sessionId, startTime: startTime)
+          }
+        } else {
+          // 404: No in-progress conversation — WS close handler already processed it.
+          // Reconcile by checking if a matching conversation exists on the backend.
+          if let sessionId = capturedSessionId, let startTime = capturedStartTime {
+            await reconcileSession(sessionId: sessionId, startTime: startTime)
+          }
+        }
+      } catch {
+        // Other error — leave session as pendingUpload for retry service to reconcile
+        logError("Transcription: Force-process failed, retry service will reconcile", error: error)
+      }
+
       await loadConversations()
     }
   }
 
-  /// Finish the current conversation and keep recording for a new one
+  /// Reconcile a local session by checking if a matching conversation exists on the backend.
+  /// If found, marks the session as completed. Otherwise leaves it as pendingUpload for retry.
+  private func reconcileSession(sessionId: Int64, startTime: Date) async {
+    do {
+      let conversations = try await APIClient.shared.getConversations(
+        limit: 5,
+        includeDiscarded: true,
+        startDate: startTime.addingTimeInterval(-5),
+        endDate: Date().addingTimeInterval(5)
+      )
+      if let match = conversations.first(where: { conv in
+        guard let convStarted = conv.startedAt else { return false }
+        // Must be a desktop conversation with matching start time
+        guard conv.source == .desktop else { return false }
+        return abs(convStarted.timeIntervalSince(startTime)) < 10
+      }) {
+        try await TranscriptionStorage.shared.markSessionCompleted(
+          id: sessionId, backendId: match.id)
+        log("Transcription: Reconciled session \(sessionId) → backend conversation \(match.id)")
+      } else {
+        log("Transcription: No matching backend conversation found for session \(sessionId), leaving for retry")
+      }
+    } catch {
+      logError("Transcription: Reconciliation failed for session \(sessionId)", error: error)
+    }
+  }
+
+  /// Finish the current conversation and keep recording for a new one.
+  /// Disconnects the WebSocket (triggers backend conversation processing) then reconnects.
   func finishConversation() async -> FinishConversationResult {
     guard totalSegmentCount > 0 || !speakerSegments.isEmpty else {
       log("Transcription: No segments to finish")
       return .discarded
     }
 
-    log("Transcription: Finishing conversation, keeping recording active")
+    log("Transcription: Finishing conversation — disconnecting WebSocket to trigger backend processing")
 
-    let result = await finalizeConversation()
+    // Capture state before rotation — memory_created event for this conversation
+    // may arrive on the new WebSocket after currentSessionId and recordingStartTime have changed.
+    finishedSessionId = currentSessionId
+    finishedRecordingStartTime = recordingStartTime
 
-    // Clear segments for the next conversation but keep recording
+    // Mark current DB session as finished before stopping
+    // (backend will process it; memory_created event may arrive on the new session's WebSocket)
+    if let sessionId = currentSessionId {
+      do {
+        try await TranscriptionStorage.shared.finishSession(id: sessionId)
+        log("Transcription: Finished DB session \(sessionId) before reconnect")
+      } catch {
+        logError("Transcription: Failed to finish DB session \(sessionId)", error: error)
+      }
+    }
+
+    // Stop the transcription service (closes WebSocket, triggers backend conversation processing)
+    transcriptionService?.stop()
+    transcriptionService = nil
+
+    // Clear currentSessionId BEFORE reconnecting — any segments arriving on the new WebSocket
+    // must not be persisted against the finished session. They'll be buffered in memory until
+    // the new session ID is set in the Task below.
+    currentSessionId = nil
+
+    // Clear segments for the next conversation but keep recording active
     speakerSegments = []
     totalSegmentCount = 0
     totalWordCount = 0
@@ -1628,12 +1722,44 @@ class AppState: ObservableObject {
     { [weak self] _ in
       Task { @MainActor in
         guard let self = self, self.isTranscribing else { return }
-        log("Transcription: 4-hour limit reached - finalizing conversation")
-        _ = await self.finalizeConversation()
+        log("Transcription: 4-hour limit reached — stopping and restarting")
         self.stopAudioCapture()
         self.clearTranscriptionState()
         self.startTranscription()
       }
+    }
+
+    // Reconnect transcription service for the next conversation
+    do {
+      let effectiveLanguage = AssistantSettings.shared.effectiveTranscriptionLanguage
+      transcriptionService = try TranscriptionService(language: effectiveLanguage)
+      transcriptionService?.start(
+        onSegments: { [weak self] segments in
+          Task { @MainActor in
+            self?.handleBackendSegments(segments)
+          }
+        },
+        onEvent: { [weak self] event in
+          Task { @MainActor in
+            self?.handleListenEvent(event)
+          }
+        },
+        onError: { [weak self] error in
+          Task { @MainActor in
+            logError("Transcription error (reconnect)", error: error)
+            self?.stopTranscription()
+          }
+        },
+        onConnected: {
+          log("Transcription: Reconnected to Python backend for next conversation")
+        },
+        onDisconnected: {
+          log("Transcription: Disconnected from Python backend")
+        }
+      )
+    } catch {
+      logError("Transcription: Failed to reconnect for next conversation", error: error)
+      return .error(error.localizedDescription)
     }
 
     // Start a new DB session for the next conversation
@@ -1660,7 +1786,7 @@ class AppState: ObservableObject {
     await loadConversations()
 
     log("Transcription: Ready for next conversation")
-    return result
+    return .saved
   }
 
   /// Stop audio capture services (but keep transcript data for saving)
@@ -1695,16 +1821,6 @@ class AppState: ObservableObject {
     audioMixer?.stop()
     audioMixer = nil
 
-    // Flush batch buffer before clearing VAD gate
-    if useBatchTranscription, let gate = vadGateService, let output = gate.flushBatchBuffer() {
-      if let audioBuffer = output.audioBuffer {
-        let wallStartTime = output.speechStartWallTime
-        Task { @MainActor [weak self] in
-          await self?.batchTranscribeChunk(audioBuffer: audioBuffer, wallStartTime: wallStartTime)
-        }
-      }
-    }
-
     // Clear VAD gate
     vadGateService = nil
 
@@ -1723,6 +1839,18 @@ class AppState: ObservableObject {
 
     // End live notes session
     LiveNotesMonitor.shared.endSession()
+
+    // Mark DB session as finished (pending upload / crash recovery)
+    if let sessionId = currentSessionId {
+      Task {
+        do {
+          try await TranscriptionStorage.shared.finishSession(id: sessionId)
+          log("Transcription: Finished DB session \(sessionId)")
+        } catch {
+          logError("Transcription: Failed to finish DB session \(sessionId)", error: error)
+        }
+      }
+    }
 
     // Clear segments after finalization
     speakerSegments = []
@@ -1883,7 +2011,7 @@ class AppState: ObservableObject {
     NotificationCenter.default.post(name: .conversationsPageDidLoad, object: nil)
   }
 
-  /// Refresh conversations silently (for auto-refresh timer and app-activate).
+  /// Refresh conversations silently (for app-activation and Cmd+R event-driven refreshes).
   /// Fetches from API only, merges in-place, and only triggers @Published if data actually changed.
   func refreshConversations() async {
     // Skip if user is signed out (tokens are cleared)
@@ -1945,7 +2073,6 @@ class AppState: ObservableObject {
       }
     }
 
-    // Update total count
     do {
       let count = try await APIClient.shared.getConversationsCount(includeDiscarded: false)
       if totalConversationsCount != count {
@@ -2148,18 +2275,44 @@ class AppState: ObservableObject {
   /// Assigns segments to a person or user via bulk API
   func assignSpeakerToSegments(
     conversationId: String,
-    segmentIds: [Int],
+    segmentIds: [String],
     personId: String?,
     isUser: Bool
   ) async -> Bool {
     do {
       try await APIClient.shared.assignSegmentsBulk(
         conversationId: conversationId,
-        segmentIds: segmentIds.map(String.init),
+        segmentIds: segmentIds,
         isUser: isUser,
         personId: personId
       )
       log("People: Assigned \(segmentIds.count) segments in conversation \(conversationId)")
+      // Update in-memory conversations list so the prop is fresh on next open
+      let idSet = Set(segmentIds)
+      if let idx = conversations.firstIndex(where: { $0.id == conversationId }) {
+        for segIdx in conversations[idx].transcriptSegments.indices
+          where idSet.contains(conversations[idx].transcriptSegments[segIdx].id) {
+          let old = conversations[idx].transcriptSegments[segIdx]
+          conversations[idx].transcriptSegments[segIdx] = TranscriptSegment(
+            id: old.id,
+            backendId: old.backendId,
+            text: old.text,
+            speaker: old.speaker,
+            isUser: isUser,
+            personId: isUser ? nil : personId,
+            start: old.start,
+            end: old.end,
+            translations: old.translations
+          )
+        }
+      }
+      // Also update local SQLite cache so changes persist across app restarts
+      try? await TranscriptionStorage.shared.updateSegmentSpeakerAssignment(
+        backendConversationId: conversationId,
+        segmentIds: segmentIds,
+        personId: personId,
+        isUser: isUser
+      )
       return true
     } catch {
       logError("People: Failed to assign segments", error: error)
@@ -2167,298 +2320,55 @@ class AppState: ObservableObject {
     }
   }
 
-  /// Finalize and save the current conversation to the backend
-  /// Uses DB as source of truth for crash safety
-  private func finalizeConversation() async -> FinishConversationResult {
-    guard let startTime = recordingStartTime else {
-      log("Transcription: No recording start time")
-      return .discarded
-    }
+  // MARK: - Backend Segment Handling
 
-    let endTime = Date()
-    let sessionId = currentSessionId
+  /// Handle incoming transcript segments from Python backend `/v4/listen`.
+  /// Backend sends pre-merged segments with speaker attribution — no client-side word merging needed.
+  private func handleBackendSegments(_ segments: [TranscriptionService.BackendSegment]) {
+    for segment in segments {
+      guard !segment.text.isEmpty else { continue }
 
-    // Try to load segments from DB if we have a session, fall back to in-memory
-    var segmentsToUpload: [SpeakerSegment] = speakerSegments
+      // Extract speaker_id from backend (e.g. "SPEAKER_00" → 0)
+      let speakerId = segment.speaker_id ?? 0
 
-    if let sessionId = sessionId {
-      do {
-        // Mark session as finished in DB first
-        try await TranscriptionStorage.shared.finishSession(id: sessionId)
-
-        // Load segments from DB (source of truth for crash recovery)
-        let dbSegments = try await TranscriptionStorage.shared.getSegments(sessionId: sessionId)
-        if !dbSegments.isEmpty {
-          // Convert DB segments to SpeakerSegment format
-          segmentsToUpload = dbSegments.map { dbSeg in
-            SpeakerSegment(
-              speaker: dbSeg.speaker,
-              text: dbSeg.text,
-              start: dbSeg.startTime,
-              end: dbSeg.endTime
-            )
-          }
-          log("Transcription: Loaded \(segmentsToUpload.count) segments from DB")
-        }
-      } catch {
-        logError("Transcription: Failed to load segments from DB, using in-memory", error: error)
-        // Fall through to use in-memory segments
+      // Convert backend segment to local SpeakerSegment
+      let translations = (segment.translations ?? []).map {
+        SegmentTranslation(lang: $0.lang, text: $0.text)
       }
-    }
-
-    guard !segmentsToUpload.isEmpty else {
-      log("Transcription: No segments to save")
-      // Clean up empty session
-      if let sessionId = sessionId {
-        try? await TranscriptionStorage.shared.deleteSession(id: sessionId)
-      }
-      return .discarded
-    }
-
-    log("Transcription: Finalizing conversation with \(segmentsToUpload.count) segments")
-
-    // Convert SpeakerSegment to API request format (include person_id from live naming)
-    let speakerPersonMap = liveSpeakerPersonMap
-    let apiSegments = segmentsToUpload.map { segment in
-      APIClient.TranscriptSegmentRequest(
+      let newSeg = SpeakerSegment(
+        segmentId: segment.id,
+        speaker: speakerId,
         text: segment.text,
-        speaker: "SPEAKER_\(String(format: "%02d", segment.speaker))",
-        speakerId: segment.speaker,
-        isUser: segment.speaker == 0,  // Assume speaker 0 is the user
-        personId: speakerPersonMap[segment.speaker],
         start: segment.start,
-        end: segment.end
-      )
-    }
-
-    // Mark session as uploading
-    if let sessionId = sessionId {
-      try? await TranscriptionStorage.shared.markSessionUploading(id: sessionId)
-    }
-
-    do {
-      let response = try await APIClient.shared.createConversationFromSegments(
-        segments: apiSegments,
-        startedAt: startTime,
-        finishedAt: endTime,
-        source: currentConversationSource,
-        inputDeviceName: recordingInputDeviceName
-      )
-      log(
-        "Transcription: Conversation saved - id=\(response.id), status=\(response.status), discarded=\(response.discarded), source=\(currentConversationSource.rawValue), device=\(recordingInputDeviceName ?? "Unknown")"
+        end: segment.end,
+        isUser: segment.is_user,
+        personId: segment.person_id,
+        translations: translations
       )
 
-      // Mark session as completed in DB
-      if let sessionId = sessionId {
-        do {
-          try await TranscriptionStorage.shared.markSessionCompleted(
-            id: sessionId, backendId: response.id)
-        } catch {
-          logError(
-            "Transcription: Failed to mark session \(sessionId) as completed (backendId: \(response.id))",
-            error: error)
-          // Session is stuck in 'uploading' state — mark as failed so retry service can recover it
-          try? await TranscriptionStorage.shared.markSessionFailed(
-            id: sessionId, error: "markSessionCompleted failed: \(error.localizedDescription)")
-        }
-      }
-
-      if response.discarded {
-        return .discarded
-      }
-
-      // Track successful conversation creation in analytics (Mixpanel + PostHog)
-      let durationSeconds = Int(endTime.timeIntervalSince(startTime))
-      AnalyticsManager.shared.conversationCreated(
-        conversationId: response.id,
-        source: currentConversationSource.rawValue,
-        durationSeconds: durationSeconds
-      )
-
-      // Fire-and-forget: extract goal progress from conversation transcript
-      let transcriptText = segmentsToUpload.map { $0.text }.joined(separator: " ")
-      if transcriptText.count >= 10 {
-        Task.detached(priority: .background) {
-          await GoalsAIService.shared.extractProgressFromAllGoals(text: transcriptText)
-        }
-      }
-
-      // Check daily goal generation
-      Task { @MainActor in
-        GoalGenerationService.shared.onConversationCreated()
-      }
-
-      return .saved
-    } catch {
-      logError("Transcription: Failed to save conversation", error: error)
-      // Error event deferred to TranscriptionRetryService after all retries are exhausted
-
-      // Mark session as failed in DB for later retry
-      if let sessionId = sessionId {
-        try? await TranscriptionStorage.shared.markSessionFailed(
-          id: sessionId, error: error.localizedDescription)
-      }
-
-      return .error(error.localizedDescription)
-    }
-  }
-
-  // MARK: - Batch Transcription
-
-  /// Transcribe a completed speech chunk from VAD batch mode.
-  /// Offsets word timestamps to session-relative time, then feeds through handleTranscriptSegment.
-  private func batchTranscribeChunk(audioBuffer: Data, wallStartTime: Double) async {
-    let offsetSec = wallStartTime - recordingStartCATime
-    let effectiveLanguage = AssistantSettings.shared.effectiveTranscriptionLanguage
-    let vocabulary = AssistantSettings.shared.effectiveVocabulary
-
-    do {
-      let segments = try await TranscriptionService.batchTranscribeFull(
-        audioData: audioBuffer,
-        language: effectiveLanguage,
-        vocabulary: vocabulary
-      )
-
-      for segment in segments {
-        // Offset all word timestamps by the chunk's start time relative to recording start
-        let offsetWords = segment.words.map { word in
-          TranscriptionService.TranscriptSegment.Word(
-            word: word.word,
-            start: word.start + offsetSec,
-            end: word.end + offsetSec,
-            confidence: word.confidence,
-            speaker: word.speaker,
-            punctuatedWord: word.punctuatedWord
-          )
-        }
-
-        let offsetSegment = TranscriptionService.TranscriptSegment(
-          text: segment.text,
-          isFinal: true,
-          speechFinal: true,
-          confidence: segment.confidence,
-          words: offsetWords,
-          channelIndex: segment.channelIndex
-        )
-
-        handleTranscriptSegment(offsetSegment)
-      }
-    } catch {
-      logError("Transcription: Batch transcribe chunk failed", error: error)
-    }
-  }
-
-  /// Handle incoming transcript segment with speaker diarization
-  /// Uses channel index for primary speaker attribution:
-  ///   - Channel 0 = microphone = user (speaker 0)
-  ///   - Channel 1 = system audio = others (speaker 1+)
-  private func handleTranscriptSegment(_ segment: TranscriptionService.TranscriptSegment) {
-    // Only process final segments (speechFinal or isFinal)
-    guard segment.speechFinal || segment.isFinal else { return }
-
-    // Determine speaker based on channel index
-    // Channel 0 = mic = user (speaker 0)
-    // Channel 1 = system audio = others (speaker 1+)
-    let channelBasedSpeaker = segment.channelIndex == 0 ? 0 : 1
-
-    // Process words and merge by speaker
-    // If VAD gate is active (streaming mode only), remap Deepgram timestamps to wall-clock time
-    // In batch mode, timestamps are already session-relative after offsetting in batchTranscribeChunk
-    let words: [TranscriptionService.TranscriptSegment.Word]
-    if !useBatchTranscription, let gate = vadGateService {
-      words = segment.words.map { word in
-        let (remappedStart, remappedEnd) = gate.remapTimestamp(start: word.start, end: word.end)
-        return TranscriptionService.TranscriptSegment.Word(
-          word: word.word,
-          start: remappedStart,
-          end: remappedEnd,
-          confidence: word.confidence,
-          speaker: word.speaker,
-          punctuatedWord: word.punctuatedWord
-        )
-      }
-    } else {
-      words = segment.words
-    }
-    guard !words.isEmpty else {
-      // Fallback: no words, just append text with channel-based speaker
-      if segment.speechFinal && !segment.text.isEmpty {
-        appendToTranscript(segment.text)
-        log(
-          "Transcript [FINAL no words] Ch\(segment.channelIndex) Speaker \(channelBasedSpeaker): \(segment.text)"
-        )
-      }
-      return
-    }
-
-    // Word-to-segment aggregation: merge consecutive words from same speaker
-    // For channel 1 (system audio), use diarization speaker ID + 1 to distinguish multiple remote speakers
-    var newSegments: [SpeakerSegment] = []
-    for word in words {
-      // Speaker assignment:
-      // - Channel 0 (mic): Always speaker 0 (user)
-      // - Channel 1 (system): Use diarization speaker + 1, or default to 1
-      let speaker: Int
-      if segment.channelIndex == 0 {
-        speaker = 0  // Mic is always user
-      } else {
-        // System audio: offset diarization speakers by 1
-        // This allows distinguishing multiple remote speakers (1, 2, 3, etc.)
-        speaker = (word.speaker ?? 0) + 1
-      }
-
-      if let last = newSegments.last, last.speaker == speaker {
-        // Same speaker - append word to existing segment
-        newSegments[newSegments.count - 1].text += " " + word.punctuatedWord
-        newSegments[newSegments.count - 1].end = word.end
-      } else {
-        // Different speaker - create new segment
-        newSegments.append(
-          SpeakerSegment(
-            speaker: speaker,
-            text: word.punctuatedWord,
-            start: word.start,
-            end: word.end
-          ))
-      }
-    }
-
-    // Log new segments from this chunk
-    for seg in newSegments {
-      let channelLabel = segment.channelIndex == 0 ? "mic" : "sys"
-      log(
-        "Transcript [NEW] Ch\(segment.channelIndex)(\(channelLabel)) Speaker \(seg.speaker) [\(String(format: "%.1f", seg.start))s-\(String(format: "%.1f", seg.end))s]: \(seg.text)"
-      )
-    }
-
-    // Gap-based merging: combine with existing segments if same speaker and gap < 3 seconds
-    for newSeg in newSegments {
-      // Track word count incrementally
-      totalWordCount += newSeg.text.split(separator: " ").count
-
-      if let lastIdx = speakerSegments.indices.last,
-        speakerSegments[lastIdx].speaker == newSeg.speaker,
-        newSeg.start - speakerSegments[lastIdx].end < 3.0
+      // Upsert: if we already have a segment with this ID, update it; otherwise append
+      if let segId = segment.id,
+        let existingIdx = speakerSegments.firstIndex(where: { $0.segmentId == segId })
       {
-        // Same speaker and gap < 3s - merge
-        let gap = newSeg.start - speakerSegments[lastIdx].end
-        log(
-          "Transcript [MERGE] Speaker \(newSeg.speaker) gap=\(String(format: "%.2f", gap))s: merging into existing segment"
-        )
-        speakerSegments[lastIdx].text += " " + newSeg.text
-        speakerSegments[lastIdx].end = newSeg.end
-      } else {
-        // Different speaker or gap >= 3s - add as new segment
-        if let lastIdx = speakerSegments.indices.last {
-          let gap = newSeg.start - speakerSegments[lastIdx].end
-          log(
-            "Transcript [ADD] Speaker \(newSeg.speaker) gap=\(String(format: "%.2f", gap))s: new segment (different speaker or gap >= 3s)"
-          )
-        } else {
-          log("Transcript [ADD] Speaker \(newSeg.speaker): first segment")
+        // Adjust word count: subtract old words, add new words
+        let oldWords = speakerSegments[existingIdx].text.split(separator: " ").count
+        totalWordCount += newSeg.text.split(separator: " ").count - oldWords
+        // Preserve existing translations if the backend didn't send new ones
+        var updatedSeg = newSeg
+        if translations.isEmpty && !speakerSegments[existingIdx].translations.isEmpty {
+          updatedSeg.translations = speakerSegments[existingIdx].translations
         }
+        speakerSegments[existingIdx] = updatedSeg
+        log(
+          "Transcript [UPDATE] Speaker \(speakerId) [\(String(format: "%.1f", segment.start))s-\(String(format: "%.1f", segment.end))s]: \(segment.text.prefix(80))"
+        )
+      } else {
+        totalWordCount += newSeg.text.split(separator: " ").count
         speakerSegments.append(newSeg)
         totalSegmentCount += 1
+        log(
+          "Transcript [ADD] Speaker \(speakerId) [\(String(format: "%.1f", segment.start))s-\(String(format: "%.1f", segment.end))s]: \(segment.text.prefix(80))"
+        )
       }
     }
 
@@ -2468,51 +2378,217 @@ class AppState: ObservableObject {
       speakerSegments.removeFirst(excess)
     }
 
-    // Log current segments summary (only last 5 segments when count > 20 to avoid log spam)
     log(
       "Transcript [SEGMENTS] Total: \(totalSegmentCount) segments (in-memory: \(speakerSegments.count))"
     )
-    let logSegments =
-      speakerSegments.count > 20
-      ? Array(speakerSegments.suffix(5))
-      : speakerSegments
-    let startIdx = speakerSegments.count > 20 ? speakerSegments.count - 5 : 0
-    if speakerSegments.count > 20 {
-      log("  ... (\(speakerSegments.count - 5) earlier segments omitted)")
-    }
-    for (offset, seg) in logSegments.enumerated() {
-      let i = startIdx + offset
-      let speakerLabel = seg.speaker == 0 ? "user" : "other"
-      log(
-        "  [\(i)] Speaker \(seg.speaker)(\(speakerLabel)) [\(String(format: "%.1f", seg.start))s-\(String(format: "%.1f", seg.end))s]: \(seg.text)"
-      )
-    }
 
     // Update published segments for UI (via isolated monitor)
     LiveTranscriptMonitor.shared.updateSegments(speakerSegments)
 
-    // Update display transcript
-    updateTranscriptDisplay()
-
-    // Persist new segments to DB for crash safety
+    // Persist segments to DB for crash safety (upsert by backend segment ID)
     if let sessionId = currentSessionId {
       Task {
-        for newSeg in newSegments {
+        for segment in segments {
+          guard !segment.text.isEmpty else { continue }
+          let speakerId = segment.speaker_id ?? 0
+          var translationsJson: String?
+          if let translations = segment.translations, !translations.isEmpty {
+            let mapped = translations.map { TranscriptTranslation(lang: $0.lang, text: $0.text) }
+            if let data = try? JSONEncoder().encode(mapped) {
+              translationsJson = String(data: data, encoding: .utf8)
+            }
+          }
           do {
-            try await TranscriptionStorage.shared.appendSegment(
+            try await TranscriptionStorage.shared.upsertSegment(
               sessionId: sessionId,
-              speaker: newSeg.speaker,
-              text: newSeg.text,
-              startTime: newSeg.start,
-              endTime: newSeg.end
+              backendSegmentId: segment.id,
+              speaker: speakerId,
+              text: segment.text,
+              startTime: segment.start,
+              endTime: segment.end,
+              isUser: segment.is_user,
+              personId: segment.person_id,
+              speakerLabel: segment.speaker,
+              translationsJson: translationsJson
             )
           } catch {
             logError("Transcription: Failed to persist segment to DB", error: error)
             await RewindDatabase.shared.reportQueryError(error)
-            // Non-fatal - continue recording
           }
         }
       }
+    }
+  }
+
+  /// Handle message events from Python backend `/v4/listen`
+  private func handleListenEvent(_ event: TranscriptionService.ListenEvent) {
+    switch event.type {
+    case "service_status":
+      let status = event.raw["status"] as? String ?? "unknown"
+      log("Transcription: Backend service status: \(status)")
+
+    case "memory_processing_started":
+      // ConversationEvent: conversation is nested under "memory"
+      let memory = event.raw["memory"] as? [String: Any]
+      let processingId = memory?["id"] as? String ?? "?"
+      log("Transcription: Backend started processing conversation: \(processingId)")
+      isSavingConversation = true
+
+    case "memory_created":
+      // ConversationEvent: conversation is nested under "memory"
+      let memory = event.raw["memory"] as? [String: Any]
+      let memoryId = memory?["id"] as? String ?? "?"
+      log("Transcription: Backend created conversation: \(memoryId)")
+      isSavingConversation = false
+
+      // Mark DB session as completed so TranscriptionRetryService won't re-upload.
+      // Use finishedSessionId (captured before session rotation) to avoid race with finishConversation().
+      let targetSessionId = finishedSessionId ?? currentSessionId
+      let targetStartTime = finishedRecordingStartTime ?? recordingStartTime
+      if let sessionId = targetSessionId, memoryId != "?" {
+        finishedSessionId = nil  // Consume once
+        finishedRecordingStartTime = nil
+        Task {
+          do {
+            try await TranscriptionStorage.shared.markSessionCompleted(
+              id: sessionId, backendId: memoryId)
+            log("Transcription: Marked DB session \(sessionId) completed (backend: \(memoryId))")
+          } catch {
+            logError(
+              "Transcription: Failed to mark DB session \(sessionId) completed", error: error)
+          }
+        }
+      }
+
+      // Track conversation creation — use captured start time for accurate duration after session rotation
+      if let startTime = targetStartTime {
+        let durationSeconds = Int(Date().timeIntervalSince(startTime))
+        AnalyticsManager.shared.conversationCreated(
+          conversationId: memoryId,
+          source: currentConversationSource.rawValue,
+          durationSeconds: durationSeconds
+        )
+      }
+
+      // Check daily goal generation
+      GoalGenerationService.shared.onConversationCreated()
+
+      // Refresh conversations list
+      Task {
+        await loadConversations()
+      }
+
+    case "speaker_label_suggestion":
+      let speakerId = event.raw["speaker_id"] as? Int ?? 0
+      let personId = event.raw["person_id"] as? String
+      let personName = event.raw["person_name"] as? String ?? "Unknown"
+      log(
+        "Transcription: Speaker \(speakerId) identified as \(personName) (person_id: \(personId ?? "nil"))"
+      )
+      // Update live speaker-person mapping
+      if let personId = personId {
+        liveSpeakerPersonMap[speakerId] = personId
+      }
+
+    case "segments_deleted":
+      if let segmentIds = event.raw["segment_ids"] as? [String] {
+        log("Transcription: Backend deleted \(segmentIds.count) segments")
+        // Decrement counters for deleted segments
+        let deletedSegments = speakerSegments.filter { seg in
+          guard let segId = seg.segmentId else { return false }
+          return segmentIds.contains(segId)
+        }
+        let deletedWords = deletedSegments.reduce(0) { $0 + $1.text.split(separator: " ").count }
+        totalWordCount = max(0, totalWordCount - deletedWords)
+        totalSegmentCount = max(0, totalSegmentCount - deletedSegments.count)
+
+        speakerSegments.removeAll { seg in
+          guard let segId = seg.segmentId else { return false }
+          return segmentIds.contains(segId)
+        }
+        LiveTranscriptMonitor.shared.updateSegments(speakerSegments)
+
+        // Also remove from DB
+        if let sessionId = currentSessionId {
+          Task {
+            do {
+              try await TranscriptionStorage.shared.deleteSegmentsByBackendIds(
+                sessionId: sessionId, segmentIds: segmentIds)
+            } catch {
+              logError("Transcription: Failed to delete segments from DB", error: error)
+            }
+          }
+        }
+      }
+
+    case "freemium_threshold_reached":
+      let remaining = event.raw["remaining_seconds"] as? Int ?? 0
+      log("Transcription: Freemium threshold reached, \(remaining)s remaining")
+      triggerUsageLimitPopup(reason: "transcription")
+
+    case "translating":
+      if let segmentsArray = event.raw["segments"] as? [[String: Any]] {
+        do {
+          let data = try JSONSerialization.data(withJSONObject: segmentsArray)
+          let translatedSegments = try JSONDecoder().decode(
+            [TranscriptionService.BackendSegment].self, from: data)
+          log("Transcription: Translation event with \(translatedSegments.count) segments")
+          for translated in translatedSegments {
+            guard let segId = translated.id else { continue }
+            let newTranslations = (translated.translations ?? []).map {
+              SegmentTranslation(lang: $0.lang, text: $0.text)
+            }
+            guard !newTranslations.isEmpty else { continue }
+
+            // Update in-memory if the segment is still loaded
+            if let idx = speakerSegments.firstIndex(where: { $0.segmentId == segId }) {
+              speakerSegments[idx].translations = newTranslations
+            }
+
+            // Always persist to SQLite — even if the segment was trimmed from
+            // the in-memory window, the event payload has all fields needed
+            if let sessionId = currentSessionId {
+              let mapped = newTranslations.map { TranscriptTranslation(lang: $0.lang, text: $0.text) }
+              var translationsJson: String?
+              if let jsonData = try? JSONEncoder().encode(mapped) {
+                translationsJson = String(data: jsonData, encoding: .utf8)
+              }
+              Task {
+                try? await TranscriptionStorage.shared.upsertSegment(
+                  sessionId: sessionId,
+                  backendSegmentId: segId,
+                  speaker: translated.speaker_id ?? 0,
+                  text: translated.text,
+                  startTime: translated.start,
+                  endTime: translated.end,
+                  isUser: translated.is_user,
+                  personId: translated.person_id,
+                  speakerLabel: translated.speaker,
+                  translationsJson: translationsJson
+                )
+              }
+            }
+          }
+          LiveTranscriptMonitor.shared.updateSegments(speakerSegments)
+        } catch {
+          logError("Transcription: Failed to parse translation event", error: error)
+        }
+      } else {
+        log("Transcription: Translation event received (no segments)")
+      }
+
+    case "last_memory":
+      let memoryId = event.raw["memory_id"] as? String ?? "?"
+      log("Transcription: Last conversation event: \(memoryId)")
+
+    case "photo_processing":
+      log("Transcription: Photo processing event (not used on desktop)")
+
+    case "photo_described":
+      log("Transcription: Photo described event (not used on desktop)")
+
+    default:
+      log("Transcription: Unhandled event type: \(event.type)")
     }
   }
 
@@ -2964,6 +3040,10 @@ extension Notification.Name {
   static let screenCapturePermissionLost = Notification.Name("screenCapturePermissionLost")
   /// Posted when ScreenCaptureKit is broken (TCC granted but SCK declined)
   static let screenCaptureKitBroken = Notification.Name("screenCaptureKitBroken")
+  /// Posted to show the "Try asking" popup centered over the full window
+  static let showTryAskingPopup = Notification.Name("showTryAskingPopup")
+  /// Posted to show the over-usage-limit popup. userInfo["reason"] = "transcription" | "chat" | "floating_bar".
+  static let showUsageLimitPopup = Notification.Name("showUsageLimitPopup")
   /// Posted to navigate to Rewind settings
   static let navigateToRewindSettings = Notification.Name("navigateToRewindSettings")
   /// Posted to navigate to Rewind page (global hotkey: Cmd+Option+R)
@@ -2991,7 +3071,7 @@ extension Notification.Name {
   /// Posted when Focus page finishes loading initial data
   static let focusPageDidLoad = Notification.Name("focusPageDidLoad")
   /// Posted when Advice page finishes loading initial data
-  static let advicePageDidLoad = Notification.Name("advicePageDidLoad")
+  static let insightPageDidLoad = Notification.Name("insightPageDidLoad")
   /// Posted when Apps page finishes loading initial data
   static let appsPageDidLoad = Notification.Name("appsPageDidLoad")
   /// Posted when a goal is auto-created by GoalGenerationService
@@ -3003,9 +3083,17 @@ extension Notification.Name {
   static let navigateToTasks = Notification.Name("navigateToTasks")
   /// Posted by keyboard shortcuts to navigate sidebar. userInfo: ["rawValue": Int]
   static let navigateToSidebarItem = Notification.Name("navigateToSidebarItem")
+  /// Posted by Cmd+R to refresh all data (conversations, chat, tasks, memories)
+  static let refreshAllData = Notification.Name("refreshAllData")
   /// Posted by the local desktop automation bridge to request semantic navigation.
   static let desktopAutomationNavigateRequested = Notification.Name(
     "desktopAutomationNavigateRequested")
+  /// Posted by the local desktop automation bridge to open a specific conversation detail.
+  static let desktopAutomationOpenConversationRequested = Notification.Name(
+    "desktopAutomationOpenConversationRequested")
+  /// Posted by the local desktop automation bridge to expand the transcript drawer.
+  static let desktopAutomationShowConversationTranscriptRequested = Notification.Name(
+    "desktopAutomationShowConversationTranscriptRequested")
   /// Posted when file indexing completes (userInfo: ["totalFiles": Int])
   static let fileIndexingComplete = Notification.Name("fileIndexingComplete")
   /// Posted from Settings to trigger the file indexing sheet

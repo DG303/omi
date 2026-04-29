@@ -72,14 +72,14 @@ class SettingsSyncManager {
             if let v = task.browserKeywords { TaskAssistantSettings.shared.browserKeywords = v }
         }
 
-        // Advice settings
-        if let advice = remote.advice {
-            if let v = advice.enabled { AdviceAssistantSettings.shared.isEnabled = v }
-            if let v = advice.analysisPrompt { AdviceAssistantSettings.shared.analysisPrompt = v }
-            if let v = advice.extractionInterval { AdviceAssistantSettings.shared.extractionInterval = v }
-            if let v = advice.minConfidence { AdviceAssistantSettings.shared.minConfidence = v }
-            if let v = advice.notificationsEnabled { AdviceAssistantSettings.shared.notificationsEnabled = v }
-            if let v = advice.excludedApps { AdviceAssistantSettings.shared.excludedApps = Set(v) }
+        // Insight settings
+        if let insight = remote.insight {
+            if let v = insight.enabled { InsightAssistantSettings.shared.isEnabled = v }
+            if let v = insight.analysisPrompt { InsightAssistantSettings.shared.analysisPrompt = v }
+            if let v = insight.extractionInterval { InsightAssistantSettings.shared.extractionInterval = v }
+            if let v = insight.minConfidence { InsightAssistantSettings.shared.minConfidence = v }
+            if let v = insight.notificationsEnabled { InsightAssistantSettings.shared.notificationsEnabled = v }
+            if let v = insight.excludedApps { InsightAssistantSettings.shared.excludedApps = Set(v) }
         }
 
         // Memory settings
@@ -90,6 +90,21 @@ class SettingsSyncManager {
             if let v = memory.minConfidence { MemoryAssistantSettings.shared.minConfidence = v }
             if let v = memory.notificationsEnabled { MemoryAssistantSettings.shared.notificationsEnabled = v }
             if let v = memory.excludedApps { MemoryAssistantSettings.shared.excludedApps = Set(v) }
+        }
+
+        if let floatingBar = remote.floatingBar {
+            if let v = floatingBar.voiceAnswersEnabled {
+                ShortcutSettings.shared.floatingBarVoiceAnswersEnabled = v
+            }
+            UserDefaults.standard.removeObject(forKey: FloatingBarVoicePlaybackService.devVoiceIDDefaultsKey)
+            if let v = floatingBar.elevenLabsVoiceID?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !v.isEmpty {
+                pushPartialUpdate(
+                    AssistantSettingsResponse(
+                        floatingBar: FloatingBarSettingsResponse(elevenLabsVoiceID: "")
+                    )
+                )
+            }
         }
 
         // Update channel (server-authoritative override)
@@ -130,13 +145,13 @@ class SettingsSyncManager {
             browserKeywords: TaskAssistantSettings.shared.browserKeywords
         )
 
-        let advice = AdviceSettingsResponse(
-            enabled: AdviceAssistantSettings.shared.isEnabled,
-            analysisPrompt: AdviceAssistantSettings.shared.analysisPrompt,
-            extractionInterval: AdviceAssistantSettings.shared.extractionInterval,
-            minConfidence: AdviceAssistantSettings.shared.minConfidence,
-            notificationsEnabled: AdviceAssistantSettings.shared.notificationsEnabled,
-            excludedApps: Array(AdviceAssistantSettings.shared.excludedApps)
+        let insight = InsightSettingsResponse(
+            enabled: InsightAssistantSettings.shared.isEnabled,
+            analysisPrompt: InsightAssistantSettings.shared.analysisPrompt,
+            extractionInterval: InsightAssistantSettings.shared.extractionInterval,
+            minConfidence: InsightAssistantSettings.shared.minConfidence,
+            notificationsEnabled: InsightAssistantSettings.shared.notificationsEnabled,
+            excludedApps: Array(InsightAssistantSettings.shared.excludedApps)
         )
 
         let memory = MemorySettingsResponse(
@@ -148,12 +163,18 @@ class SettingsSyncManager {
             excludedApps: Array(MemoryAssistantSettings.shared.excludedApps)
         )
 
+        let floatingBar = FloatingBarSettingsResponse(
+            voiceAnswersEnabled: ShortcutSettings.shared.floatingBarVoiceAnswersEnabled,
+            elevenLabsVoiceID: ""
+        )
+
         return AssistantSettingsResponse(
             shared: shared,
             focus: focus,
             task: task,
-            advice: advice,
+            insight: insight,
             memory: memory,
+            floatingBar: floatingBar,
             updateChannel: UpdaterViewModel.shared.updateChannel.rawValue
         )
     }

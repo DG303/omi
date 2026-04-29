@@ -5,11 +5,104 @@ from google.cloud import firestore
 from google.cloud.firestore_v1 import FieldFilter, transactional
 
 from ._client import db, document_id_from_seed
+from database.redis_db import try_acquire_user_platform_write_lock
 from models.users import Subscription, PlanLimits, PlanType, SubscriptionStatus
 from utils.subscription import get_default_basic_subscription
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+# Industry-standard two-field pattern (Mixpanel / Amplitude / PostHog):
+#   signup_platform       — set once at account creation, immutable
+#   last_active_platform  — overwritten on every authenticated request
+#   platforms_used        — array union of every platform the user has ever
+#                           authenticated from (for cross-platform segmentation)
+#
+# We normalize the raw header into a coarse `desktop | mobile` bucket, matching
+# the profitability dashboard splits, and preserve the granular value
+# (`ios`/`android`/`macos`) in `last_active_os` for finer drill-down.
+_PLATFORM_ALIASES = {
+    'macos': 'desktop',
+    'mac': 'desktop',
+    'mac os x': 'desktop',
+    'desktop': 'desktop',
+    'ios': 'mobile',
+    'iphone os': 'mobile',
+    'android': 'mobile',
+    'mobile': 'mobile',
+    'web': 'web',
+    'browser': 'web',
+}
+
+
+def _normalize_platform(raw: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """Return (coarse_platform, os_value) for a raw `X-App-Platform` header.
+
+    `coarse_platform` is one of 'desktop' / 'mobile' (None if unrecognized).
+    `os_value` is the normalized OS string preserved for drill-down.
+    """
+    if not raw or not isinstance(raw, str):
+        return None, None
+    os_value = raw.strip().lower()
+    if not os_value:
+        return None, None
+    coarse = _PLATFORM_ALIASES.get(os_value)
+    return coarse, os_value
+
+
+def record_user_platform(uid: str, raw_platform: Optional[str]) -> None:
+    """Write the user-platform fields from an `X-App-Platform` header value.
+
+    Called on every authenticated request. Throttled to one Firestore write
+    per (uid, coarse_platform) every 10 minutes via Redis so chatty endpoints
+    don't hot-spot the user doc. Fail-open: any error is logged and swallowed
+    because this is a telemetry side-effect, not a request-correctness path.
+
+    - `signup_platform` is set once via `Firestore.ArrayUnion` semantics:
+      we read the doc and only write it if it's not already present.
+    - `last_active_platform` / `last_active_os` / `last_active_at` are
+      overwritten every throttle-window.
+    - `platforms_used` accumulates via `firestore.ArrayUnion`.
+    """
+    coarse, os_value = _normalize_platform(raw_platform)
+    if not coarse:
+        return
+
+    try:
+        if not try_acquire_user_platform_write_lock(uid, coarse):
+            return
+
+        now = datetime.now(timezone.utc)
+        user_ref = db.collection('users').document(uid)
+
+        updates = {
+            'last_active_platform': coarse,
+            'last_active_os': os_value,
+            'last_active_at': now,
+            f'last_active_at_{coarse}': now,
+            'platforms_used': firestore.ArrayUnion([coarse]),
+        }
+
+        # `signup_platform` is set_once. Read the doc (single read) and only
+        # include the field in the write if it's not already present. Cheaper
+        # than a transaction for a field that almost never changes.
+        snapshot = user_ref.get()
+        if snapshot.exists:
+            data = snapshot.to_dict() or {}
+            if not data.get('signup_platform'):
+                updates['signup_platform'] = coarse
+                updates['signup_os'] = os_value
+                updates['signup_platform_at'] = data.get('created_at') or now
+        else:
+            # First-ever auth'd request for this uid — treat as sign-up.
+            updates['signup_platform'] = coarse
+            updates['signup_os'] = os_value
+            updates['signup_platform_at'] = now
+
+        user_ref.set(updates, merge=True)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("record_user_platform failed for uid=%s: %s", uid, e)
 
 
 def is_exists_user(uid: str):
@@ -50,6 +143,88 @@ def set_user_private_cloud_sync_enabled(uid: str, value: bool):
     """Enable or disable private cloud sync for a user."""
     user_ref = db.collection('users').document(uid)
     user_ref.update({'private_cloud_sync_enabled': value})
+
+
+def set_user_cancellation_feedback(uid: str, reason: str, reason_details: Optional[str] = None):
+    user_ref = db.collection('users').document(uid)
+    user_ref.set(
+        {
+            'cancellation_feedback': {
+                'reason': reason,
+                'reason_details': reason_details or '',
+                'timestamp': datetime.now(timezone.utc),
+            }
+        },
+        merge=True,
+    )
+
+
+# BYOK (Bring Your Own Keys) — free-plan flag.
+# We never store keys themselves; only SHA-256 fingerprints so we can detect
+# rotation. `active` is the subscription-bypass gate.
+
+BYOK_HEARTBEAT_TTL_SECONDS = 7 * 24 * 60 * 60  # 7 days
+
+
+def get_byok_state(uid: str) -> dict:
+    user_ref = db.collection('users').document(uid)
+    data = user_ref.get().to_dict() or {}
+    return data.get('byok', {})
+
+
+def is_byok_active(uid: str) -> bool:
+    """True if user has a live BYOK activation (heartbeat within TTL)."""
+    state = get_byok_state(uid)
+    if not state.get('active'):
+        return False
+    last_seen = state.get('last_seen_at')
+    if not last_seen:
+        return False
+    if isinstance(last_seen, datetime):
+        age = (datetime.now(timezone.utc) - last_seen).total_seconds()
+    else:
+        return False
+    return age <= BYOK_HEARTBEAT_TTL_SECONDS
+
+
+def set_byok_active(uid: str, fingerprints: dict):
+    user_ref = db.collection('users').document(uid)
+    user_ref.set(
+        {
+            'byok': {
+                'active': True,
+                'fingerprints': fingerprints,
+                'last_seen_at': datetime.now(timezone.utc),
+            }
+        },
+        merge=True,
+    )
+
+
+def clear_byok_active(uid: str):
+    user_ref = db.collection('users').document(uid)
+    user_ref.set(
+        {
+            'byok': {
+                'active': False,
+                'fingerprints': {},
+                'last_seen_at': datetime.now(timezone.utc),
+            }
+        },
+        merge=True,
+    )
+
+
+def set_user_deletion_feedback(uid: str, reason: Optional[str], reason_details: Optional[str] = None):
+    # Stored in a top-level collection so it survives the user record being deleted.
+    db.collection('account_deletions').document(uid).set(
+        {
+            'uid': uid,
+            'reason': reason or '',
+            'reason_details': reason_details or '',
+            'timestamp': datetime.now(timezone.utc),
+        }
+    )
 
 
 def create_person(uid: str, data: dict):
@@ -235,6 +410,27 @@ def remove_person_speech_sample(uid: str, person_id: str, sample_path: str) -> b
         }
     )
     return True
+
+
+def set_user_speaker_embedding(uid: str, embedding: list) -> bool:
+    """Store speaker embedding for the user's own voice on their user document."""
+    user_ref = db.collection('users').document(uid)
+    user_ref.update(
+        {
+            'speaker_embedding': embedding,
+            'speaker_embedding_updated_at': datetime.now(timezone.utc),
+        }
+    )
+    return True
+
+
+def get_user_speaker_embedding(uid: str) -> Optional[list]:
+    """Get the user's own speaker embedding from their user document."""
+    user_ref = db.collection('users').document(uid)
+    user_doc = user_ref.get()
+    if not user_doc.exists:
+        return None
+    return user_doc.to_dict().get('speaker_embedding')
 
 
 def set_person_speaker_embedding(uid: str, person_id: str, embedding: list) -> bool:
@@ -427,38 +623,40 @@ def update_person_speech_samples_version(uid: str, person_id: str, version: int)
     return True
 
 
+def _delete_collection_recursive(collection_ref, batch_size: int = 450):
+    """Delete every document under a collection, descending into nested subcollections first."""
+    while True:
+        docs = list(collection_ref.limit(batch_size).stream())
+        if not docs:
+            return
+
+        for doc in docs:
+            for sub in doc.reference.collections():
+                _delete_collection_recursive(sub, batch_size)
+
+        batch = db.batch()
+        for doc in docs:
+            batch.delete(doc.reference)
+        batch.commit()
+
+        if len(docs) < batch_size:
+            return
+
+
 def delete_user_data(uid: str):
     user_ref = db.collection('users').document(uid)
     if not user_ref.get().exists:
         return {'status': 'error', 'message': 'User not found'}
 
-    subcollections_to_delete = ['conversations', 'messages', 'chat_sessions', 'people', 'memories', 'files']
-    batch_size = 450
+    # Enumerate subcollections live instead of hardcoding a list — picks up
+    # everything the user has written (conversations, memories, action_items,
+    # folders, goals, integrations, task_integrations, fcm_tokens, fair_use_*,
+    # hourly_usage, meetings, screen_activity, files, people, chat_sessions,
+    # messages, and any future additions).
+    for sub in user_ref.collections():
+        logger.info(f"Deleting subcollection {sub.id} for user {uid}")
+        _delete_collection_recursive(sub)
 
-    for cname in subcollections_to_delete:
-        logger.info(f"Deleting subcollection: {cname} for user {uid}")
-        collection_ref = user_ref.collection(cname)
-
-        while True:
-            docs_query = collection_ref.limit(batch_size)
-            docs = list(docs_query.stream())
-
-            if not docs:
-                # docs might not exists, try using {parent path / id}
-                logger.info(f"No more documents to delete in {collection_ref.parent.path}/{collection_ref.id}")
-                break
-
-            batch = db.batch()
-            for doc in docs:
-                logger.info(f"Deleting document: {doc.reference.path}")
-                batch.delete(doc.reference)
-            batch.commit()
-
-            if len(docs) < batch_size:
-                logger.info(f"Processed all documents in {collection_ref.path}")
-                break
-
-    # delete the user document itself
     logger.info(f"Deleting user document: {uid}")
     user_ref.delete()
     return {'status': 'ok', 'message': 'Account deleted successfully'}
@@ -497,7 +695,9 @@ def get_all_ratings(rating_type: str = 'memory_summary'):
     return [rating.to_dict() for rating in ratings]
 
 
-def set_chat_message_rating_score(uid: str, message_id: str, value: int, reason: str = None):
+def set_chat_message_rating_score(
+    uid: str, message_id: str, value: int, reason: str = None, platform: str = None, app_version: str = None
+):
     """
     Store chat message rating/feedback.
 
@@ -507,6 +707,8 @@ def set_chat_message_rating_score(uid: str, message_id: str, value: int, reason:
         value: Rating value (1 = thumbs up, -1 = thumbs down, 0 = neutral/removed)
         reason: Optional reason for thumbs down (e.g. 'too_verbose', 'incorrect_or_hallucination',
                 'not_helpful_or_irrelevant', 'didnt_follow_instructions', 'other')
+        platform: 'desktop' or 'mobile' — identifies where the rating came from
+        app_version: App version string (e.g. '0.11.276') — maps to a specific prompt version
     """
     doc_id = document_id_from_seed('chat_message' + message_id)
     data = {
@@ -519,6 +721,10 @@ def set_chat_message_rating_score(uid: str, message_id: str, value: int, reason:
     }
     if reason:
         data['reason'] = reason
+    if platform:
+        data['platform'] = platform
+    if app_version:
+        data['app_version'] = app_version
     db.collection('analytics').document(doc_id).set(data)
 
 
@@ -971,22 +1177,6 @@ def delete_integration(uid: str, app_key: str) -> bool:
     return True
 
 
-# Legacy function names for backward compatibility
-def get_calendar_integration(uid: str, app_key: str) -> Optional[dict]:
-    """Legacy function name - use get_integration instead."""
-    return get_integration(uid, app_key)
-
-
-def set_calendar_integration(uid: str, app_key: str, data: dict) -> None:
-    """Legacy function name - use set_integration instead."""
-    return set_integration(uid, app_key, data)
-
-
-def delete_calendar_integration(uid: str, app_key: str) -> bool:
-    """Legacy function name - use delete_integration instead."""
-    return delete_integration(uid, app_key)
-
-
 # **************************************
 # ***** Transcription Preferences ******
 # **************************************
@@ -1051,3 +1241,122 @@ def set_user_transcription_preferences(uid: str, single_language_mode: bool = No
 
     if update_data:
         user_ref.update(update_data)
+
+
+# ============================================================================
+# DESKTOP USER SETTINGS — fields on users/{uid} document
+# ============================================================================
+
+
+def get_notification_settings(uid: str) -> dict:
+    """Return notification settings with Swift-compatible field names.
+
+    Firestore stores ``notifications_enabled`` / ``notification_frequency`` on
+    the user doc.  The Swift ``NotificationSettingsResponse`` decodes
+    ``enabled`` / ``frequency``, so we map to the wire names here.
+    """
+    user_ref = db.collection('users').document(uid)
+    doc = user_ref.get()
+    if not doc.exists:
+        return {'enabled': True, 'frequency': 3}
+    data = doc.to_dict()
+    return {
+        'enabled': data.get('notifications_enabled', True),
+        'frequency': data.get('notification_frequency', 3),
+    }
+
+
+def update_notification_settings(uid: str, enabled: bool = None, frequency: int = None) -> dict:
+    user_ref = db.collection('users').document(uid)
+    updates = {}
+    if enabled is not None:
+        updates['notifications_enabled'] = enabled
+    if frequency is not None:
+        updates['notification_frequency'] = frequency
+    if updates:
+        user_ref.update(updates)
+    return get_notification_settings(uid)
+
+
+def _get_raw_assistant_settings(uid: str) -> dict:
+    """Read only the assistant_settings sub-map (without update_channel injection)."""
+    user_ref = db.collection('users').document(uid)
+    doc = user_ref.get()
+    if not doc.exists:
+        return {}
+    return doc.to_dict().get('assistant_settings') or {}
+
+
+def get_assistant_settings(uid: str) -> dict:
+    """Read assistant settings for the API response.
+
+    Injects top-level ``update_channel`` into the response dict (it lives
+    outside ``assistant_settings`` in Firestore but the API returns it together).
+    """
+    user_ref = db.collection('users').document(uid)
+    doc = user_ref.get()
+    if not doc.exists:
+        return {}
+    data = doc.to_dict()
+    result = (data.get('assistant_settings') or {}).copy()
+    if data.get('update_channel') is not None:
+        result['update_channel'] = data['update_channel']
+    return result
+
+
+def update_assistant_settings(uid: str, settings: dict) -> dict:
+    """Deep-merge partial settings into existing assistant_settings.
+
+    The Swift client sends tiny partial updates (e.g. {"focus": {"enabled": true}})
+    on every toggle.  A naive overwrite would erase sibling sections.
+
+    ``update_channel`` is a special case — it lives as a top-level field on the
+    user doc (not inside assistant_settings), matching Rust backend behavior.
+    """
+    # Read raw sub-map (without injected update_channel) to avoid leaking it back
+    existing = _get_raw_assistant_settings(uid)
+
+    # Extract update_channel — it goes to a top-level user doc field
+    update_channel = settings.pop('update_channel', None)
+
+    for section, values in settings.items():
+        if isinstance(values, dict) and isinstance(existing.get(section), dict):
+            existing[section].update(values)
+        else:
+            existing[section] = values
+
+    user_ref = db.collection('users').document(uid)
+    updates = {'assistant_settings': existing}
+    if update_channel is not None:
+        updates['update_channel'] = update_channel
+    user_ref.update(updates)
+
+    # Build response (include update_channel for the caller)
+    if update_channel is not None:
+        existing['update_channel'] = update_channel
+    return existing
+
+
+def get_ai_user_profile(uid: str) -> Optional[dict]:
+    user_ref = db.collection('users').document(uid)
+    doc = user_ref.get()
+    if not doc.exists:
+        return None
+    return doc.to_dict().get('ai_user_profile')
+
+
+def update_ai_user_profile(
+    uid: str, profile_text: str = None, generated_at=None, data_sources_used: int = None
+) -> dict:
+    """Update AI user profile.  Only writes non-None fields (partial update)."""
+    # Read existing profile and merge updates
+    existing = get_ai_user_profile(uid) or {}
+    if profile_text is not None:
+        existing['profile_text'] = profile_text
+    if generated_at is not None:
+        existing['generated_at'] = generated_at
+    if data_sources_used is not None:
+        existing['data_sources_used'] = data_sources_used
+    user_ref = db.collection('users').document(uid)
+    user_ref.update({'ai_user_profile': existing})
+    return existing

@@ -13,14 +13,12 @@ import 'package:omi/pages/capture/widgets/widgets.dart';
 import 'package:omi/pages/conversations/widgets/capture.dart';
 import 'package:omi/pages/processing_conversations/page.dart';
 import 'package:omi/providers/capture_provider.dart';
-import 'package:omi/providers/connectivity_provider.dart';
-import 'package:omi/providers/device_provider.dart';
-import 'package:omi/providers/onboarding_provider.dart';
 import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/utils/enums.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:omi/utils/other/temp.dart';
-import 'package:omi/utils/platform/platform_service.dart';
+import 'package:omi/backend/schema/phone_call.dart';
+import 'package:omi/providers/phone_call_provider.dart';
 
 class ConversationCaptureWidget extends StatefulWidget {
   const ConversationCaptureWidget({super.key});
@@ -34,6 +32,14 @@ class _ConversationCaptureWidgetState extends State<ConversationCaptureWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Hide capture widget when a phone call is in progress (banner replaces it)
+    var phoneCallState = context.watch<PhoneCallProvider>().callState;
+    if (phoneCallState == PhoneCallState.active ||
+        phoneCallState == PhoneCallState.connecting ||
+        phoneCallState == PhoneCallState.ringing) {
+      return const SizedBox.shrink();
+    }
+
     return Consumer<CaptureProvider>(
       builder: (context, provider, child) {
         var topConvoId = (provider.conversationProvider?.conversations ?? []).isNotEmpty
@@ -85,24 +91,7 @@ class _ConversationCaptureWidgetState extends State<ConversationCaptureWidget> {
   _toggleRecording(BuildContext context, CaptureProvider provider) async {
     var recordingState = provider.recordingState;
 
-    if (PlatformService.isDesktop) {
-      final onboardingProvider = context.read<OnboardingProvider>();
-      if (!onboardingProvider.hasMicrophonePermission) {
-        bool granted = await onboardingProvider.askForMicrophonePermissions();
-        if (!granted) {
-          return;
-        }
-      }
-      if (recordingState == RecordingState.systemAudioRecord) {
-        await provider.pauseSystemAudioRecording();
-      } else if (provider.isPaused) {
-        await provider.resumeSystemAudioRecording();
-      } else if (recordingState == RecordingState.initialising) {
-        Logger.debug('initialising, have to wait');
-      } else {
-        await provider.streamSystemAudioRecording();
-      }
-    } else if (provider.havingRecordingDevice) {
+    if (provider.havingRecordingDevice) {
       // Device recording logic - add pause/resume for device recording
       if (recordingState == RecordingState.deviceRecord && !provider.isPaused) {
         // Pause device recording
@@ -141,9 +130,6 @@ class _ConversationCaptureWidgetState extends State<ConversationCaptureWidget> {
 
   Widget? _getConversationHeader(BuildContext context) {
     var captureProvider = context.read<CaptureProvider>();
-    var connectivityProvider = context.read<ConnectivityProvider>();
-
-    bool internetConnectionStateOk = connectivityProvider.isConnected;
     bool deviceServiceStateOk = captureProvider.recordingDeviceServiceReady;
     bool transcriptServiceStateOk = captureProvider.transcriptServiceReady;
     bool isHavingTranscript = captureProvider.segments.isNotEmpty;
@@ -233,26 +219,23 @@ class _ConversationCaptureWidgetState extends State<ConversationCaptureWidget> {
       statusIndicator = const PausedStatusIndicator();
     } else if (!isHavingRecordingDevice && !isUsingPhoneMic) {
       stateText = "";
-    } else if (transcriptServiceStateOk && (isUsingPhoneMic || isHavingRecordingDevice)) {
-      var lastEvent = captureProvider.transcriptionServiceStatuses.lastOrNull;
-      if (lastEvent is MessageServiceStatusEvent) {
-        if (lastEvent.status == "ready") {
-          stateText = context.l10n.listening;
-          statusIndicator = const RecordingStatusIndicator();
-        } else {
+    } else if (isUsingPhoneMic || isHavingRecordingDevice) {
+      // Show "Listening" for all active recording states — WAL ensures audio is
+      // saved locally regardless of transcription connection status.
+      if (transcriptServiceStateOk) {
+        var lastEvent = captureProvider.transcriptionServiceStatuses.lastOrNull;
+        if (lastEvent is MessageServiceStatusEvent) {
           bool transcriptionDiagnosticEnabled = SharedPreferencesUtil().transcriptionDiagnosticEnabled;
-          stateText = transcriptionDiagnosticEnabled ? (lastEvent.statusText ?? "") : "Connecting";
+          stateText = transcriptionDiagnosticEnabled
+              ? (lastEvent.statusText ?? context.l10n.listening)
+              : context.l10n.listening;
+        } else {
+          stateText = context.l10n.listening;
         }
       } else {
-        stateText = "Connecting";
+        stateText = context.l10n.listening;
       }
-    } else if (!internetConnectionStateOk) {
-      stateText = "Waiting for network";
-    } else if (!transcriptServiceStateOk && isUsingPhoneMic) {
-      stateText = context.l10n.transcriptionPaused;
-      statusIndicator = const ReconnectingStatusIndicator();
-    } else if (!transcriptServiceStateOk) {
-      stateText = "Connecting";
+      statusIndicator = const RecordingStatusIndicator();
     }
     Widget right = stateText.isNotEmpty || statusIndicator != null
         ? Row(
@@ -301,13 +284,13 @@ class _ConversationCaptureWidgetState extends State<ConversationCaptureWidget> {
 
     // Determine if this is an OmiGlass-type device (captures photos)
     bool hasPhotos = provider.photos.isNotEmpty;
-    bool transcriptServiceStateOk = provider.transcriptServiceReady;
-    bool isReconnecting = !isPaused && !hasPhotos && !transcriptServiceStateOk;
+    // Show "Listening" for all active recording states — WAL ensures audio is
+    // saved locally regardless of transcription connection status.
     String statusText = isPaused
         ? (isDeviceRecording ? context.l10n.muted : context.l10n.paused)
         : hasPhotos
             ? 'Capturing'
-            : (transcriptServiceStateOk ? context.l10n.listening : context.l10n.transcriptionPaused);
+            : context.l10n.listening;
 
     // When recording is active, show the unified UI design
     if (isDeviceRecording || isPhoneRecording) {
@@ -325,23 +308,14 @@ class _ConversationCaptureWidgetState extends State<ConversationCaptureWidget> {
                   style: const TextStyle(color: Color(0xFFC9CBCF), fontSize: 14, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(width: 6),
-                if (isReconnecting) ...[
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(color: Color(0xFFFE5D50), shape: BoxShape.circle),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: isPaused ? const Color(0xFFFF9500) : const Color(0xFFFE5D50),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(width: 3),
-                  const Icon(Icons.cloud_off, color: Color(0xFFFF9500), size: 12),
-                ] else
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: isPaused ? const Color(0xFFFF9500) : const Color(0xFFFE5D50),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+                ),
               ],
             ),
           ),
@@ -557,83 +531,22 @@ class _PausedStatusIndicatorState extends State<PausedStatusIndicator> with Sing
   }
 }
 
-/// Shows a red recording dot with a blinking wifi-off icon to indicate
-/// recording continues but transcription connection is lost.
-class ReconnectingStatusIndicator extends StatefulWidget {
-  const ReconnectingStatusIndicator({super.key});
-
-  @override
-  State<ReconnectingStatusIndicator> createState() => _ReconnectingStatusIndicatorState();
-}
-
-class _ReconnectingStatusIndicatorState extends State<ReconnectingStatusIndicator> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _opacityAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this)..repeat(reverse: true);
-    _opacityAnim = Tween<double>(begin: 1.0, end: 0.3).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 16,
-      height: 16,
-      child: FadeTransition(
-        opacity: _opacityAnim,
-        child: const Icon(Icons.cloud_off, color: Colors.orange, size: 16.0),
-      ),
-    );
-  }
-}
-
 getPhoneMicRecordingButton(
   BuildContext context,
   VoidCallback toggleRecordingCb,
   RecordingState currentActualState, {
   bool isPhoneMicPaused = false,
 }) {
-  if (SharedPreferencesUtil().btDevice.id.isNotEmpty && (!PlatformService.isDesktop)) {
+  if (SharedPreferencesUtil().btDevice.id.isNotEmpty) {
     // If a BT device is configured and we are NOT on desktop, don't show this button.
     return const SizedBox.shrink();
   }
-  // If on desktop, AND a BT device is connected, this button should still be hidden
-  // as the primary interaction should be via the BT device, not system audio as a fallback to phone mic.
-  // This button is primarily for when NO BT device is the target.
-  final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
-  if (PlatformService.isDesktop &&
-      deviceProvider.connectedDevice != null &&
-      SharedPreferencesUtil().btDevice.id == deviceProvider.connectedDevice!.id) {
-    return const SizedBox.shrink();
-  }
-
-  final bool isDesktop = PlatformService.isDesktop;
   String text;
   Widget icon;
   bool isLoading = currentActualState == RecordingState.initialising;
 
-  if (isDesktop) {
-    if (isLoading) {
-      text = context.l10n.initialisingSystemAudio;
-      icon = const SizedBox(height: 8, width: 8, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white));
-    } else if (currentActualState == RecordingState.systemAudioRecord) {
-      text = context.l10n.stopRecording;
-      icon = const Icon(Icons.stop, color: Colors.red, size: 12);
-    } else {
-      text = context.l10n.continueRecording;
-      icon = const Icon(Icons.mic, size: 18);
-    }
-  } else {
-    // Phone Mic
+  // Phone Mic
+  {
     if (isLoading) {
       text = context.l10n.initialisingRecorder;
       icon = const SizedBox(height: 8, width: 8, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white));

@@ -19,15 +19,42 @@ import 'package:omi/services/devices/omi_connection.dart';
 import 'package:omi/services/devices/omiglass_connection.dart';
 import 'package:omi/services/devices/plaud_connection.dart';
 import 'package:omi/services/devices/wifi_sync_error.dart';
-import 'package:omi/app_globals.dart';
-import 'package:omi/services/notifications.dart';
-import 'package:omi/utils/l10n_extensions.dart';
 import 'package:omi/services/devices/transports/device_transport.dart';
 import 'package:omi/services/devices/transports/ble_transport.dart';
 import 'package:omi/services/devices/transports/native_ble_transport.dart';
 import 'package:omi/services/devices/transports/frame_transport.dart';
 import 'package:omi/services/devices/transports/watch_transport.dart';
 import 'package:omi/utils/logger.dart';
+
+/// Status of the device's offline storage (new multi-file firmware protocol).
+class StorageStatus {
+  final int totalUsedBytes;
+  final int fileCount;
+  final int freeBytes;
+  final int statusFlags;
+
+  StorageStatus({
+    required this.totalUsedBytes,
+    required this.fileCount,
+    required this.freeBytes,
+    required this.statusFlags,
+  });
+
+  @override
+  String toString() => 'StorageStatus(files=$fileCount, used=$totalUsedBytes, free=$freeBytes, flags=$statusFlags)';
+}
+
+/// Info about a single audio file on the device's offline storage.
+class StorageFileInfo {
+  final int index;
+  final int timestamp; // UTC epoch seconds (from device hex filename)
+  final int sizeBytes;
+
+  StorageFileInfo({required this.index, required this.timestamp, required this.sizeBytes});
+
+  @override
+  String toString() => 'StorageFileInfo(index=$index, ts=$timestamp, size=$sizeBytes)';
+}
 
 class DeviceConnectionFactory {
   static DeviceConnection? create(BtDevice device) {
@@ -37,11 +64,21 @@ class DeviceConnectionFactory {
     final locator = device.locator;
     if (locator == null) return null;
 
+    // Use name-based detection as fallback for OmiGlass devices (some advertise as DeviceType.omi).
+    final deviceName = device.name.toLowerCase();
+    final isOmiGlass = device.type == DeviceType.openglass ||
+        deviceName.contains('openglass') ||
+        deviceName.contains('omiglass') ||
+        deviceName.contains('glass');
+
     switch (locator.kind) {
       case TransportKind.bluetooth:
         final deviceId = locator.bluetoothId;
         if (deviceId == null) return null;
-        transport = NativeBleTransport(deviceId);
+        // OmiGlass firmware does not have CONFIG_BT_SMP — exclude it from the bonded set
+        // even if it advertised as DeviceType.omi.
+        final needsBond = device.type == DeviceType.limitless || (device.type == DeviceType.omi && !isOmiGlass);
+        transport = NativeBleTransport(deviceId, requiresBond: needsBond);
         break;
 
       case TransportKind.watchConnectivity:
@@ -51,14 +88,6 @@ class DeviceConnectionFactory {
       default:
         return null;
     }
-
-    // Create device connection with transport
-    // Use name-based detection as fallback for OmiGlass devices
-    final deviceName = device.name.toLowerCase();
-    final isOmiGlass = device.type == DeviceType.openglass ||
-        deviceName.contains('openglass') ||
-        deviceName.contains('omiglass') ||
-        deviceName.contains('glass');
 
     switch (device.type) {
       case DeviceType.omi:
@@ -134,8 +163,9 @@ abstract class DeviceConnection {
     switch (transportState) {
       case DeviceTransportState.connected:
         return DeviceConnectionState.connected;
-      case DeviceTransportState.disconnected:
       case DeviceTransportState.connecting:
+        return DeviceConnectionState.connecting;
+      case DeviceTransportState.disconnected:
       case DeviceTransportState.disconnecting:
         return DeviceConnectionState.disconnected;
     }
@@ -202,7 +232,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performRetrieveBatteryLevel();
     }
-    _showDeviceDisconnectedNotification();
     return -1;
   }
 
@@ -212,7 +241,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetBleBatteryLevelListener(onBatteryLevelChange: onBatteryLevelChange);
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -231,7 +259,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetBleAudioBytesListener(onAudioBytesReceived: onAudioBytesReceived);
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -269,7 +296,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetAudioCodec();
     }
-    _showDeviceDisconnectedNotification();
     return BleAudioCodec.pcm8;
   }
 
@@ -305,11 +331,58 @@ abstract class DeviceConnection {
 
   // storage here
 
+  // --- New multi-file storage protocol (firmware with LittleFS) ---
+
+  Future<StorageStatus?> getStorageFileStats() async {
+    if (await isConnected()) {
+      return await performGetStorageFileStats();
+    }
+    return null;
+  }
+
+  Future<StorageStatus?> performGetStorageFileStats() async {
+    return null;
+  }
+
+  Future<List<StorageFileInfo>> listStorageFiles() async {
+    if (await isConnected()) {
+      return await performListStorageFiles();
+    }
+    return [];
+  }
+
+  Future<List<StorageFileInfo>> performListStorageFiles() async {
+    return [];
+  }
+
+  Future<bool> deleteStorageFile(int fileIndex) async {
+    if (await isConnected()) {
+      return await performDeleteStorageFile(fileIndex);
+    }
+    return false;
+  }
+
+  Future<bool> performDeleteStorageFile(int fileIndex) async {
+    return false;
+  }
+
+  Future<bool> stopStorageSync() async {
+    if (await isConnected()) {
+      return await performStopStorageSync();
+    }
+    return false;
+  }
+
+  Future<bool> performStopStorageSync() async {
+    return false;
+  }
+
+  // --- Legacy storage protocol ---
+
   Future<List<int>> getStorageList() async {
     if (await isConnected()) {
       return await performGetStorageList();
     }
-    _showDeviceDisconnectedNotification();
     return Future.value(<int>[]);
   }
 
@@ -339,7 +412,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performWriteToStorage(numFile, command, offset);
     }
-    _showDeviceDisconnectedNotification();
     return Future.value(false);
   }
 
@@ -349,7 +421,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetBleStorageBytesListener(onStorageBytesReceived: onStorageBytesReceived);
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -361,7 +432,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performCameraStartPhotoController();
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -371,7 +441,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performCameraStopPhotoController();
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -381,7 +450,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performHasPhotoStreamingCharacteristic();
     }
-    _showDeviceDisconnectedNotification();
     return false;
   }
 
@@ -393,7 +461,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetImageListener(onImageReceived: onImageReceived);
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -405,7 +472,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetAccelListener(onAccelChange: onAccelChange);
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -417,7 +483,6 @@ abstract class DeviceConnection {
       _features = await performGetFeatures();
       return _features!;
     }
-    _showDeviceDisconnectedNotification();
     return 0;
   }
 
@@ -427,7 +492,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performSetLedDimRatio(ratio);
     }
-    _showDeviceDisconnectedNotification();
   }
 
   Future<void> performSetLedDimRatio(int ratio);
@@ -436,7 +500,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetLedDimRatio();
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -446,7 +509,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performSetMicGain(gain);
     }
-    _showDeviceDisconnectedNotification();
   }
 
   Future<void> performSetMicGain(int gain);
@@ -455,7 +517,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performGetMicGain();
     }
-    _showDeviceDisconnectedNotification();
     return null;
   }
 
@@ -497,7 +558,6 @@ abstract class DeviceConnection {
       return result;
     }
     debugPrint('DeviceConnection: startWifiSync - device disconnected, showing notification');
-    _showDeviceDisconnectedNotification();
     return false;
   }
 
@@ -509,7 +569,6 @@ abstract class DeviceConnection {
     if (await isConnected()) {
       return await performStopWifiSync();
     }
-    _showDeviceDisconnectedNotification();
     return false;
   }
 
@@ -528,14 +587,5 @@ abstract class DeviceConnection {
     required void Function(int status) onStatusReceived,
   }) async {
     return null;
-  }
-
-  void _showDeviceDisconnectedNotification() {
-    final ctx = globalNavigatorKey.currentContext;
-    final deviceName = device.name;
-    NotificationService.instance.createNotification(
-      title: ctx?.l10n.deviceDisconnectedTitle(deviceName) ?? '$deviceName Disconnected',
-      body: ctx?.l10n.deviceDisconnectedBody(deviceName) ?? 'Please reconnect to continue using your $deviceName.',
-    );
   }
 }

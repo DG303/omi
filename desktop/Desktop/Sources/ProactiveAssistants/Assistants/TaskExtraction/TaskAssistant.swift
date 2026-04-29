@@ -144,8 +144,7 @@ actor TaskAssistant: ProactiveAssistant {
     // MARK: - Initialization
 
     init(apiKey: String? = nil) throws {
-        // Use Gemini 3 Pro for better task extraction quality
-        self.geminiClient = try GeminiClient(apiKey: apiKey, model: "gemini-pro-latest")
+        self.geminiClient = try GeminiClient(apiKey: apiKey, model: ModelQoS.Gemini.taskExtraction)
 
         let (stream, continuation) = AsyncStream.makeStream(of: TriggerEvent.self, bufferingPolicy: .bufferingNewest(1))
         self.triggerStream = stream
@@ -479,18 +478,6 @@ actor TaskAssistant: ProactiveAssistant {
         } catch {
             logError("Task: Failed to sync to backend", error: error)
             return nil
-        }
-    }
-
-    /// Send a notification for the extracted task
-    private func sendTaskNotification(task: ExtractedTask) async {
-        let message = task.title
-        await MainActor.run {
-            NotificationService.shared.sendNotification(
-                title: "Task",
-                message: message,
-                assistantId: identifier
-            )
         }
     }
 
