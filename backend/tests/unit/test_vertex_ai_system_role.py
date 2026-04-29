@@ -100,3 +100,48 @@ def test_generate_description_and_emoji_uses_langchain_messages():
         generate_description_and_emoji("TestApp", "do something cool")
 
     _assert_langchain_messages(capture.captured_messages)
+
+
+def test_apps_router_uses_langchain_messages_not_raw_dicts():
+    """apps.py generate_sample_prompts_endpoint must use SystemMessage/HumanMessage, not raw dicts.
+
+    Since routers/apps.py has heavy import dependencies that can't be easily mocked,
+    we verify the source code directly — the ainvoke call must use SystemMessage/HumanMessage
+    and must NOT contain raw dict patterns like {"role": "system"}.
+    """
+    import ast
+    import pathlib
+
+    apps_path = pathlib.Path(__file__).resolve().parents[2] / 'routers' / 'apps.py'
+    source = apps_path.read_text()
+
+    # Find the generate_sample_prompts_endpoint function
+    tree = ast.parse(source)
+    found_endpoint = False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.AsyncFunctionDef) and node.name == 'generate_sample_prompts_endpoint':
+            found_endpoint = True
+            # Get the source lines for this function
+            func_source = ast.get_source_segment(source, node)
+            assert func_source is not None, "Could not extract function source"
+
+            # Must NOT contain raw dict message patterns
+            assert '{"role": "system"' not in func_source, (
+                "generate_sample_prompts_endpoint still uses raw dict {'role': 'system'}. "
+                "Must use SystemMessage() for Vertex AI compatibility."
+            )
+            assert "{'role': 'system'" not in func_source, (
+                "generate_sample_prompts_endpoint still uses raw dict {'role': 'system'}. "
+                "Must use SystemMessage() for Vertex AI compatibility."
+            )
+
+            # Must contain LangChain message objects
+            assert (
+                'SystemMessage(' in func_source
+            ), "generate_sample_prompts_endpoint must use SystemMessage() from langchain_core.messages"
+            assert (
+                'HumanMessage(' in func_source
+            ), "generate_sample_prompts_endpoint must use HumanMessage() from langchain_core.messages"
+            break
+
+    assert found_endpoint, "generate_sample_prompts_endpoint not found in routers/apps.py"
