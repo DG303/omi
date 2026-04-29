@@ -57,4 +57,7 @@ urlencoding = "2.1"
 # Redis for conversation visibility
 redis = { version = "0.25", features = ["tokio-comp", "connection-manager"] }
 
+# GCP authentication (Vertex AI service account tokens)
+gcp_auth = "0.12"
+
 # Note: Using Firestore REST API directly instead of gcloud-sdk for compatibility

@@ -188,9 +188,10 @@ async fn create_conversation_from_segments(
     let is_desktop = request.source == ConversationSource::Desktop;
 
     let processed = if is_desktop {
-        // Get LLM client (Gemini)
-        let llm_client = if let Some(api_key) = &state.config.gemini_api_key {
-            LlmClient::new(api_key.clone())
+        // Get LLM client (Gemini via Vertex AI or AI Studio)
+        let llm_client = if state.vertex_auth.is_some() || state.config.gemini_api_key.is_some() {
+            LlmClient::new(state.config.gemini_api_key.clone().unwrap_or_default())
+                .with_vertex(state.vertex_auth.clone())
                 .with_model(crate::llm::model_qos::gemini_extraction())
         } else {
             return Err((
@@ -439,9 +440,10 @@ async fn reprocess_conversation(
         "Analyze this conversation and provide insights.".to_string()
     });
 
-    // Get LLM client (Gemini)
-    let llm_client = if let Some(api_key) = &state.config.gemini_api_key {
-        LlmClient::new(api_key.clone())
+    // Get LLM client (Gemini via Vertex AI or AI Studio)
+    let llm_client = if state.vertex_auth.is_some() || state.config.gemini_api_key.is_some() {
+        LlmClient::new(state.config.gemini_api_key.clone().unwrap_or_default())
+            .with_vertex(state.vertex_auth.clone())
             .with_model(crate::llm::model_qos::gemini_extraction())
     } else {
         return Err((
@@ -842,8 +844,9 @@ async fn merge_conversations(
 
     // If reprocessing is requested and we have an LLM client, process the merged conversation
     if request.reprocess {
-        if let Some(api_key) = &state.config.gemini_api_key {
-            let llm = LlmClient::new(api_key.clone())
+        if state.vertex_auth.is_some() || state.config.gemini_api_key.is_some() {
+            let llm = LlmClient::new(state.config.gemini_api_key.clone().unwrap_or_default())
+                .with_vertex(state.vertex_auth.clone())
                 .with_model(crate::llm::model_qos::gemini_extraction());
 
             // Get existing data for deduplication

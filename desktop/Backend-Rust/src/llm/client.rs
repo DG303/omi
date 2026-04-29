@@ -151,11 +151,13 @@ impl CalendarMeetingContext {
     }
 }
 
-/// LLM Client for calling Gemini
+/// LLM Client for calling Gemini (AI Studio or Vertex AI)
 pub struct LlmClient {
     client: Client,
     api_key: String,
     model: String,
+    /// When set, uses Vertex AI endpoints with Bearer auth instead of API key.
+    vertex_auth: Option<crate::vertex::VertexAuth>,
 }
 
 // Gemini API types
@@ -217,13 +219,57 @@ impl LlmClient {
             client: Client::new(),
             api_key,
             model: super::model_qos::gemini_default().to_string(),
+            vertex_auth: None,
         }
+    }
+
+    /// Attach Vertex AI auth (routes through Vertex AI instead of AI Studio).
+    pub fn with_vertex(mut self, vertex: Option<crate::vertex::VertexAuth>) -> Self {
+        self.vertex_auth = vertex;
+        self
     }
 
     /// Set the model to use
     pub fn with_model(mut self, model: &str) -> Self {
         self.model = model.to_string();
         self
+    }
+
+    /// Send a POST request to the Gemini generateContent endpoint.
+    /// Routes through Vertex AI when vertex_auth is set, otherwise AI Studio.
+    /// Falls back to AI Studio API key if Vertex AI token fetch fails at request time.
+    async fn post_generate_content<T: serde::Serialize>(
+        &self,
+        request: &T,
+    ) -> Result<reqwest::Response, Box<dyn std::error::Error + Send + Sync>> {
+        if let Some(ref vertex) = self.vertex_auth {
+            match vertex.token().await {
+                Ok(token) => {
+                    let url = vertex.build_url(&self.model, "generateContent");
+                    return Ok(self
+                        .client
+                        .post(&url)
+                        .header("authorization", format!("Bearer {}", token))
+                        .json(request)
+                        .send()
+                        .await?);
+                }
+                Err(e) => {
+                    // Fall back to AI Studio if API key is available
+                    if !self.api_key.is_empty() {
+                        tracing::warn!("Vertex AI token failed, falling back to API key: {}", e);
+                    } else {
+                        return Err(e);
+                    }
+                }
+            }
+        }
+
+        let url = format!(
+            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
+            self.model, self.api_key
+        );
+        Ok(self.client.post(&url).json(request).send().await?)
     }
 
     /// Call the LLM with a specific JSON schema for structured output
@@ -242,17 +288,7 @@ impl LlmClient {
             }),
         };
 
-        let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
-            self.model, self.api_key
-        );
-
-        let response = self
-            .client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = self.post_generate_content(&request).await?;
 
         if !response.status().is_success() {
             let error = response.text().await?;
@@ -839,17 +875,7 @@ impl LlmClient {
             }),
         };
 
-        let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
-            self.model, self.api_key
-        );
-
-        let response = self
-            .client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await?;
+        let response = self.post_generate_content(&request).await?;
 
         if !response.status().is_success() {
             let error = response.text().await?;
@@ -1183,7 +1209,20 @@ mod tests {
     fn with_model_extraction_uses_extraction_accessor() {
         let client = LlmClient::new("test-key".to_string())
             .with_model(super::super::model_qos::gemini_extraction());
-        // In test env (premium tier), extraction == default == flash
-        assert_eq!(client.model, "gemini-3-flash-preview");
+        // In test env (premium tier), extraction == default == gemini-2.5-flash
+        assert_eq!(client.model, "gemini-2.5-flash");
+    }
+
+    #[test]
+    fn with_vertex_none_leaves_vertex_auth_none() {
+        let client = LlmClient::new("test-key".to_string()).with_vertex(None);
+        assert!(client.vertex_auth.is_none());
+    }
+
+    #[test]
+    fn new_without_vertex_has_api_key() {
+        let client = LlmClient::new("my-key".to_string());
+        assert_eq!(client.api_key, "my-key");
+        assert!(client.vertex_auth.is_none());
     }
 }

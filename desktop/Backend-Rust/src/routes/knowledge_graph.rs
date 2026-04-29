@@ -62,11 +62,12 @@ async fn rebuild_knowledge_graph(
 
     let limit = query.limit.unwrap_or(500);
 
-    // Check for Gemini API key
-    let api_key = state.config.gemini_api_key.clone().ok_or_else(|| {
+    // Check for Gemini auth (Vertex AI or API key)
+    if state.vertex_auth.is_none() && state.config.gemini_api_key.is_none() {
         tracing::error!("Gemini API key not configured");
-        StatusCode::SERVICE_UNAVAILABLE
-    })?;
+        return Err(StatusCode::SERVICE_UNAVAILABLE);
+    }
+    let api_key = state.config.gemini_api_key.clone().unwrap_or_default();
 
     // Delete existing graph
     if let Err(e) = state.firestore.delete_kg_data(&user.uid).await {
@@ -95,6 +96,7 @@ async fn rebuild_knowledge_graph(
 
     // Create LLM client
     let llm = LlmClient::new(api_key)
+        .with_vertex(state.vertex_auth.clone())
         .with_model(crate::llm::model_qos::gemini_extraction());
 
     // Track nodes by lowercase label for deduplication
