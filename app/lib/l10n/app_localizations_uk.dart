@@ -9176,4 +9176,10 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Голосовий режим';
+
+  @override
+  String get quickActionAskOmi => 'Запитайте Omi що завгодно';
 }

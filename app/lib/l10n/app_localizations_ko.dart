@@ -9014,4 +9014,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => '음성 모드';
+
+  @override
+  String get quickActionAskOmi => 'Omi에게 무엇이든 물어보세요';
 }

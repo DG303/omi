@@ -9150,4 +9150,10 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Hlasový režim';
+
+  @override
+  String get quickActionAskOmi => 'Spýtajte sa Omi na čokoľvek';
 }

@@ -9175,4 +9175,10 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Гласовни режим';
+
+  @override
+  String get quickActionAskOmi => 'Питајте Omi bilo što';
 }

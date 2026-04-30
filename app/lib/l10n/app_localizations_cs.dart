@@ -9158,4 +9158,10 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Hlasový režim';
+
+  @override
+  String get quickActionAskOmi => 'Zeptejte se Omi na cokoliv';
 }

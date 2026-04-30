@@ -9175,4 +9175,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Ses Modu';
+
+  @override
+  String get quickActionAskOmi => 'Omi\'ye her şeyi sorun';
 }

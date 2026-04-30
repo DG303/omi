@@ -9179,4 +9179,10 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'آواز موڈ';
+
+  @override
+  String get quickActionAskOmi => 'Omi سے کچھ بھی پوچھیں';
 }

@@ -9116,4 +9116,10 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'โหมดเสียง';
+
+  @override
+  String get quickActionAskOmi => 'ถาม Omi สิ่งใดก็ได้';
 }

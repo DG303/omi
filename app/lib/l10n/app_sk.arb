@@ -2996,5 +2996,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "Hlasový režim",
+  "quickActionAskOmi": "Spýtajte sa Omi na čokoľvek"
 }

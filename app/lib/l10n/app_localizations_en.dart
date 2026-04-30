@@ -9159,4 +9159,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Voice Mode';
+
+  @override
+  String get quickActionAskOmi => 'Ask Omi Anything';
 }

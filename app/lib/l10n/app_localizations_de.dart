@@ -9239,4 +9239,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Sprachmodus';
+
+  @override
+  String get quickActionAskOmi => 'Frag Omi irgendetwas';
 }

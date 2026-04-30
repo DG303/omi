@@ -10900,5 +10900,13 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
+  },
+  "voiceMode": "Voice Mode",
+  "@voiceMode": {
+    "description": "iOS home screen quick action: opens chat in voice mode"
+  },
+  "quickActionAskOmi": "Ask Omi Anything",
+  "@quickActionAskOmi": {
+    "description": "iOS home screen quick action: opens chat page"
   }
 }

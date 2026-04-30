@@ -9231,4 +9231,10 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'குரல் பயன்முறை';
+
+  @override
+  String get quickActionAskOmi => 'Omi ஐ எதையும் கேளுங்கள்';
 }

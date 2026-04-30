@@ -9205,4 +9205,10 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Mod voce';
+
+  @override
+  String get quickActionAskOmi => 'Întrebați Omi orice';
 }

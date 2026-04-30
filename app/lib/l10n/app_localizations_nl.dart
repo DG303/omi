@@ -9190,4 +9190,10 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Spraakmodus';
+
+  @override
+  String get quickActionAskOmi => 'Vraag Omi van alles';
 }

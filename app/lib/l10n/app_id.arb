@@ -3033,5 +3033,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "Mode Suara",
+  "quickActionAskOmi": "Tanyakan apa saja kepada Omi"
 }

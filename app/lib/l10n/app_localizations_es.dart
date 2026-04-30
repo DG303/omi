@@ -9183,4 +9183,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Modo de voz';
+
+  @override
+  String get quickActionAskOmi => 'Pregúntale cualquier cosa a Omi';
 }

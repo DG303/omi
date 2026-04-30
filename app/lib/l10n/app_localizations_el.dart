@@ -9227,4 +9227,10 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Λειτουργία φωνής';
+
+  @override
+  String get quickActionAskOmi => 'Ρωτήστε τον Omi οτιδήποτε';
 }

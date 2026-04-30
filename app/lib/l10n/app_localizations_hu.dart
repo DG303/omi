@@ -9201,4 +9201,10 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Hangmód';
+
+  @override
+  String get quickActionAskOmi => 'Kérdezz meg bármit Omitól';
 }

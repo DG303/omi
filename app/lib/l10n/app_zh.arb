@@ -3013,5 +3013,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "语音模式",
+  "quickActionAskOmi": "向Omi询问任何事"
 }

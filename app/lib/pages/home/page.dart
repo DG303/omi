@@ -54,6 +54,7 @@ import 'package:omi/providers/message_provider.dart';
 import 'package:omi/providers/sync_provider.dart';
 import 'package:omi/providers/task_integration_provider.dart';
 import 'package:omi/services/apple_reminders_sync_service.dart';
+import 'package:omi/services/quick_actions_service.dart';
 import 'package:omi/utils/platform/platform_service.dart';
 import 'package:omi/services/announcement_service.dart';
 import 'package:omi/services/notifications.dart';
@@ -132,6 +133,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
   final FreemiumSwitchHandler _freemiumHandler = FreemiumSwitchHandler();
 
   CaptureProvider? _captureProvider;
+  DeviceProvider? _deviceProviderForQuickActions;
+  CaptureProvider? _captureProviderForQuickActions;
 
   void _initiateApps() {
     context.read<AppProvider>().getApps();
@@ -433,6 +436,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
     _listenToFreemiumThreshold();
     _checkForAnnouncements();
     _registerAutoSyncCallback();
+    _initQuickActions();
     super.initState();
 
     // After init
@@ -472,6 +476,22 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
         }
       };
     });
+  }
+
+  void _initQuickActions() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      QuickActionsService.instance.initialize(context);
+      _deviceProviderForQuickActions = Provider.of<DeviceProvider>(context, listen: false);
+      _deviceProviderForQuickActions!.addListener(_onDeviceStateChangedForQuickActions);
+      _captureProviderForQuickActions = Provider.of<CaptureProvider>(context, listen: false);
+      _captureProviderForQuickActions!.addListener(_onDeviceStateChangedForQuickActions);
+    });
+  }
+
+  void _onDeviceStateChangedForQuickActions() {
+    if (!mounted) return;
+    QuickActionsService.instance.updateShortcuts(context);
   }
 
   void _onDeviceConnectedForAnnouncements(BtDevice device) async {
@@ -1097,6 +1117,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
       deviceProvider.onDeviceConnected = null;
       deviceProvider.onOfflineDataDetected = null;
     } catch (_) {}
+    _deviceProviderForQuickActions?.removeListener(_onDeviceStateChangedForQuickActions);
+    _deviceProviderForQuickActions = null;
+    _captureProviderForQuickActions?.removeListener(_onDeviceStateChangedForQuickActions);
+    _captureProviderForQuickActions = null;
+    QuickActionsService.instance.reset();
     // Clean up freemium handler
     _freemiumHandler.dispose();
     // Remove foreground task callback to prevent memory leak

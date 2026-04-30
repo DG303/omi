@@ -9148,4 +9148,10 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Stemmemodus';
+
+  @override
+  String get quickActionAskOmi => 'Spørg Omi om alt';
 }

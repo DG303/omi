@@ -9213,4 +9213,10 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'వాయిస్ మోడ్';
+
+  @override
+  String get quickActionAskOmi => 'Omi ని ఏమైనా అడగండి';
 }
