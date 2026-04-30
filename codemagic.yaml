@@ -116,21 +116,52 @@ workflows:
         script: |
           cd ios && pod install --repo-update
 
+      - name: Resolve next version from TestFlight + App Store
+        script: |
+          set -e
+
+          EMPTY='{"version":"0.0.0","build_number":"0"}'
+          TF_RAW=$(app-store-connect get-latest-testflight-build-number "$APP_ID" --include-version --json 2>/dev/null) || TF_RAW=""
+          AS_RAW=$(app-store-connect get-latest-app-store-build-number "$APP_ID" --include-version --json 2>/dev/null) || AS_RAW=""
+          [ -z "$TF_RAW" ] && TF_RAW="$EMPTY"
+          [ -z "$AS_RAW" ] && AS_RAW="$EMPTY"
+
+          TF_V=$(echo "$TF_RAW" | jq -r '.version // "0.0.0"')
+          TF_B=$(echo "$TF_RAW" | jq -r '.build_number // "0"')
+          AS_V=$(echo "$AS_RAW" | jq -r '.version // "0.0.0"')
+          AS_B=$(echo "$AS_RAW" | jq -r '.build_number // "0"')
+
+          echo "TestFlight latest: ${TF_V}+${TF_B}"
+          echo "App Store latest:  ${AS_V}+${AS_B}"
+
+          if [ "$TF_V" = "0.0.0" ] && [ "$AS_V" = "0.0.0" ]; then
+            echo "WARNING: No TestFlight or App Store history. Seeding from pubspec.yaml."
+            PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ')
+            BUILD_NAME=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f1)
+            BUILD_NUMBER=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f2)
+          else
+            if [ "$TF_V" = "$AS_V" ]; then
+              IFS='.' read -r MAJ MIN PATCH <<< "$AS_V"
+              BUILD_NAME="${MAJ}.${MIN}.$((PATCH + 1))"
+              echo "TF and App Store at same version ($AS_V) -> bumping patch to $BUILD_NAME"
+            else
+              BUILD_NAME="$TF_V"
+              echo "TF ahead of App Store -> reusing TF version $BUILD_NAME"
+            fi
+
+            MAX_B=$TF_B
+            [ "$AS_B" -gt "$MAX_B" ] && MAX_B=$AS_B
+            [ "${PROJECT_BUILD_NUMBER:-0}" -gt "$MAX_B" ] && MAX_B=$PROJECT_BUILD_NUMBER
+            BUILD_NUMBER=$((MAX_B + 1))
+          fi
+
+          echo "Resolved next version: ${BUILD_NAME}+${BUILD_NUMBER}"
+          echo BUILD_NAME="$BUILD_NAME" >> $CM_ENV
+          echo BUILD_NUMBER="$BUILD_NUMBER" >> $CM_ENV
+
       - name: Flutter build ipa
         script: |
           xcode-project use-profiles
-
-          # Extract version from pubspec.yaml (source of truth for both name and build number)
-          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ')
-          BUILD_NAME=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f1)  # e.g., "1.0.525"
-          BUILD_NUMBER=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f2)  # e.g., "758"
-
-          # Skip if this build number is already on TestFlight
-          LATEST_BUILD=$(app-store-connect get-latest-testflight-build-number $APP_ID || echo "0")
-          if [ "$BUILD_NUMBER" -le "$LATEST_BUILD" ]; then
-            echo "Build $BUILD_NUMBER already on TestFlight (latest: $LATEST_BUILD). Skipping."
-            exit 0
-          fi
 
           echo "Building iOS with version $BUILD_NAME ($BUILD_NUMBER)"
 
