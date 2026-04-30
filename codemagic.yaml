@@ -25,7 +25,7 @@ workflows:
         APP_ID: 6502156163
         STAGING_API_URL: "https://api.omiapi.com/"
       flutter: 3.35.3
-      xcode: 16.4
+      xcode: 26.0.1
       cocoapods: 1.16.2
     cache:
       cache_paths:
@@ -377,7 +377,7 @@ workflows:
         APP_ID: 6502156163
         STAGING_API_URL: "https://api.omiapi.com/"
       flutter: 3.35.3
-      xcode: 16.4
+      xcode: 26.0.1
       cocoapods: 1.16.2
     cache:
       cache_paths:
@@ -931,7 +931,7 @@ workflows:
         APP_ID: 6502156163
         STAGING_API_URL: "https://api.omiapi.com/"
       flutter: 3.35.3
-      xcode: 16.4
+      xcode: 26.0.1
       cocoapods: 1.16.2
     cache:
       cache_paths:
