@@ -9,8 +9,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from types import ModuleType
-from unittest.mock import MagicMock, patch
-import pytest
+from unittest.mock import MagicMock
 
 os.environ.setdefault('OPENAI_API_KEY', 'sk-test-not-real')
 os.environ.setdefault('ENCRYPTION_SECRET', 'omi_ZwB2ZNqB2HHpMK6wStk7sTpavJiPTFg7gXUHnc4tFABPU6pZ2c2DKgehtfgi4RZv')
@@ -69,6 +68,7 @@ _stubs = [
     'utils.fair_use',
     'utils.subscription',
     'utils.conversations.process_conversation',
+    'utils.conversations.location',
     'utils.notifications',
     'utils.apps',
     'utils.llm.memories',
@@ -306,9 +306,21 @@ class TestDevGetConversationsFolderFilters:
             starred=True,
         )
 
-        call_kwargs = _mock_get_conversations.call_args[1]
+        call_args = _mock_get_conversations.call_args
+        call_positional = call_args[0]  # (uid, limit, offset)
+        call_kwargs = call_args[1]
+
+        # Positional args: uid, limit, offset
+        assert call_positional[0] == 'uid1'
+        assert call_positional[1] == 10
+        assert call_positional[2] == 5
+
+        # Keyword args: all existing + new params
         assert call_kwargs.get('start_date') == start
         assert call_kwargs.get('end_date') == end
+        assert call_kwargs.get('categories') == ['work', 'personal']
+        assert call_kwargs.get('include_discarded') is False
+        assert call_kwargs.get('statuses') == ['completed']
         assert call_kwargs.get('folder_id') == 'f1'
         assert call_kwargs.get('starred') is True
         # include_transcript=True triggers populate_speaker_names
@@ -387,9 +399,8 @@ class TestDevApiHttpLayer:
         """Requests without CONVERSATIONS_READ scope should get 403 from get_folders."""
         from fastapi import FastAPI
         from fastapi.testclient import TestClient
-        from fastapi import HTTPException
         from routers.developer import router as developer_router
-        from dependencies import get_uid_with_conversations_read, get_api_key_auth, ApiKeyAuth
+        from dependencies import get_api_key_auth, ApiKeyAuth
 
         app = FastAPI()
         app.include_router(developer_router)
@@ -424,3 +435,16 @@ class TestDevApiHttpLayer:
         resp = client.get('/v1/dev/user/conversations?folder_id=f1')
 
         assert resp.status_code == 403
+
+    def test_dev_get_folders_with_scope_returns_200(self):
+        """GET /v1/dev/user/folders with valid scope should return 200 and a list."""
+        _, client = _build_test_app()
+
+        resp = client.get('/v1/dev/user/folders')
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert isinstance(body, list)
+        assert len(body) == 1
+        assert body[0]['id'] == 'f1'
+        assert body[0]['name'] == 'Work'
