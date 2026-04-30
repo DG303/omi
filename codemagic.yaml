@@ -120,16 +120,16 @@ workflows:
         script: |
           set -e
 
-          EMPTY='{"version":"0.0.0","build_number":"0"}'
+          EMPTY='{"version":"0.0.0","buildNumber":"0"}'
           TF_RAW=$(app-store-connect get-latest-testflight-build-number "$APP_ID" --include-version --json 2>/dev/null) || TF_RAW=""
           AS_RAW=$(app-store-connect get-latest-app-store-build-number "$APP_ID" --include-version --json 2>/dev/null) || AS_RAW=""
           [ -z "$TF_RAW" ] && TF_RAW="$EMPTY"
           [ -z "$AS_RAW" ] && AS_RAW="$EMPTY"
 
           TF_V=$(echo "$TF_RAW" | jq -r '.version // "0.0.0"')
-          TF_B=$(echo "$TF_RAW" | jq -r '.build_number // "0"')
+          TF_B=$(echo "$TF_RAW" | jq -r '.buildNumber // "0"')
           AS_V=$(echo "$AS_RAW" | jq -r '.version // "0.0.0"')
-          AS_B=$(echo "$AS_RAW" | jq -r '.build_number // "0"')
+          AS_B=$(echo "$AS_RAW" | jq -r '.buildNumber // "0"')
 
           echo "TestFlight latest: ${TF_V}+${TF_B}"
           echo "App Store latest:  ${AS_V}+${AS_B}"
