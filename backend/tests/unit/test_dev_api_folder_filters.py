@@ -214,6 +214,7 @@ class TestDevGetConversationsFolderFilters:
         _mock_populate_speaker_names.reset_mock()
         # Ensure routers.developer uses the mocks regardless of import order
         import routers.developer as _dev_router
+
         _dev_router.populate_folder_names = _mock_populate_folder_names
         _dev_router.populate_speaker_names = _mock_populate_speaker_names
 
@@ -368,6 +369,7 @@ class TestDevApiHttpLayer:
         _mock_populate_speaker_names.reset_mock()
         # Ensure routers.developer uses the mocks regardless of import order
         import routers.developer as _dev_router
+
         _dev_router.populate_folder_names = _mock_populate_folder_names
         _dev_router.populate_speaker_names = _mock_populate_speaker_names
 
