@@ -375,7 +375,17 @@
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": {
+            "description": "Insufficient permissions. Required scope: `conversations:read`.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "example": { "detail": "Insufficient permissions. Required scope: conversations:read" }
+              }
+            }
+          },
+          "422": { "$ref": "#/components/responses/ValidationError" }
         }
       },
       "post": {
