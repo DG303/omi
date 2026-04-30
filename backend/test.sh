@@ -79,6 +79,7 @@ pytest tests/unit/test_timeout_middleware.py -v
 pytest tests/unit/test_pusher_circuit_breaker.py -v
 pytest tests/unit/test_lock_bypass_fixes.py -v
 pytest tests/unit/test_dev_api_lock_bypass.py -v
+pytest tests/unit/test_dev_api_folder_filters.py -v
 pytest tests/unit/test_rate_limiting.py -v
 pytest tests/unit/test_memories_batch.py -v
 pytest tests/unit/test_memories_create.py -v
