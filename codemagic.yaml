@@ -140,8 +140,18 @@ workflows:
             BUILD_NAME=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f1)
             BUILD_NUMBER=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f2)
           else
-            HIGHEST_V=$(printf '%s\n%s\n' "$TF_V" "$AS_V" | sort -V | tail -1)
-            if [ "$HIGHEST_V" = "$TF_V" ] && [ "$TF_V" != "$AS_V" ]; then
+            semver_gt() {
+              IFS='.' read -r a1 a2 a3 <<< "$1"
+              IFS='.' read -r b1 b2 b3 <<< "$2"
+              [ "$a1" -gt "$b1" ] && return 0
+              [ "$a1" -lt "$b1" ] && return 1
+              [ "$a2" -gt "$b2" ] && return 0
+              [ "$a2" -lt "$b2" ] && return 1
+              [ "$a3" -gt "$b3" ] && return 0
+              return 1
+            }
+
+            if semver_gt "$TF_V" "$AS_V"; then
               BUILD_NAME="$TF_V"
               echo "TF ahead of App Store -> reusing TF version $BUILD_NAME"
             else
