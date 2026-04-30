@@ -329,7 +329,7 @@
           {
             "name": "categories",
             "in": "query",
-            "description": "Comma-separated list of conversation categories to filter by (e.g. `work,personal`).",
+            "description": "Comma-separated list of conversation categories to filter by (e.g. `work,personal`). Matches conversations whose category is any of the listed values (OR semantics).",
             "schema": { "type": "string" }
           },
           {
