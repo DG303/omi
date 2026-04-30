@@ -65,7 +65,12 @@ export async function GET(request: NextRequest) {
 
     if (action === 'pending') {
       // Get pending payouts with affiliate details
-      const pendingRes = await goaffproGet('/admin/payments/pending');
+      // upto = last day of previous month (current month's transactions aren't payable yet)
+      const now = new Date();
+      const lastDayPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      const upto = lastDayPrevMonth.toISOString().split('T')[0];
+
+      const pendingRes = await goaffproGet(`/admin/payments/pending?upto=${upto}`);
       const pending = pendingRes.pending || [];
 
       // Get order details for affiliates with pending amounts
