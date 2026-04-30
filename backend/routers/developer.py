@@ -8,6 +8,7 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
 
+import database.folders as folders_db
 import database.memories as memories_db
 import database.conversations as conversations_db
 import database.dev_api_key as dev_api_key_db
@@ -16,6 +17,7 @@ import database.goals as goals_db
 import database.users as users_db
 from database.vector_db import upsert_memory_vectors_batch
 
+from models.folder import Folder
 from models.memories import MemoryCategory, Memory, MemoryDB
 from models.conversation import CreateConversation, ExternalIntegrationCreateConversation
 from models.conversation_enums import (
@@ -731,6 +733,20 @@ class CreateConversationFromTranscriptRequest(BaseModel):
     geolocation: Optional[Geolocation] = Field(default=None, description="Geolocation where conversation occurred")
 
 
+@router.get("/v1/dev/user/folders", response_model=List[Folder], tags=["developer"])
+def get_user_folders(uid: str = Depends(get_uid_with_conversations_read)):
+    """
+    Get all folders for the authenticated user.
+
+    Returns the user's folder list. On first access, system folders (Work, Personal, Social)
+    are automatically created if none exist — matching the behavior of the internal API.
+    """
+    result = folders_db.get_folders(uid)
+    if not result:
+        result = folders_db.initialize_system_folders(uid)
+    return result
+
+
 @router.get("/v1/dev/user/conversations", response_model=List[Conversation], tags=["developer"])
 def get_conversations(
     start_date: Optional[datetime] = None,
@@ -739,12 +755,16 @@ def get_conversations(
     limit: int = 25,
     offset: int = 0,
     include_transcript: bool = False,
+    folder_id: Optional[str] = Query(default=None, min_length=1),
+    starred: Optional[bool] = None,
     uid: str = Depends(get_uid_with_conversations_read),
 ):
     """
     Get conversations with optional transcript inclusion.
 
     - **include_transcript**: If True, includes full transcript_segments in the response
+    - **folder_id**: Filter by folder ID (must be a non-empty string if provided)
+    - **starred**: Filter by starred status (true/false)
     """
     try:
         category_list = [CategoryEnum(c.strip()) for c in categories.split(",") if c.strip()] if categories else []
@@ -760,6 +780,8 @@ def get_conversations(
         start_date=start_date,
         end_date=end_date,
         categories=[c.value for c in category_list],
+        folder_id=folder_id,
+        starred=starred,
     )
 
     # Filter out locked conversations completely
