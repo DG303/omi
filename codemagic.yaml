@@ -166,7 +166,6 @@ workflows:
 
             MAX_B=$TF_B
             [ "$AS_B" -gt "$MAX_B" ] && MAX_B=$AS_B
-            [ "${PROJECT_BUILD_NUMBER:-0}" -gt "$MAX_B" ] && MAX_B=$PROJECT_BUILD_NUMBER
             BUILD_NUMBER=$((MAX_B + 1))
           fi
 
