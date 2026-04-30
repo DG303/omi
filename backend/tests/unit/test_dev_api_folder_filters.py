@@ -86,6 +86,13 @@ sys.modules['firebase_admin.auth'].RevokedIdTokenError = type('RevokedIdTokenErr
 sys.modules['firebase_admin.auth'].CertificateFetchError = type('CertificateFetchError', (Exception,), {})
 sys.modules['firebase_admin.auth'].UserNotFoundError = type('UserNotFoundError', (Exception,), {})
 
+# ---- Mock populate_folder_names / populate_speaker_names ----
+# We patch these directly on routers.developer in each test class's setup_method,
+# so that the real utils.conversations.render module is never polluted regardless
+# of test execution order. This makes tests fully order-independent.
+_mock_populate_folder_names = MagicMock()
+_mock_populate_speaker_names = MagicMock()
+
 # ---- Prepare controllable mocks for database modules ----
 
 import database.conversations as conversations_db
@@ -98,12 +105,6 @@ _mock_get_folders = MagicMock(return_value=[])
 _mock_initialize_system_folders = MagicMock(return_value=[])
 folders_db.get_folders = _mock_get_folders
 folders_db.initialize_system_folders = _mock_initialize_system_folders
-
-# ---- Mock populate_folder_names / populate_speaker_names to avoid DB calls ----
-import utils.conversations.render as render_mod
-
-render_mod.populate_folder_names = MagicMock()
-render_mod.populate_speaker_names = MagicMock()
 
 
 # ---- Helper factories ----
@@ -209,8 +210,12 @@ class TestDevGetConversationsFolderFilters:
     def setup_method(self):
         _mock_get_conversations.reset_mock()
         _mock_get_conversations.return_value = []
-        render_mod.populate_folder_names.reset_mock()
-        render_mod.populate_speaker_names.reset_mock()
+        _mock_populate_folder_names.reset_mock()
+        _mock_populate_speaker_names.reset_mock()
+        # Ensure routers.developer uses the mocks regardless of import order
+        import routers.developer as _dev_router
+        _dev_router.populate_folder_names = _mock_populate_folder_names
+        _dev_router.populate_speaker_names = _mock_populate_speaker_names
 
     def test_dev_get_conversations_passes_folder_id_to_db(self):
         """folder_id is forwarded to conversations_db.get_conversations."""
@@ -307,7 +312,7 @@ class TestDevGetConversationsFolderFilters:
         assert call_kwargs.get('folder_id') == 'f1'
         assert call_kwargs.get('starred') is True
         # include_transcript=True triggers populate_speaker_names
-        render_mod.populate_speaker_names.assert_called_once()
+        _mock_populate_speaker_names.assert_called_once()
 
     def test_dev_get_conversations_with_unknown_folder_id_returns_empty(self):
         """When DB returns empty for unknown folder_id, handler returns empty list."""
@@ -347,8 +352,12 @@ class TestDevApiHttpLayer:
         _mock_get_folders.reset_mock()
         _mock_get_folders.return_value = [_make_folder('f1', 'Work')]
         _mock_initialize_system_folders.reset_mock()
-        render_mod.populate_folder_names.reset_mock()
-        render_mod.populate_speaker_names.reset_mock()
+        _mock_populate_folder_names.reset_mock()
+        _mock_populate_speaker_names.reset_mock()
+        # Ensure routers.developer uses the mocks regardless of import order
+        import routers.developer as _dev_router
+        _dev_router.populate_folder_names = _mock_populate_folder_names
+        _dev_router.populate_speaker_names = _mock_populate_speaker_names
 
     def test_starred_invalid_string_returns_422(self):
         """starred=notabool should return 422 (FastAPI bool validation)."""
