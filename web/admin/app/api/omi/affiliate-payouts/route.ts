@@ -103,8 +103,9 @@ export async function GET(request: NextRequest) {
               // Orders fetch failed — non-fatal
             }
 
-            // Check if affiliate has Stripe connected
+            // Check if affiliate has a valid Stripe account on our platform
             let stripeAccountId: string | null = null;
+            let stripeVerified = false;
             try {
               const details = typeof p.payment_details_data === 'string'
                 ? JSON.parse(p.payment_details_data)
@@ -117,6 +118,20 @@ export async function GET(request: NextRequest) {
               }
             } catch {
               // Parse failed
+            }
+
+            // Verify the account actually exists on our Stripe platform
+            if (stripeAccountId) {
+              try {
+                const stripe = (await import('@/lib/stripe')).getStripe();
+                const account = await stripe.accounts.retrieve(stripeAccountId);
+                stripeVerified = !!(account.charges_enabled && account.details_submitted);
+                if (!stripeVerified) {
+                  stripeAccountId = null; // Account exists but onboarding incomplete
+                }
+              } catch {
+                stripeAccountId = null; // Account doesn't exist on our platform
+              }
             }
 
             return {
@@ -213,9 +228,25 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Verify the account exists and is onboarded on our Stripe platform
+      const stripe = (await import('@/lib/stripe')).getStripe();
+      try {
+        const account = await stripe.accounts.retrieve(stripeAccountId);
+        if (!account.charges_enabled || !account.details_submitted) {
+          return NextResponse.json(
+            { error: 'Stripe account exists but onboarding is incomplete' },
+            { status: 400 }
+          );
+        }
+      } catch {
+        return NextResponse.json(
+          { error: 'Stripe account does not exist on this platform' },
+          { status: 400 }
+        );
+      }
+
       // 1. Send Stripe Transfer with idempotency key to prevent duplicate payments
       const idempotencyKey = `affiliate_payout_${affiliate_id}_${Math.round(amount * 100)}`;
-      const stripe = (await import('@/lib/stripe')).getStripe();
       const transfer = await stripe.transfers.create(
         {
           amount: Math.round(amount * 100), // cents
