@@ -157,7 +157,11 @@ workflows:
             else
               IFS='.' read -r MAJ MIN PATCH <<< "$AS_V"
               BUILD_NAME="${MAJ}.${MIN}.$((PATCH + 1))"
-              echo "TF (${TF_V}) <= AS (${AS_V}) -> bumping patch to $BUILD_NAME"
+              if [ "$TF_V" = "0.0.0" ]; then
+                echo "No TestFlight history -> bumping App Store patch to $BUILD_NAME"
+              else
+                echo "TF (${TF_V}) <= AS (${AS_V}) -> bumping patch to $BUILD_NAME"
+              fi
             fi
 
             MAX_B=$TF_B
