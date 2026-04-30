@@ -140,13 +140,14 @@ workflows:
             BUILD_NAME=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f1)
             BUILD_NUMBER=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f2)
           else
-            if [ "$TF_V" = "$AS_V" ]; then
-              IFS='.' read -r MAJ MIN PATCH <<< "$AS_V"
-              BUILD_NAME="${MAJ}.${MIN}.$((PATCH + 1))"
-              echo "TF and App Store at same version ($AS_V) -> bumping patch to $BUILD_NAME"
-            else
+            HIGHEST_V=$(printf '%s\n%s\n' "$TF_V" "$AS_V" | sort -V | tail -1)
+            if [ "$HIGHEST_V" = "$TF_V" ] && [ "$TF_V" != "$AS_V" ]; then
               BUILD_NAME="$TF_V"
               echo "TF ahead of App Store -> reusing TF version $BUILD_NAME"
+            else
+              IFS='.' read -r MAJ MIN PATCH <<< "$AS_V"
+              BUILD_NAME="${MAJ}.${MIN}.$((PATCH + 1))"
+              echo "TF (${TF_V}) <= AS (${AS_V}) -> bumping patch to $BUILD_NAME"
             fi
 
             MAX_B=$TF_B
