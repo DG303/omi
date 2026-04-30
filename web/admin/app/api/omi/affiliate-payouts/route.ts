@@ -197,9 +197,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Same 2-month-ago cutoff as the GET handler
+      const now = new Date();
+      const lastDayTwoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 1, 0);
+      const upto = lastDayTwoMonthsAgo.toISOString().split('T')[0];
+
       // Re-fetch pending amount and Stripe account server-side (never trust client)
       const pendingRes = await goaffproGet(
-        `/admin/payments/pending?affiliate_id=${affiliate_id}`
+        `/admin/payments/pending?affiliate_id=${affiliate_id}&upto=${upto}`
       );
       const pendingEntry = (pendingRes.pending || [])[0];
       if (!pendingEntry || pendingEntry.pending < 10) {
@@ -267,11 +272,20 @@ export async function POST(request: NextRequest) {
       // If this fails, return partial success with transfer_id so admin can reconcile
       try {
         const unpaidRes = await goaffproGet(
-          `/admin/payments/transactions/unpaid?affiliate_id=${affiliate_id}&upto=${new Date().toISOString().split('T')[0]}`
+          `/admin/payments/transactions/unpaid?affiliate_id=${affiliate_id}&upto=${upto}`
         );
         const txIds = (unpaidRes.transactions || [])
           .map((t: { tx_id: number }) => t.tx_id)
           .filter(Boolean);
+
+        if (txIds.length === 0) {
+          return NextResponse.json({
+            success: true,
+            partial: true,
+            transfer_id: transfer.id,
+            warning: 'Transfer sent but no unpaid transactions found to mark as paid in GoAffPro. Transfer ID: ' + transfer.id,
+          });
+        }
 
         await goaffproPost('/admin/payments/transactions/pay', {
           items: [
