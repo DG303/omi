@@ -166,11 +166,48 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     if (action === 'transfer') {
-      const { affiliate_id, amount, stripe_account_id } = body;
+      const { affiliate_id } = body;
 
-      if (!affiliate_id || !amount || !stripe_account_id) {
+      if (!affiliate_id) {
         return NextResponse.json(
-          { error: 'affiliate_id, amount, and stripe_account_id are required' },
+          { error: 'affiliate_id is required' },
+          { status: 400 }
+        );
+      }
+
+      // Re-fetch pending amount and Stripe account server-side (never trust client)
+      const pendingRes = await goaffproGet(
+        `/admin/payments/pending?affiliate_id=${affiliate_id}`
+      );
+      const pendingEntry = (pendingRes.pending || [])[0];
+      if (!pendingEntry || pendingEntry.pending < 10) {
+        return NextResponse.json(
+          { error: 'No pending amount above minimum threshold' },
+          { status: 400 }
+        );
+      }
+
+      const amount = pendingEntry.pending;
+
+      // Extract Stripe account ID from affiliate's payment details
+      let stripeAccountId: string | null = null;
+      try {
+        const details = typeof pendingEntry.payment_details_data === 'string'
+          ? JSON.parse(pendingEntry.payment_details_data)
+          : pendingEntry.payment_details_data || {};
+        for (const val of Object.values(details)) {
+          if (typeof val === 'string' && (val as string).startsWith('acct_')) {
+            stripeAccountId = val as string;
+            break;
+          }
+        }
+      } catch {
+        // Parse failed
+      }
+
+      if (!stripeAccountId) {
+        return NextResponse.json(
+          { error: 'Affiliate has no Stripe account connected' },
           { status: 400 }
         );
       }
@@ -180,7 +217,7 @@ export async function POST(request: NextRequest) {
       const transfer = await stripe.transfers.create({
         amount: Math.round(amount * 100), // cents
         currency: 'usd',
-        destination: stripe_account_id,
+        destination: stripeAccountId,
         metadata: { affiliate_id: String(affiliate_id) },
       });
 

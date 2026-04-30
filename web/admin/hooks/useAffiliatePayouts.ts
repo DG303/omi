@@ -49,15 +49,13 @@ export function useAffiliatePayouts() {
     loadPayouts();
   }, [loadPayouts]);
 
-  const transfer = async (affiliateId: number, amount: number, stripeAccountId: string) => {
+  const transfer = async (affiliateId: number) => {
     const response = await fetchWithAuth('/api/omi/affiliate-payouts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'transfer',
         affiliate_id: affiliateId,
-        amount,
-        stripe_account_id: stripeAccountId,
       }),
     });
 

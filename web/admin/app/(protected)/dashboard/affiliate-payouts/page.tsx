@@ -51,11 +51,7 @@ export default function AffiliatePayoutsPage() {
     }
     setTransferring(affiliate.affiliate_id);
     try {
-      const result = await transfer(
-        affiliate.affiliate_id,
-        affiliate.pending_amount,
-        affiliate.stripe_account_id
-      );
+      const result = await transfer(affiliate.affiliate_id);
       toast.success(
         `Transferred ${formatCurrency(affiliate.pending_amount)} to ${affiliate.name} (${result.transfer_id})`
       );
