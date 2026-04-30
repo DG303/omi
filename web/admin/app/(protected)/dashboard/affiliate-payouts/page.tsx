@@ -52,9 +52,13 @@ export default function AffiliatePayoutsPage() {
     setTransferring(affiliate.affiliate_id);
     try {
       const result = await transfer(affiliate.affiliate_id);
-      toast.success(
-        `Transferred ${formatCurrency(affiliate.pending_amount)} to ${affiliate.name} (${result.transfer_id})`
-      );
+      if (result.partial) {
+        toast.warning(result.warning);
+      } else {
+        toast.success(
+          `Transferred ${formatCurrency(affiliate.pending_amount)} to ${affiliate.name} (${result.transfer_id})`
+        );
+      }
       setConfirmDialog(null);
       refresh();
     } catch (err) {

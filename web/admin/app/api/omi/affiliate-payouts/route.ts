@@ -85,14 +85,15 @@ export async function GET(request: NextRequest) {
             amounts: { sales_commission: number; mlm_reward: number };
           }) => {
             // Get orders for this affiliate to analyze traffic sources
-            let orders: Array<{ conversion_details?: { landing_page?: string; referrer?: string } }> = [];
+            let totalOrderCount = 0;
             let adOrders = 0;
             let organicOrders = 0;
             try {
               const ordersRes = await goaffproGet(
                 `/admin/orders?affiliate_id=${p.affiliate_id}&status=approved&fields=id,conversion_details&limit=50`
               );
-              orders = ordersRes.orders || [];
+              const orders = ordersRes.orders || [];
+              totalOrderCount = ordersRes.total_results || orders.length;
               for (const o of orders) {
                 const { isAd } = parseTrafficSource(o.conversion_details?.landing_page || '');
                 if (isAd) adOrders++;
@@ -128,7 +129,7 @@ export async function GET(request: NextRequest) {
               total_paid: p.total_paid,
               payment_method: p.payment_method,
               stripe_account_id: stripeAccountId,
-              total_orders: orders.length,
+              total_orders: totalOrderCount,
               ad_orders: adOrders,
               organic_orders: organicOrders,
               sales_commission: p.amounts?.sales_commission || 0,
@@ -212,26 +213,41 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // 1. Send Stripe Transfer
+      // 1. Send Stripe Transfer with idempotency key to prevent duplicate payments
+      const idempotencyKey = `affiliate_payout_${affiliate_id}_${Math.round(amount * 100)}`;
       const stripe = (await import('@/lib/stripe')).getStripe();
-      const transfer = await stripe.transfers.create({
-        amount: Math.round(amount * 100), // cents
-        currency: 'usd',
-        destination: stripeAccountId,
-        metadata: { affiliate_id: String(affiliate_id) },
-      });
+      const transfer = await stripe.transfers.create(
+        {
+          amount: Math.round(amount * 100), // cents
+          currency: 'usd',
+          destination: stripeAccountId,
+          metadata: { affiliate_id: String(affiliate_id) },
+        },
+        { idempotencyKey }
+      );
 
       // 2. Mark as paid in GoAffPro
-      await goaffproPost('/admin/payments', {
-        payments: [
-          {
-            affiliate_id: String(affiliate_id),
-            amount,
-            payment_method: 'stripe',
-            admin_note: `Stripe transfer ${transfer.id}`,
-          },
-        ],
-      });
+      // If this fails, return partial success with transfer_id so admin can reconcile
+      try {
+        await goaffproPost('/admin/payments', {
+          payments: [
+            {
+              affiliate_id: String(affiliate_id),
+              amount,
+              payment_method: 'stripe',
+              admin_note: `Stripe transfer ${transfer.id}`,
+            },
+          ],
+        });
+      } catch (markError) {
+        console.error('Stripe transfer succeeded but GoAffPro mark-as-paid failed:', markError);
+        return NextResponse.json({
+          success: true,
+          partial: true,
+          transfer_id: transfer.id,
+          warning: 'Transfer sent but failed to mark as paid in GoAffPro. Transfer ID: ' + transfer.id,
+        });
+      }
 
       return NextResponse.json({
         success: true,
