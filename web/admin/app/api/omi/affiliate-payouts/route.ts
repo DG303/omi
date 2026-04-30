@@ -257,16 +257,24 @@ export async function POST(request: NextRequest) {
         { idempotencyKey }
       );
 
-      // 2. Mark as paid in GoAffPro
+      // 2. Fetch unpaid transaction IDs, then mark as paid in GoAffPro
       // If this fails, return partial success with transfer_id so admin can reconcile
       try {
-        await goaffproPost('/admin/payments', {
-          payments: [
+        const unpaidRes = await goaffproGet(
+          `/admin/payments/transactions/unpaid?affiliate_id=${affiliate_id}&upto=${new Date().toISOString().split('T')[0]}`
+        );
+        const txIds = (unpaidRes.transactions || [])
+          .map((t: { tx_id: number }) => t.tx_id)
+          .filter(Boolean);
+
+        await goaffproPost('/admin/payments/transactions/pay', {
+          items: [
             {
-              affiliate_id: String(affiliate_id),
+              affiliate_id: Number(affiliate_id),
               amount,
+              tx_ids: txIds,
               payment_method: 'stripe',
-              admin_note: `Stripe transfer ${transfer.id}`,
+              payment_note: `Stripe transfer ${transfer.id}`,
             },
           ],
         });
