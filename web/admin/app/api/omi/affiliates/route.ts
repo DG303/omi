@@ -37,6 +37,23 @@ const LIST_FIELDS = [
   'group_id',
 ].join(',');
 
+// GoAffPro returns empty objects when filtering by id without an explicit
+// fields list. Pass the full set of fields we want to render in the detail
+// dialog.
+const DETAIL_FIELDS = [
+  ...LIST_FIELDS.split(','),
+  'facebook',
+  'twitter',
+  'instagram',
+  'address_1',
+  'state',
+  'zip_code',
+  'payment_details',
+  'comments',
+  'personal_message',
+  'registration_ip',
+].join(',');
+
 export async function GET(request: NextRequest) {
   const authResult = await verifyAdmin(request);
   if (authResult instanceof NextResponse) return authResult;
@@ -93,8 +110,11 @@ export async function GET(request: NextRequest) {
       }
 
       // GoAffPro doesn't have a singular GET /admin/affiliates/{id}, so use the
-      // list endpoint with id filter to get the full record.
-      const res = await goaffproGet(`/admin/affiliates?id=${id}&limit=1`);
+      // list endpoint with id filter. The fields parameter is required — without
+      // it the API returns an empty object for filtered queries.
+      const res = await goaffproGet(
+        `/admin/affiliates?id=${id}&limit=1&fields=${DETAIL_FIELDS}`
+      );
       const affiliate = (res.affiliates || [])[0];
       if (!affiliate) {
         return NextResponse.json({ error: 'Affiliate not found' }, { status: 404 });
