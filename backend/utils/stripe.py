@@ -70,6 +70,7 @@ def create_subscription_checkout_session(uid: str, price_id: str, idempotency_ke
 
         if customer_id:
             session_params['customer'] = customer_id
+            session_params['customer_update'] = {'name': 'auto', 'address': 'auto'}
 
         if idempotency_key:
             session_params['idempotency_key'] = idempotency_key

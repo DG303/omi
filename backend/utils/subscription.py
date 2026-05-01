@@ -478,6 +478,7 @@ def _has_active_stripe_subscription(uid: str) -> bool:
                 return True
     except Exception as e:
         logger.error(f"Error checking Stripe for active subscriptions: {e}")
+        return True  # fail-closed: block checkout if Stripe is unreachable
     return False
 
 
