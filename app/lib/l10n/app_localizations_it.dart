@@ -9217,4 +9217,10 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Modalità vocale';
+
+  @override
+  String get quickActionAskOmi => 'Chiedi qualsiasi cosa a Omi';
 }

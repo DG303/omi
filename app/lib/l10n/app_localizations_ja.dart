@@ -9013,4 +9013,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => '音声モード';
+
+  @override
+  String get quickActionAskOmi => 'Omiに何でも聞く';
 }

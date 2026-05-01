@@ -9159,4 +9159,10 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Häälrežiim';
+
+  @override
+  String get quickActionAskOmi => 'Küsi Omilt midagi';
 }

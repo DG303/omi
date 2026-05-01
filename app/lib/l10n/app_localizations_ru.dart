@@ -9191,4 +9191,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Голосовой режим';
+
+  @override
+  String get quickActionAskOmi => 'Спросите Omi что угодно';
 }

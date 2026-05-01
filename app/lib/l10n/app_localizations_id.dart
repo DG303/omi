@@ -9172,4 +9172,10 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Mode Suara';
+
+  @override
+  String get quickActionAskOmi => 'Tanyakan apa saja kepada Omi';
 }

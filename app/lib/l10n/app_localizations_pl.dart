@@ -9182,4 +9182,10 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Tryb głosowy';
+
+  @override
+  String get quickActionAskOmi => 'Zapytaj Omi o cokolwiek';
 }

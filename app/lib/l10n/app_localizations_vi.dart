@@ -9162,4 +9162,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Chế độ giọng nói';
+
+  @override
+  String get quickActionAskOmi => 'Hỏi Omi bất cứ điều gì';
 }

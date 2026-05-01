@@ -9161,4 +9161,10 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Äänitila';
+
+  @override
+  String get quickActionAskOmi => 'Kysy Omilta mitä tahansa';
 }

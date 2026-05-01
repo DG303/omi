@@ -9245,4 +9245,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Mode vocal';
+
+  @override
+  String get quickActionAskOmi => 'Demandez n\'importe quoi à Omi';
 }

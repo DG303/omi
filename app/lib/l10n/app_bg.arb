@@ -2960,5 +2960,7 @@
   "mindMap": "Mind Map",
   "@mindMap": {
     "description": "Section header for memory knowledge graph on home page"
-  }
+  },
+  "voiceMode": "Гласов режим",
+  "quickActionAskOmi": "Попитайте Omi всичко"
 }

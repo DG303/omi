@@ -9211,4 +9211,10 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get mindMap => 'Mind Map';
+
+  @override
+  String get voiceMode => 'Гласовен режим';
+
+  @override
+  String get quickActionAskOmi => 'Прашајте го Omi за сè';
 }
