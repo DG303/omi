@@ -438,8 +438,14 @@ class TestDevApiHttpLayer:
 
         assert resp.status_code == 403
 
-    def test_dev_get_folders_with_scope_returns_200(self):
-        """GET /v1/dev/user/folders with valid scope should return 200 and a list."""
+    def test_dev_get_folders_returns_200_with_list_body(self):
+        """GET /v1/dev/user/folders returns 200 with a JSON list body when uid is injected.
+
+        Note: this test overrides ``get_uid_with_conversations_read`` directly via
+        ``_build_test_app``, so it does NOT exercise the scope-checking code path.
+        Scope enforcement is covered by ``test_dev_get_folders_without_scope_returns_403``,
+        which overrides ``get_api_key_auth`` instead.
+        """
         _, client = _build_test_app()
 
         resp = client.get('/v1/dev/user/folders')
