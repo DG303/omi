@@ -17150,6 +17150,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Record a call with live transcription'**
   String get phoneCallSubtitle;
+
+  /// Hint text for the action items search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search action items'**
+  String get searchActionItems;
+
+  /// Top-bar button to enter selection mode on the action items page
+  ///
+  /// In en, this message translates to:
+  /// **'Select multiple'**
+  String get selectActionItems;
+
+  /// Title of the bottom sheet listing platforms to bulk-export selected action items to
+  ///
+  /// In en, this message translates to:
+  /// **'Export {count} item(s) to…'**
+  String chooseExportDestination(int count);
+
+  /// Snackbar shown while a bulk export is running
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting…'**
+  String get bulkExportInProgress;
+
+  /// Snackbar shown when a bulk export completes for all items
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {count} to {platform}'**
+  String bulkExportSuccess(int count, String platform);
+
+  /// Snackbar shown when only some items in a bulk export succeeded
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {success} of {total} to {platform}'**
+  String bulkExportPartial(int success, int total, String platform);
+
+  /// Action menu entry to reveal completed tasks on the action items page
+  ///
+  /// In en, this message translates to:
+  /// **'Show completed'**
+  String get showCompletedTasks;
+
+  /// Action menu entry to hide completed tasks on the action items page
+  ///
+  /// In en, this message translates to:
+  /// **'Hide completed'**
+  String get hideCompletedTasks;
+
+  /// Action menu entry to select every task in the action items list
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAllTasksMenu;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
