@@ -249,9 +249,9 @@ class _BatteryInfoWidgetState extends State<BatteryInfoWidget> {
                                       .copyWith(color: Colors.white, fontSize: 12),
                                 )
                               : isMemoriesPage
-                                  ? const Text(
-                                      'Connect',
-                                      style: TextStyle(color: Colors.white, fontSize: 12),
+                                  ? Text(
+                                      context.l10n.connect,
+                                      style: const TextStyle(color: Colors.white, fontSize: 12),
                                     )
                                   : const SizedBox.shrink(),
                         ],
@@ -301,10 +301,10 @@ class _BatteryInfoWidgetState extends State<BatteryInfoWidget> {
                                         const SizedBox(width: 6),
                                         Text(
                                           isRecording
-                                              ? 'Stop'
+                                              ? context.l10n.stop
                                               : isInitialising
                                                   ? '...'
-                                                  : 'Record',
+                                                  : context.l10n.record,
                                           style: const TextStyle(
                                               color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                                         ),
@@ -416,15 +416,15 @@ class _RecordOptionsSheet extends StatelessWidget {
           const SizedBox(height: 18),
           _RecordOption(
             icon: FontAwesomeIcons.microphone,
-            title: 'Record with Phone Mic',
-            subtitle: 'Capture audio around you',
+            title: context.l10n.recordWithPhoneMic,
+            subtitle: context.l10n.recordWithPhoneMicSubtitle,
             onTap: onPickPhoneMic,
           ),
           const SizedBox(height: 10),
           _RecordOption(
             icon: Icons.phone_in_talk_rounded,
-            title: 'Phone Call',
-            subtitle: 'Record a call with live transcription',
+            title: context.l10n.phoneCall,
+            subtitle: context.l10n.phoneCallSubtitle,
             onTap: onPickPhoneCall,
           ),
         ],
