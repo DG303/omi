@@ -87,3 +87,33 @@ jobs:
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
         run: echo ${{ steps.deploy.outputs.url }}
+
+      - name: Compute deployment metadata
+        id: meta
+        shell: bash
+        run: |
+          RELEASE_VERSION="${{ github.event.inputs.release_version || github.ref_name }}"
+          DEPLOY_TAG="${{ github.event.inputs.deploy_tags || github.sha }}"
+          DEPLOY_BRANCH="${{ github.event.inputs.branch }}"
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+          STATE="${{ job.status }}"
+
+          echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "deploy_tag=$DEPLOY_TAG" >> "$GITHUB_OUTPUT"
+          echo "deploy_branch=$DEPLOY_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Deployment Summary"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Name | ${{ github.event.repository.name }} |"
+            echo "| Environment | $ENVIRONMENT |"
+            echo "| Release version | $RELEASE_VERSION |"
+            echo "| Branch | $DEPLOY_BRANCH |"
+            echo "| Tag | $DEPLOY_TAG |"
+            echo "| State | $STATE |"
+            echo "| Actor | ${{ github.actor }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
