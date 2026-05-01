@@ -18,15 +18,15 @@ import {
 import { formatCurrency } from '@/lib/utils';
 
 function statusLabel(status: string | undefined) {
-  switch (String(status ?? '')) {
-    case '1':
+  switch ((status ?? '').toLowerCase()) {
+    case 'approved':
       return <Badge className="bg-green-600 hover:bg-green-600 text-white">Approved</Badge>;
-    case '0':
+    case 'pending':
       return <Badge variant="secondary">Pending</Badge>;
-    case '2':
-      return <Badge variant="destructive">Rejected</Badge>;
+    case 'blocked':
+      return <Badge variant="destructive">Blocked</Badge>;
     default:
-      return <Badge variant="outline">Unknown</Badge>;
+      return <Badge variant="outline">{status || 'Unknown'}</Badge>;
   }
 }
 

@@ -26,22 +26,21 @@ import { RefreshCw, Search, Loader2 } from 'lucide-react';
 
 const STATUS_FILTERS = [
   { value: 'all', label: 'All statuses' },
-  { value: '1', label: 'Approved' },
-  { value: '0', label: 'Pending' },
-  { value: '2', label: 'Rejected' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'blocked', label: 'Blocked' },
 ];
 
 function statusBadge(status: string | undefined) {
-  // GoAffPro stores status as a numeric code: 0=pending, 1=approved, 2=rejected
-  switch (String(status ?? '')) {
-    case '1':
+  switch ((status ?? '').toLowerCase()) {
+    case 'approved':
       return <Badge className="bg-green-600 hover:bg-green-600 text-white">Approved</Badge>;
-    case '0':
+    case 'pending':
       return <Badge variant="secondary">Pending</Badge>;
-    case '2':
-      return <Badge variant="destructive">Rejected</Badge>;
+    case 'blocked':
+      return <Badge variant="destructive">Blocked</Badge>;
     default:
-      return <Badge variant="outline">Unknown</Badge>;
+      return <Badge variant="outline">{status || 'Unknown'}</Badge>;
   }
 }
 
