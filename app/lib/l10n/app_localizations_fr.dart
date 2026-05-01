@@ -9251,4 +9251,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Demandez n\'importe quoi à Omi';
+
+  @override
+  String get record => 'Enregistrer';
+
+  @override
+  String get stop => 'Arrêter';
+
+  @override
+  String get recordWithPhoneMic => 'Enregistrer avec le micro du téléphone';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Capturez l\'audio autour de vous';
+
+  @override
+  String get phoneCall => 'Appel téléphonique';
+
+  @override
+  String get phoneCallSubtitle => 'Enregistrez un appel avec transcription en direct';
 }

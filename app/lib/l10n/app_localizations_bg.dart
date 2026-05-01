@@ -9203,4 +9203,22 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Попитайте Omi всичко';
+
+  @override
+  String get record => 'Запис';
+
+  @override
+  String get stop => 'Спри';
+
+  @override
+  String get recordWithPhoneMic => 'Запис с микрофона на телефона';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Заснемайте звук около вас';
+
+  @override
+  String get phoneCall => 'Телефонно обаждане';
+
+  @override
+  String get phoneCallSubtitle => 'Записвайте обаждане с транскрипция в реално време';
 }

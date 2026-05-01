@@ -9019,4 +9019,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omiに何でも聞く';
+
+  @override
+  String get record => '録音';
+
+  @override
+  String get stop => '停止';
+
+  @override
+  String get recordWithPhoneMic => '電話のマイクで録音';
+
+  @override
+  String get recordWithPhoneMicSubtitle => '周囲の音声を録音';
+
+  @override
+  String get phoneCall => '電話';
+
+  @override
+  String get phoneCallSubtitle => 'ライブ文字起こしで通話を録音';
 }

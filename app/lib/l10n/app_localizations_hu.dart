@@ -9207,4 +9207,22 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Kérdezz meg bármit Omitól';
+
+  @override
+  String get record => 'Felvétel';
+
+  @override
+  String get stop => 'Leállítás';
+
+  @override
+  String get recordWithPhoneMic => 'Felvétel a telefon mikrofonjával';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Rögzítse a környezete hangját';
+
+  @override
+  String get phoneCall => 'Telefonhívás';
+
+  @override
+  String get phoneCallSubtitle => 'Hívás rögzítése élő átirattal';
 }

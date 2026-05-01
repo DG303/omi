@@ -9165,4 +9165,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Ask Omi Anything';
+
+  @override
+  String get record => 'Record';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
+  String get recordWithPhoneMic => 'Record with Phone Mic';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Capture audio around you';
+
+  @override
+  String get phoneCall => 'Phone Call';
+
+  @override
+  String get phoneCallSubtitle => 'Record a call with live transcription';
 }

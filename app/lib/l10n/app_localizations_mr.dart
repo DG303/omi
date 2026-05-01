@@ -9179,4 +9179,22 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omi ला काहीही विचारा';
+
+  @override
+  String get record => 'रेकॉर्ड';
+
+  @override
+  String get stop => 'थांबवा';
+
+  @override
+  String get recordWithPhoneMic => 'फोन माइकने रेकॉर्ड करा';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'तुमच्या आजूबाजूचा ऑडिओ कॅप्चर करा';
+
+  @override
+  String get phoneCall => 'फोन कॉल';
+
+  @override
+  String get phoneCallSubtitle => 'लाइव्ह ट्रान्स्क्रिप्शनसह कॉल रेकॉर्ड करा';
 }

@@ -9194,4 +9194,22 @@ class AppLocalizationsBe extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Спытайце ў Омі што заўгодна';
+
+  @override
+  String get record => 'Запісаць';
+
+  @override
+  String get stop => 'Спыніць';
+
+  @override
+  String get recordWithPhoneMic => 'Запіс мікрафонам тэлефона';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Запісвайце гук вакол сябе';
+
+  @override
+  String get phoneCall => 'Тэлефонны званок';
+
+  @override
+  String get phoneCallSubtitle => 'Запіс званка з жывой транскрыпцыяй';
 }

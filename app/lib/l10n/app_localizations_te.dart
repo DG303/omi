@@ -9219,4 +9219,22 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omi ని ఏమైనా అడగండి';
+
+  @override
+  String get record => 'రికార్డ్';
+
+  @override
+  String get stop => 'ఆపు';
+
+  @override
+  String get recordWithPhoneMic => 'ఫోన్ మైక్‌తో రికార్డ్ చేయండి';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'మీ చుట్టూ ఉన్న ఆడియోను క్యాప్చర్ చేయండి';
+
+  @override
+  String get phoneCall => 'ఫోన్ కాల్';
+
+  @override
+  String get phoneCallSubtitle => 'లైవ్ ట్రాన్స్‌క్రిప్షన్‌తో కాల్‌ను రికార్డ్ చేయండి';
 }

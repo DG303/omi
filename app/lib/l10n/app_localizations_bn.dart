@@ -9177,4 +9177,22 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omi কে যেকোনো কিছু জিজ্ঞেস করুন';
+
+  @override
+  String get record => 'রেকর্ড';
+
+  @override
+  String get stop => 'থামান';
+
+  @override
+  String get recordWithPhoneMic => 'ফোনের মাইক্রোফোন দিয়ে রেকর্ড করুন';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'আপনার চারপাশের অডিও ক্যাপচার করুন';
+
+  @override
+  String get phoneCall => 'ফোন কল';
+
+  @override
+  String get phoneCallSubtitle => 'লাইভ ট্রান্সক্রিপশন সহ কল রেকর্ড করুন';
 }

@@ -9171,4 +9171,22 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'از Omi هر چیزی بپرسید';
+
+  @override
+  String get record => 'ضبط';
+
+  @override
+  String get stop => 'توقف';
+
+  @override
+  String get recordWithPhoneMic => 'ضبط با میکروفون تلفن';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'صدای اطراف خود را ضبط کنید';
+
+  @override
+  String get phoneCall => 'تماس تلفنی';
+
+  @override
+  String get phoneCallSubtitle => 'یک تماس را با رونویسی زنده ضبط کنید';
 }

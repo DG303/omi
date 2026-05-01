@@ -9192,4 +9192,22 @@ class AppLocalizationsSl extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Vprašajte Omi karkoli';
+
+  @override
+  String get record => 'Posnemi';
+
+  @override
+  String get stop => 'Ustavi';
+
+  @override
+  String get recordWithPhoneMic => 'Snemaj s telefonskim mikrofonom';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Posnemite zvok okoli sebe';
+
+  @override
+  String get phoneCall => 'Telefonski klic';
+
+  @override
+  String get phoneCallSubtitle => 'Posnemite klic s prepisom v živo';
 }

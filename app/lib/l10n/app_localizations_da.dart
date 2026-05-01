@@ -9154,4 +9154,22 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Spørg Omi om alt';
+
+  @override
+  String get record => 'Optag';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
+  String get recordWithPhoneMic => 'Optag med telefonens mikrofon';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Optag lyden omkring dig';
+
+  @override
+  String get phoneCall => 'Telefonopkald';
+
+  @override
+  String get phoneCallSubtitle => 'Optag et opkald med live-transskription';
 }

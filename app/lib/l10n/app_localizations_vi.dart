@@ -9168,4 +9168,22 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Hỏi Omi bất cứ điều gì';
+
+  @override
+  String get record => 'Ghi âm';
+
+  @override
+  String get stop => 'Dừng';
+
+  @override
+  String get recordWithPhoneMic => 'Ghi âm bằng micro điện thoại';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Ghi lại âm thanh xung quanh bạn';
+
+  @override
+  String get phoneCall => 'Cuộc gọi điện thoại';
+
+  @override
+  String get phoneCallSubtitle => 'Ghi âm cuộc gọi với phiên âm trực tiếp';
 }

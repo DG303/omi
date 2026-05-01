@@ -9005,4 +9005,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => '向Omi询问任何事';
+
+  @override
+  String get record => '录音';
+
+  @override
+  String get stop => '停止';
+
+  @override
+  String get recordWithPhoneMic => '用手机麦克风录音';
+
+  @override
+  String get recordWithPhoneMicSubtitle => '捕捉您周围的声音';
+
+  @override
+  String get phoneCall => '电话';
+
+  @override
+  String get phoneCallSubtitle => '录制带实时转录的通话';
 }

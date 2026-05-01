@@ -9181,4 +9181,22 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omi\'ye her şeyi sorun';
+
+  @override
+  String get record => 'Kaydet';
+
+  @override
+  String get stop => 'Durdur';
+
+  @override
+  String get recordWithPhoneMic => 'Telefon mikrofonuyla kaydet';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Etrafınızdaki sesi yakalayın';
+
+  @override
+  String get phoneCall => 'Telefon araması';
+
+  @override
+  String get phoneCallSubtitle => 'Canlı transkripsiyonla bir aramayı kaydedin';
 }

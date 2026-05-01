@@ -9217,4 +9217,22 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Прашајте го Omi за сè';
+
+  @override
+  String get record => 'Сними';
+
+  @override
+  String get stop => 'Стоп';
+
+  @override
+  String get recordWithPhoneMic => 'Снимај со микрофон на телефонот';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Снимајте звук околу вас';
+
+  @override
+  String get phoneCall => 'Телефонски повик';
+
+  @override
+  String get phoneCallSubtitle => 'Снимајте повик со транскрипција во живо';
 }

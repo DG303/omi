@@ -9096,4 +9096,22 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'שאל את Omi כל דבר';
+
+  @override
+  String get record => 'הקלט';
+
+  @override
+  String get stop => 'עצור';
+
+  @override
+  String get recordWithPhoneMic => 'הקלט עם מיקרופון הטלפון';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'הקלט שמע סביבך';
+
+  @override
+  String get phoneCall => 'שיחת טלפון';
+
+  @override
+  String get phoneCallSubtitle => 'הקלט שיחה עם תמלול חי';
 }
