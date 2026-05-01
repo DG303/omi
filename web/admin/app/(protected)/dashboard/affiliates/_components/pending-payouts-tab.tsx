@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function AffiliatePayoutsPage() {
+export function PendingPayoutsTab() {
   const { affiliates, loading, error, refresh, transfer } = useAffiliatePayouts();
   const [transferring, setTransferring] = useState<number | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<AffiliatePayout | null>(null);
@@ -71,12 +71,6 @@ export default function AffiliatePayoutsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Affiliate Payouts</h1>
-          <p className="text-muted-foreground">
-            Review and process affiliate commission payouts
-          </p>
-        </div>
         <div className="grid gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
@@ -100,35 +94,21 @@ export default function AffiliatePayoutsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Affiliate Payouts</h1>
-        </div>
-        <Card>
-          <CardContent className="pt-6 text-center text-destructive">
-            {error}
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="pt-6 text-center text-destructive">{error}</CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Affiliate Payouts</h1>
-          <p className="text-muted-foreground">
-            Review and process affiliate commission payouts
-          </p>
-        </div>
+      <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={refresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
       </div>
 
-      {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -149,9 +129,7 @@ export default function AffiliatePayoutsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{withStripe.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Ready for transfer
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Ready for transfer</p>
           </CardContent>
         </Card>
         <Card>
@@ -161,14 +139,11 @@ export default function AffiliatePayoutsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{withoutStripe.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Need to connect Stripe first
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Need to connect Stripe first</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Affiliates ready for payout */}
       {withStripe.length > 0 && (
         <Card>
           <CardHeader>
@@ -220,12 +195,8 @@ export default function AffiliatePayoutsPage() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(a.total_earned)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(a.total_paid)}
-                    </TableCell>
+                    <TableCell className="text-right">{formatCurrency(a.total_earned)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(a.total_paid)}</TableCell>
                     <TableCell className="text-right font-medium">
                       {formatCurrency(a.pending_amount)}
                     </TableCell>
@@ -251,7 +222,6 @@ export default function AffiliatePayoutsPage() {
         </Card>
       )}
 
-      {/* Affiliates without Stripe */}
       {withoutStripe.length > 0 && (
         <Card>
           <CardHeader>
@@ -298,7 +268,6 @@ export default function AffiliatePayoutsPage() {
         </Card>
       )}
 
-      {/* Confirm transfer dialog */}
       <Dialog open={!!confirmDialog} onOpenChange={() => setConfirmDialog(null)}>
         <DialogContent>
           <DialogHeader>
