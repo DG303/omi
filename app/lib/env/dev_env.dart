@@ -13,10 +13,6 @@ final class DevEnv implements EnvFields {
   final String? openAIAPIKey = _DevEnv.openAIAPIKey;
 
   @override
-  @EnviedField(varName: 'MIXPANEL_PROJECT_TOKEN', obfuscate: true)
-  final String? mixpanelProjectToken = _DevEnv.mixpanelProjectToken;
-
-  @override
   @EnviedField(varName: 'POSTHOG_API_KEY', obfuscate: true)
   final String? posthogApiKey = _DevEnv.posthogApiKey;
 
