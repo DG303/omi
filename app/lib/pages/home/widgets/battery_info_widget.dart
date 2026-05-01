@@ -41,6 +41,7 @@ class _BatteryInfoWidgetState extends State<BatteryInfoWidget> {
         },
         onPickPhoneCall: () {
           Navigator.pop(sheetContext);
+          if (!context.mounted) return;
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const PhoneCallsPage()),
