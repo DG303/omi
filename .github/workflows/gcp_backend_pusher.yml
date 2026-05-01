@@ -89,24 +89,10 @@ jobs:
         run: echo ${{ steps.deploy.outputs.url }}
 
       - name: Compute deployment metadata
-        id: meta
-        shell: bash
-        run: |
-          [[ -n "${{ github.event.inputs.release_version }}" ]] && RELEASE_VERSION="${{ github.event.inputs.release_version }}" || RELEASE_VERSION=""
-          ENVIRONMENT="${{ github.event.inputs.environment }}"
-          DEPLOY_BRANCH="${{ github.event.inputs.branch }}"
-          DEPLOY_TAG="${GITHUB_SHA::7}"
-          STATUS="${{ job.status }}"
-
-          {
-            echo "### Deployment Summary"
-            echo ""
-            echo "| Field | Value |"
-            echo "|---|---|"
-            echo "| **Name** | ${{ github.workflow }} |"
-            echo "| **Environment** | $ENVIRONMENT |"
-            [[ -n "$RELEASE_VERSION" ]] && echo "| **Release version** | $RELEASE_VERSION |"
-            echo "| **Branch** | $DEPLOY_BRANCH |"
-            echo "| **Tag** | $DEPLOY_TAG |"
-            [[ $STATUS == "success" ]] && echo "| **Status** | ${STATUS^} ✅ |" || echo "| **Status** | ${STATUS^} ❌ |"
-          } >> "$GITHUB_STEP_SUMMARY"
+        uses: ./.github/actions/deployment-summary
+        with:
+          workflow_name: ${{ github.workflow }}
+          environment: ${{ github.event.inputs.environment }}
+          branch: ${{ github.event.inputs.branch }}
+          release_version: ${{ github.event.inputs.release_version }}
+          status: ${{ job.status }}
