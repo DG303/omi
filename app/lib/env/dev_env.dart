@@ -17,6 +17,10 @@ final class DevEnv implements EnvFields {
   final String? mixpanelProjectToken = _DevEnv.mixpanelProjectToken;
 
   @override
+  @EnviedField(varName: 'POSTHOG_API_KEY', obfuscate: true)
+  final String? posthogApiKey = _DevEnv.posthogApiKey;
+
+  @override
   @EnviedField(varName: 'API_BASE_URL', obfuscate: true)
   final String? apiBaseUrl = _DevEnv.apiBaseUrl;
 

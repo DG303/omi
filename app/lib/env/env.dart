@@ -20,6 +20,8 @@ abstract class Env {
 
   static String? get mixpanelProjectToken => _instance.mixpanelProjectToken;
 
+  static String? get posthogApiKey => _instance.posthogApiKey;
+
   // static String? get apiBaseUrl => 'https://omi-backend.ngrok.app/';
   static String? get apiBaseUrl => _apiBaseUrlOverride ?? _instance.apiBaseUrl;
 
@@ -81,6 +83,8 @@ abstract class EnvFields {
   String? get openAIAPIKey;
 
   String? get mixpanelProjectToken;
+
+  String? get posthogApiKey;
 
   String? get apiBaseUrl;
 

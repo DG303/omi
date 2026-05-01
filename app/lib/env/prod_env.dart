@@ -17,6 +17,10 @@ final class ProdEnv implements EnvFields {
   final String? mixpanelProjectToken = _ProdEnv.mixpanelProjectToken;
 
   @override
+  @EnviedField(varName: 'POSTHOG_API_KEY', obfuscate: true)
+  final String? posthogApiKey = _ProdEnv.posthogApiKey;
+
+  @override
   @EnviedField(varName: 'API_BASE_URL', obfuscate: true)
   final String? apiBaseUrl = _ProdEnv.apiBaseUrl;
 
