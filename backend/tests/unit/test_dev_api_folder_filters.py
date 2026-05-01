@@ -179,22 +179,27 @@ class TestDevGetFolders:
         _mock_get_folders.assert_called_once_with('uid1')
         _mock_initialize_system_folders.assert_not_called()
 
-    def test_dev_get_folders_initializes_when_empty(self):
-        """Handler calls initialize_system_folders when DB returns empty list."""
+    def test_dev_get_folders_returns_empty_list_without_initialization(self):
+        """Handler returns an empty list when the user has no folders, and never
+        triggers `initialize_system_folders`.
+
+        This is intentional: the Developer API runs under a `conversations:read`
+        scope, so it must stay strictly read-only. Lazy initialization happens
+        through the internal `/v1/folders` endpoint and the conversation
+        post-processing pipeline instead.
+        """
         _mock_get_folders.return_value = []
-        system_folders = [_make_folder('all', 'Work'), _make_folder('starred', 'Personal')]
-        _mock_initialize_system_folders.return_value = system_folders
 
         from routers.developer import get_user_folders
 
         result = get_user_folders(uid='uid1')
 
-        assert result == system_folders
+        assert result == []
         _mock_get_folders.assert_called_once_with('uid1')
-        _mock_initialize_system_folders.assert_called_once_with('uid1')
+        _mock_initialize_system_folders.assert_not_called()
 
     def test_dev_get_folders_does_not_initialize_when_nonempty(self):
-        """Handler does NOT call initialize_system_folders when folders exist."""
+        """Handler never calls initialize_system_folders, regardless of folder count."""
         _mock_get_folders.return_value = [_make_folder('f1', 'Work')]
 
         from routers.developer import get_user_folders

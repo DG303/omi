@@ -245,7 +245,7 @@
       "get": {
         "operationId": "listFolders",
         "summary": "List folders",
-        "description": "Retrieve all folders for the authenticated user. On first access, system folders (Work, Personal, Social) are automatically created if none exist — matching the behavior of the internal Omi app.",
+        "description": "Retrieve all folders for the authenticated user. This endpoint is strictly read-only and returns an empty list if the user has no folders yet. System folders (Work, Personal, Social) are initialized lazily through other paths (the mobile app opening the conversations screen, or the conversation post-processing pipeline), not by this endpoint.",
         "tags": ["Folders"],
         "parameters": [],
         "responses": {

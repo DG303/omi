@@ -21,7 +21,7 @@ description: "Retrieve user-defined folders for organizing conversations via the
 </Card>
 
 <Note>
-On first access, if no folders exist, system folders (Work, Personal, Social) are automatically created — matching the behavior of the Omi mobile app. These folders correspond to the conversation category tabs shown in the app.
+This endpoint is strictly read-only. If the user has not yet had folders initialized, an empty array is returned. System folders (Work, Personal, Social) are created lazily through other paths — when the mobile app opens the conversations screen or when a new conversation is created. In normal usage, any user who can issue a Developer API key has already gone through one of those paths.
 </Note>
 
 <Tabs>
