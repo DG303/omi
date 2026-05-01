@@ -91,7 +91,7 @@ class _BatteryInfoWidgetState extends State<BatteryInfoWidget> {
           builder: (context, data, child) {
             final (batteryLevel, connectedDevice, pairedDevice, isConnecting, isCharging) = data;
             if (connectedDevice != null) {
-              return GestureDetector(
+              final batteryPill = GestureDetector(
                 onTap: () {
                   routeToPage(context, const ConnectedDevice());
                   MixpanelManager().batteryIndicatorClicked();
@@ -144,6 +144,36 @@ class _BatteryInfoWidgetState extends State<BatteryInfoWidget> {
                     ],
                   ),
                 ),
+              );
+              if (!isMemoriesPage) return batteryPill;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  batteryPill,
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const PhoneCallsPage()),
+                      );
+                    },
+                    child: Container(
+                      height: 36,
+                      width: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F1F25),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Icon(
+                        Icons.phone_in_talk_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
               );
             } else if (pairedDevice != null && pairedDevice.id.isNotEmpty) {
               // Device is paired but disconnected
