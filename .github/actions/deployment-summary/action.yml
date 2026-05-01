@@ -34,7 +34,7 @@ runs:
         {
           echo "### Deployment Summary"
           echo ""
-          echo "| Field | Value |"
+          echo "| | |"
           echo "|---|---|"
           echo "| **Name** | ${{ inputs.workflow_name }} |"
           echo "| **Environment** | $ENVIRONMENT |"
