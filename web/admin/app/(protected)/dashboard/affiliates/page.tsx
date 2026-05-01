@@ -4,12 +4,11 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AllAffiliatesTab } from './_components/all-affiliates-tab';
 import { PendingPayoutsTab } from './_components/pending-payouts-tab';
+import { AffiliateDetailDialog } from './_components/affiliate-detail-dialog';
 import { Affiliate } from '@/hooks/useAffiliates';
 
 export default function AffiliatesPage() {
-  // Selected affiliate state lives here so future detail dialog can read it.
-  // Placeholder no-op handler for now; replaced by detail dialog in a follow-up commit.
-  const [, setSelected] = useState<Affiliate | null>(null);
+  const [selected, setSelected] = useState<Affiliate | null>(null);
 
   return (
     <div className="space-y-6">
@@ -34,6 +33,12 @@ export default function AffiliatesPage() {
           <PendingPayoutsTab />
         </TabsContent>
       </Tabs>
+
+      <AffiliateDetailDialog
+        affiliateId={selected?.id ?? null}
+        open={!!selected}
+        onOpenChange={(open) => !open && setSelected(null)}
+      />
     </div>
   );
 }
