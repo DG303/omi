@@ -30,6 +30,7 @@ import 'package:omi/pages/conversation_detail/page.dart';
 import 'package:omi/pages/conversations/conversations_page.dart';
 import 'package:omi/pages/conversations/auto_sync_page.dart';
 import 'package:omi/pages/conversations/sync_page.dart';
+import 'package:omi/pages/action_items/widgets/task_selection_action_bar.dart';
 import 'package:omi/pages/conversations/widgets/merge_action_bar.dart';
 import 'package:omi/pages/home/home_content.dart';
 import 'package:omi/pages/memories/page.dart';
@@ -696,6 +697,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver, Ticker
                     // Merge action bar - floats above bottom nav when in selection mode
                     if (homeProvider.selectedIndex == 1)
                       const Positioned(left: 0, right: 0, bottom: 0, child: MergeActionBar()),
+                    // Task selection action bar - floats above bottom nav on the
+                    // tasks tab when selection mode is active in ActionItemsProvider.
+                    if (homeProvider.selectedIndex == 2)
+                      const Positioned(left: 0, right: 0, bottom: 0, child: TaskSelectionActionBar()),
                   ],
                 ),
               ),
