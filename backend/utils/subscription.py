@@ -474,6 +474,8 @@ def _has_active_stripe_subscription(uid: str) -> bool:
         subs = stripe.Subscription.list(customer=customer_id, status='active', limit=5)
         for sub in subs.data:
             sub_dict = sub.to_dict()
+            if sub_dict.get('cancel_at_period_end'):
+                continue
             if sub_dict.get('metadata', {}).get('uid') == uid:
                 return True
     except Exception as e:
