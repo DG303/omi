@@ -2962,5 +2962,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Гласов режим",
-  "quickActionAskOmi": "Попитайте Omi всичко"
+  "quickActionAskOmi": "Попитайте Omi всичко",
+  "record": "Запис",
+  "stop": "Спри",
+  "recordWithPhoneMic": "Запис с микрофона на телефона",
+  "recordWithPhoneMicSubtitle": "Заснемайте звук около вас",
+  "phoneCall": "Телефонно обаждане",
+  "phoneCallSubtitle": "Записвайте обаждане с транскрипция в реално време"
 }

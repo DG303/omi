@@ -9198,4 +9198,22 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Pitajte Omi bilo što';
+
+  @override
+  String get record => 'Snimi';
+
+  @override
+  String get stop => 'Zaustavi';
+
+  @override
+  String get recordWithPhoneMic => 'Snimaj telefonskim mikrofonom';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Snimite zvuk oko vas';
+
+  @override
+  String get phoneCall => 'Telefonski poziv';
+
+  @override
+  String get phoneCallSubtitle => 'Snimajte poziv s transkripcijom uživo';
 }

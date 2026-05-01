@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "آواز موڈ",
-  "quickActionAskOmi": "Omi سے کچھ بھی پوچھیں"
+  "quickActionAskOmi": "Omi سے کچھ بھی پوچھیں",
+  "record": "ریکارڈ کریں",
+  "stop": "روکیں",
+  "recordWithPhoneMic": "فون مائیک سے ریکارڈ کریں",
+  "recordWithPhoneMicSubtitle": "اپنے ارد گرد کی آواز ریکارڈ کریں",
+  "phoneCall": "فون کال",
+  "phoneCallSubtitle": "لائیو ٹرانسکرپشن کے ساتھ کال ریکارڈ کریں"
 }

@@ -9164,4 +9164,22 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Spør Omi om hva som helst';
+
+  @override
+  String get record => 'Ta opp';
+
+  @override
+  String get stop => 'Stopp';
+
+  @override
+  String get recordWithPhoneMic => 'Ta opp med telefonmikrofon';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Fang opp lyden rundt deg';
+
+  @override
+  String get phoneCall => 'Telefonsamtale';
+
+  @override
+  String get phoneCallSubtitle => 'Ta opp en samtale med direkte transkripsjon';
 }

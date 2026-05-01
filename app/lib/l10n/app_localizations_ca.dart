@@ -9222,4 +9222,22 @@ class AppLocalizationsCa extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Pregunta-li qualsevol cosa a l\'Omi';
+
+  @override
+  String get record => 'Grava';
+
+  @override
+  String get stop => 'Atura';
+
+  @override
+  String get recordWithPhoneMic => 'Grava amb el micròfon del telèfon';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Captura l\'àudio que t\'envolta';
+
+  @override
+  String get phoneCall => 'Trucada';
+
+  @override
+  String get phoneCallSubtitle => 'Enregistra una trucada amb transcripció en directe';
 }

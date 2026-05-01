@@ -9172,4 +9172,22 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Pergunte qualquer coisa ao Omi';
+
+  @override
+  String get record => 'Gravar';
+
+  @override
+  String get stop => 'Parar';
+
+  @override
+  String get recordWithPhoneMic => 'Gravar com o microfone do telefone';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Capture o áudio ao seu redor';
+
+  @override
+  String get phoneCall => 'Chamada telefônica';
+
+  @override
+  String get phoneCallSubtitle => 'Grave uma chamada com transcrição ao vivo';
 }

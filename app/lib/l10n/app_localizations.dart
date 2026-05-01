@@ -17114,6 +17114,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ask Omi Anything'**
   String get quickActionAskOmi;
+
+  /// Label for the Record button on the home page app bar
+  ///
+  /// In en, this message translates to:
+  /// **'Record'**
+  String get record;
+
+  /// Label shown on the Record button while a recording is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
+
+  /// Title of the phone-mic option in the record-options sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Record with Phone Mic'**
+  String get recordWithPhoneMic;
+
+  /// Subtitle for the phone-mic option in the record-options sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Capture audio around you'**
+  String get recordWithPhoneMicSubtitle;
+
+  /// Title of the phone-call option in the record-options sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Call'**
+  String get phoneCall;
+
+  /// Subtitle for the phone-call option in the record-options sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Record a call with live transcription'**
+  String get phoneCallSubtitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

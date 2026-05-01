@@ -9253,4 +9253,22 @@ class AppLocalizationsTl extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Tanungin si Omi ng kahit ano';
+
+  @override
+  String get record => 'Mag-record';
+
+  @override
+  String get stop => 'Itigil';
+
+  @override
+  String get recordWithPhoneMic => 'Mag-record gamit ang mikropono ng telepono';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Kunan ang audio sa paligid mo';
+
+  @override
+  String get phoneCall => 'Tawag sa telepono';
+
+  @override
+  String get phoneCallSubtitle => 'Mag-record ng tawag na may live na transkripsyon';
 }

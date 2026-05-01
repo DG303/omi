@@ -9177,4 +9177,22 @@ class AppLocalizationsLt extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Paklauskite Omi bet ko';
+
+  @override
+  String get record => 'Įrašyti';
+
+  @override
+  String get stop => 'Sustabdyti';
+
+  @override
+  String get recordWithPhoneMic => 'Įrašyti telefono mikrofonu';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Užfiksuokite garsą aplink jus';
+
+  @override
+  String get phoneCall => 'Telefono skambutis';
+
+  @override
+  String get phoneCallSubtitle => 'Įrašykite skambutį su tiesiogine transkripcija';
 }

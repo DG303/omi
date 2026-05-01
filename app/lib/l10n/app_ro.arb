@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Mod voce",
-  "quickActionAskOmi": "Întrebați Omi orice"
+  "quickActionAskOmi": "Întrebați Omi orice",
+  "record": "Înregistrează",
+  "stop": "Oprește",
+  "recordWithPhoneMic": "Înregistrează cu microfonul telefonului",
+  "recordWithPhoneMicSubtitle": "Capturează sunetul din jurul tău",
+  "phoneCall": "Apel telefonic",
+  "phoneCallSubtitle": "Înregistrează un apel cu transcriere în direct"
 }

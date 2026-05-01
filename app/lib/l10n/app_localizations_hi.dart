@@ -9148,4 +9148,22 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omi से कुछ भी पूछें';
+
+  @override
+  String get record => 'रिकॉर्ड करें';
+
+  @override
+  String get stop => 'रोकें';
+
+  @override
+  String get recordWithPhoneMic => 'फ़ोन माइक से रिकॉर्ड करें';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'अपने आस-पास की आवाज़ रिकॉर्ड करें';
+
+  @override
+  String get phoneCall => 'फ़ोन कॉल';
+
+  @override
+  String get phoneCallSubtitle => 'लाइव ट्रांसक्रिप्शन के साथ कॉल रिकॉर्ड करें';
 }

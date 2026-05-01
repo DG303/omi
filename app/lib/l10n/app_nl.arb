@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Spraakmodus",
-  "quickActionAskOmi": "Vraag Omi van alles"
+  "quickActionAskOmi": "Vraag Omi van alles",
+  "record": "Opnemen",
+  "stop": "Stop",
+  "recordWithPhoneMic": "Opnemen met telefoonmicrofoon",
+  "recordWithPhoneMicSubtitle": "Leg het geluid om je heen vast",
+  "phoneCall": "Telefoongesprek",
+  "phoneCallSubtitle": "Neem een gesprek op met live transcriptie"
 }

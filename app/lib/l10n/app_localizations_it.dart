@@ -9223,4 +9223,22 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Chiedi qualsiasi cosa a Omi';
+
+  @override
+  String get record => 'Registra';
+
+  @override
+  String get stop => 'Ferma';
+
+  @override
+  String get recordWithPhoneMic => 'Registra con il microfono del telefono';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Cattura l\'audio intorno a te';
+
+  @override
+  String get phoneCall => 'Chiamata';
+
+  @override
+  String get phoneCallSubtitle => 'Registra una chiamata con trascrizione live';
 }

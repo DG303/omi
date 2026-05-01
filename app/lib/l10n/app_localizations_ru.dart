@@ -9197,4 +9197,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Спросите Omi что угодно';
+
+  @override
+  String get record => 'Запись';
+
+  @override
+  String get stop => 'Стоп';
+
+  @override
+  String get recordWithPhoneMic => 'Запись микрофоном телефона';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Запишите звук вокруг вас';
+
+  @override
+  String get phoneCall => 'Телефонный звонок';
+
+  @override
+  String get phoneCallSubtitle => 'Запись звонка с транскрипцией в реальном времени';
 }

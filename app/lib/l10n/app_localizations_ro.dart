@@ -9211,4 +9211,22 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Întrebați Omi orice';
+
+  @override
+  String get record => 'Înregistrează';
+
+  @override
+  String get stop => 'Oprește';
+
+  @override
+  String get recordWithPhoneMic => 'Înregistrează cu microfonul telefonului';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Capturează sunetul din jurul tău';
+
+  @override
+  String get phoneCall => 'Apel telefonic';
+
+  @override
+  String get phoneCallSubtitle => 'Înregistrează un apel cu transcriere în direct';
 }

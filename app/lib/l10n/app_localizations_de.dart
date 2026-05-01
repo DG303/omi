@@ -9245,4 +9245,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Frag Omi irgendetwas';
+
+  @override
+  String get record => 'Aufnehmen';
+
+  @override
+  String get stop => 'Stopp';
+
+  @override
+  String get recordWithPhoneMic => 'Mit Telefonmikrofon aufnehmen';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Erfasse Audio in deiner Umgebung';
+
+  @override
+  String get phoneCall => 'Anruf';
+
+  @override
+  String get phoneCallSubtitle => 'Anruf mit Live-Transkription aufnehmen';
 }

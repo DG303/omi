@@ -2994,5 +2994,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "音声モード",
-  "quickActionAskOmi": "Omiに何でも聞く"
+  "quickActionAskOmi": "Omiに何でも聞く",
+  "record": "録音",
+  "stop": "停止",
+  "recordWithPhoneMic": "電話のマイクで録音",
+  "recordWithPhoneMicSubtitle": "周囲の音声を録音",
+  "phoneCall": "電話",
+  "phoneCallSubtitle": "ライブ文字起こしで通話を録音"
 }

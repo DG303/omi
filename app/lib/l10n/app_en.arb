@@ -10908,5 +10908,29 @@
   "quickActionAskOmi": "Ask Omi Anything",
   "@quickActionAskOmi": {
     "description": "iOS home screen quick action: opens chat page"
+  },
+  "record": "Record",
+  "@record": {
+    "description": "Label for the Record button on the home page app bar"
+  },
+  "stop": "Stop",
+  "@stop": {
+    "description": "Label shown on the Record button while a recording is in progress"
+  },
+  "recordWithPhoneMic": "Record with Phone Mic",
+  "@recordWithPhoneMic": {
+    "description": "Title of the phone-mic option in the record-options sheet"
+  },
+  "recordWithPhoneMicSubtitle": "Capture audio around you",
+  "@recordWithPhoneMicSubtitle": {
+    "description": "Subtitle for the phone-mic option in the record-options sheet"
+  },
+  "phoneCall": "Phone Call",
+  "@phoneCall": {
+    "description": "Title of the phone-call option in the record-options sheet"
+  },
+  "phoneCallSubtitle": "Record a call with live transcription",
+  "@phoneCallSubtitle": {
+    "description": "Subtitle for the phone-call option in the record-options sheet"
   }
 }

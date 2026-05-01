@@ -9167,4 +9167,22 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Kysy Omilta mitä tahansa';
+
+  @override
+  String get record => 'Tallenna';
+
+  @override
+  String get stop => 'Pysäytä';
+
+  @override
+  String get recordWithPhoneMic => 'Tallenna puhelimen mikrofonilla';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Tallenna ympärilläsi olevaa ääntä';
+
+  @override
+  String get phoneCall => 'Puhelu';
+
+  @override
+  String get phoneCallSubtitle => 'Tallenna puhelu reaaliaikaisella tekstityksellä';
 }

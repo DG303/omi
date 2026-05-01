@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Balso režimas",
-  "quickActionAskOmi": "Paklauskite Omi bet ko"
+  "quickActionAskOmi": "Paklauskite Omi bet ko",
+  "record": "Įrašyti",
+  "stop": "Sustabdyti",
+  "recordWithPhoneMic": "Įrašyti telefono mikrofonu",
+  "recordWithPhoneMicSubtitle": "Užfiksuokite garsą aplink jus",
+  "phoneCall": "Telefono skambutis",
+  "phoneCallSubtitle": "Įrašykite skambutį su tiesiogine transkripcija"
 }

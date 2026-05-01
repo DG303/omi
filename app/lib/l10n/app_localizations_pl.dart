@@ -9188,4 +9188,22 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Zapytaj Omi o cokolwiek';
+
+  @override
+  String get record => 'Nagraj';
+
+  @override
+  String get stop => 'Zatrzymaj';
+
+  @override
+  String get recordWithPhoneMic => 'Nagrywaj mikrofonem telefonu';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Nagrywaj dźwięk wokół ciebie';
+
+  @override
+  String get phoneCall => 'Połączenie telefoniczne';
+
+  @override
+  String get phoneCallSubtitle => 'Nagrywaj rozmowę z transkrypcją na żywo';
 }

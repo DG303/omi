@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Glasovni način",
-  "quickActionAskOmi": "Vprašajte Omi karkoli"
+  "quickActionAskOmi": "Vprašajte Omi karkoli",
+  "record": "Posnemi",
+  "stop": "Ustavi",
+  "recordWithPhoneMic": "Snemaj s telefonskim mikrofonom",
+  "recordWithPhoneMicSubtitle": "Posnemite zvok okoli sebe",
+  "phoneCall": "Telefonski klic",
+  "phoneCallSubtitle": "Posnemite klic s prepisom v živo"
 }

@@ -9107,4 +9107,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'اسأل أومي أي شيء';
+
+  @override
+  String get record => 'تسجيل';
+
+  @override
+  String get stop => 'إيقاف';
+
+  @override
+  String get recordWithPhoneMic => 'التسجيل بميكروفون الهاتف';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'التقط الصوت من حولك';
+
+  @override
+  String get phoneCall => 'مكالمة هاتفية';
+
+  @override
+  String get phoneCallSubtitle => 'سجّل مكالمة مع تفريغ مباشر';
 }

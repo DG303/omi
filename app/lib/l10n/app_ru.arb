@@ -3028,5 +3028,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Голосовой режим",
-  "quickActionAskOmi": "Спросите Omi что угодно"
+  "quickActionAskOmi": "Спросите Omi что угодно",
+  "record": "Запись",
+  "stop": "Стоп",
+  "recordWithPhoneMic": "Запись микрофоном телефона",
+  "recordWithPhoneMicSubtitle": "Запишите звук вокруг вас",
+  "phoneCall": "Телефонный звонок",
+  "phoneCallSubtitle": "Запись звонка с транскрипцией в реальном времени"
 }

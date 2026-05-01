@@ -9172,4 +9172,22 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Fråga Omi vad som helst';
+
+  @override
+  String get record => 'Spela in';
+
+  @override
+  String get stop => 'Stoppa';
+
+  @override
+  String get recordWithPhoneMic => 'Spela in med telefonmikrofon';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Fånga ljudet runt dig';
+
+  @override
+  String get phoneCall => 'Telefonsamtal';
+
+  @override
+  String get phoneCallSubtitle => 'Spela in samtal med live-transkribering';
 }

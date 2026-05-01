@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Λειτουργία φωνής",
-  "quickActionAskOmi": "Ρωτήστε τον Omi οτιδήποτε"
+  "quickActionAskOmi": "Ρωτήστε τον Omi οτιδήποτε",
+  "record": "Εγγραφή",
+  "stop": "Διακοπή",
+  "recordWithPhoneMic": "Εγγραφή με μικρόφωνο τηλεφώνου",
+  "recordWithPhoneMicSubtitle": "Καταγράψτε ήχο γύρω σας",
+  "phoneCall": "Τηλεφωνική κλήση",
+  "phoneCallSubtitle": "Καταγράψτε κλήση με ζωντανή μεταγραφή"
 }

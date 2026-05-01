@@ -3015,5 +3015,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "语音模式",
-  "quickActionAskOmi": "向Omi询问任何事"
+  "quickActionAskOmi": "向Omi询问任何事",
+  "record": "录音",
+  "stop": "停止",
+  "recordWithPhoneMic": "用手机麦克风录音",
+  "recordWithPhoneMicSubtitle": "捕捉您周围的声音",
+  "phoneCall": "电话",
+  "phoneCallSubtitle": "录制带实时转录的通话"
 }

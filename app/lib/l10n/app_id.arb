@@ -3035,5 +3035,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Mode Suara",
-  "quickActionAskOmi": "Tanyakan apa saja kepada Omi"
+  "quickActionAskOmi": "Tanyakan apa saja kepada Omi",
+  "record": "Rekam",
+  "stop": "Hentikan",
+  "recordWithPhoneMic": "Rekam dengan mikrofon ponsel",
+  "recordWithPhoneMicSubtitle": "Tangkap audio di sekitar Anda",
+  "phoneCall": "Panggilan telepon",
+  "phoneCallSubtitle": "Rekam panggilan dengan transkripsi langsung"
 }

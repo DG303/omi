@@ -3028,5 +3028,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Mode vocal",
-  "quickActionAskOmi": "Demandez n'importe quoi à Omi"
+  "quickActionAskOmi": "Demandez n'importe quoi à Omi",
+  "record": "Enregistrer",
+  "stop": "Arrêter",
+  "recordWithPhoneMic": "Enregistrer avec le micro du téléphone",
+  "recordWithPhoneMicSubtitle": "Capturez l'audio autour de vous",
+  "phoneCall": "Appel téléphonique",
+  "phoneCallSubtitle": "Enregistrez un appel avec transcription en direct"
 }

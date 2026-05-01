@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "ভয়েস মোড",
-  "quickActionAskOmi": "Omi কে যেকোনো কিছু জিজ্ঞেস করুন"
+  "quickActionAskOmi": "Omi কে যেকোনো কিছু জিজ্ঞেস করুন",
+  "record": "রেকর্ড",
+  "stop": "থামান",
+  "recordWithPhoneMic": "ফোনের মাইক্রোফোন দিয়ে রেকর্ড করুন",
+  "recordWithPhoneMicSubtitle": "আপনার চারপাশের অডিও ক্যাপচার করুন",
+  "phoneCall": "ফোন কল",
+  "phoneCallSubtitle": "লাইভ ট্রান্সক্রিপশন সহ কল রেকর্ড করুন"
 }

@@ -9181,4 +9181,22 @@ class AppLocalizationsSr extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Питајте Omi bilo što';
+
+  @override
+  String get record => 'Сними';
+
+  @override
+  String get stop => 'Заустави';
+
+  @override
+  String get recordWithPhoneMic => 'Снимај микрофоном телефона';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Снимите звук око вас';
+
+  @override
+  String get phoneCall => 'Телефонски позив';
+
+  @override
+  String get phoneCallSubtitle => 'Снимајте позив са транскрипцијом уживо';
 }

@@ -9196,4 +9196,22 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Vraag Omi van alles';
+
+  @override
+  String get record => 'Opnemen';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
+  String get recordWithPhoneMic => 'Opnemen met telefoonmicrofoon';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Leg het geluid om je heen vast';
+
+  @override
+  String get phoneCall => 'Telefoongesprek';
+
+  @override
+  String get phoneCallSubtitle => 'Neem een gesprek op met live transcriptie';
 }

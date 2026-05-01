@@ -9165,4 +9165,22 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Küsi Omilt midagi';
+
+  @override
+  String get record => 'Salvesta';
+
+  @override
+  String get stop => 'Peata';
+
+  @override
+  String get recordWithPhoneMic => 'Salvesta telefoni mikrofoniga';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Salvesta enda ümbruse heli';
+
+  @override
+  String get phoneCall => 'Telefonikõne';
+
+  @override
+  String get phoneCallSubtitle => 'Salvesta kõne reaalajas transkriptsiooniga';
 }

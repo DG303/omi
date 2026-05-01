@@ -9237,4 +9237,22 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omi ஐ எதையும் கேளுங்கள்';
+
+  @override
+  String get record => 'பதிவு';
+
+  @override
+  String get stop => 'நிறுத்து';
+
+  @override
+  String get recordWithPhoneMic => 'போன் மைக்கில் பதிவு செய்யவும்';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'உங்களைச் சுற்றியுள்ள ஒலியைப் பதிவு செய்யவும்';
+
+  @override
+  String get phoneCall => 'தொலைபேசி அழைப்பு';
+
+  @override
+  String get phoneCallSubtitle => 'நேரடி படியெடுத்தலுடன் அழைப்பைப் பதிவு செய்யவும்';
 }

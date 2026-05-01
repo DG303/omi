@@ -9192,4 +9192,22 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Tanya Omi apa sahaja';
+
+  @override
+  String get record => 'Rakam';
+
+  @override
+  String get stop => 'Hentikan';
+
+  @override
+  String get recordWithPhoneMic => 'Rakam dengan mikrofon telefon';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Tangkap audio di sekeliling anda';
+
+  @override
+  String get phoneCall => 'Panggilan telefon';
+
+  @override
+  String get phoneCallSubtitle => 'Rakam panggilan dengan transkripsi langsung';
 }

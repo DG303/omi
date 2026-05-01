@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "குரல் பயன்முறை",
-  "quickActionAskOmi": "Omi ஐ எதையும் கேளுங்கள்"
+  "quickActionAskOmi": "Omi ஐ எதையும் கேளுங்கள்",
+  "record": "பதிவு",
+  "stop": "நிறுத்து",
+  "recordWithPhoneMic": "போன் மைக்கில் பதிவு செய்யவும்",
+  "recordWithPhoneMicSubtitle": "உங்களைச் சுற்றியுள்ள ஒலியைப் பதிவு செய்யவும்",
+  "phoneCall": "தொலைபேசி அழைப்பு",
+  "phoneCallSubtitle": "நேரடி படியெடுத்தலுடன் அழைப்பைப் பதிவு செய்யவும்"
 }

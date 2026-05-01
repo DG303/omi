@@ -9186,4 +9186,22 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Jautājiet Omi jebko';
+
+  @override
+  String get record => 'Ierakstīt';
+
+  @override
+  String get stop => 'Apturēt';
+
+  @override
+  String get recordWithPhoneMic => 'Ierakstīt ar tālruņa mikrofonu';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'Tveriet skaņu sev apkārt';
+
+  @override
+  String get phoneCall => 'Telefona zvans';
+
+  @override
+  String get phoneCallSubtitle => 'Ierakstiet zvanu ar tiešraides transkripciju';
 }

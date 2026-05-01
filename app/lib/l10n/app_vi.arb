@@ -2998,5 +2998,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Chế độ giọng nói",
-  "quickActionAskOmi": "Hỏi Omi bất cứ điều gì"
+  "quickActionAskOmi": "Hỏi Omi bất cứ điều gì",
+  "record": "Ghi âm",
+  "stop": "Dừng",
+  "recordWithPhoneMic": "Ghi âm bằng micro điện thoại",
+  "recordWithPhoneMicSubtitle": "Ghi lại âm thanh xung quanh bạn",
+  "phoneCall": "Cuộc gọi điện thoại",
+  "phoneCallSubtitle": "Ghi âm cuộc gọi với phiên âm trực tiếp"
 }

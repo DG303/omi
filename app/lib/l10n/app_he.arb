@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "מצב קולי",
-  "quickActionAskOmi": "שאל את Omi כל דבר"
+  "quickActionAskOmi": "שאל את Omi כל דבר",
+  "record": "הקלט",
+  "stop": "עצור",
+  "recordWithPhoneMic": "הקלט עם מיקרופון הטלפון",
+  "recordWithPhoneMicSubtitle": "הקלט שמע סביבך",
+  "phoneCall": "שיחת טלפון",
+  "phoneCallSubtitle": "הקלט שיחה עם תמלול חי"
 }

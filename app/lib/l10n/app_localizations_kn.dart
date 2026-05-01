@@ -9200,4 +9200,22 @@ class AppLocalizationsKn extends AppLocalizations {
 
   @override
   String get quickActionAskOmi => 'Omi ಗೆ ಏನು ಬೇಕಾದರೂ ಕೇಳಿ';
+
+  @override
+  String get record => 'ರೆಕಾರ್ಡ್';
+
+  @override
+  String get stop => 'ನಿಲ್ಲಿಸಿ';
+
+  @override
+  String get recordWithPhoneMic => 'ಫೋನ್ ಮೈಕ್‌ನೊಂದಿಗೆ ರೆಕಾರ್ಡ್ ಮಾಡಿ';
+
+  @override
+  String get recordWithPhoneMicSubtitle => 'ನಿಮ್ಮ ಸುತ್ತಲಿನ ಆಡಿಯೋ ಸೆರೆಹಿಡಿಯಿರಿ';
+
+  @override
+  String get phoneCall => 'ಫೋನ್ ಕರೆ';
+
+  @override
+  String get phoneCallSubtitle => 'ಲೈವ್ ಪ್ರತಿಲೇಖನದೊಂದಿಗೆ ಕರೆಯನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ';
 }
