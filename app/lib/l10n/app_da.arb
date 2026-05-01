@@ -3002,5 +3002,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Stemmemodus",
-  "quickActionAskOmi": "Spørg Omi om alt"
+  "quickActionAskOmi": "Spørg Omi om alt",
+  "record": "Optag",
+  "stop": "Stop",
+  "recordWithPhoneMic": "Optag med telefonens mikrofon",
+  "recordWithPhoneMicSubtitle": "Optag lyden omkring dig",
+  "phoneCall": "Telefonopkald",
+  "phoneCallSubtitle": "Optag et opkald med live-transskription"
 }

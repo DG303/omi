@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Voice Mode",
-  "quickActionAskOmi": "Tanungin si Omi ng kahit ano"
+  "quickActionAskOmi": "Tanungin si Omi ng kahit ano",
+  "record": "Mag-record",
+  "stop": "Itigil",
+  "recordWithPhoneMic": "Mag-record gamit ang mikropono ng telepono",
+  "recordWithPhoneMicSubtitle": "Kunan ang audio sa paligid mo",
+  "phoneCall": "Tawag sa telepono",
+  "phoneCallSubtitle": "Mag-record ng tawag na may live na transkripsyon"
 }

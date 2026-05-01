@@ -3028,5 +3028,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Ses Modu",
-  "quickActionAskOmi": "Omi'ye her şeyi sorun"
+  "quickActionAskOmi": "Omi'ye her şeyi sorun",
+  "record": "Kaydet",
+  "stop": "Durdur",
+  "recordWithPhoneMic": "Telefon mikrofonuyla kaydet",
+  "recordWithPhoneMicSubtitle": "Etrafınızdaki sesi yakalayın",
+  "phoneCall": "Telefon araması",
+  "phoneCallSubtitle": "Canlı transkripsiyonla bir aramayı kaydedin"
 }

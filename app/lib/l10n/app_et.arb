@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Häälrežiim",
-  "quickActionAskOmi": "Küsi Omilt midagi"
+  "quickActionAskOmi": "Küsi Omilt midagi",
+  "record": "Salvesta",
+  "stop": "Peata",
+  "recordWithPhoneMic": "Salvesta telefoni mikrofoniga",
+  "recordWithPhoneMicSubtitle": "Salvesta enda ümbruse heli",
+  "phoneCall": "Telefonikõne",
+  "phoneCallSubtitle": "Salvesta kõne reaalajas transkriptsiooniga"
 }

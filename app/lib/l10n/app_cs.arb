@@ -2962,5 +2962,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Hlasový režim",
-  "quickActionAskOmi": "Zeptejte se Omi na cokoliv"
+  "quickActionAskOmi": "Zeptejte se Omi na cokoliv",
+  "record": "Nahrát",
+  "stop": "Zastavit",
+  "recordWithPhoneMic": "Nahrát mikrofonem telefonu",
+  "recordWithPhoneMicSubtitle": "Zaznamenávejte zvuk kolem vás",
+  "phoneCall": "Telefonní hovor",
+  "phoneCallSubtitle": "Nahrávejte hovor s živým přepisem"
 }

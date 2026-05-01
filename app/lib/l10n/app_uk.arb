@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Голосовий режим",
-  "quickActionAskOmi": "Запитайте Omi що завгодно"
+  "quickActionAskOmi": "Запитайте Omi що завгодно",
+  "record": "Запис",
+  "stop": "Стоп",
+  "recordWithPhoneMic": "Запис мікрофоном телефона",
+  "recordWithPhoneMicSubtitle": "Записуйте звук навколо вас",
+  "phoneCall": "Телефонний дзвінок",
+  "phoneCallSubtitle": "Запис дзвінка з живою транскрипцією"
 }

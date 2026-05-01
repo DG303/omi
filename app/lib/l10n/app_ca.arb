@@ -2962,5 +2962,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Mode de veu",
-  "quickActionAskOmi": "Pregunta-li qualsevol cosa a l'Omi"
+  "quickActionAskOmi": "Pregunta-li qualsevol cosa a l'Omi",
+  "record": "Grava",
+  "stop": "Atura",
+  "recordWithPhoneMic": "Grava amb el micròfon del telèfon",
+  "recordWithPhoneMicSubtitle": "Captura l'àudio que t'envolta",
+  "phoneCall": "Trucada",
+  "phoneCallSubtitle": "Enregistra una trucada amb transcripció en directe"
 }

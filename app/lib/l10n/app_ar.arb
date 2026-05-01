@@ -2960,5 +2960,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "وضع الصوت",
-  "quickActionAskOmi": "اسأل أومي أي شيء"
+  "quickActionAskOmi": "اسأل أومي أي شيء",
+  "record": "تسجيل",
+  "stop": "إيقاف",
+  "recordWithPhoneMic": "التسجيل بميكروفون الهاتف",
+  "recordWithPhoneMicSubtitle": "التقط الصوت من حولك",
+  "phoneCall": "مكالمة هاتفية",
+  "phoneCallSubtitle": "سجّل مكالمة مع تفريغ مباشر"
 }

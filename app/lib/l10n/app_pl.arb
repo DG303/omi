@@ -3028,5 +3028,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Tryb głosowy",
-  "quickActionAskOmi": "Zapytaj Omi o cokolwiek"
+  "quickActionAskOmi": "Zapytaj Omi o cokolwiek",
+  "record": "Nagraj",
+  "stop": "Zatrzymaj",
+  "recordWithPhoneMic": "Nagrywaj mikrofonem telefonu",
+  "recordWithPhoneMicSubtitle": "Nagrywaj dźwięk wokół ciebie",
+  "phoneCall": "Połączenie telefoniczne",
+  "phoneCallSubtitle": "Nagrywaj rozmowę z transkrypcją na żywo"
 }

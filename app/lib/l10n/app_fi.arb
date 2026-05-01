@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Äänitila",
-  "quickActionAskOmi": "Kysy Omilta mitä tahansa"
+  "quickActionAskOmi": "Kysy Omilta mitä tahansa",
+  "record": "Tallenna",
+  "stop": "Pysäytä",
+  "recordWithPhoneMic": "Tallenna puhelimen mikrofonilla",
+  "recordWithPhoneMicSubtitle": "Tallenna ympärilläsi olevaa ääntä",
+  "phoneCall": "Puhelu",
+  "phoneCallSubtitle": "Tallenna puhelu reaaliaikaisella tekstityksellä"
 }

@@ -2993,5 +2993,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Röstläge",
-  "quickActionAskOmi": "Fråga Omi vad som helst"
+  "quickActionAskOmi": "Fråga Omi vad som helst",
+  "record": "Spela in",
+  "stop": "Stoppa",
+  "recordWithPhoneMic": "Spela in med telefonmikrofon",
+  "recordWithPhoneMicSubtitle": "Fånga ljudet runt dig",
+  "phoneCall": "Telefonsamtal",
+  "phoneCallSubtitle": "Spela in samtal med live-transkribering"
 }

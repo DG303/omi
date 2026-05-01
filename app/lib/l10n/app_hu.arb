@@ -3089,5 +3089,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Hangmód",
-  "quickActionAskOmi": "Kérdezz meg bármit Omitól"
+  "quickActionAskOmi": "Kérdezz meg bármit Omitól",
+  "record": "Felvétel",
+  "stop": "Leállítás",
+  "recordWithPhoneMic": "Felvétel a telefon mikrofonjával",
+  "recordWithPhoneMicSubtitle": "Rögzítse a környezete hangját",
+  "phoneCall": "Telefonhívás",
+  "phoneCallSubtitle": "Hívás rögzítése élő átirattal"
 }

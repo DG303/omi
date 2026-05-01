@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "వాయిస్ మోడ్",
-  "quickActionAskOmi": "Omi ని ఏమైనా అడగండి"
+  "quickActionAskOmi": "Omi ని ఏమైనా అడగండి",
+  "record": "రికార్డ్",
+  "stop": "ఆపు",
+  "recordWithPhoneMic": "ఫోన్ మైక్‌తో రికార్డ్ చేయండి",
+  "recordWithPhoneMicSubtitle": "మీ చుట్టూ ఉన్న ఆడియోను క్యాప్చర్ చేయండి",
+  "phoneCall": "ఫోన్ కాల్",
+  "phoneCallSubtitle": "లైవ్ ట్రాన్స్‌క్రిప్షన్‌తో కాల్‌ను రికార్డ్ చేయండి"
 }

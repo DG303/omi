@@ -10701,5 +10701,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Галасавы рэжым",
-  "quickActionAskOmi": "Спытайце ў Омі што заўгодна"
+  "quickActionAskOmi": "Спытайце ў Омі што заўгодна",
+  "record": "Запісаць",
+  "stop": "Спыніць",
+  "recordWithPhoneMic": "Запіс мікрафонам тэлефона",
+  "recordWithPhoneMicSubtitle": "Запісвайце гук вакол сябе",
+  "phoneCall": "Тэлефонны званок",
+  "phoneCallSubtitle": "Запіс званка з жывой транскрыпцыяй"
 }

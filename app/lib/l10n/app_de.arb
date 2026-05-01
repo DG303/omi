@@ -2961,5 +2961,11 @@
     "description": "Section header for memory knowledge graph on home page"
   },
   "voiceMode": "Sprachmodus",
-  "quickActionAskOmi": "Frag Omi irgendetwas"
+  "quickActionAskOmi": "Frag Omi irgendetwas",
+  "record": "Aufnehmen",
+  "stop": "Stopp",
+  "recordWithPhoneMic": "Mit Telefonmikrofon aufnehmen",
+  "recordWithPhoneMicSubtitle": "Erfasse Audio in deiner Umgebung",
+  "phoneCall": "Anruf",
+  "phoneCallSubtitle": "Anruf mit Live-Transkription aufnehmen"
 }
