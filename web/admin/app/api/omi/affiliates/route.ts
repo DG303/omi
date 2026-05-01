@@ -68,7 +68,9 @@ export async function GET(request: NextRequest) {
       const status = searchParams.get('status') || '';
       const search = searchParams.get('search')?.trim() || '';
 
-      // Search uses a different endpoint that supports keyword matching across columns
+      // Search uses a different endpoint that supports keyword matching across
+      // columns. Its response wraps the list under `result.affiliates`, not at
+      // the top level like the regular list endpoint.
       if (search) {
         const params = new URLSearchParams({
           keyword: search,
@@ -79,7 +81,7 @@ export async function GET(request: NextRequest) {
         });
         const res = await goaffproGet(`/admin/affiliates/search?${params.toString()}`);
         return NextResponse.json({
-          affiliates: res.affiliates || [],
+          affiliates: res.result?.affiliates || [],
           has_more: false, // search endpoint doesn't paginate
           offset: 0,
           limit,
