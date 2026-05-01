@@ -18,6 +18,9 @@ inputs:
     description: Optional release version
     required: false
     default: ''
+  service:
+    description: Name of the service being deployed (e.g. backend, pusher)
+    required: true
 
 runs:
   using: composite
@@ -34,7 +37,7 @@ runs:
         {
           echo "### Deployment Summary"
           echo ""
-          echo "| | |"
+          echo "| Service | ${{ inputs.service }} |"
           echo "|---|---|"
           echo "| **Name** | ${{ inputs.workflow_name }} |"
           echo "| **Environment** | $ENVIRONMENT |"
