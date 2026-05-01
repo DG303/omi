@@ -335,7 +335,7 @@
           {
             "name": "folder_id",
             "in": "query",
-            "description": "Filter conversations by folder ID. Must be a non-empty string.",
+            "description": "Filter conversations by folder ID. Each conversation belongs to at most one folder, so this is a single-value filter. Must be a non-empty string.",
             "schema": { "type": "string", "minLength": 1 }
           },
           {
