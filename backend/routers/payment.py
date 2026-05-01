@@ -381,7 +381,9 @@ def create_checkout_session_endpoint(request: CreateCheckoutRequest, uid: str = 
     # Normal checkout flow for new subscriptions (Scenario B or first-time subscribers)
     idempotency_key = str(uuid.uuid4())
     existing_customer_id = users_db.get_stripe_customer_id(uid)
-    session = stripe_utils.create_subscription_checkout_session(uid, request.price_id, idempotency_key, customer_id=existing_customer_id)
+    session = stripe_utils.create_subscription_checkout_session(
+        uid, request.price_id, idempotency_key, customer_id=existing_customer_id
+    )
     if not session:
         raise HTTPException(status_code=500, detail="Could not create checkout session.")
     return {"url": session.url, "session_id": session.id}
