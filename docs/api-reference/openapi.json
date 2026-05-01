@@ -375,6 +375,15 @@
               }
             }
           },
+          "400": {
+            "description": "Invalid `categories` value (must be a comma-separated list of valid `CategoryEnum` values).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "example": { "detail": "Invalid category 'foo' is not a valid CategoryEnum" }
+              }
+            }
+          },
           "401": { "$ref": "#/components/responses/Unauthorized" },
           "403": {
             "description": "Insufficient permissions. Required scope: `conversations:read`.",
