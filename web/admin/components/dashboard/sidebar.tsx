@@ -79,8 +79,8 @@ export function DashboardSidebar() {
       icon: DollarSign,
     },
     {
-      title: "Affiliate Payouts",
-      href: "/dashboard/affiliate-payouts",
+      title: "Affiliates",
+      href: "/dashboard/affiliates",
       icon: Handshake,
     },
     {
