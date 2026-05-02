@@ -797,14 +797,23 @@ class ActionItemsProvider extends ChangeNotifier {
 
     if (!context.mounted) return;
     messenger.clearSnackBars();
-    final newExports = successCount + skippedCount;
-    final message = newExports == total
-        ? context.l10n.bulkExportSuccess(successCount, platform.displayName)
-        : context.l10n.bulkExportPartial(successCount, total - skippedCount, platform.displayName);
+    final failedCount = total - successCount - skippedCount;
+    final String message;
+    final Color color;
+    if (failedCount == 0 && successCount > 0) {
+      message = context.l10n.bulkExportSuccess(successCount, platform.displayName);
+      color = Colors.green;
+    } else if (failedCount == 0 && successCount == 0) {
+      message = context.l10n.bulkExportSuccess(total, platform.displayName);
+      color = Colors.green;
+    } else {
+      message = context.l10n.bulkExportPartial(successCount, total - skippedCount, platform.displayName);
+      color = Colors.orange;
+    }
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: newExports == total ? Colors.green : Colors.orange,
+        backgroundColor: color,
         duration: const Duration(seconds: 3),
       ),
     );
