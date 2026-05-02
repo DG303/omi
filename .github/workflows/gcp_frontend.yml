@@ -60,3 +60,13 @@ jobs:
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
         run: echo ${{ steps.deploy.outputs.url }}
+
+      - name: Generate deployment summary
+        uses: ./.github/actions/deployment-summary
+        with:
+          workflow_name: ${{ github.workflow }}
+          environment: ${{ github.event.inputs.environment }}
+          branch: ${{ github.event.inputs.branch }}
+          release_version: ${{ github.event.inputs.release_version }}
+          status: ${{ job.status }}
+          service: ${{ env.SERVICE }}
