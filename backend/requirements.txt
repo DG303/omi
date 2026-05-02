@@ -227,7 +227,3 @@ google-cloud-translate==3.20.2
 langdetect==1.0.9
 lc3py==1.1.3
 twilio==9.5.0
-# Pinned to clear scanner finding for CVE-2026-23949. Not imported directly
-# by app code, but jaraco.context is loaded transitively by setuptools/pkg
-# tooling at venv-bootstrap time, so the pin actually lands.
-jaraco.context==6.1.0
