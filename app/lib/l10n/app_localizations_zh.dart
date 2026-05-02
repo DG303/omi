@@ -9023,4 +9023,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get phoneCallSubtitle => '录制带实时转录的通话';
+
+  @override
+  String get searchActionItems => 'Search action items';
+
+  @override
+  String get selectActionItems => 'Select multiple';
+
+  @override
+  String chooseExportDestination(int count) {
+    return 'Export $count item(s) to…';
+  }
+
+  @override
+  String get bulkExportInProgress => 'Exporting…';
+
+  @override
+  String bulkExportSuccess(int count, String platform) {
+    return 'Exported $count to $platform';
+  }
+
+  @override
+  String bulkExportPartial(int success, int total, String platform) {
+    return 'Exported $success of $total to $platform';
+  }
+
+  @override
+  String get showCompletedTasks => 'Show completed';
+
+  @override
+  String get hideCompletedTasks => 'Hide completed';
+
+  @override
+  String get selectAllTasksMenu => 'Select all';
+
+  @override
+  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+
+  @override
+  String get connectAction => 'Connect';
+
+  @override
+  String get deselectAllTasksMenu => 'Deselect all';
 }
