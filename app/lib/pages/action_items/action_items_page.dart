@@ -990,12 +990,11 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
                 if (orderedItems.isNotEmpty)
                   _buildFirstPositionDropZone(category, orderedItems, candidateData.isNotEmpty),
 
-                // Task items, with dotted hairlines between them.
-                for (var i = 0; i < orderedItems.length; i++) ...[
-                  _buildTaskItem(orderedItems[i], provider, category: category, categoryItems: orderedItems),
-                  if (i < orderedItems.length - 1)
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: _DottedDivider()),
-                ],
+                // Task items. Row padding alone carries the rhythm — no
+                // dividers between rows; matches Things 3 / Apple Reminders.
+                ...orderedItems.map(
+                  (item) => _buildTaskItem(item, provider, category: category, categoryItems: orderedItems),
+                ),
 
                 // Spacing after section
                 const SizedBox(height: 12),
@@ -1048,11 +1047,9 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
           ),
           if (_overdueExpanded) ...[
             _buildFirstPositionDropZone(TaskCategory.overdue, orderedItems, false),
-            for (var i = 0; i < orderedItems.length; i++) ...[
-              _buildTaskItem(orderedItems[i], provider, category: TaskCategory.overdue, categoryItems: orderedItems),
-              if (i < orderedItems.length - 1)
-                const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: _DottedDivider()),
-            ],
+            ...orderedItems.map(
+              (item) => _buildTaskItem(item, provider, category: TaskCategory.overdue, categoryItems: orderedItems),
+            ),
           ],
           const SizedBox(height: 12),
         ],
@@ -2107,48 +2104,4 @@ class _DashedCirclePainter extends CustomPainter {
       oldDelegate.strokeWidth != strokeWidth ||
       oldDelegate.dashLength != dashLength ||
       oldDelegate.gapLength != gapLength;
-}
-
-/// Thin dotted hairline used between task rows. Matches Joi's quiet section
-/// rhythm — lighter than a solid divider, more structure than pure whitespace.
-class _DottedDivider extends StatelessWidget {
-  const _DottedDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 1,
-      child: CustomPaint(
-        painter: _DottedLinePainter(color: Colors.grey[800]!, dashLength: 2, gapLength: 4),
-        size: const Size(double.infinity, 1),
-      ),
-    );
-  }
-}
-
-class _DottedLinePainter extends CustomPainter {
-  final Color color;
-  final double dashLength;
-  final double gapLength;
-
-  _DottedLinePainter({required this.color, required this.dashLength, required this.gapLength});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1
-      ..strokeCap = StrokeCap.round;
-
-    final segmentLength = dashLength + gapLength;
-    var x = 0.0;
-    while (x < size.width) {
-      canvas.drawLine(Offset(x, 0), Offset(x + dashLength, 0), paint);
-      x += segmentLength;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DottedLinePainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.dashLength != dashLength || oldDelegate.gapLength != gapLength;
 }
