@@ -9224,10 +9224,10 @@ class AppLocalizationsTa extends AppLocalizations {
   String get agreeAndContinue => 'ஒப்புக்கொள் & தொடரவும்';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'குரல் பதிவைத் தொடங்கு';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'அழைப்பு பதிவைத் தொடங்கு';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9257,44 +9257,44 @@ class AppLocalizationsTa extends AppLocalizations {
   String get phoneCallSubtitle => 'நேரடி படியெடுத்தலுடன் அழைப்பைப் பதிவு செய்யவும்';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'செயல் உருப்படிகளைத் தேடு';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'பலவற்றைத் தேர்ந்தெடு';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$count உருப்படி(களை) ஏற்றுமதி செய்…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'ஏற்றுமதி செய்கிறது…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count ஐ $platform க்கு ஏற்றுமதி செய்யப்பட்டது';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$total இல் $success ஐ $platform க்கு ஏற்றுமதி செய்யப்பட்டது';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'முடிந்தவற்றைக் காட்டு';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'முடிந்தவற்றை மறை';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'அனைத்தையும் தேர்ந்தெடு';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'ஏற்றுமதி செய்ய அமைப்புகளில் ஒரு பணி செயலியை இணைக்கவும்';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'இணைக்கவும்';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'அனைத்தையும் தேர்வு நீக்கு';
 }

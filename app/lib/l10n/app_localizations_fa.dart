@@ -9158,10 +9158,10 @@ class AppLocalizationsFa extends AppLocalizations {
   String get agreeAndContinue => 'موافقم و ادامه';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'شروع ضبط صدا';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'شروع ضبط تماس';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9191,44 +9191,44 @@ class AppLocalizationsFa extends AppLocalizations {
   String get phoneCallSubtitle => 'یک تماس را با رونویسی زنده ضبط کنید';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'جستجوی موارد اقدام';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'انتخاب چندگانه';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'صادرات $count مورد به…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'در حال صادرات…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count به $platform صادر شد';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$success از $total به $platform صادر شد';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'نمایش انجام‌شده‌ها';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'پنهان کردن انجام‌شده‌ها';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'انتخاب همه';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'برای صادرات، یک برنامه وظایف را در تنظیمات متصل کنید';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'اتصال';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'لغو انتخاب همه';
 }

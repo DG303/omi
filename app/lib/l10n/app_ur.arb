@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "فون مائیک سے ریکارڈ کریں",
   "recordWithPhoneMicSubtitle": "اپنے ارد گرد کی آواز ریکارڈ کریں",
   "phoneCall": "فون کال",
-  "phoneCallSubtitle": "لائیو ٹرانسکرپشن کے ساتھ کال ریکارڈ کریں"
+  "phoneCallSubtitle": "لائیو ٹرانسکرپشن کے ساتھ کال ریکارڈ کریں",
+  "bulkExportInProgress": "ایکسپورٹ ہو رہا ہے…",
+  "bulkExportPartial": "{total} میں سے {success} کو {platform} میں ایکسپورٹ کیا گیا",
+  "bulkExportSuccess": "{count} کو {platform} میں ایکسپورٹ کیا گیا",
+  "chooseExportDestination": "{count} آئٹم ایکسپورٹ کریں…",
+  "connectAction": "جوڑیں",
+  "connectTaskAppToExport": "ایکسپورٹ کے لیے ترتیبات میں ٹاسک ایپ جوڑیں",
+  "deselectAllTasksMenu": "تمام کا انتخاب ختم کریں",
+  "hideCompletedTasks": "مکمل شدہ چھپائیں",
+  "searchActionItems": "ایکشن آئٹمز تلاش کریں",
+  "selectActionItems": "متعدد منتخب کریں",
+  "selectAllTasksMenu": "سب منتخب کریں",
+  "showCompletedTasks": "مکمل شدہ دکھائیں",
+  "startCallRecording": "کال ریکارڈنگ شروع کریں",
+  "startVoiceRecording": "وائس ریکارڈنگ شروع کریں"
 }

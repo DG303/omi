@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Spela in med telefonmikrofon",
   "recordWithPhoneMicSubtitle": "Fånga ljudet runt dig",
   "phoneCall": "Telefonsamtal",
-  "phoneCallSubtitle": "Spela in samtal med live-transkribering"
+  "phoneCallSubtitle": "Spela in samtal med live-transkribering",
+  "bulkExportInProgress": "Exporterar…",
+  "bulkExportPartial": "Exporterade {success} av {total} till {platform}",
+  "bulkExportSuccess": "Exporterade {count} till {platform}",
+  "chooseExportDestination": "Exportera {count} objekt till…",
+  "connectAction": "Anslut",
+  "connectTaskAppToExport": "Anslut en uppgiftsapp i Inställningar för att exportera",
+  "deselectAllTasksMenu": "Avmarkera alla",
+  "hideCompletedTasks": "Dölj slutförda",
+  "searchActionItems": "Sök åtgärdspunkter",
+  "selectActionItems": "Välj flera",
+  "selectAllTasksMenu": "Välj alla",
+  "showCompletedTasks": "Visa slutförda",
+  "startCallRecording": "Starta samtalsinspelning",
+  "startVoiceRecording": "Starta röstinspelning"
 }

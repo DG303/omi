@@ -3034,5 +3034,19 @@
   "recordWithPhoneMic": "Enregistrer avec le micro du téléphone",
   "recordWithPhoneMicSubtitle": "Capturez l'audio autour de vous",
   "phoneCall": "Appel téléphonique",
-  "phoneCallSubtitle": "Enregistrez un appel avec transcription en direct"
+  "phoneCallSubtitle": "Enregistrez un appel avec transcription en direct",
+  "bulkExportInProgress": "Exportation…",
+  "bulkExportPartial": "{success} sur {total} exportés vers {platform}",
+  "bulkExportSuccess": "{count} exportés vers {platform}",
+  "chooseExportDestination": "Exporter {count} élément(s) vers…",
+  "connectAction": "Connecter",
+  "connectTaskAppToExport": "Connectez une application de tâches dans les Paramètres pour exporter",
+  "deselectAllTasksMenu": "Tout désélectionner",
+  "hideCompletedTasks": "Masquer les terminées",
+  "searchActionItems": "Rechercher des actions",
+  "selectActionItems": "Sélection multiple",
+  "selectAllTasksMenu": "Tout sélectionner",
+  "showCompletedTasks": "Afficher les terminées",
+  "startCallRecording": "Démarrer l'enregistrement d'appel",
+  "startVoiceRecording": "Démarrer l'enregistrement vocal"
 }

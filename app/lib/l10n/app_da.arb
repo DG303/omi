@@ -3008,5 +3008,19 @@
   "recordWithPhoneMic": "Optag med telefonens mikrofon",
   "recordWithPhoneMicSubtitle": "Optag lyden omkring dig",
   "phoneCall": "Telefonopkald",
-  "phoneCallSubtitle": "Optag et opkald med live-transskription"
+  "phoneCallSubtitle": "Optag et opkald med live-transskription",
+  "bulkExportInProgress": "Eksporterer…",
+  "bulkExportPartial": "Eksporterede {success} af {total} til {platform}",
+  "bulkExportSuccess": "Eksporterede {count} til {platform}",
+  "chooseExportDestination": "Eksportér {count} element(er) til…",
+  "connectAction": "Forbind",
+  "connectTaskAppToExport": "Forbind en opgaveapp i Indstillinger for at eksportere",
+  "deselectAllTasksMenu": "Fravælg alle",
+  "hideCompletedTasks": "Skjul fuldførte",
+  "searchActionItems": "Søg i handlingspunkter",
+  "selectActionItems": "Vælg flere",
+  "selectAllTasksMenu": "Vælg alle",
+  "showCompletedTasks": "Vis fuldførte",
+  "startCallRecording": "Start opkaldsoptagelse",
+  "startVoiceRecording": "Start stemmeoptagelse"
 }

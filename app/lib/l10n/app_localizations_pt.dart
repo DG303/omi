@@ -9159,10 +9159,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get agreeAndContinue => 'Aceitar e continuar';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Iniciar gravação de voz';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Iniciar gravação de chamada';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9192,44 +9192,44 @@ class AppLocalizationsPt extends AppLocalizations {
   String get phoneCallSubtitle => 'Grave uma chamada com transcrição ao vivo';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Pesquisar itens de ação';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Selecionar vários';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Exportar $count item(ns) para…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Exportando…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Exportados $count para $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Exportados $success de $total para $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Mostrar concluídas';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Ocultar concluídas';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Selecionar todos';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Conecte um aplicativo de tarefas nas Configurações para exportar';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Conectar';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Desmarcar todos';
 }

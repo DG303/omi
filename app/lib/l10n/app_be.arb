@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "Запіс мікрафонам тэлефона",
   "recordWithPhoneMicSubtitle": "Запісвайце гук вакол сябе",
   "phoneCall": "Тэлефонны званок",
-  "phoneCallSubtitle": "Запіс званка з жывой транскрыпцыяй"
+  "phoneCallSubtitle": "Запіс званка з жывой транскрыпцыяй",
+  "bulkExportInProgress": "Экспарт…",
+  "bulkExportPartial": "Экспартавана {success} з {total} у {platform}",
+  "bulkExportSuccess": "Экспартавана {count} у {platform}",
+  "chooseExportDestination": "Экспартаваць {count} элемент(аў) у…",
+  "connectAction": "Злучыць",
+  "connectTaskAppToExport": "Падключыце праграму задач у Наладах для экспарту",
+  "deselectAllTasksMenu": "Зняць выбар усіх",
+  "hideCompletedTasks": "Схаваць завершаныя",
+  "searchActionItems": "Шукаць элементы дзеянняў",
+  "selectActionItems": "Выбраць некалькі",
+  "selectAllTasksMenu": "Выбраць усе",
+  "showCompletedTasks": "Паказаць завершаныя",
+  "startCallRecording": "Пачаць запіс званка",
+  "startVoiceRecording": "Пачаць галасавы запіс"
 }

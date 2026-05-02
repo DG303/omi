@@ -2968,5 +2968,19 @@
   "recordWithPhoneMic": "Grava amb el micròfon del telèfon",
   "recordWithPhoneMicSubtitle": "Captura l'àudio que t'envolta",
   "phoneCall": "Trucada",
-  "phoneCallSubtitle": "Enregistra una trucada amb transcripció en directe"
+  "phoneCallSubtitle": "Enregistra una trucada amb transcripció en directe",
+  "bulkExportInProgress": "S'està exportant…",
+  "bulkExportPartial": "S'han exportat {success} de {total} a {platform}",
+  "bulkExportSuccess": "S'han exportat {count} a {platform}",
+  "chooseExportDestination": "Exporta {count} element(s) a…",
+  "connectAction": "Connecta",
+  "connectTaskAppToExport": "Connecta una aplicació de tasques a Configuració per exportar",
+  "deselectAllTasksMenu": "Desselecciona tot",
+  "hideCompletedTasks": "Amaga les completades",
+  "searchActionItems": "Cerca elements d'acció",
+  "selectActionItems": "Selecció múltiple",
+  "selectAllTasksMenu": "Selecciona tot",
+  "showCompletedTasks": "Mostra les completades",
+  "startCallRecording": "Inicia l'enregistrament de trucada",
+  "startVoiceRecording": "Inicia l'enregistrament de veu"
 }

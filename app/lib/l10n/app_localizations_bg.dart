@@ -9190,10 +9190,10 @@ class AppLocalizationsBg extends AppLocalizations {
   String get agreeAndContinue => 'Приемам и продължавам';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Стартиране на гласов запис';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Стартиране на запис на разговор';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9223,44 +9223,44 @@ class AppLocalizationsBg extends AppLocalizations {
   String get phoneCallSubtitle => 'Записвайте обаждане с транскрипция в реално време';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Търсене на действия';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Избиране на няколко';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Експортиране на $count елемент(а) в…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Експортиране…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Експортирани $count в $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Експортирани $success от $total в $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Показване на завършените';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Скриване на завършените';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Избиране на всички';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Свържете приложение за задачи в Настройки, за да експортирате';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Свързване';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Премахване на избора';
 }

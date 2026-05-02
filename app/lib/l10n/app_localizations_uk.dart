@@ -9169,10 +9169,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get agreeAndContinue => 'Прийняти та продовжити';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Почати голосовий запис';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Почати запис дзвінка';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9202,44 +9202,44 @@ class AppLocalizationsUk extends AppLocalizations {
   String get phoneCallSubtitle => 'Запис дзвінка з живою транскрипцією';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Шукати дії';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Вибрати кілька';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Експортувати $count елемент(ів) до…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Експорт…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Експортовано $count до $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Експортовано $success з $total до $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Показати завершені';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Приховати завершені';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Вибрати все';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Підключіть додаток завдань у Налаштуваннях для експорту';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Підключити';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Зняти виділення з усіх';
 }

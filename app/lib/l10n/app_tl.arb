@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "Mag-record gamit ang mikropono ng telepono",
   "recordWithPhoneMicSubtitle": "Kunan ang audio sa paligid mo",
   "phoneCall": "Tawag sa telepono",
-  "phoneCallSubtitle": "Mag-record ng tawag na may live na transkripsyon"
+  "phoneCallSubtitle": "Mag-record ng tawag na may live na transkripsyon",
+  "bulkExportInProgress": "Nag-e-export…",
+  "bulkExportPartial": "Na-export ang {success} sa {total} sa {platform}",
+  "bulkExportSuccess": "Na-export ang {count} sa {platform}",
+  "chooseExportDestination": "I-export ang {count} item sa…",
+  "connectAction": "Ikonekta",
+  "connectTaskAppToExport": "Ikonekta ang isang task app sa Settings para mag-export",
+  "deselectAllTasksMenu": "I-deselect lahat",
+  "hideCompletedTasks": "Itago ang tapos na",
+  "searchActionItems": "Maghanap ng mga action item",
+  "selectActionItems": "Pumili ng marami",
+  "selectAllTasksMenu": "Piliin lahat",
+  "showCompletedTasks": "Ipakita ang tapos na",
+  "startCallRecording": "Simulan ang pag-record ng tawag",
+  "startVoiceRecording": "Simulan ang voice recording"
 }

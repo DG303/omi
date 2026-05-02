@@ -9166,10 +9166,10 @@ class AppLocalizationsMr extends AppLocalizations {
   String get agreeAndContinue => 'सहमत व्हा आणि सुरू ठेवा';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'व्हॉइस रेकॉर्डिंग सुरू करा';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'कॉल रेकॉर्डिंग सुरू करा';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9199,44 +9199,44 @@ class AppLocalizationsMr extends AppLocalizations {
   String get phoneCallSubtitle => 'लाइव्ह ट्रान्स्क्रिप्शनसह कॉल रेकॉर्ड करा';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'कृती आयटम शोधा';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'अनेक निवडा';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$count आयटम निर्यात करा…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'निर्यात होत आहे…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count $platform वर निर्यात केले';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$total पैकी $success $platform वर निर्यात केले';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'पूर्ण झालेले दाखवा';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'पूर्ण झालेले लपवा';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'सर्व निवडा';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'निर्यात करण्यासाठी सेटिंग्जमध्ये टास्क ॲप जोडा';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'जोडा';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'सर्वांची निवड रद्द करा';
 }

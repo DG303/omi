@@ -9168,10 +9168,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get agreeAndContinue => 'Kabul Et ve Devam Et';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Ses kaydını başlat';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Arama kaydını başlat';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9201,44 +9201,44 @@ class AppLocalizationsTr extends AppLocalizations {
   String get phoneCallSubtitle => 'Canlı transkripsiyonla bir aramayı kaydedin';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Eylem öğelerini ara';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Birden fazla seç';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$count öğeyi dışa aktar…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Dışa aktarılıyor…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count öğe $platform uygulamasına aktarıldı';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$total öğeden $success tanesi $platform uygulamasına aktarıldı';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Tamamlananları göster';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Tamamlananları gizle';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Tümünü seç';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Dışa aktarmak için Ayarlar\'da bir görev uygulaması bağlayın';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Bağla';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Tümünün seçimini kaldır';
 }

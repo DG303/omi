@@ -9007,10 +9007,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get agreeAndContinue => '동의하고 계속';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => '음성 녹음 시작';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => '통화 녹음 시작';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9040,44 +9040,44 @@ class AppLocalizationsKo extends AppLocalizations {
   String get phoneCallSubtitle => '실시간 전사로 통화 녹음';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => '실행 항목 검색';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => '여러 개 선택';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$count개 항목 내보내기…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => '내보내는 중…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count개를 $platform에 내보냈습니다';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$total개 중 $success개를 $platform에 내보냈습니다';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => '완료 보기';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => '완료 숨기기';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => '모두 선택';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => '내보내려면 설정에서 작업 앱을 연결하세요';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => '연결';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => '모두 선택 해제';
 }

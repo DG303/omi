@@ -9172,10 +9172,10 @@ class AppLocalizationsUr extends AppLocalizations {
   String get agreeAndContinue => 'اتفاق اور جاری رکھیں';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'وائس ریکارڈنگ شروع کریں';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'کال ریکارڈنگ شروع کریں';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9205,44 +9205,44 @@ class AppLocalizationsUr extends AppLocalizations {
   String get phoneCallSubtitle => 'لائیو ٹرانسکرپشن کے ساتھ کال ریکارڈ کریں';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'ایکشن آئٹمز تلاش کریں';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'متعدد منتخب کریں';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$count آئٹم ایکسپورٹ کریں…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'ایکسپورٹ ہو رہا ہے…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count کو $platform میں ایکسپورٹ کیا گیا';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$total میں سے $success کو $platform میں ایکسپورٹ کیا گیا';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'مکمل شدہ دکھائیں';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'مکمل شدہ چھپائیں';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'سب منتخب کریں';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'ایکسپورٹ کے لیے ترتیبات میں ٹاسک ایپ جوڑیں';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'جوڑیں';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'تمام کا انتخاب ختم کریں';
 }

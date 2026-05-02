@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "휴대폰 마이크로 녹음",
   "recordWithPhoneMicSubtitle": "주변 오디오를 캡처하세요",
   "phoneCall": "전화 통화",
-  "phoneCallSubtitle": "실시간 전사로 통화 녹음"
+  "phoneCallSubtitle": "실시간 전사로 통화 녹음",
+  "bulkExportInProgress": "내보내는 중…",
+  "bulkExportPartial": "{total}개 중 {success}개를 {platform}에 내보냈습니다",
+  "bulkExportSuccess": "{count}개를 {platform}에 내보냈습니다",
+  "chooseExportDestination": "{count}개 항목 내보내기…",
+  "connectAction": "연결",
+  "connectTaskAppToExport": "내보내려면 설정에서 작업 앱을 연결하세요",
+  "deselectAllTasksMenu": "모두 선택 해제",
+  "hideCompletedTasks": "완료 숨기기",
+  "searchActionItems": "실행 항목 검색",
+  "selectActionItems": "여러 개 선택",
+  "selectAllTasksMenu": "모두 선택",
+  "showCompletedTasks": "완료 보기",
+  "startCallRecording": "통화 녹음 시작",
+  "startVoiceRecording": "음성 녹음 시작"
 }

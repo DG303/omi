@@ -9179,10 +9179,10 @@ class AppLocalizationsMs extends AppLocalizations {
   String get agreeAndContinue => 'Setuju & Teruskan';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Mula rakaman suara';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Mula rakaman panggilan';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9212,44 +9212,44 @@ class AppLocalizationsMs extends AppLocalizations {
   String get phoneCallSubtitle => 'Rakam panggilan dengan transkripsi langsung';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Cari item tindakan';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Pilih beberapa';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Eksport $count item ke…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Mengeksport…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Dieksport $count ke $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Dieksport $success daripada $total ke $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Tunjukkan selesai';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Sembunyikan selesai';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Pilih semua';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Sambungkan aplikasi tugas dalam Tetapan untuk mengeksport';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Sambung';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Nyahpilih semua';
 }

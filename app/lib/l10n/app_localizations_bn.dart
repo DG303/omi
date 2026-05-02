@@ -9164,10 +9164,10 @@ class AppLocalizationsBn extends AppLocalizations {
   String get agreeAndContinue => 'সম্মত হই এবং চালিয়ে যান';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'ভয়েস রেকর্ডিং শুরু করুন';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'কল রেকর্ডিং শুরু করুন';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9197,44 +9197,44 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phoneCallSubtitle => 'লাইভ ট্রান্সক্রিপশন সহ কল রেকর্ড করুন';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'অ্যাকশন আইটেম অনুসন্ধান';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'একাধিক নির্বাচন';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$countটি আইটেম রপ্তানি করুন…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'রপ্তানি হচ্ছে…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$countটি $platform-এ রপ্তানি হয়েছে';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$total-এর মধ্যে $successটি $platform-এ রপ্তানি হয়েছে';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'সম্পন্ন দেখান';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'সম্পন্ন লুকান';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'সমস্ত নির্বাচন';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'রপ্তানি করতে সেটিংসে একটি টাস্ক অ্যাপ সংযুক্ত করুন';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'সংযুক্ত করুন';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'সমস্ত নির্বাচন বাতিল';
 }

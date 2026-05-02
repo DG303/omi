@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "ಫೋನ್ ಮೈಕ್‌ನೊಂದಿಗೆ ರೆಕಾರ್ಡ್ ಮಾಡಿ",
   "recordWithPhoneMicSubtitle": "ನಿಮ್ಮ ಸುತ್ತಲಿನ ಆಡಿಯೋ ಸೆರೆಹಿಡಿಯಿರಿ",
   "phoneCall": "ಫೋನ್ ಕರೆ",
-  "phoneCallSubtitle": "ಲೈವ್ ಪ್ರತಿಲೇಖನದೊಂದಿಗೆ ಕರೆಯನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ"
+  "phoneCallSubtitle": "ಲೈವ್ ಪ್ರತಿಲೇಖನದೊಂದಿಗೆ ಕರೆಯನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ",
+  "bulkExportInProgress": "ರಫ್ತು ಮಾಡಲಾಗುತ್ತಿದೆ…",
+  "bulkExportPartial": "{total} ರಲ್ಲಿ {success} ಅನ್ನು {platform} ಗೆ ರಫ್ತು ಮಾಡಲಾಗಿದೆ",
+  "bulkExportSuccess": "{count} ಅನ್ನು {platform} ಗೆ ರಫ್ತು ಮಾಡಲಾಗಿದೆ",
+  "chooseExportDestination": "{count} ಐಟಂ(ಗಳನ್ನು) ರಫ್ತು ಮಾಡಿ…",
+  "connectAction": "ಸಂಪರ್ಕಿಸಿ",
+  "connectTaskAppToExport": "ರಫ್ತು ಮಾಡಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕಾರ್ಯ ಅಪ್ಲಿಕೇಶನ್ ಸಂಪರ್ಕಿಸಿ",
+  "deselectAllTasksMenu": "ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ರದ್ದು ಮಾಡಿ",
+  "hideCompletedTasks": "ಪೂರ್ಣಗೊಂಡವು ಮರೆಮಾಡಿ",
+  "searchActionItems": "ಕ್ರಿಯಾ ಐಟಂಗಳನ್ನು ಹುಡುಕಿ",
+  "selectActionItems": "ಬಹು ಆಯ್ಕೆ",
+  "selectAllTasksMenu": "ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ಮಾಡಿ",
+  "showCompletedTasks": "ಪೂರ್ಣಗೊಂಡವು ತೋರಿಸಿ",
+  "startCallRecording": "ಕರೆ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ",
+  "startVoiceRecording": "ಧ್ವನಿ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ"
 }

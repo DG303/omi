@@ -3004,5 +3004,19 @@
   "recordWithPhoneMic": "Ghi âm bằng micro điện thoại",
   "recordWithPhoneMicSubtitle": "Ghi lại âm thanh xung quanh bạn",
   "phoneCall": "Cuộc gọi điện thoại",
-  "phoneCallSubtitle": "Ghi âm cuộc gọi với phiên âm trực tiếp"
+  "phoneCallSubtitle": "Ghi âm cuộc gọi với phiên âm trực tiếp",
+  "bulkExportInProgress": "Đang xuất…",
+  "bulkExportPartial": "Đã xuất {success} trong {total} sang {platform}",
+  "bulkExportSuccess": "Đã xuất {count} sang {platform}",
+  "chooseExportDestination": "Xuất {count} mục sang…",
+  "connectAction": "Kết nối",
+  "connectTaskAppToExport": "Kết nối ứng dụng tác vụ trong Cài đặt để xuất",
+  "deselectAllTasksMenu": "Bỏ chọn tất cả",
+  "hideCompletedTasks": "Ẩn đã hoàn thành",
+  "searchActionItems": "Tìm kiếm mục hành động",
+  "selectActionItems": "Chọn nhiều",
+  "selectAllTasksMenu": "Chọn tất cả",
+  "showCompletedTasks": "Hiện đã hoàn thành",
+  "startCallRecording": "Bắt đầu ghi âm cuộc gọi",
+  "startVoiceRecording": "Bắt đầu ghi âm giọng nói"
 }

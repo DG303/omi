@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Salvesta telefoni mikrofoniga",
   "recordWithPhoneMicSubtitle": "Salvesta enda ümbruse heli",
   "phoneCall": "Telefonikõne",
-  "phoneCallSubtitle": "Salvesta kõne reaalajas transkriptsiooniga"
+  "phoneCallSubtitle": "Salvesta kõne reaalajas transkriptsiooniga",
+  "bulkExportInProgress": "Eksportimine…",
+  "bulkExportPartial": "Eksporditi {success}/{total} asukohta {platform}",
+  "bulkExportSuccess": "Eksporditi {count} asukohta {platform}",
+  "chooseExportDestination": "Ekspordi {count} üksus(t) asukohta…",
+  "connectAction": "Ühenda",
+  "connectTaskAppToExport": "Eksportimiseks ühendage Seadetes ülesannete rakendus",
+  "deselectAllTasksMenu": "Tühista kõigi valik",
+  "hideCompletedTasks": "Peida lõpetatud",
+  "searchActionItems": "Otsi tegevusüksusi",
+  "selectActionItems": "Vali mitu",
+  "selectAllTasksMenu": "Vali kõik",
+  "showCompletedTasks": "Kuva lõpetatud",
+  "startCallRecording": "Alusta kõne salvestamist",
+  "startVoiceRecording": "Alusta häälsalvestust"
 }

@@ -3034,5 +3034,19 @@
   "recordWithPhoneMic": "Запись микрофоном телефона",
   "recordWithPhoneMicSubtitle": "Запишите звук вокруг вас",
   "phoneCall": "Телефонный звонок",
-  "phoneCallSubtitle": "Запись звонка с транскрипцией в реальном времени"
+  "phoneCallSubtitle": "Запись звонка с транскрипцией в реальном времени",
+  "bulkExportInProgress": "Экспорт…",
+  "bulkExportPartial": "Экспортировано {success} из {total} в {platform}",
+  "bulkExportSuccess": "Экспортировано {count} в {platform}",
+  "chooseExportDestination": "Экспортировать {count} элемент(ов) в…",
+  "connectAction": "Подключить",
+  "connectTaskAppToExport": "Подключите приложение задач в Настройках для экспорта",
+  "deselectAllTasksMenu": "Снять выделение со всех",
+  "hideCompletedTasks": "Скрыть завершённые",
+  "searchActionItems": "Поиск действий",
+  "selectActionItems": "Выбрать несколько",
+  "selectAllTasksMenu": "Выбрать все",
+  "showCompletedTasks": "Показать завершённые",
+  "startCallRecording": "Начать запись звонка",
+  "startVoiceRecording": "Начать голосовую запись"
 }

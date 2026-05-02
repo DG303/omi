@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Înregistrează cu microfonul telefonului",
   "recordWithPhoneMicSubtitle": "Capturează sunetul din jurul tău",
   "phoneCall": "Apel telefonic",
-  "phoneCallSubtitle": "Înregistrează un apel cu transcriere în direct"
+  "phoneCallSubtitle": "Înregistrează un apel cu transcriere în direct",
+  "bulkExportInProgress": "Se exportă…",
+  "bulkExportPartial": "Exportate {success} din {total} în {platform}",
+  "bulkExportSuccess": "Exportate {count} în {platform}",
+  "chooseExportDestination": "Exportă {count} element(e) în…",
+  "connectAction": "Conectare",
+  "connectTaskAppToExport": "Conectați o aplicație de sarcini în Setări pentru a exporta",
+  "deselectAllTasksMenu": "Deselectați tot",
+  "hideCompletedTasks": "Ascundeți finalizate",
+  "searchActionItems": "Căutați elemente de acțiune",
+  "selectActionItems": "Selectare multiplă",
+  "selectAllTasksMenu": "Selectați tot",
+  "showCompletedTasks": "Afișați finalizate",
+  "startCallRecording": "Porniți înregistrarea apelului",
+  "startVoiceRecording": "Porniți înregistrarea vocală"
 }

@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "הקלט עם מיקרופון הטלפון",
   "recordWithPhoneMicSubtitle": "הקלט שמע סביבך",
   "phoneCall": "שיחת טלפון",
-  "phoneCallSubtitle": "הקלט שיחה עם תמלול חי"
+  "phoneCallSubtitle": "הקלט שיחה עם תמלול חי",
+  "bulkExportInProgress": "מייצא…",
+  "bulkExportPartial": "יוצאו {success} מתוך {total} אל {platform}",
+  "bulkExportSuccess": "יוצאו {count} אל {platform}",
+  "chooseExportDestination": "ייצוא {count} פריט(ים) אל…",
+  "connectAction": "חיבור",
+  "connectTaskAppToExport": "חבר אפליקציית משימות בהגדרות כדי לייצא",
+  "deselectAllTasksMenu": "בטל בחירת הכל",
+  "hideCompletedTasks": "הסתר הושלמו",
+  "searchActionItems": "חפש פריטי פעולה",
+  "selectActionItems": "בחירה מרובה",
+  "selectAllTasksMenu": "בחר הכל",
+  "showCompletedTasks": "הצג הושלמו",
+  "startCallRecording": "התחל הקלטת שיחה",
+  "startVoiceRecording": "התחל הקלטה קולית"
 }

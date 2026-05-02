@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Registra con il microfono del telefono",
   "recordWithPhoneMicSubtitle": "Cattura l'audio intorno a te",
   "phoneCall": "Chiamata",
-  "phoneCallSubtitle": "Registra una chiamata con trascrizione live"
+  "phoneCallSubtitle": "Registra una chiamata con trascrizione live",
+  "bulkExportInProgress": "Esportazione…",
+  "bulkExportPartial": "Esportati {success} di {total} su {platform}",
+  "bulkExportSuccess": "Esportati {count} su {platform}",
+  "chooseExportDestination": "Esporta {count} elemento/i su…",
+  "connectAction": "Connetti",
+  "connectTaskAppToExport": "Collega un'app attività nelle Impostazioni per esportare",
+  "deselectAllTasksMenu": "Deseleziona tutto",
+  "hideCompletedTasks": "Nascondi completate",
+  "searchActionItems": "Cerca azioni",
+  "selectActionItems": "Selezione multipla",
+  "selectAllTasksMenu": "Seleziona tutto",
+  "showCompletedTasks": "Mostra completate",
+  "startCallRecording": "Avvia registrazione chiamata",
+  "startVoiceRecording": "Avvia registrazione vocale"
 }

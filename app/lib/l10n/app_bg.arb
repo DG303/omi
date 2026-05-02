@@ -2968,5 +2968,19 @@
   "recordWithPhoneMic": "Запис с микрофона на телефона",
   "recordWithPhoneMicSubtitle": "Заснемайте звук около вас",
   "phoneCall": "Телефонно обаждане",
-  "phoneCallSubtitle": "Записвайте обаждане с транскрипция в реално време"
+  "phoneCallSubtitle": "Записвайте обаждане с транскрипция в реално време",
+  "bulkExportInProgress": "Експортиране…",
+  "bulkExportPartial": "Експортирани {success} от {total} в {platform}",
+  "bulkExportSuccess": "Експортирани {count} в {platform}",
+  "chooseExportDestination": "Експортиране на {count} елемент(а) в…",
+  "connectAction": "Свързване",
+  "connectTaskAppToExport": "Свържете приложение за задачи в Настройки, за да експортирате",
+  "deselectAllTasksMenu": "Премахване на избора",
+  "hideCompletedTasks": "Скриване на завършените",
+  "searchActionItems": "Търсене на действия",
+  "selectActionItems": "Избиране на няколко",
+  "selectAllTasksMenu": "Избиране на всички",
+  "showCompletedTasks": "Показване на завършените",
+  "startCallRecording": "Стартиране на запис на разговор",
+  "startVoiceRecording": "Стартиране на гласов запис"
 }

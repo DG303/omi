@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "ఫోన్ మైక్‌తో రికార్డ్ చేయండి",
   "recordWithPhoneMicSubtitle": "మీ చుట్టూ ఉన్న ఆడియోను క్యాప్చర్ చేయండి",
   "phoneCall": "ఫోన్ కాల్",
-  "phoneCallSubtitle": "లైవ్ ట్రాన్స్‌క్రిప్షన్‌తో కాల్‌ను రికార్డ్ చేయండి"
+  "phoneCallSubtitle": "లైవ్ ట్రాన్స్‌క్రిప్షన్‌తో కాల్‌ను రికార్డ్ చేయండి",
+  "bulkExportInProgress": "ఎగుమతి చేస్తోంది…",
+  "bulkExportPartial": "{total} లో {success} ని {platform} కు ఎగుమతి చేయబడింది",
+  "bulkExportSuccess": "{count} ని {platform} కు ఎగుమతి చేయబడింది",
+  "chooseExportDestination": "{count} అంశం(ాలను) ఎగుమతి చేయండి…",
+  "connectAction": "కనెక్ట్ చేయండి",
+  "connectTaskAppToExport": "ఎగుమతి చేయడానికి సెట్టింగ్‌లలో టాస్క్ యాప్‌ను కనెక్ట్ చేయండి",
+  "deselectAllTasksMenu": "అన్ని ఎంపికలు తొలగించు",
+  "hideCompletedTasks": "పూర్తయినవి దాచు",
+  "searchActionItems": "చర్య అంశాలను వెతకండి",
+  "selectActionItems": "బహుళ ఎంపిక",
+  "selectAllTasksMenu": "అన్నీ ఎంచుకోండి",
+  "showCompletedTasks": "పూర్తయినవి చూపించు",
+  "startCallRecording": "కాల్ రికార్డింగ్ ప్రారంభించండి",
+  "startVoiceRecording": "వాయిస్ రికార్డింగ్ ప్రారంభించండి"
 }
