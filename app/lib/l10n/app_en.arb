@@ -11000,5 +11000,9 @@
     "connectAction": "Connect",
     "@connectAction": {
         "description": "Snackbar action label that opens the Task Integrations settings page"
+    },
+    "deselectAllTasksMenu": "Deselect all",
+    "@deselectAllTasksMenu": {
+        "description": "Action menu entry that clears any current task selection while staying in selection mode"
     }
 }
