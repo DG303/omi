@@ -231,6 +231,7 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
               controller: _searchController,
               focusNode: _searchFocusNode,
               hint: context.l10n.searchActionItems,
+              highlightOnFocus: false,
               onChanged: (value) {
                 _searchDebouncer.run(() {
                   if (!mounted) return;
@@ -253,6 +254,12 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
 
   Widget _buildOverflowMenu(ActionItemsProvider provider) {
     final showingCompleted = provider.showCompletedView;
+    // "Select all" flips to "Deselect all" once every loaded task is already
+    // selected — same item retains its position in the menu so muscle memory
+    // works for the toggle.
+    final hasItems = provider.actionItems.isNotEmpty;
+    final allSelected = hasItems && provider.selectedCount == provider.actionItems.length;
+
     return PopupMenuButton<String>(
       tooltip: '',
       icon: Icon(Icons.more_horiz_rounded, color: Colors.grey[400], size: 22),
@@ -268,8 +275,13 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
           case 'select_all':
             HapticFeedback.lightImpact();
             _searchFocusNode.unfocus();
-            provider.startSelection();
-            provider.selectAllItems();
+            if (allSelected) {
+              // Stay in selection mode but clear — user can re-pick individuals.
+              provider.clearSelection();
+            } else {
+              if (!provider.isSelectionMode) provider.startSelection();
+              provider.selectAllItems();
+            }
             break;
           case 'toggle_completed':
             HapticFeedback.lightImpact();
@@ -285,8 +297,8 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
         ),
         _menuItem(
           value: 'select_all',
-          icon: Icons.select_all_rounded,
-          label: context.l10n.selectAllTasksMenu,
+          icon: allSelected ? Icons.deselect_rounded : Icons.select_all_rounded,
+          label: allSelected ? context.l10n.deselectAllTasksMenu : context.l10n.selectAllTasksMenu,
         ),
         _menuItem(
           value: 'toggle_completed',
