@@ -3095,5 +3095,19 @@
   "recordWithPhoneMic": "Felvétel a telefon mikrofonjával",
   "recordWithPhoneMicSubtitle": "Rögzítse a környezete hangját",
   "phoneCall": "Telefonhívás",
-  "phoneCallSubtitle": "Hívás rögzítése élő átirattal"
+  "phoneCallSubtitle": "Hívás rögzítése élő átirattal",
+  "bulkExportInProgress": "Exportálás…",
+  "bulkExportPartial": "{success}/{total} exportálva ide: {platform}",
+  "bulkExportSuccess": "{count} exportálva ide: {platform}",
+  "chooseExportDestination": "{count} elem exportálása ide…",
+  "connectAction": "Csatlakoztatás",
+  "connectTaskAppToExport": "Csatlakoztasson egy feladatalkalmazást a Beállításokban az exportáláshoz",
+  "deselectAllTasksMenu": "Összes kijelölés törlése",
+  "hideCompletedTasks": "Befejezettek elrejtése",
+  "searchActionItems": "Teendők keresése",
+  "selectActionItems": "Több kijelölése",
+  "selectAllTasksMenu": "Összes kijelölése",
+  "showCompletedTasks": "Befejezettek megjelenítése",
+  "startCallRecording": "Hívásfelvétel indítása",
+  "startVoiceRecording": "Hangfelvétel indítása"
 }

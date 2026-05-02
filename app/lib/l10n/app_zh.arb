@@ -3021,5 +3021,19 @@
   "recordWithPhoneMic": "用手机麦克风录音",
   "recordWithPhoneMicSubtitle": "捕捉您周围的声音",
   "phoneCall": "电话",
-  "phoneCallSubtitle": "录制带实时转录的通话"
+  "phoneCallSubtitle": "录制带实时转录的通话",
+  "bulkExportInProgress": "正在导出…",
+  "bulkExportPartial": "已将 {success}/{total} 导出到 {platform}",
+  "bulkExportSuccess": "已将 {count} 项导出到 {platform}",
+  "chooseExportDestination": "导出 {count} 个项目到…",
+  "connectAction": "连接",
+  "connectTaskAppToExport": "在设置中连接任务应用以导出",
+  "deselectAllTasksMenu": "取消全选",
+  "hideCompletedTasks": "隐藏已完成",
+  "searchActionItems": "搜索操作项",
+  "selectActionItems": "多选",
+  "selectAllTasksMenu": "全选",
+  "showCompletedTasks": "显示已完成",
+  "startCallRecording": "开始通话录音",
+  "startVoiceRecording": "开始语音录音"
 }

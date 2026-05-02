@@ -3000,5 +3000,19 @@
   "recordWithPhoneMic": "Grabar con el micrófono del teléfono",
   "recordWithPhoneMicSubtitle": "Captura el audio a tu alrededor",
   "phoneCall": "Llamada telefónica",
-  "phoneCallSubtitle": "Graba una llamada con transcripción en vivo"
+  "phoneCallSubtitle": "Graba una llamada con transcripción en vivo",
+  "bulkExportInProgress": "Exportando…",
+  "bulkExportPartial": "Se exportaron {success} de {total} a {platform}",
+  "bulkExportSuccess": "Se exportaron {count} a {platform}",
+  "chooseExportDestination": "Exportar {count} elemento(s) a…",
+  "connectAction": "Conectar",
+  "connectTaskAppToExport": "Conecta una app de tareas en Ajustes para exportar",
+  "deselectAllTasksMenu": "Deseleccionar todo",
+  "hideCompletedTasks": "Ocultar completadas",
+  "searchActionItems": "Buscar elementos de acción",
+  "selectActionItems": "Seleccionar varios",
+  "selectAllTasksMenu": "Seleccionar todo",
+  "showCompletedTasks": "Mostrar completadas",
+  "startCallRecording": "Iniciar grabación de llamada",
+  "startVoiceRecording": "Iniciar grabación de voz"
 }

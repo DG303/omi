@@ -3041,5 +3041,19 @@
   "recordWithPhoneMic": "Rekam dengan mikrofon ponsel",
   "recordWithPhoneMicSubtitle": "Tangkap audio di sekitar Anda",
   "phoneCall": "Panggilan telepon",
-  "phoneCallSubtitle": "Rekam panggilan dengan transkripsi langsung"
+  "phoneCallSubtitle": "Rekam panggilan dengan transkripsi langsung",
+  "bulkExportInProgress": "Mengekspor…",
+  "bulkExportPartial": "Diekspor {success} dari {total} ke {platform}",
+  "bulkExportSuccess": "Diekspor {count} ke {platform}",
+  "chooseExportDestination": "Ekspor {count} item ke…",
+  "connectAction": "Hubungkan",
+  "connectTaskAppToExport": "Hubungkan aplikasi tugas di Pengaturan untuk mengekspor",
+  "deselectAllTasksMenu": "Batalkan pilihan semua",
+  "hideCompletedTasks": "Sembunyikan selesai",
+  "searchActionItems": "Cari item tindakan",
+  "selectActionItems": "Pilih beberapa",
+  "selectAllTasksMenu": "Pilih semua",
+  "showCompletedTasks": "Tampilkan selesai",
+  "startCallRecording": "Mulai rekaman panggilan",
+  "startVoiceRecording": "Mulai rekaman suara"
 }

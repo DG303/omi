@@ -9194,10 +9194,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get agreeAndContinue => 'Elfogadom és folytatom';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Hangfelvétel indítása';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Hívásfelvétel indítása';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9227,44 +9227,44 @@ class AppLocalizationsHu extends AppLocalizations {
   String get phoneCallSubtitle => 'Hívás rögzítése élő átirattal';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Teendők keresése';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Több kijelölése';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$count elem exportálása ide…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Exportálás…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count exportálva ide: $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$success/$total exportálva ide: $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Befejezettek megjelenítése';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Befejezettek elrejtése';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Összes kijelölése';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Csatlakoztasson egy feladatalkalmazást a Beállításokban az exportáláshoz';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Csatlakoztatás';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Összes kijelölés törlése';
 }

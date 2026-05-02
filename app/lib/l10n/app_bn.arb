@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "ফোনের মাইক্রোফোন দিয়ে রেকর্ড করুন",
   "recordWithPhoneMicSubtitle": "আপনার চারপাশের অডিও ক্যাপচার করুন",
   "phoneCall": "ফোন কল",
-  "phoneCallSubtitle": "লাইভ ট্রান্সক্রিপশন সহ কল রেকর্ড করুন"
+  "phoneCallSubtitle": "লাইভ ট্রান্সক্রিপশন সহ কল রেকর্ড করুন",
+  "bulkExportInProgress": "রপ্তানি হচ্ছে…",
+  "bulkExportPartial": "{total}-এর মধ্যে {success}টি {platform}-এ রপ্তানি হয়েছে",
+  "bulkExportSuccess": "{count}টি {platform}-এ রপ্তানি হয়েছে",
+  "chooseExportDestination": "{count}টি আইটেম রপ্তানি করুন…",
+  "connectAction": "সংযুক্ত করুন",
+  "connectTaskAppToExport": "রপ্তানি করতে সেটিংসে একটি টাস্ক অ্যাপ সংযুক্ত করুন",
+  "deselectAllTasksMenu": "সমস্ত নির্বাচন বাতিল",
+  "hideCompletedTasks": "সম্পন্ন লুকান",
+  "searchActionItems": "অ্যাকশন আইটেম অনুসন্ধান",
+  "selectActionItems": "একাধিক নির্বাচন",
+  "selectAllTasksMenu": "সমস্ত নির্বাচন",
+  "showCompletedTasks": "সম্পন্ন দেখান",
+  "startCallRecording": "কল রেকর্ডিং শুরু করুন",
+  "startVoiceRecording": "ভয়েস রেকর্ডিং শুরু করুন"
 }

@@ -3034,5 +3034,19 @@
   "recordWithPhoneMic": "Nagrywaj mikrofonem telefonu",
   "recordWithPhoneMicSubtitle": "Nagrywaj dźwięk wokół ciebie",
   "phoneCall": "Połączenie telefoniczne",
-  "phoneCallSubtitle": "Nagrywaj rozmowę z transkrypcją na żywo"
+  "phoneCallSubtitle": "Nagrywaj rozmowę z transkrypcją na żywo",
+  "bulkExportInProgress": "Eksportowanie…",
+  "bulkExportPartial": "Wyeksportowano {success} z {total} do {platform}",
+  "bulkExportSuccess": "Wyeksportowano {count} do {platform}",
+  "chooseExportDestination": "Eksportuj {count} element(ów) do…",
+  "connectAction": "Połącz",
+  "connectTaskAppToExport": "Połącz aplikację zadań w Ustawieniach, aby eksportować",
+  "deselectAllTasksMenu": "Odznacz wszystkie",
+  "hideCompletedTasks": "Ukryj ukończone",
+  "searchActionItems": "Szukaj pozycji działań",
+  "selectActionItems": "Zaznacz wiele",
+  "selectAllTasksMenu": "Zaznacz wszystkie",
+  "showCompletedTasks": "Pokaż ukończone",
+  "startCallRecording": "Rozpocznij nagrywanie rozmowy",
+  "startVoiceRecording": "Rozpocznij nagrywanie głosu"
 }

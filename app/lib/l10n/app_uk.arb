@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Запис мікрофоном телефона",
   "recordWithPhoneMicSubtitle": "Записуйте звук навколо вас",
   "phoneCall": "Телефонний дзвінок",
-  "phoneCallSubtitle": "Запис дзвінка з живою транскрипцією"
+  "phoneCallSubtitle": "Запис дзвінка з живою транскрипцією",
+  "bulkExportInProgress": "Експорт…",
+  "bulkExportPartial": "Експортовано {success} з {total} до {platform}",
+  "bulkExportSuccess": "Експортовано {count} до {platform}",
+  "chooseExportDestination": "Експортувати {count} елемент(ів) до…",
+  "connectAction": "Підключити",
+  "connectTaskAppToExport": "Підключіть додаток завдань у Налаштуваннях для експорту",
+  "deselectAllTasksMenu": "Зняти виділення з усіх",
+  "hideCompletedTasks": "Приховати завершені",
+  "searchActionItems": "Шукати дії",
+  "selectActionItems": "Вибрати кілька",
+  "selectAllTasksMenu": "Вибрати все",
+  "showCompletedTasks": "Показати завершені",
+  "startCallRecording": "Почати запис дзвінка",
+  "startVoiceRecording": "Почати голосовий запис"
 }

@@ -9006,10 +9006,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get agreeAndContinue => '同意して続ける';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => '音声録音を開始';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => '通話録音を開始';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9039,44 +9039,44 @@ class AppLocalizationsJa extends AppLocalizations {
   String get phoneCallSubtitle => 'ライブ文字起こしで通話を録音';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'アクション項目を検索';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => '複数選択';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '$count件をエクスポート先…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'エクスポート中…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '$count件を$platformにエクスポートしました';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '$total件中$success件を$platformにエクスポートしました';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => '完了を表示';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => '完了を非表示';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'すべて選択';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'エクスポートするには設定でタスクアプリを接続してください';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => '接続';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'すべて選択解除';
 }

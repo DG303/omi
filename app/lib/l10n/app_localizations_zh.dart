@@ -8992,10 +8992,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get agreeAndContinue => '同意并继续';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => '开始语音录音';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => '开始通话录音';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9025,44 +9025,44 @@ class AppLocalizationsZh extends AppLocalizations {
   String get phoneCallSubtitle => '录制带实时转录的通话';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => '搜索操作项';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => '多选';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return '导出 $count 个项目到…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => '正在导出…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return '已将 $count 项导出到 $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return '已将 $success/$total 导出到 $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => '显示已完成';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => '隐藏已完成';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => '全选';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => '在设置中连接任务应用以导出';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => '连接';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => '取消全选';
 }

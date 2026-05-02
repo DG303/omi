@@ -3034,5 +3034,19 @@
   "recordWithPhoneMic": "Telefon mikrofonuyla kaydet",
   "recordWithPhoneMicSubtitle": "Etrafınızdaki sesi yakalayın",
   "phoneCall": "Telefon araması",
-  "phoneCallSubtitle": "Canlı transkripsiyonla bir aramayı kaydedin"
+  "phoneCallSubtitle": "Canlı transkripsiyonla bir aramayı kaydedin",
+  "bulkExportInProgress": "Dışa aktarılıyor…",
+  "bulkExportPartial": "{total} öğeden {success} tanesi {platform} uygulamasına aktarıldı",
+  "bulkExportSuccess": "{count} öğe {platform} uygulamasına aktarıldı",
+  "chooseExportDestination": "{count} öğeyi dışa aktar…",
+  "connectAction": "Bağla",
+  "connectTaskAppToExport": "Dışa aktarmak için Ayarlar'da bir görev uygulaması bağlayın",
+  "deselectAllTasksMenu": "Tümünün seçimini kaldır",
+  "hideCompletedTasks": "Tamamlananları gizle",
+  "searchActionItems": "Eylem öğelerini ara",
+  "selectActionItems": "Birden fazla seç",
+  "selectAllTasksMenu": "Tümünü seç",
+  "showCompletedTasks": "Tamamlananları göster",
+  "startCallRecording": "Arama kaydını başlat",
+  "startVoiceRecording": "Ses kaydını başlat"
 }

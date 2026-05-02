@@ -9164,10 +9164,10 @@ class AppLocalizationsLt extends AppLocalizations {
   String get agreeAndContinue => 'Sutinku ir tęsti';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Pradėti balso įrašymą';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Pradėti skambučio įrašymą';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9197,44 +9197,44 @@ class AppLocalizationsLt extends AppLocalizations {
   String get phoneCallSubtitle => 'Įrašykite skambutį su tiesiogine transkripcija';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Ieškoti veiksmų elementų';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Pasirinkti kelis';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Eksportuoti $count elementą(-us) į…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Eksportuojama…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Eksportuota $count į $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Eksportuota $success iš $total į $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Rodyti užbaigtas';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Slėpti užbaigtas';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Pasirinkti viską';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Prijunkite užduočių programą Nustatymuose, kad galėtumėte eksportuoti';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Prijungti';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Atžymėti viską';
 }

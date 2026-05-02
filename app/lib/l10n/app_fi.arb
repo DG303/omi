@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Tallenna puhelimen mikrofonilla",
   "recordWithPhoneMicSubtitle": "Tallenna ympärilläsi olevaa ääntä",
   "phoneCall": "Puhelu",
-  "phoneCallSubtitle": "Tallenna puhelu reaaliaikaisella tekstityksellä"
+  "phoneCallSubtitle": "Tallenna puhelu reaaliaikaisella tekstityksellä",
+  "bulkExportInProgress": "Viedään…",
+  "bulkExportPartial": "Viety {success}/{total} kohteeseen {platform}",
+  "bulkExportSuccess": "Viety {count} kohteeseen {platform}",
+  "chooseExportDestination": "Vie {count} kohde(tta) kohteeseen…",
+  "connectAction": "Yhdistä",
+  "connectTaskAppToExport": "Yhdistä tehtäväsovellus Asetuksissa vientiä varten",
+  "deselectAllTasksMenu": "Poista kaikkien valinta",
+  "hideCompletedTasks": "Piilota valmiit",
+  "searchActionItems": "Hae toimintakohteita",
+  "selectActionItems": "Valitse useita",
+  "selectAllTasksMenu": "Valitse kaikki",
+  "showCompletedTasks": "Näytä valmiit",
+  "startCallRecording": "Aloita puhelun nauhoitus",
+  "startVoiceRecording": "Aloita ääninauhoitus"
 }

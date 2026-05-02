@@ -9173,10 +9173,10 @@ class AppLocalizationsLv extends AppLocalizations {
   String get agreeAndContinue => 'Piekrītu un turpināt';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Sākt balss ierakstīšanu';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Sākt zvana ierakstīšanu';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9206,44 +9206,44 @@ class AppLocalizationsLv extends AppLocalizations {
   String get phoneCallSubtitle => 'Ierakstiet zvanu ar tiešraides transkripciju';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Meklēt darbības vienumus';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Atlasīt vairākus';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Eksportēt $count vienību(-as) uz…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Eksportē…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Eksportēti $count uz $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Eksportēti $success no $total uz $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Rādīt pabeigtās';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Slēpt pabeigtās';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Atlasīt visus';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Savienojiet uzdevumu lietotni Iestatījumos, lai eksportētu';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Savienot';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Noņemt visu atlasi';
 }

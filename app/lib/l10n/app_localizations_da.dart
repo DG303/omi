@@ -9141,10 +9141,10 @@ class AppLocalizationsDa extends AppLocalizations {
   String get agreeAndContinue => 'Accepter og fortsæt';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Start stemmeoptagelse';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Start opkaldsoptagelse';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9174,44 +9174,44 @@ class AppLocalizationsDa extends AppLocalizations {
   String get phoneCallSubtitle => 'Optag et opkald med live-transskription';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Søg i handlingspunkter';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Vælg flere';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Eksportér $count element(er) til…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Eksporterer…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Eksporterede $count til $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Eksporterede $success af $total til $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Vis fuldførte';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Skjul fuldførte';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Vælg alle';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Forbind en opgaveapp i Indstillinger for at eksportere';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Forbind';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Fravælg alle';
 }

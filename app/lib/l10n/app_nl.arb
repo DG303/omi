@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Opnemen met telefoonmicrofoon",
   "recordWithPhoneMicSubtitle": "Leg het geluid om je heen vast",
   "phoneCall": "Telefoongesprek",
-  "phoneCallSubtitle": "Neem een gesprek op met live transcriptie"
+  "phoneCallSubtitle": "Neem een gesprek op met live transcriptie",
+  "bulkExportInProgress": "Exporteren…",
+  "bulkExportPartial": "{success} van {total} geëxporteerd naar {platform}",
+  "bulkExportSuccess": "{count} geëxporteerd naar {platform}",
+  "chooseExportDestination": "{count} item(s) exporteren naar…",
+  "connectAction": "Verbinden",
+  "connectTaskAppToExport": "Verbind een taken-app in Instellingen om te exporteren",
+  "deselectAllTasksMenu": "Alles deselecteren",
+  "hideCompletedTasks": "Voltooide verbergen",
+  "searchActionItems": "Actiepunten zoeken",
+  "selectActionItems": "Meerdere selecteren",
+  "selectAllTasksMenu": "Alles selecteren",
+  "showCompletedTasks": "Voltooide tonen",
+  "startCallRecording": "Gespreksopname starten",
+  "startVoiceRecording": "Spraakopname starten"
 }

@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Ta opp med telefonmikrofon",
   "recordWithPhoneMicSubtitle": "Fang opp lyden rundt deg",
   "phoneCall": "Telefonsamtale",
-  "phoneCallSubtitle": "Ta opp en samtale med direkte transkripsjon"
+  "phoneCallSubtitle": "Ta opp en samtale med direkte transkripsjon",
+  "bulkExportInProgress": "Eksporterer…",
+  "bulkExportPartial": "Eksporterte {success} av {total} til {platform}",
+  "bulkExportSuccess": "Eksporterte {count} til {platform}",
+  "chooseExportDestination": "Eksporter {count} element(er) til…",
+  "connectAction": "Koble til",
+  "connectTaskAppToExport": "Koble til en oppgaveapp i Innstillinger for å eksportere",
+  "deselectAllTasksMenu": "Fjern alle valg",
+  "hideCompletedTasks": "Skjul fullførte",
+  "searchActionItems": "Søk i handlingspunkter",
+  "selectActionItems": "Velg flere",
+  "selectAllTasksMenu": "Velg alle",
+  "showCompletedTasks": "Vis fullførte",
+  "startCallRecording": "Start samtaleopptak",
+  "startVoiceRecording": "Start stemmeopptak"
 }

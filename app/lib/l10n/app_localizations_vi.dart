@@ -9155,10 +9155,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get agreeAndContinue => 'Đồng ý và tiếp tục';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Bắt đầu ghi âm giọng nói';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Bắt đầu ghi âm cuộc gọi';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9188,44 +9188,44 @@ class AppLocalizationsVi extends AppLocalizations {
   String get phoneCallSubtitle => 'Ghi âm cuộc gọi với phiên âm trực tiếp';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Tìm kiếm mục hành động';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Chọn nhiều';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Xuất $count mục sang…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Đang xuất…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Đã xuất $count sang $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Đã xuất $success trong $total sang $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Hiện đã hoàn thành';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Ẩn đã hoàn thành';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Chọn tất cả';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Kết nối ứng dụng tác vụ trong Cài đặt để xuất';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Kết nối';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Bỏ chọn tất cả';
 }

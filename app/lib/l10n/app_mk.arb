@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "Снимај со микрофон на телефонот",
   "recordWithPhoneMicSubtitle": "Снимајте звук околу вас",
   "phoneCall": "Телефонски повик",
-  "phoneCallSubtitle": "Снимајте повик со транскрипција во живо"
+  "phoneCallSubtitle": "Снимајте повик со транскрипција во живо",
+  "bulkExportInProgress": "Извезување…",
+  "bulkExportPartial": "Извезени {success} од {total} во {platform}",
+  "bulkExportSuccess": "Извезени {count} во {platform}",
+  "chooseExportDestination": "Извези {count} ставка/и во…",
+  "connectAction": "Поврзи",
+  "connectTaskAppToExport": "Поврзете апликација за задачи во Поставки за извоз",
+  "deselectAllTasksMenu": "Одселектирај ги сите",
+  "hideCompletedTasks": "Сокриј завршени",
+  "searchActionItems": "Пребарај акциски ставки",
+  "selectActionItems": "Избери повеќе",
+  "selectAllTasksMenu": "Избери ги сите",
+  "showCompletedTasks": "Прикажи завршени",
+  "startCallRecording": "Започни снимање повик",
+  "startVoiceRecording": "Започни гласовно снимање"
 }

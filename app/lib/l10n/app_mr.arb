@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "फोन माइकने रेकॉर्ड करा",
   "recordWithPhoneMicSubtitle": "तुमच्या आजूबाजूचा ऑडिओ कॅप्चर करा",
   "phoneCall": "फोन कॉल",
-  "phoneCallSubtitle": "लाइव्ह ट्रान्स्क्रिप्शनसह कॉल रेकॉर्ड करा"
+  "phoneCallSubtitle": "लाइव्ह ट्रान्स्क्रिप्शनसह कॉल रेकॉर्ड करा",
+  "bulkExportInProgress": "निर्यात होत आहे…",
+  "bulkExportPartial": "{total} पैकी {success} {platform} वर निर्यात केले",
+  "bulkExportSuccess": "{count} {platform} वर निर्यात केले",
+  "chooseExportDestination": "{count} आयटम निर्यात करा…",
+  "connectAction": "जोडा",
+  "connectTaskAppToExport": "निर्यात करण्यासाठी सेटिंग्जमध्ये टास्क ॲप जोडा",
+  "deselectAllTasksMenu": "सर्वांची निवड रद्द करा",
+  "hideCompletedTasks": "पूर्ण झालेले लपवा",
+  "searchActionItems": "कृती आयटम शोधा",
+  "selectActionItems": "अनेक निवडा",
+  "selectAllTasksMenu": "सर्व निवडा",
+  "showCompletedTasks": "पूर्ण झालेले दाखवा",
+  "startCallRecording": "कॉल रेकॉर्डिंग सुरू करा",
+  "startVoiceRecording": "व्हॉइस रेकॉर्डिंग सुरू करा"
 }

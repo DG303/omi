@@ -9154,10 +9154,10 @@ class AppLocalizationsFi extends AppLocalizations {
   String get agreeAndContinue => 'Hyväksy ja jatka';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Aloita ääninauhoitus';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Aloita puhelun nauhoitus';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9187,44 +9187,44 @@ class AppLocalizationsFi extends AppLocalizations {
   String get phoneCallSubtitle => 'Tallenna puhelu reaaliaikaisella tekstityksellä';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Hae toimintakohteita';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Valitse useita';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Vie $count kohde(tta) kohteeseen…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Viedään…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Viety $count kohteeseen $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Viety $success/$total kohteeseen $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Näytä valmiit';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Piilota valmiit';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Valitse kaikki';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Yhdistä tehtäväsovellus Asetuksissa vientiä varten';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Yhdistä';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Poista kaikkien valinta';
 }

@@ -9143,10 +9143,10 @@ class AppLocalizationsSk extends AppLocalizations {
   String get agreeAndContinue => 'Súhlasím a pokračovať';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Spustiť hlasový záznam';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Spustiť nahrávanie hovoru';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9176,44 +9176,44 @@ class AppLocalizationsSk extends AppLocalizations {
   String get phoneCallSubtitle => 'Nahrávajte hovor so živým prepisom';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Hľadať akčné položky';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Vybrať viacero';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Exportovať $count položku/iek do…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Exportovanie…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Exportovaných $count do $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Exportovaných $success z $total do $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Zobraziť dokončené';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Skryť dokončené';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Vybrať všetko';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Pripojte aplikáciu úloh v Nastaveniach na export';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Pripojiť';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Zrušiť výber všetkých';
 }

@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Εγγραφή με μικρόφωνο τηλεφώνου",
   "recordWithPhoneMicSubtitle": "Καταγράψτε ήχο γύρω σας",
   "phoneCall": "Τηλεφωνική κλήση",
-  "phoneCallSubtitle": "Καταγράψτε κλήση με ζωντανή μεταγραφή"
+  "phoneCallSubtitle": "Καταγράψτε κλήση με ζωντανή μεταγραφή",
+  "bulkExportInProgress": "Εξαγωγή…",
+  "bulkExportPartial": "Εξήχθησαν {success} από {total} στο {platform}",
+  "bulkExportSuccess": "Εξήχθησαν {count} στο {platform}",
+  "chooseExportDestination": "Εξαγωγή {count} στοιχείου/ων σε…",
+  "connectAction": "Σύνδεση",
+  "connectTaskAppToExport": "Συνδέστε μια εφαρμογή εργασιών στις Ρυθμίσεις για εξαγωγή",
+  "deselectAllTasksMenu": "Αποεπιλογή όλων",
+  "hideCompletedTasks": "Απόκρυψη ολοκληρωμένων",
+  "searchActionItems": "Αναζήτηση ενεργειών",
+  "selectActionItems": "Πολλαπλή επιλογή",
+  "selectAllTasksMenu": "Επιλογή όλων",
+  "showCompletedTasks": "Εμφάνιση ολοκληρωμένων",
+  "startCallRecording": "Έναρξη εγγραφής κλήσης",
+  "startVoiceRecording": "Έναρξη ηχογράφησης"
 }

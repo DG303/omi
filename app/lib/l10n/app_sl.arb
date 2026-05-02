@@ -10707,5 +10707,19 @@
   "recordWithPhoneMic": "Snemaj s telefonskim mikrofonom",
   "recordWithPhoneMicSubtitle": "Posnemite zvok okoli sebe",
   "phoneCall": "Telefonski klic",
-  "phoneCallSubtitle": "Posnemite klic s prepisom v živo"
+  "phoneCallSubtitle": "Posnemite klic s prepisom v živo",
+  "bulkExportInProgress": "Izvažanje…",
+  "bulkExportPartial": "Izvoženo {success} od {total} v {platform}",
+  "bulkExportSuccess": "Izvoženo {count} v {platform}",
+  "chooseExportDestination": "Izvozi {count} element(ov) v…",
+  "connectAction": "Poveži",
+  "connectTaskAppToExport": "Povežite aplikacijo za naloge v Nastavitvah za izvoz",
+  "deselectAllTasksMenu": "Prekliči izbor vseh",
+  "hideCompletedTasks": "Skrij dokončane",
+  "searchActionItems": "Iskanje akcijskih elementov",
+  "selectActionItems": "Izberi več",
+  "selectAllTasksMenu": "Izberi vse",
+  "showCompletedTasks": "Prikaži dokončane",
+  "startCallRecording": "Začni snemanje klica",
+  "startVoiceRecording": "Začni glasovno snemanje"
 }

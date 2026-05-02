@@ -9168,10 +9168,10 @@ class AppLocalizationsSr extends AppLocalizations {
   String get agreeAndContinue => 'Slažem se i nastavi';
 
   @override
-  String get startVoiceRecording => 'Start voice recording';
+  String get startVoiceRecording => 'Покрени гласовно снимање';
 
   @override
-  String get startCallRecording => 'Start call recording';
+  String get startCallRecording => 'Покрени снимање позива';
 
   @override
   String get mindMap => 'Mind Map';
@@ -9201,44 +9201,44 @@ class AppLocalizationsSr extends AppLocalizations {
   String get phoneCallSubtitle => 'Снимајте позив са транскрипцијом уживо';
 
   @override
-  String get searchActionItems => 'Search action items';
+  String get searchActionItems => 'Претражи акционе ставке';
 
   @override
-  String get selectActionItems => 'Select multiple';
+  String get selectActionItems => 'Изабери више';
 
   @override
   String chooseExportDestination(int count) {
-    return 'Export $count item(s) to…';
+    return 'Извези $count ставку/и у…';
   }
 
   @override
-  String get bulkExportInProgress => 'Exporting…';
+  String get bulkExportInProgress => 'Извоз…';
 
   @override
   String bulkExportSuccess(int count, String platform) {
-    return 'Exported $count to $platform';
+    return 'Извезено $count у $platform';
   }
 
   @override
   String bulkExportPartial(int success, int total, String platform) {
-    return 'Exported $success of $total to $platform';
+    return 'Извезено $success од $total у $platform';
   }
 
   @override
-  String get showCompletedTasks => 'Show completed';
+  String get showCompletedTasks => 'Прикажи завршене';
 
   @override
-  String get hideCompletedTasks => 'Hide completed';
+  String get hideCompletedTasks => 'Сакриј завршене';
 
   @override
-  String get selectAllTasksMenu => 'Select all';
+  String get selectAllTasksMenu => 'Изабери све';
 
   @override
-  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+  String get connectTaskAppToExport => 'Повежите апликацију за задатке у Подешавањима за извоз';
 
   @override
-  String get connectAction => 'Connect';
+  String get connectAction => 'Повежи';
 
   @override
-  String get deselectAllTasksMenu => 'Deselect all';
+  String get deselectAllTasksMenu => 'Поништи избор свих';
 }

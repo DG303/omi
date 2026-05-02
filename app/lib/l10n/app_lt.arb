@@ -2999,5 +2999,19 @@
   "recordWithPhoneMic": "Įrašyti telefono mikrofonu",
   "recordWithPhoneMicSubtitle": "Užfiksuokite garsą aplink jus",
   "phoneCall": "Telefono skambutis",
-  "phoneCallSubtitle": "Įrašykite skambutį su tiesiogine transkripcija"
+  "phoneCallSubtitle": "Įrašykite skambutį su tiesiogine transkripcija",
+  "bulkExportInProgress": "Eksportuojama…",
+  "bulkExportPartial": "Eksportuota {success} iš {total} į {platform}",
+  "bulkExportSuccess": "Eksportuota {count} į {platform}",
+  "chooseExportDestination": "Eksportuoti {count} elementą(-us) į…",
+  "connectAction": "Prijungti",
+  "connectTaskAppToExport": "Prijunkite užduočių programą Nustatymuose, kad galėtumėte eksportuoti",
+  "deselectAllTasksMenu": "Atžymėti viską",
+  "hideCompletedTasks": "Slėpti užbaigtas",
+  "searchActionItems": "Ieškoti veiksmų elementų",
+  "selectActionItems": "Pasirinkti kelis",
+  "selectAllTasksMenu": "Pasirinkti viską",
+  "showCompletedTasks": "Rodyti užbaigtas",
+  "startCallRecording": "Pradėti skambučio įrašymą",
+  "startVoiceRecording": "Pradėti balso įrašymą"
 }
