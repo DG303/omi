@@ -1398,7 +1398,7 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
                         style: TextStyle(
                           color: item.completed ? Colors.grey[500] : Colors.white,
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           letterSpacing: -0.2,
                           decoration: item.completed ? TextDecoration.lineThrough : null,
                           decorationColor: Colors.grey[600],
