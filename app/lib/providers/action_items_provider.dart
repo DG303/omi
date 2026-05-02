@@ -658,12 +658,16 @@ class ActionItemsProvider extends ChangeNotifier {
     if (_selectedItems.contains(itemId)) {
       _selectedItems.remove(itemId);
     } else {
+      final item = _actionItems.where((i) => i.id == itemId).firstOrNull;
+      if (item != null && item.exported) return;
       _selectedItems.add(itemId);
     }
     notifyListeners();
   }
 
   void selectItem(String itemId) {
+    final item = _actionItems.where((i) => i.id == itemId).firstOrNull;
+    if (item != null && item.exported) return;
     if (!_selectedItems.contains(itemId)) {
       _selectedItems.add(itemId);
       notifyListeners();
@@ -680,7 +684,7 @@ class ActionItemsProvider extends ChangeNotifier {
   void selectAllItems() {
     _selectedItems.clear();
     for (final item in _actionItems) {
-      _selectedItems.add(item.id);
+      if (!item.exported) _selectedItems.add(item.id);
     }
     notifyListeners();
   }
@@ -702,7 +706,7 @@ class ActionItemsProvider extends ChangeNotifier {
     }
 
     for (final item in itemsToSelect) {
-      _selectedItems.add(item.id);
+      if (!item.exported) _selectedItems.add(item.id);
     }
     notifyListeners();
   }
@@ -749,6 +753,8 @@ class ActionItemsProvider extends ChangeNotifier {
   }
 
   void startSelectionWithItem(String itemId) {
+    final item = _actionItems.where((i) => i.id == itemId).firstOrNull;
+    if (item != null && item.exported) return;
     _isSelectionMode = true;
     _selectedItems = {itemId};
     notifyListeners();
@@ -789,7 +795,6 @@ class ActionItemsProvider extends ChangeNotifier {
 
     final results = await Future.wait(items.map((i) => ActionItemExportService.export(i, platform)));
     final successCount = results.where((r) => r == ExportResult.success).length;
-    final skippedCount = results.where((r) => r == ExportResult.alreadyExported).length;
 
     // Refresh from server so newly-flipped `exported`/`exportPlatform` fields surface.
     await fetchActionItems();
@@ -797,23 +802,13 @@ class ActionItemsProvider extends ChangeNotifier {
 
     if (!context.mounted) return;
     messenger.clearSnackBars();
-    final failedCount = total - successCount - skippedCount;
-    final String message;
-    final Color color;
-    if (failedCount == 0 && successCount > 0) {
-      message = context.l10n.bulkExportSuccess(successCount, platform.displayName);
-      color = Colors.green;
-    } else if (failedCount == 0 && successCount == 0) {
-      message = context.l10n.bulkExportSuccess(total, platform.displayName);
-      color = Colors.green;
-    } else {
-      message = context.l10n.bulkExportPartial(successCount, total - skippedCount, platform.displayName);
-      color = Colors.orange;
-    }
+    final message = successCount == total
+        ? context.l10n.bulkExportSuccess(successCount, platform.displayName)
+        : context.l10n.bulkExportPartial(successCount, total, platform.displayName);
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: color,
+        backgroundColor: successCount == total ? Colors.green : Colors.orange,
         duration: const Duration(seconds: 3),
       ),
     );

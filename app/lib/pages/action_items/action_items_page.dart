@@ -1407,6 +1407,19 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
                         const SizedBox(height: 4),
                         Text(goalTitle, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                       ],
+                      if (item.exported && item.exportPlatform != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.check_circle_outline, size: 12, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Exported to ${_exportPlatformLabel(item.exportPlatform!)}',
+                              style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1414,10 +1427,13 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
               // Trailing square selection box — only in selection mode.
               // Different shape + position from the leading completion circle
               // so completion vs. selection cannot be confused.
+              // Exported items show a disabled square — they can't be re-exported.
               if (provider.isSelectionMode)
                 Padding(
                   padding: const EdgeInsets.only(left: 8, right: 8),
-                  child: _buildSelectionSquare(isSelected),
+                  child: item.exported
+                      ? _buildSelectionSquare(false, disabled: true)
+                      : _buildSelectionSquare(isSelected),
                 ),
             ],
           ),
@@ -1446,7 +1462,19 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
   /// Trailing selection box rendered only in selection mode. Rounded **square**
   /// — different shape from the leading completion circle so users can't
   /// confuse "selected for bulk action" with "marked as done".
-  Widget _buildSelectionSquare(bool isSelected) {
+  Widget _buildSelectionSquare(bool isSelected, {bool disabled = false}) {
+    if (disabled) {
+      return Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.grey[800]!, width: 1.5),
+          color: Colors.grey[850],
+        ),
+        child: Icon(Icons.check, size: 14, color: Colors.grey[600]),
+      );
+    }
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       width: 22,
@@ -1458,6 +1486,23 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
       ),
       child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
     );
+  }
+
+  String _exportPlatformLabel(String platform) {
+    switch (platform) {
+      case 'todoist':
+        return 'Todoist';
+      case 'asana':
+        return 'Asana';
+      case 'google_tasks':
+        return 'Google Tasks';
+      case 'clickup':
+        return 'ClickUp';
+      case 'apple_reminders':
+        return 'Reminders';
+      default:
+        return platform;
+    }
   }
 
   Future<void> _deleteGoal(Goal goal) async {
