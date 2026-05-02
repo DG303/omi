@@ -28,14 +28,8 @@ RUN git clone https://github.com/google/liblc3.git && \
     cd /tmp/liblc3 && \
     python3 -m pip wheel --no-cache-dir --wheel-dir /tmp/wheels .
 
-# Upgrade Python build tools first so the patched versions land in /opt/venv
-# (rather than the older vendored copies pip ships with). Closes scanner
-# findings for CVE-2026-23949 (jaraco.context) and CVE-2024-24049 (wheel)
-# without polluting the runtime requirements list.
-WORKDIR /opt/venv
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel jaraco.context
-
 # Install Python requirements
+WORKDIR /opt/venv
 COPY backend/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
 
