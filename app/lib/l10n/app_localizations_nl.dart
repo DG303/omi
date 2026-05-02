@@ -9253,4 +9253,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get connectAction => 'Connect';
+
+  @override
+  String get deselectAllTasksMenu => 'Deselect all';
 }

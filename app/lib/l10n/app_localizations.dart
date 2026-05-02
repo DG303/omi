@@ -17216,6 +17216,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connect'**
   String get connectAction;
+
+  /// Action menu entry that clears any current task selection while staying in selection mode
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get deselectAllTasksMenu;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
