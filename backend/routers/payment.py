@@ -779,7 +779,7 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
         account = event['data']['object']
         if account['charges_enabled'] and account['details_submitted']:
             # account is fully onboarded
-            uid = account.get('metadata', {}).get('uid')
+            uid = (account.get('metadata') or {}).get('uid')
             if uid and get_default_payment_method(uid) is None:
                 set_default_payment_method(uid, 'stripe')
 
