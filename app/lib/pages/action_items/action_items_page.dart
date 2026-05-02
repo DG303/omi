@@ -222,75 +222,30 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
   }
 
   Widget _buildPageHeader(ActionItemsProvider provider) {
-    final now = DateTime.now();
-    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final subtitle = '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 16, 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          // Page title + day-of-week subtitle on the right (Joi-style hierarchy).
-          Padding(
-            padding: const EdgeInsets.only(right: 4, bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text(
-                  'Tasks',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                    height: 1.0,
-                  ),
-                ),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+          Expanded(
+            child: OmiSearchInput(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              hint: context.l10n.searchActionItems,
+              onChanged: (value) {
+                _searchDebouncer.run(() {
+                  if (!mounted) return;
+                  provider.setSearchQuery(value);
+                });
+              },
+              onClear: () {
+                _searchController.clear();
+                _searchDebouncer.cancel();
+                provider.clearSearchQuery();
+              },
             ),
           ),
-          // Search row + ⋯ menu.
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OmiSearchInput(
-                    controller: _searchController,
-                    focusNode: _searchFocusNode,
-                    hint: context.l10n.searchActionItems,
-                    onChanged: (value) {
-                      _searchDebouncer.run(() {
-                        if (!mounted) return;
-                        provider.setSearchQuery(value);
-                      });
-                    },
-                    onClear: () {
-                      _searchController.clear();
-                      _searchDebouncer.cancel();
-                      provider.clearSearchQuery();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 4),
-                _buildOverflowMenu(provider),
-              ],
-            ),
-          ),
+          const SizedBox(width: 4),
+          _buildOverflowMenu(provider),
         ],
       ),
     );
