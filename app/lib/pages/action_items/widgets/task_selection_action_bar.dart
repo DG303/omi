@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
 
-import 'package:omi/pages/action_items/widgets/export_destination_sheet.dart';
 import 'package:omi/pages/settings/task_integrations_page.dart';
 import 'package:omi/providers/action_items_provider.dart';
 import 'package:omi/providers/task_integration_provider.dart';
@@ -128,12 +127,8 @@ class _TaskSelectionActionBarState extends State<TaskSelectionActionBar> with Si
   Future<void> _handleExport(BuildContext context, ActionItemsProvider provider) async {
     HapticFeedback.lightImpact();
 
-    // The user only ever wires up one third-party task app at a time, so the
-    // common case is "send straight to the connected one". Walk the integration
-    // provider for connected apps and route accordingly:
-    //   0 connected → nudge them to Settings.
-    //   1 connected → fan out directly, no picker.
-    //   2+ connected → fall back to the picker so they pick once (defensive).
+    // Users connect one task app at a time. If none connected, nudge to
+    // Settings; otherwise export directly to the connected app.
     final integrations = Provider.of<TaskIntegrationProvider>(context, listen: false);
     final connected = TaskIntegrationApp.values.where(integrations.isAppConnected).toList(growable: false);
 
@@ -155,19 +150,7 @@ class _TaskSelectionActionBarState extends State<TaskSelectionActionBar> with Si
       return;
     }
 
-    if (connected.length == 1) {
-      await provider.bulkExportSelected(context, connected.first);
-      return;
-    }
-
-    final platform = await showModalBottomSheet<TaskIntegrationApp>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ExportDestinationSheet(selectedCount: provider.selectedCount),
-    );
-    if (platform == null || !context.mounted) return;
-    await provider.bulkExportSelected(context, platform);
+    await provider.bulkExportSelected(context, connected.first);
   }
 }
 

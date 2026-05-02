@@ -788,7 +788,8 @@ class ActionItemsProvider extends ChangeNotifier {
     );
 
     final results = await Future.wait(items.map((i) => ActionItemExportService.export(i, platform)));
-    final successCount = results.where((ok) => ok).length;
+    final successCount = results.where((r) => r == ExportResult.success).length;
+    final skippedCount = results.where((r) => r == ExportResult.alreadyExported).length;
 
     // Refresh from server so newly-flipped `exported`/`exportPlatform` fields surface.
     await fetchActionItems();
@@ -796,13 +797,14 @@ class ActionItemsProvider extends ChangeNotifier {
 
     if (!context.mounted) return;
     messenger.clearSnackBars();
-    final message = successCount == total
+    final newExports = successCount + skippedCount;
+    final message = newExports == total
         ? context.l10n.bulkExportSuccess(successCount, platform.displayName)
-        : context.l10n.bulkExportPartial(successCount, total, platform.displayName);
+        : context.l10n.bulkExportPartial(successCount, total - skippedCount, platform.displayName);
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: successCount == total ? Colors.green : Colors.orange,
+        backgroundColor: newExports == total ? Colors.green : Colors.orange,
         duration: const Duration(seconds: 3),
       ),
     );

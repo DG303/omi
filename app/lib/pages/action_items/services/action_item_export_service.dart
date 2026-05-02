@@ -10,14 +10,18 @@ import 'package:omi/utils/analytics/mixpanel.dart';
 import 'package:omi/utils/logger.dart';
 import 'package:omi/utils/platform/platform_service.dart';
 
+enum ExportResult { success, alreadyExported, failed }
+
 /// Headless single-item exporter used by the bulk-export flow.
 ///
-/// Returns true on success, false on auth failure, "already exported", or any
-/// platform error. The caller (provider) aggregates outcomes into a single
-/// snackbar, so this service deliberately stays quiet — no UI side effects.
+/// Returns [ExportResult.success] on success, [ExportResult.alreadyExported]
+/// when the item was previously exported, or [ExportResult.failed] on auth
+/// failure or platform error. The caller (provider) aggregates outcomes into
+/// a single snackbar, so this service deliberately stays quiet — no UI side
+/// effects.
 class ActionItemExportService {
-  static Future<bool> export(ActionItemWithMetadata item, TaskIntegrationApp platform) async {
-    if (item.exported) return false;
+  static Future<ExportResult> export(ActionItemWithMetadata item, TaskIntegrationApp platform) async {
+    if (item.exported) return ExportResult.alreadyExported;
 
     switch (platform) {
       case TaskIntegrationApp.appleReminders:
@@ -32,13 +36,13 @@ class ActionItemExportService {
         return _exportClickUp(item);
       case TaskIntegrationApp.trello:
       case TaskIntegrationApp.monday:
-        return false;
+        return ExportResult.failed;
     }
   }
 
-  static Future<bool> _exportTodoist(ActionItemWithMetadata item) async {
+  static Future<ExportResult> _exportTodoist(ActionItemWithMetadata item) async {
     final service = TodoistService();
-    if (!service.isAuthenticated) return false;
+    if (!service.isAuthenticated) return ExportResult.failed;
 
     try {
       final ok = await service.createTask(
@@ -46,21 +50,21 @@ class ActionItemExportService {
         description: 'From Omi',
         dueDate: item.dueAt,
       );
-      if (!ok) return false;
+      if (!ok) return ExportResult.failed;
 
       final exportTime = DateTime.now();
       await updateActionItem(item.id, exported: true, exportDate: exportTime, exportPlatform: 'todoist');
       MixpanelManager().actionItemExported(actionItemId: item.id, appName: 'Todoist', timestamp: exportTime);
-      return true;
+      return ExportResult.success;
     } catch (e) {
       Logger.debug('Todoist bulk export failed for ${item.id}: $e');
-      return false;
+      return ExportResult.failed;
     }
   }
 
-  static Future<bool> _exportAsana(ActionItemWithMetadata item) async {
+  static Future<ExportResult> _exportAsana(ActionItemWithMetadata item) async {
     final service = AsanaService();
-    if (!service.isAuthenticated) return false;
+    if (!service.isAuthenticated) return ExportResult.failed;
 
     try {
       final ok = await service.createTask(
@@ -68,21 +72,21 @@ class ActionItemExportService {
         notes: 'From Omi',
         dueDate: item.dueAt,
       );
-      if (!ok) return false;
+      if (!ok) return ExportResult.failed;
 
       final exportTime = DateTime.now();
       await updateActionItem(item.id, exported: true, exportDate: exportTime, exportPlatform: 'asana');
       MixpanelManager().actionItemExported(actionItemId: item.id, appName: 'Asana', timestamp: exportTime);
-      return true;
+      return ExportResult.success;
     } catch (e) {
       Logger.debug('Asana bulk export failed for ${item.id}: $e');
-      return false;
+      return ExportResult.failed;
     }
   }
 
-  static Future<bool> _exportGoogleTasks(ActionItemWithMetadata item) async {
+  static Future<ExportResult> _exportGoogleTasks(ActionItemWithMetadata item) async {
     final service = GoogleTasksService();
-    if (!service.isAuthenticated) return false;
+    if (!service.isAuthenticated) return ExportResult.failed;
 
     try {
       final ok = await service.createTask(
@@ -90,21 +94,21 @@ class ActionItemExportService {
         notes: 'From Omi',
         dueDate: item.dueAt,
       );
-      if (!ok) return false;
+      if (!ok) return ExportResult.failed;
 
       final exportTime = DateTime.now();
       await updateActionItem(item.id, exported: true, exportDate: exportTime, exportPlatform: 'google_tasks');
       MixpanelManager().actionItemExported(actionItemId: item.id, appName: 'Google Tasks', timestamp: exportTime);
-      return true;
+      return ExportResult.success;
     } catch (e) {
       Logger.debug('Google Tasks bulk export failed for ${item.id}: $e');
-      return false;
+      return ExportResult.failed;
     }
   }
 
-  static Future<bool> _exportClickUp(ActionItemWithMetadata item) async {
+  static Future<ExportResult> _exportClickUp(ActionItemWithMetadata item) async {
     final service = ClickUpService();
-    if (!service.isAuthenticated) return false;
+    if (!service.isAuthenticated) return ExportResult.failed;
 
     try {
       final ok = await service.createTask(
@@ -112,25 +116,25 @@ class ActionItemExportService {
         description: 'From Omi',
         dueDate: item.dueAt,
       );
-      if (!ok) return false;
+      if (!ok) return ExportResult.failed;
 
       final exportTime = DateTime.now();
       await updateActionItem(item.id, exported: true, exportDate: exportTime, exportPlatform: 'clickup');
       MixpanelManager().actionItemExported(actionItemId: item.id, appName: 'ClickUp', timestamp: exportTime);
-      return true;
+      return ExportResult.success;
     } catch (e) {
       Logger.debug('ClickUp bulk export failed for ${item.id}: $e');
-      return false;
+      return ExportResult.failed;
     }
   }
 
-  static Future<bool> _exportAppleReminders(ActionItemWithMetadata item) async {
-    if (!PlatformService.isApple) return false;
+  static Future<ExportResult> _exportAppleReminders(ActionItemWithMetadata item) async {
+    if (!PlatformService.isApple) return ExportResult.failed;
 
     final service = AppleRemindersService();
     try {
       final hasPermission = await service.hasPermission() || await service.requestPermission();
-      if (!hasPermission) return false;
+      if (!hasPermission) return ExportResult.failed;
 
       final calendarItemId = await service.addReminder(
         title: item.description,
@@ -138,7 +142,7 @@ class ActionItemExportService {
         dueDate: item.dueAt,
         listName: 'Reminders',
       );
-      if (calendarItemId == null) return false;
+      if (calendarItemId == null) return ExportResult.failed;
 
       final exportTime = DateTime.now();
       await updateActionItem(
@@ -149,10 +153,10 @@ class ActionItemExportService {
         appleReminderId: calendarItemId,
       );
       MixpanelManager().actionItemExported(actionItemId: item.id, appName: 'Apple Reminders', timestamp: exportTime);
-      return true;
+      return ExportResult.success;
     } catch (e) {
       Logger.debug('Apple Reminders bulk export failed for ${item.id}: $e');
-      return false;
+      return ExportResult.failed;
     }
   }
 }
