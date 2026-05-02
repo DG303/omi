@@ -9239,4 +9239,10 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get selectAllTasksMenu => 'Select all';
+
+  @override
+  String get connectTaskAppToExport => 'Connect a task app in Settings to export';
+
+  @override
+  String get connectAction => 'Connect';
 }

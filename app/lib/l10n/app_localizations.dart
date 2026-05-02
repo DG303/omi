@@ -17204,6 +17204,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select all'**
   String get selectAllTasksMenu;
+
+  /// Snackbar shown when the user taps Export but no third-party task integration is connected
+  ///
+  /// In en, this message translates to:
+  /// **'Connect a task app in Settings to export'**
+  String get connectTaskAppToExport;
+
+  /// Snackbar action label that opens the Task Integrations settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connectAction;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
