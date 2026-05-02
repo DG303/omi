@@ -253,11 +253,12 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
 
   Widget _buildOverflowMenu(ActionItemsProvider provider) {
     final showingCompleted = provider.showCompletedView;
-    // "Select all" flips to "Deselect all" once every loaded task is already
-    // selected — same item retains its position in the menu so muscle memory
-    // works for the toggle.
-    final hasItems = provider.actionItems.isNotEmpty;
-    final allSelected = hasItems && provider.selectedCount == provider.actionItems.length;
+    // "Select all" flips to "Deselect all" once every selectable task is
+    // already selected. `selectAllItems()` skips items that are already
+    // exported, so we compare against the unexported count — otherwise the
+    // label never flips when any task has been exported before.
+    final selectableCount = provider.actionItems.where((i) => !i.exported).length;
+    final allSelected = selectableCount > 0 && provider.selectedCount == selectableCount;
 
     return PopupMenuButton<String>(
       tooltip: '',
@@ -1431,9 +1432,8 @@ class _ActionItemsPageState extends State<ActionItemsPage> with AutomaticKeepAli
               if (provider.isSelectionMode)
                 Padding(
                   padding: const EdgeInsets.only(left: 8, right: 8),
-                  child: item.exported
-                      ? _buildSelectionSquare(false, disabled: true)
-                      : _buildSelectionSquare(isSelected),
+                  child:
+                      item.exported ? _buildSelectionSquare(false, disabled: true) : _buildSelectionSquare(isSelected),
                 ),
             ],
           ),
