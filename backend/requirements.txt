@@ -20,7 +20,7 @@ blinker==1.8.2
 CacheControl==0.14.0
 cachetools==5.4.0
 certifi==2024.7.4
-cffi==1.16.0
+cffi==2.0.0
 charset-normalizer==3.3.2
 click==8.1.7
 click-spinner==0.1.10
@@ -28,7 +28,7 @@ coloredlogs==15.0.1
 colorlog==6.8.2
 contourpy==1.2.1
 croniter==1.4.1
-cryptography==43.0.0
+cryptography==46.0.5
 cycler==0.12.1
 dataclasses-json==0.6.7
 decorator==5.1.1
