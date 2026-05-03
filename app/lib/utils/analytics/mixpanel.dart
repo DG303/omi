@@ -12,6 +12,7 @@ class MixpanelManager {
   static bool _initialized = false;
   static final SharedPreferencesUtil _preferences = SharedPreferencesUtil();
   static final Map<String, DateTime> _pendingTimedEvents = {};
+  static const Duration _pendingTimedEventTtl = Duration(hours: 1);
 
   static Future<void> init() async {
     if (Env.posthogApiKey == null) return;
@@ -108,6 +109,7 @@ class MixpanelManager {
             if (coerced != null) props[k] = coerced;
           });
         }
+        _evictStaleTimedEvents();
         final start = _pendingTimedEvents.remove(eventName);
         if (start != null) {
           props['\$duration'] = DateTime.now().difference(start).inMilliseconds / 1000.0;
@@ -118,8 +120,17 @@ class MixpanelManager {
   void startTimingEvent(String eventName) =>
       PlatformService.executeIfSupported(PlatformService.isMixpanelSupported, () {
         if (!_initialized) return;
+        _evictStaleTimedEvents();
         _pendingTimedEvents[eventName] = DateTime.now();
       });
+
+  // Drop pending starts that exceeded the TTL — guards against unbounded growth
+  // when a startTimingEvent has no matching track() (navigation away, crash, short-circuit).
+  static void _evictStaleTimedEvents() {
+    if (_pendingTimedEvents.isEmpty) return;
+    final cutoff = DateTime.now().subtract(_pendingTimedEventTtl);
+    _pendingTimedEvents.removeWhere((_, started) => started.isBefore(cutoff));
+  }
 
   void onboardingDeviceConnected() => track('Onboarding Device Connected');
 
@@ -131,12 +142,12 @@ class MixpanelManager {
       track('User Acquisition Source', properties: {'source': source});
 
   void settingsSaved({bool hasWebhookConversationCreated = false, bool hasWebhookTranscriptReceived = false}) => track(
-        'Developer Settings Saved',
-        properties: {
-          'has_webhook_memory_created': hasWebhookConversationCreated,
-          'has_webhook_transcript_received': hasWebhookTranscriptReceived,
-        },
-      );
+    'Developer Settings Saved',
+    properties: {
+      'has_webhook_memory_created': hasWebhookConversationCreated,
+      'has_webhook_transcript_received': hasWebhookTranscriptReceived,
+    },
+  );
 
   void pageOpened(String name) => track('$name Opened');
 
@@ -344,19 +355,18 @@ class MixpanelManager {
     required String chatTargetId,
     required bool isPersonaChat,
     required bool isVoiceInput,
-  }) =>
-      track(
-        'Chat Message Sent',
-        properties: {
-          'message_length': message.length,
-          'message_word_count': message.split(' ').length,
-          'includes_files': includesFiles,
-          'number_of_files': numberOfFiles,
-          'chat_target_id': chatTargetId,
-          'is_persona_chat': isPersonaChat,
-          'is_voice_input': isVoiceInput,
-        },
-      );
+  }) => track(
+    'Chat Message Sent',
+    properties: {
+      'message_length': message.length,
+      'message_word_count': message.split(' ').length,
+      'includes_files': includesFiles,
+      'number_of_files': numberOfFiles,
+      'chat_target_id': chatTargetId,
+      'is_persona_chat': isPersonaChat,
+      'is_voice_input': isVoiceInput,
+    },
+  );
 
   void chatVoiceInputUsed({required String chatTargetId, required bool isPersonaChat}) {
     track('Chat Voice Input Used', properties: {'chat_target_id': chatTargetId, 'is_persona_chat': isPersonaChat});
@@ -377,9 +387,9 @@ class MixpanelManager {
       track('Show Discarded Conversations Toggled', properties: {'show_discarded': showDiscarded});
 
   void shortConversationThresholdChanged(int thresholdSeconds) => track(
-        'Short Conversation Threshold Changed',
-        properties: {'threshold_seconds': thresholdSeconds, 'threshold_minutes': thresholdSeconds ~/ 60},
-      );
+    'Short Conversation Threshold Changed',
+    properties: {'threshold_seconds': thresholdSeconds, 'threshold_minutes': thresholdSeconds ~/ 60},
+  );
 
   void voiceResponseToggled(bool enabled) => track('Voice Response Audio Toggled', properties: {'enabled': enabled});
 
@@ -394,28 +404,28 @@ class MixpanelManager {
   void conversationMergeSelectionModeExited() => track('Conversation Merge Selection Mode Exited');
 
   void conversationSelectedForMerge(String conversationId, int totalSelected) => track(
-        'Conversation Selected For Merge',
-        properties: {'conversation_id': conversationId, 'total_selected': totalSelected},
-      );
+    'Conversation Selected For Merge',
+    properties: {'conversation_id': conversationId, 'total_selected': totalSelected},
+  );
 
   void conversationMergeInitiated(List<String> conversationIds) => track(
-        'Conversation Merge Initiated',
-        properties: {'conversation_count': conversationIds.length, 'conversation_ids': conversationIds},
-      );
+    'Conversation Merge Initiated',
+    properties: {'conversation_count': conversationIds.length, 'conversation_ids': conversationIds},
+  );
 
   void conversationMergeCompleted(String mergedConversationId, List<String> removedConversationIds) => track(
-        'Conversation Merge Completed',
-        properties: {
-          'merged_conversation_id': mergedConversationId,
-          'removed_count': removedConversationIds.length,
-          'removed_conversation_ids': removedConversationIds,
-        },
-      );
+    'Conversation Merge Completed',
+    properties: {
+      'merged_conversation_id': mergedConversationId,
+      'removed_count': removedConversationIds.length,
+      'removed_conversation_ids': removedConversationIds,
+    },
+  );
 
   void conversationMergeFailed(List<String> conversationIds) => track(
-        'Conversation Merge Failed',
-        properties: {'conversation_count': conversationIds.length, 'conversation_ids': conversationIds},
-      );
+    'Conversation Merge Failed',
+    properties: {'conversation_count': conversationIds.length, 'conversation_ids': conversationIds},
+  );
 
   // Important Conversation Share Events
   void importantConversationNotificationReceived(String conversationId) =>
@@ -425,14 +435,14 @@ class MixpanelManager {
       track('Share To Contacts Sheet Opened', properties: {'conversation_id': conversationId});
 
   void shareToContactsSelected(String conversationId, int contactCount) => track(
-        'Share To Contacts Selected',
-        properties: {'conversation_id': conversationId, 'contact_count': contactCount},
-      );
+    'Share To Contacts Selected',
+    properties: {'conversation_id': conversationId, 'contact_count': contactCount},
+  );
 
   void shareToContactsSmsOpened(String conversationId, int contactCount) => track(
-        'Share To Contacts SMS Opened',
-        properties: {'conversation_id': conversationId, 'contact_count': contactCount},
-      );
+    'Share To Contacts SMS Opened',
+    properties: {'conversation_id': conversationId, 'contact_count': contactCount},
+  );
 
   void chatMessageConversationClicked(ServerConversation conversation) =>
       track('Chat Message Memory Clicked', properties: getConversationEventProperties(conversation));
@@ -561,10 +571,10 @@ class MixpanelManager {
       track('Delete Account Kept Account', properties: {'step': step, 'reason': reason});
 
   void deleteUser() => PlatformService.executeIfSupported(PlatformService.isMixpanelSupported, () {
-        if (!_initialized) return;
-        track('User Deleted');
-        Posthog().reset();
-      });
+    if (!_initialized) return;
+    Posthog().capture(eventName: 'User Deleted');
+    Posthog().reset();
+  });
 
   // Apps Filter
   void appsFilterOpened() => track('Apps Filter Opened');
