@@ -164,7 +164,7 @@ PyOgg @ git+https://github.com/TeamPyOgg/PyOgg@6871a4f234e8a3a346c4874a12509bfa0
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
-python-multipart==0.0.22
+python-multipart==0.0.26
 python-slugify==8.0.4
 python-ulid==3.0.0
 pytz==2024.1
