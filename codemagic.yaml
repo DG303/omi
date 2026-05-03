@@ -372,10 +372,11 @@ workflows:
           AS_V=$(echo "$AS_RAW" | jq -r '.version // "0.0.0"')
           AS_B=$(echo "$AS_RAW" | jq -r '.buildNumber // "0"')
           PLAY_B=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks internal 2>/dev/null || echo "0")
+          PLAY_B="${PLAY_B:-0}"
 
           echo "TestFlight latest: ${TF_V}+${TF_B}"
           echo "App Store latest:  ${AS_V}+${AS_B}"
-          echo "Play Store latest: +${PLAY_B}"
+          echo "Play Store latest: ${PLAY_B}"
 
           if [ "$TF_V" = "0.0.0" ] && [ "$AS_V" = "0.0.0" ]; then
             echo "WARNING: No TestFlight or App Store history. Seeding from pubspec.yaml."
