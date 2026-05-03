@@ -163,7 +163,7 @@ pynndescent==0.5.13
 PyOgg @ git+https://github.com/TeamPyOgg/PyOgg@6871a4f234e8a3a346c4874a12509bfa02c4c63a
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 python-multipart==0.0.22
 python-slugify==8.0.4
 python-ulid==3.0.0
