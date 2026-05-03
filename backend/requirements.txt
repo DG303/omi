@@ -83,7 +83,7 @@ hyperframe==6.0.1
 idna==3.7
 ipython==8.26.0
 jedi==0.19.1
-Jinja2==3.1.4
+Jinja2==3.1.6
 jiter==0.6.1
 jiwer==3.0.4
 joblib==1.4.2
