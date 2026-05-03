@@ -28,7 +28,7 @@ coloredlogs==15.0.1
 colorlog==6.8.2
 contourpy==1.2.1
 croniter==1.4.1
-cryptography==46.0.5
+cryptography==46.0.7
 cycler==0.12.1
 dataclasses-json==0.6.7
 decorator==5.1.1
