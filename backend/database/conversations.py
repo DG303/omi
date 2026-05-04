@@ -409,6 +409,24 @@ def update_conversation_title(uid: str, conversation_id: str, title: str):
     conversation_ref.update({'structured.title': title})
 
 
+def update_conversation_overview(uid: str, conversation_id: str, overview: str) -> str:
+    """
+    Update a conversation's structured overview (summary).
+
+    Returns:
+        'ok' on success, 'not_found' if conversation missing.
+    """
+    user_ref = db.collection('users').document(uid)
+    conversation_ref = user_ref.collection(conversations_collection).document(conversation_id)
+
+    doc_snapshot = conversation_ref.get()
+    if not doc_snapshot.exists:
+        return 'not_found'
+
+    conversation_ref.update({'structured.overview': overview})
+    return 'ok'
+
+
 def update_conversation_segment_text(uid: str, conversation_id: str, segment_id: str, text: str) -> str:
     """
     Update a single segment's text in a conversation.

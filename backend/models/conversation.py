@@ -41,6 +41,7 @@ __all__ = [
     'TestPromptRequest',
     'UpdateActionItemDescriptionRequest',
     'UpdateConversation',
+    'UpdateOverviewRequest',
     'UpdateSegmentTextRequest',
 ]
 
@@ -222,6 +223,10 @@ class BulkAssignSegmentsRequest(BaseModel):
 class UpdateSegmentTextRequest(BaseModel):
     segment_id: str = Field(min_length=1)
     text: str = Field(min_length=1, max_length=10000)
+
+
+class UpdateOverviewRequest(BaseModel):
+    overview: str = Field(min_length=1, max_length=10000)
 
 
 class DeleteActionItemRequest(BaseModel):
