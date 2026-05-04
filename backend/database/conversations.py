@@ -409,12 +409,16 @@ def update_conversation_title(uid: str, conversation_id: str, title: str):
     conversation_ref.update({'structured.title': title})
 
 
-def update_conversation_overview(uid: str, conversation_id: str, overview: str) -> str:
+def update_conversation_summary(uid: str, conversation_id: str, app_id: Optional[str], content: str) -> str:
     """
-    Update a conversation's structured overview (summary).
+    Update the conversation's displayed summary.
+
+    If app_id is None: writes to structured.overview (default backend overview).
+    If app_id is set: rewrites the matching apps_results entry's content.
 
     Returns:
-        'ok' on success, 'not_found' if conversation missing.
+        'ok' on success, 'not_found' if conversation missing,
+        'app_result_not_found' if app_id given but no matching apps_results entry.
     """
     user_ref = db.collection('users').document(uid)
     conversation_ref = user_ref.collection(conversations_collection).document(conversation_id)
@@ -423,7 +427,22 @@ def update_conversation_overview(uid: str, conversation_id: str, overview: str) 
     if not doc_snapshot.exists:
         return 'not_found'
 
-    conversation_ref.update({'structured.overview': overview})
+    if app_id is None:
+        conversation_ref.update({'structured.overview': content})
+        return 'ok'
+
+    raw = doc_snapshot.to_dict() or {}
+    apps_results = list(raw.get('apps_results') or [])
+    found = False
+    for entry in apps_results:
+        if isinstance(entry, dict) and entry.get('app_id') == app_id:
+            entry['content'] = content
+            found = True
+            break
+    if not found:
+        return 'app_result_not_found'
+
+    conversation_ref.update({'apps_results': apps_results})
     return 'ok'
 
 

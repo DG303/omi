@@ -41,8 +41,8 @@ __all__ = [
     'TestPromptRequest',
     'UpdateActionItemDescriptionRequest',
     'UpdateConversation',
-    'UpdateOverviewRequest',
     'UpdateSegmentTextRequest',
+    'UpdateSummaryRequest',
 ]
 
 
@@ -225,8 +225,9 @@ class UpdateSegmentTextRequest(BaseModel):
     text: str = Field(min_length=1, max_length=10000)
 
 
-class UpdateOverviewRequest(BaseModel):
-    overview: str = Field(min_length=1, max_length=10000)
+class UpdateSummaryRequest(BaseModel):
+    app_id: Optional[str] = None
+    content: str = Field(min_length=1, max_length=10000)
 
 
 class DeleteActionItemRequest(BaseModel):
