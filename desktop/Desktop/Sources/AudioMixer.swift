@@ -25,8 +25,13 @@ class AudioMixer {
     private var onMixedChunk: AudioChunkHandler?
     private var isRunning = false
 
-    init(outputMode: OutputMode = .mono) {
+    /// Clock function for timestamps. Defaults to `CFAbsoluteTimeGetCurrent()`.
+    /// Tests inject a fake clock to avoid real sleeps.
+    private let clock: () -> CFAbsoluteTime
+
+    init(outputMode: OutputMode = .mono, clock: @escaping () -> CFAbsoluteTime = { CFAbsoluteTimeGetCurrent() }) {
         self.outputMode = outputMode
+        self.clock = clock
     }
 
     // Audio buffers (16kHz mono Int16 PCM)
@@ -61,7 +66,7 @@ class AudioMixer {
         self.isRunning = true
         micBuffer = Data()
         systemBuffer = Data()
-        mixerStartTime = CFAbsoluteTimeGetCurrent()
+        mixerStartTime = clock()
         lastMicDataTime = 0
         lastSystemDataTime = 0
         micSourceStalled = false
@@ -95,7 +100,7 @@ class AudioMixer {
         // Only mark alive when non-empty data arrives (a broken capture path
         // can send empty chunks which should not count as liveness).
         if !data.isEmpty {
-            lastMicDataTime = CFAbsoluteTimeGetCurrent()
+            lastMicDataTime = clock()
             if micSourceStalled {
                 micSourceStalled = false
                 log("AudioMixer: Mic source recovered")
@@ -121,7 +126,7 @@ class AudioMixer {
         systemBuffer.append(data)
 
         if !data.isEmpty {
-            lastSystemDataTime = CFAbsoluteTimeGetCurrent()
+            lastSystemDataTime = clock()
             if systemSourceStalled {
                 systemSourceStalled = false
                 log("AudioMixer: System audio source recovered")
@@ -161,7 +166,7 @@ class AudioMixer {
             // When flushing, process whatever is available
             bytesToProcess = max(micBuffer.count, systemBuffer.count)
         } else {
-            let now = CFAbsoluteTimeGetCurrent()
+            let now = clock()
 
             // Check if either source has stalled (no data for sourceTimeout seconds).
             // A source that never delivered data (lastTime == 0) is considered stalled
