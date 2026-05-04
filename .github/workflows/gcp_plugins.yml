@@ -28,9 +28,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate Environment Input
+        env:
+          INPUT_ENV: ${{ github.event.inputs.environment }}
         run: |
-          if [[ "${{ github.event.inputs.environment }}" != "development" && "${{ github.event.inputs.environment }}" != "prod" ]]; then
-            echo "Invalid environment: ${{ github.event.inputs.environment }}. Must be 'development' or 'prod'."
+          if [[ "$INPUT_ENV" != "development" && "$INPUT_ENV" != "prod" ]]; then
+            echo "Invalid environment: $INPUT_ENV. Must be 'development' or 'prod'."
             exit 1
           fi
 
