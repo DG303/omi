@@ -122,19 +122,36 @@ class ConversationDetailProvider extends ChangeNotifier with MessageNotifierMixi
     }
   }
 
-  Future<void> saveEditingOverview(String newOverview) async {
-    final oldOverview = conversation.structured.overview;
-    final trimmed = newOverview.trim();
+  Future<void> saveEditingSummary(String? appId, String newContent) async {
+    final trimmed = newContent.trim();
+    if (trimmed.isEmpty) return;
 
-    if (trimmed.isEmpty || trimmed == oldOverview) return;
+    if (appId == null) {
+      final oldOverview = conversation.structured.overview;
+      if (trimmed == oldOverview) return;
 
-    // Optimistic update
-    conversation.structured.overview = trimmed;
+      conversation.structured.overview = trimmed;
+      notifyListeners();
+
+      final success = await updateConversationSummary(conversation.id, null, trimmed);
+      if (!success && !_isDisposed) {
+        conversation.structured.overview = oldOverview;
+        notifyListeners();
+      }
+      return;
+    }
+
+    final index = conversation.appResults.indexWhere((r) => r.appId == appId);
+    if (index < 0) return;
+    final oldContent = conversation.appResults[index].content;
+    if (trimmed == oldContent) return;
+
+    conversation.appResults[index].content = trimmed;
     notifyListeners();
 
-    final success = await updateConversationOverview(conversation.id, trimmed);
+    final success = await updateConversationSummary(conversation.id, appId, trimmed);
     if (!success && !_isDisposed) {
-      conversation.structured.overview = oldOverview;
+      conversation.appResults[index].content = oldContent;
       notifyListeners();
     }
   }

@@ -886,7 +886,7 @@ class AppResultDetailWidget extends StatelessWidget {
 class GetAppsWidgets extends StatelessWidget {
   final String searchQuery;
   final int currentResultIndex;
-  final VoidCallback? onEditSummary;
+  final void Function(String? appId)? onEditSummary;
   const GetAppsWidgets({super.key, this.searchQuery = '', this.currentResultIndex = -1, this.onEditSummary});
 
   @override
@@ -894,7 +894,6 @@ class GetAppsWidgets extends StatelessWidget {
     return Consumer<ConversationDetailProvider>(
       builder: (context, provider, child) {
         final summarizedApp = provider.getSummarizedApp();
-        final isDefaultOverview = summarizedApp != null && summarizedApp.appId == null;
         return Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -910,7 +909,7 @@ class GetAppsWidgets extends StatelessWidget {
                       conversation: provider.conversation,
                       searchQuery: searchQuery,
                       currentResultIndex: currentResultIndex,
-                      onEditSummary: isDefaultOverview ? onEditSummary : null,
+                      onEditSummary: onEditSummary == null ? null : () => onEditSummary!(summarizedApp.appId),
                     ),
                   ],
                   const SizedBox(height: 8),

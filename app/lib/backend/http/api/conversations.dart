@@ -139,12 +139,12 @@ Future<bool> updateConversationSegmentText(String conversationId, String segment
   return response.statusCode == 200;
 }
 
-Future<bool> updateConversationOverview(String conversationId, String overview) async {
+Future<bool> updateConversationSummary(String conversationId, String? appId, String content) async {
   var response = await makeApiCall(
-    url: '${Env.apiBaseUrl}v1/conversations/$conversationId/overview',
+    url: '${Env.apiBaseUrl}v1/conversations/$conversationId/summary',
     headers: {'Content-Type': 'application/json'},
     method: 'PATCH',
-    body: jsonEncode({'overview': overview}),
+    body: jsonEncode({'app_id': appId, 'content': content}),
   );
   if (response == null) return false;
   return response.statusCode == 200;

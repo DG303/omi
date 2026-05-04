@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_provider_utilities/flutter_provider_utilities.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -1314,22 +1315,28 @@ class _SummaryTabState extends State<SummaryTab> with AutomaticKeepAliveClientMi
                         : GetAppsWidgets(
                             searchQuery: widget.searchQuery,
                             currentResultIndex: widget.currentResultIndex,
-                            onEditSummary: () {
+                            onEditSummary: (appId) {
                               final connectivityProvider = Provider.of<ConnectivityProvider>(context, listen: false);
                               if (!connectivityProvider.isConnected) {
                                 ConnectivityProvider.showNoInternetDialog(context);
                                 return;
                               }
                               final provider = context.read<ConversationDetailProvider>();
+                              final currentContent = appId == null
+                                  ? provider.conversation.structured.overview
+                                  : provider.conversation.appResults
+                                            .firstWhereOrNull((r) => r.appId == appId)
+                                            ?.content ??
+                                        '';
                               MixpanelManager().editSummaryStarted();
                               bool saved = false;
                               showEditSummaryBottomSheet(
                                 context,
-                                overview: provider.conversation.structured.overview,
-                                onSave: (newOverview) {
+                                overview: currentContent,
+                                onSave: (newContent) {
                                   saved = true;
                                   MixpanelManager().editSummarySaved();
-                                  provider.saveEditingOverview(newOverview);
+                                  provider.saveEditingSummary(appId, newContent);
                                 },
                                 onDismissed: () {
                                   if (!saved) MixpanelManager().editSummaryCancelled();
