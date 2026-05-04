@@ -40,6 +40,15 @@ class AudioMixer {
     // Maximum buffer size to prevent unbounded growth (1 second = 32000 bytes)
     private let maxBufferBytes = 32000
 
+    // Source liveness tracking — prevents one dead source from blocking the other.
+    // When a source hasn't delivered data within `sourceTimeout` seconds, the mixer
+    // stops waiting for it and forwards the active source's audio (padded with silence).
+    private var lastMicDataTime: CFAbsoluteTime = 0
+    private var lastSystemDataTime: CFAbsoluteTime = 0
+    private let sourceTimeout: CFAbsoluteTime = 2.0  // seconds
+    private var micSourceStalled = false
+    private var systemSourceStalled = false
+
     // MARK: - Public Methods
 
     /// Start the mixer
@@ -51,6 +60,10 @@ class AudioMixer {
         self.isRunning = true
         micBuffer = Data()
         systemBuffer = Data()
+        lastMicDataTime = 0
+        lastSystemDataTime = 0
+        micSourceStalled = false
+        systemSourceStalled = false
         bufferLock.unlock()
         log("AudioMixer: Started (mode=\(outputMode == .mono ? "mono" : "stereo"))")
     }
@@ -76,6 +89,12 @@ class AudioMixer {
         guard isRunning else { return }
 
         micBuffer.append(data)
+        lastMicDataTime = CFAbsoluteTimeGetCurrent()
+
+        if micSourceStalled {
+            micSourceStalled = false
+            log("AudioMixer: Mic source recovered")
+        }
 
         // Prevent unbounded buffer growth
         if micBuffer.count > maxBufferBytes {
@@ -94,6 +113,12 @@ class AudioMixer {
         guard isRunning else { return }
 
         systemBuffer.append(data)
+        lastSystemDataTime = CFAbsoluteTimeGetCurrent()
+
+        if systemSourceStalled {
+            systemSourceStalled = false
+            log("AudioMixer: System audio source recovered")
+        }
 
         // Prevent unbounded buffer growth
         if systemBuffer.count > maxBufferBytes {
@@ -106,8 +131,15 @@ class AudioMixer {
 
     // MARK: - Private Methods
 
-    /// Process buffers and produce stereo output when enough data is available
-    /// Must be called with bufferLock held
+    /// Process buffers and produce output when enough data is available.
+    ///
+    /// Normally waits for both mic and system buffers to have data, keeping them
+    /// aligned. When one source stalls (no data for `sourceTimeout` seconds), the
+    /// mixer switches to single-source mode for the active source, padding the
+    /// stalled source with silence. This prevents a dead Core Audio Tap (e.g. from
+    /// a permission timing issue) from blocking mic audio, and vice versa.
+    ///
+    /// Must be called with bufferLock held.
     private func processBuffers(flush: Bool = false) {
         guard isRunning || flush else { return }
 
@@ -121,11 +153,38 @@ class AudioMixer {
             // When flushing, process whatever is available
             bytesToProcess = max(micBuffer.count, systemBuffer.count)
         } else {
-            // Normal operation: process when both have data
-            let minAvailable = min(micBuffer.count, systemBuffer.count)
-            guard minAvailable >= minBufferBytes else { return }
-            // Align to sample boundary (2 bytes per Int16 sample)
-            bytesToProcess = (minAvailable / 2) * 2
+            let now = CFAbsoluteTimeGetCurrent()
+
+            // Check if either source has stalled (no data for sourceTimeout seconds).
+            // A source that never delivered data (lastTime == 0) is considered stalled
+            // once the other source has been active for at least sourceTimeout.
+            let micStalled = lastMicDataTime > 0
+                ? (now - lastMicDataTime > sourceTimeout)
+                : (lastSystemDataTime > 0 && now - lastSystemDataTime > sourceTimeout)
+            let sysStalled = lastSystemDataTime > 0
+                ? (now - lastSystemDataTime > sourceTimeout)
+                : (lastMicDataTime > 0 && now - lastMicDataTime > sourceTimeout)
+
+            if micStalled != micSourceStalled {
+                micSourceStalled = micStalled
+                if micStalled { log("AudioMixer: Mic source stalled — forwarding system audio only") }
+            }
+            if sysStalled != systemSourceStalled {
+                systemSourceStalled = sysStalled
+                if sysStalled { log("AudioMixer: System audio source stalled — forwarding mic audio only") }
+            }
+
+            if micStalled || sysStalled {
+                // Single-source mode: process whichever buffer has data, pad the other
+                let available = max(micBuffer.count, systemBuffer.count)
+                guard available >= minBufferBytes else { return }
+                bytesToProcess = (available / 2) * 2
+            } else {
+                // Normal dual-source mode: process when both have data
+                let minAvailable = min(micBuffer.count, systemBuffer.count)
+                guard minAvailable >= minBufferBytes else { return }
+                bytesToProcess = (minAvailable / 2) * 2
+            }
         }
 
         guard bytesToProcess >= 2 else { return }
