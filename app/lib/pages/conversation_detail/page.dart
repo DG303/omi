@@ -37,6 +37,7 @@ import 'share.dart';
 import 'test_prompts.dart';
 import 'widgets/audio_download_progress_sheet.dart';
 import 'widgets/edit_segment_sheet.dart';
+import 'widgets/edit_summary_sheet.dart';
 import 'widgets/name_speaker_sheet.dart';
 import 'widgets/share_to_contacts_sheet.dart';
 
@@ -1313,6 +1314,28 @@ class _SummaryTabState extends State<SummaryTab> with AutomaticKeepAliveClientMi
                         : GetAppsWidgets(
                             searchQuery: widget.searchQuery,
                             currentResultIndex: widget.currentResultIndex,
+                            onEditSummary: () {
+                              final connectivityProvider = Provider.of<ConnectivityProvider>(context, listen: false);
+                              if (!connectivityProvider.isConnected) {
+                                ConnectivityProvider.showNoInternetDialog(context);
+                                return;
+                              }
+                              final provider = context.read<ConversationDetailProvider>();
+                              MixpanelManager().editSummaryStarted();
+                              bool saved = false;
+                              showEditSummaryBottomSheet(
+                                context,
+                                overview: provider.conversation.structured.overview,
+                                onSave: (newOverview) {
+                                  saved = true;
+                                  MixpanelManager().editSummarySaved();
+                                  provider.saveEditingOverview(newOverview);
+                                },
+                                onDismissed: () {
+                                  if (!saved) MixpanelManager().editSummaryCancelled();
+                                },
+                              );
+                            },
                           ),
                     const GetGeolocationWidgets(),
                     const SizedBox(height: 150),

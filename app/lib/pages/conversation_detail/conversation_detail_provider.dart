@@ -122,6 +122,23 @@ class ConversationDetailProvider extends ChangeNotifier with MessageNotifierMixi
     }
   }
 
+  Future<void> saveEditingOverview(String newOverview) async {
+    final oldOverview = conversation.structured.overview;
+    final trimmed = newOverview.trim();
+
+    if (trimmed.isEmpty || trimmed == oldOverview) return;
+
+    // Optimistic update
+    conversation.structured.overview = trimmed;
+    notifyListeners();
+
+    final success = await updateConversationOverview(conversation.id, trimmed);
+    if (!success && !_isDisposed) {
+      conversation.structured.overview = oldOverview;
+      notifyListeners();
+    }
+  }
+
   void toggleIsTranscriptExpanded() {
     isTranscriptExpanded = !isTranscriptExpanded;
     notifyListeners();

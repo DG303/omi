@@ -717,6 +717,7 @@ class AppResultDetailWidget extends StatelessWidget {
   final ServerConversation conversation;
   final String searchQuery;
   final int currentResultIndex;
+  final VoidCallback? onEditSummary;
 
   const AppResultDetailWidget({
     super.key,
@@ -725,6 +726,7 @@ class AppResultDetailWidget extends StatelessWidget {
     required this.conversation,
     this.searchQuery = '',
     this.currentResultIndex = -1,
+    this.onEditSummary,
   });
 
   @override
@@ -763,10 +765,18 @@ class AppResultDetailWidget extends StatelessWidget {
                       ),
                     ],
                   )
-                : ConversationMarkdownWidget(
-                    content: content,
-                    searchQuery: searchQuery,
-                    currentResultIndex: currentResultIndex,
+                : GestureDetector(
+                    onDoubleTap: onEditSummary == null
+                        ? null
+                        : () {
+                            HapticFeedback.mediumImpact();
+                            onEditSummary!();
+                          },
+                    child: ConversationMarkdownWidget(
+                      content: content,
+                      searchQuery: searchQuery,
+                      currentResultIndex: currentResultIndex,
+                    ),
                   ),
           ),
 
@@ -876,13 +886,15 @@ class AppResultDetailWidget extends StatelessWidget {
 class GetAppsWidgets extends StatelessWidget {
   final String searchQuery;
   final int currentResultIndex;
-  const GetAppsWidgets({super.key, this.searchQuery = '', this.currentResultIndex = -1});
+  final VoidCallback? onEditSummary;
+  const GetAppsWidgets({super.key, this.searchQuery = '', this.currentResultIndex = -1, this.onEditSummary});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ConversationDetailProvider>(
       builder: (context, provider, child) {
         final summarizedApp = provider.getSummarizedApp();
+        final isDefaultOverview = summarizedApp != null && summarizedApp.appId == null;
         return Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -898,6 +910,7 @@ class GetAppsWidgets extends StatelessWidget {
                       conversation: provider.conversation,
                       searchQuery: searchQuery,
                       currentResultIndex: currentResultIndex,
+                      onEditSummary: isDefaultOverview ? onEditSummary : null,
                     ),
                   ],
                   const SizedBox(height: 8),
