@@ -43,6 +43,7 @@ class AudioMixer {
     // Source liveness tracking — prevents one dead source from blocking the other.
     // When a source hasn't delivered data within `sourceTimeout` seconds, the mixer
     // stops waiting for it and forwards the active source's audio (padded with silence).
+    private var mixerStartTime: CFAbsoluteTime = 0
     private var lastMicDataTime: CFAbsoluteTime = 0
     private var lastSystemDataTime: CFAbsoluteTime = 0
     private let sourceTimeout: CFAbsoluteTime = 2.0  // seconds
@@ -60,6 +61,7 @@ class AudioMixer {
         self.isRunning = true
         micBuffer = Data()
         systemBuffer = Data()
+        mixerStartTime = CFAbsoluteTimeGetCurrent()
         lastMicDataTime = 0
         lastSystemDataTime = 0
         micSourceStalled = false
@@ -89,11 +91,15 @@ class AudioMixer {
         guard isRunning else { return }
 
         micBuffer.append(data)
-        lastMicDataTime = CFAbsoluteTimeGetCurrent()
 
-        if micSourceStalled {
-            micSourceStalled = false
-            log("AudioMixer: Mic source recovered")
+        // Only mark alive when non-empty data arrives (a broken capture path
+        // can send empty chunks which should not count as liveness).
+        if !data.isEmpty {
+            lastMicDataTime = CFAbsoluteTimeGetCurrent()
+            if micSourceStalled {
+                micSourceStalled = false
+                log("AudioMixer: Mic source recovered")
+            }
         }
 
         // Prevent unbounded buffer growth
@@ -113,11 +119,13 @@ class AudioMixer {
         guard isRunning else { return }
 
         systemBuffer.append(data)
-        lastSystemDataTime = CFAbsoluteTimeGetCurrent()
 
-        if systemSourceStalled {
-            systemSourceStalled = false
-            log("AudioMixer: System audio source recovered")
+        if !data.isEmpty {
+            lastSystemDataTime = CFAbsoluteTimeGetCurrent()
+            if systemSourceStalled {
+                systemSourceStalled = false
+                log("AudioMixer: System audio source recovered")
+            }
         }
 
         // Prevent unbounded buffer growth
@@ -157,13 +165,15 @@ class AudioMixer {
 
             // Check if either source has stalled (no data for sourceTimeout seconds).
             // A source that never delivered data (lastTime == 0) is considered stalled
-            // once the other source has been active for at least sourceTimeout.
+            // once sourceTimeout has elapsed since the mixer started.
+            // A source that was active but stopped is stalled when its last data time
+            // is more than sourceTimeout ago.
             let micStalled = lastMicDataTime > 0
                 ? (now - lastMicDataTime > sourceTimeout)
-                : (lastSystemDataTime > 0 && now - lastSystemDataTime > sourceTimeout)
+                : (now - mixerStartTime > sourceTimeout)
             let sysStalled = lastSystemDataTime > 0
                 ? (now - lastSystemDataTime > sourceTimeout)
-                : (lastMicDataTime > 0 && now - lastMicDataTime > sourceTimeout)
+                : (now - mixerStartTime > sourceTimeout)
 
             if micStalled != micSourceStalled {
                 micSourceStalled = micStalled
