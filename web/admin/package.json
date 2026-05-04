@@ -89,6 +89,7 @@
     "fast-xml-parser": "^4.5.5",
     "protobufjs": "^7.5.5",
     "cross-spawn": "^7.0.5",
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.10",
+    "zod": "^3.23.8"
   }
 }
