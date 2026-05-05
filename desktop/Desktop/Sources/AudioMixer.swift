@@ -29,6 +29,15 @@ class AudioMixer {
     /// Tests inject a fake clock to avoid real sleeps.
     private let clock: () -> CFAbsoluteTime
 
+    // Debug audio dumping — set OMI_DEBUG_AUDIO=1 to write raw PCM files
+    private let debugAudioEnabled = ProcessInfo.processInfo.environment["OMI_DEBUG_AUDIO"] == "1"
+    private var debugMicFile: FileHandle?
+    private var debugSysFile: FileHandle?
+    private var debugMixFile: FileHandle?
+    private var debugMicBytes: Int = 0
+    private var debugSysBytes: Int = 0
+    private var debugMixBytes: Int = 0
+
     init(outputMode: OutputMode = .mono, clock: @escaping () -> CFAbsoluteTime = { CFAbsoluteTimeGetCurrent() }) {
         self.outputMode = outputMode
         self.clock = clock
@@ -71,6 +80,18 @@ class AudioMixer {
         lastSystemDataTime = 0
         micSourceStalled = false
         systemSourceStalled = false
+        if debugAudioEnabled {
+            let ts = Int(Date().timeIntervalSince1970)
+            for name in ["mic", "sys", "mix"] {
+                let path = "/tmp/omi-debug-\(name)-\(ts).raw"
+                FileManager.default.createFile(atPath: path, contents: nil)
+            }
+            debugMicFile = FileHandle(forWritingAtPath: "/tmp/omi-debug-mic-\(ts).raw")
+            debugSysFile = FileHandle(forWritingAtPath: "/tmp/omi-debug-sys-\(ts).raw")
+            debugMixFile = FileHandle(forWritingAtPath: "/tmp/omi-debug-mix-\(ts).raw")
+            debugMicBytes = 0; debugSysBytes = 0; debugMixBytes = 0
+            log("AudioMixer: Debug audio dumping to /tmp/omi-debug-{mic,sys,mix}-\(ts).raw")
+        }
         bufferLock.unlock()
         log("AudioMixer: Started (mode=\(outputMode == .mono ? "mono" : "stereo"))")
     }
@@ -84,6 +105,15 @@ class AudioMixer {
         micBuffer = Data()
         systemBuffer = Data()
         onMixedChunk = nil
+        if debugAudioEnabled {
+            debugMicFile?.closeFile(); debugMicFile = nil
+            debugSysFile?.closeFile(); debugSysFile = nil
+            debugMixFile?.closeFile(); debugMixFile = nil
+            let micSec = Double(debugMicBytes) / 32000.0
+            let sysSec = Double(debugSysBytes) / 32000.0
+            let mixSec = Double(debugMixBytes) / 32000.0
+            log("AudioMixer: Debug dump stats — mic: \(debugMicBytes)B (\(String(format: "%.1f", micSec))s), sys: \(debugSysBytes)B (\(String(format: "%.1f", sysSec))s), mix: \(debugMixBytes)B (\(String(format: "%.1f", mixSec))s)")
+        }
         bufferLock.unlock()
         log("AudioMixer: Stopped")
     }
@@ -233,6 +263,13 @@ class AudioMixer {
             mixed = sumToMono(mic: micData, system: sysData)
         case .stereo:
             mixed = interleave(mic: micData, system: sysData)
+        }
+
+        // Debug: dump raw audio to files
+        if debugAudioEnabled {
+            debugMicFile?.write(micData); debugMicBytes += micData.count
+            debugSysFile?.write(sysData); debugSysBytes += sysData.count
+            debugMixFile?.write(mixed); debugMixBytes += mixed.count
         }
 
         // Send to callback
