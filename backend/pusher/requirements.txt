@@ -67,7 +67,7 @@ neo4j==5.23.1
 deepgram-sdk==4.8.1
 
 # Security & encryption
-cryptography==43.0.0
+cryptography==46.0.7
 
 # Utilities
 python-dotenv==1.2.2
