@@ -44,7 +44,7 @@ prometheus-client==0.21.1
 
 # LLM services (for process_conversation)
 anthropic>=0.52.0
-openai==1.104.2
+openai==1.109.1
 groq==0.9.0
 langchain==0.3.27
 langchain-community==0.3.31
