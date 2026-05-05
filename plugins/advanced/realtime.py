@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter
 from langchain_community.tools.asknews import AskNewsSearch
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 
