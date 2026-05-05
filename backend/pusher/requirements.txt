@@ -27,7 +27,7 @@ google-api-python-client==2.139.0
 redis==5.0.8
 
 # HTTP
-requests~=2.32.5
+requests~=2.33.0
 
 # Audio encoding & processing
 opuslib==3.0.1
