@@ -73,7 +73,7 @@ cryptography==43.0.0
 python-dotenv==1.0.1
 tenacity==8.2.3
 python-dateutil==2.9.0.post0
-orjson==3.10.6
+orjson==3.11.6
 tiktoken==0.7.0
 jiwer==3.0.4
 python-ulid==3.0.0
