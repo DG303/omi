@@ -4547,12 +4547,12 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Planul dvs. s-a încheiat pe $date.\\nReabonați-vă acum - veți fi taxat imediat pentru o nouă perioadă de facturare.';
+    return 'Planul dvs. s-a încheiat pe $date.\nReabonați-vă acum - veți fi taxat imediat pentru o nouă perioadă de facturare.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Planul dvs. este setat să fie anulat pe $date.\\nReabonați-vă acum pentru a vă păstra beneficiile - fără taxă până la $date.';
+    return 'Planul dvs. este setat să fie anulat pe $date.\nReabonați-vă acum pentru a vă păstra beneficiile - fără taxă până la $date.';
   }
 
   @override
@@ -6570,7 +6570,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Setați $appName ca aplicație implicită de rezumat?\\n\\nAceastă aplicație va fi utilizată automat pentru toate rezumatele conversațiilor viitoare.';
+    return 'Setați $appName ca aplicație implicită de rezumat?\n\nAceastă aplicație va fi utilizată automat pentru toate rezumatele conversațiilor viitoare.';
   }
 
   @override

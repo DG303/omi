@@ -4532,12 +4532,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Planınız $date tarihinde sona erdi.\\nŞimdi yeniden abone olun - yeni fatura dönemi için hemen ücretlendirileceksiniz.';
+    return 'Planınız $date tarihinde sona erdi.\nŞimdi yeniden abone olun - yeni fatura dönemi için hemen ücretlendirileceksiniz.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Planınız $date tarihinde iptal edilecek şekilde ayarlandı.\\nAvantajlarınızı korumak için şimdi yeniden abone olun - $date tarihine kadar ücret yok.';
+    return 'Planınız $date tarihinde iptal edilecek şekilde ayarlandı.\nAvantajlarınızı korumak için şimdi yeniden abone olun - $date tarihine kadar ücret yok.';
   }
 
   @override
@@ -6550,7 +6550,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return '$appName varsayılan özet uygulamanız olarak ayarlansın mı?\\n\\nBu uygulama gelecekteki tüm konuşma özetleri için otomatik olarak kullanılacaktır.';
+    return '$appName varsayılan özet uygulamanız olarak ayarlansın mı?\n\nBu uygulama gelecekteki tüm konuşma özetleri için otomatik olarak kullanılacaktır.';
   }
 
   @override

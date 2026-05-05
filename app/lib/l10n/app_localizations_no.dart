@@ -4524,12 +4524,12 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Abonnementet ditt ble avsluttet $date.\\nAbonner på nytt nå - du blir belastet umiddelbart for en ny faktureringsperiode.';
+    return 'Abonnementet ditt ble avsluttet $date.\nAbonner på nytt nå - du blir belastet umiddelbart for en ny faktureringsperiode.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Abonnementet ditt er satt til å bli kansellert $date.\\nAbonner på nytt nå for å beholde fordelene - ingen belastning til $date.';
+    return 'Abonnementet ditt er satt til å bli kansellert $date.\nAbonner på nytt nå for å beholde fordelene - ingen belastning til $date.';
   }
 
   @override
@@ -6536,7 +6536,7 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Angi $appName som din standardapp for oppsummeringer?\\n\\nDenne appen vil automatisk bli brukt for alle fremtidige samtaleoppsummeringer.';
+    return 'Angi $appName som din standardapp for oppsummeringer?\n\nDenne appen vil automatisk bli brukt for alle fremtidige samtaleoppsummeringer.';
   }
 
   @override

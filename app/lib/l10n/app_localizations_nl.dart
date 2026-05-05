@@ -4537,12 +4537,12 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Uw plan eindigde op $date.\\nAbonneer nu opnieuw - u wordt direct belast voor een nieuwe factureringsperiode.';
+    return 'Uw plan eindigde op $date.\nAbonneer nu opnieuw - u wordt direct belast voor een nieuwe factureringsperiode.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Uw plan wordt geannuleerd op $date.\\nAbonneer nu opnieuw om uw voordelen te behouden - geen kosten tot $date.';
+    return 'Uw plan wordt geannuleerd op $date.\nAbonneer nu opnieuw om uw voordelen te behouden - geen kosten tot $date.';
   }
 
   @override
@@ -6559,7 +6559,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return '$appName instellen als je standaard samenvattingsapp?\\n\\nDeze app wordt automatisch gebruikt voor alle toekomstige gesprekssamenvattingen.';
+    return '$appName instellen als je standaard samenvattingsapp?\n\nDeze app wordt automatisch gebruikt voor alle toekomstige gesprekssamenvattingen.';
   }
 
   @override

@@ -4526,12 +4526,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Your plan ended on $date.\\nResubscribe now - you\'ll be charged immediately for a new billing period.';
+    return 'Your plan ended on $date.\nResubscribe now - you\'ll be charged immediately for a new billing period.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Your plan is set to cancel on $date.\\nResubscribe now to keep your benefits - no charge until $date.';
+    return 'Your plan is set to cancel on $date.\nResubscribe now to keep your benefits - no charge until $date.';
   }
 
   @override
@@ -6534,7 +6534,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Set $appName as your default summarization app?\\n\\nThis app will be automatically used for all future conversation summaries.';
+    return 'Set $appName as your default summarization app?\n\nThis app will be automatically used for all future conversation summaries.';
   }
 
   @override

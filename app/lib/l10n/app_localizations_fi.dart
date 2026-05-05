@@ -4523,12 +4523,12 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Tilauksesi päättyi $date.\\nTilaa uudelleen nyt - sinulta veloitetaan välittömästi uudesta laskutusjaksosta.';
+    return 'Tilauksesi päättyi $date.\nTilaa uudelleen nyt - sinulta veloitetaan välittömästi uudesta laskutusjaksosta.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Tilauksesi on asetettu peruuntumaan $date.\\nTilaa uudelleen nyt säilyttääksesi edut - ei veloitusta ennen $date.';
+    return 'Tilauksesi on asetettu peruuntumaan $date.\nTilaa uudelleen nyt säilyttääksesi edut - ei veloitusta ennen $date.';
   }
 
   @override
@@ -6540,7 +6540,7 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Asetetaanko $appName oletusyhteenvetosovellukseksi?\\n\\nTätä sovellusta käytetään automaattisesti kaikkiin tuleviin keskusteluyhteenvetoihin.';
+    return 'Asetetaanko $appName oletusyhteenvetosovellukseksi?\n\nTätä sovellusta käytetään automaattisesti kaikkiin tuleviin keskusteluyhteenvetoihin.';
   }
 
   @override

@@ -4443,12 +4443,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return '플랜이 $date에 종료되었습니다.\\n지금 재구독하세요 - 새 청구 기간에 대해 즉시 청구됩니다.';
+    return '플랜이 $date에 종료되었습니다.\n지금 재구독하세요 - 새 청구 기간에 대해 즉시 청구됩니다.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return '플랜이 $date에 취소될 예정입니다.\\n혜택을 유지하려면 지금 재구독하세요 - $date까지 요금이 청구되지 않습니다.';
+    return '플랜이 $date에 취소될 예정입니다.\n혜택을 유지하려면 지금 재구독하세요 - $date까지 요금이 청구되지 않습니다.';
   }
 
   @override
@@ -6426,7 +6426,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return '$appName을(를) 기본 요약 앱으로 설정하시겠습니까?\\n\\n이 앱은 향후 모든 대화 요약에 자동으로 사용됩니다.';
+    return '$appName을(를) 기본 요약 앱으로 설정하시겠습니까?\n\n이 앱은 향후 모든 대화 요약에 자동으로 사용됩니다.';
   }
 
   @override

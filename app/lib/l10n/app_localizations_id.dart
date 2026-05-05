@@ -4535,12 +4535,12 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Paket Anda berakhir pada $date.\\nBerlangganan lagi sekarang - Anda akan dikenakan biaya segera untuk periode penagihan baru.';
+    return 'Paket Anda berakhir pada $date.\nBerlangganan lagi sekarang - Anda akan dikenakan biaya segera untuk periode penagihan baru.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Paket Anda diatur untuk dibatalkan pada $date.\\nBerlangganan lagi sekarang untuk mempertahankan manfaat Anda - tidak ada biaya hingga $date.';
+    return 'Paket Anda diatur untuk dibatalkan pada $date.\nBerlangganan lagi sekarang untuk mempertahankan manfaat Anda - tidak ada biaya hingga $date.';
   }
 
   @override
@@ -6556,7 +6556,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Atur $appName sebagai aplikasi ringkasan default Anda?\\n\\nAplikasi ini akan otomatis digunakan untuk semua ringkasan percakapan di masa depan.';
+    return 'Atur $appName sebagai aplikasi ringkasan default Anda?\n\nAplikasi ini akan otomatis digunakan untuk semua ringkasan percakapan di masa depan.';
   }
 
   @override

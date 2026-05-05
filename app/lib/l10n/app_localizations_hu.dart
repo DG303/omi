@@ -4546,12 +4546,12 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'A csomagja $date-án lejárt.\\nIratkozzon fel újra most - azonnal felszámítjuk az új számlázási időszakot.';
+    return 'A csomagja $date-án lejárt.\nIratkozzon fel újra most - azonnal felszámítjuk az új számlázási időszakot.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'A csomagja $date-án törlésre van beállítva.\\nIratkozzon fel újra most, hogy megtartsa előnyeit - nincs díj $date-ig.';
+    return 'A csomagja $date-án törlésre van beállítva.\nIratkozzon fel újra most, hogy megtartsa előnyeit - nincs díj $date-ig.';
   }
 
   @override
@@ -6569,7 +6569,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Beállítja a(z) $appName alkalmazást alapértelmezett összefoglaló alkalmazásként?\\n\\nEz az alkalmazás automatikusan használva lesz minden jövőbeli beszélgetés összefoglalásához.';
+    return 'Beállítja a(z) $appName alkalmazást alapértelmezett összefoglaló alkalmazásként?\n\nEz az alkalmazás automatikusan használva lesz minden jövőbeli beszélgetés összefoglalásához.';
   }
 
   @override

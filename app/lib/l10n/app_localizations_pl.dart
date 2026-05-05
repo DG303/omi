@@ -4531,12 +4531,12 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Twój plan zakończył się $date.\\nSubskrybuj ponownie teraz - zostaniesz natychmiast obciążony za nowy okres rozliczeniowy.';
+    return 'Twój plan zakończył się $date.\nSubskrybuj ponownie teraz - zostaniesz natychmiast obciążony za nowy okres rozliczeniowy.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Twój plan jest ustawiony na anulowanie $date.\\nSubskrybuj ponownie teraz, aby zachować korzyści - bez opłat do $date.';
+    return 'Twój plan jest ustawiony na anulowanie $date.\nSubskrybuj ponownie teraz, aby zachować korzyści - bez opłat do $date.';
   }
 
   @override
@@ -6551,7 +6551,7 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Ustawić $appName jako domyślną aplikację do podsumowań?\\n\\nTa aplikacja będzie automatycznie używana do wszystkich przyszłych podsumowań rozmów.';
+    return 'Ustawić $appName jako domyślną aplikację do podsumowań?\n\nTa aplikacja będzie automatycznie używana do wszystkich przyszłych podsumowań rozmów.';
   }
 
   @override
