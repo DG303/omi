@@ -33,8 +33,8 @@ dnspython==2.6.1
 email_validator==2.2.0
 exceptiongroup==1.2.2
 executing==2.0.1
-fastapi==0.111.1
-fastapi-cli==0.0.4
+fastapi==0.121.0
+fastapi-cli==0.0.5
 fastjsonschema==2.20.0
 fqdn==1.5.1
 frozenlist==1.4.1
@@ -147,7 +147,7 @@ sniffio==1.3.1
 soupsieve==2.6
 SQLAlchemy==2.0.31
 stack-data==0.6.3
-starlette==0.37.2
+starlette==0.49.1
 synchronicity==0.6.7
 tenacity==8.5.0
 termcolor==2.4.0
