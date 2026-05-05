@@ -15,6 +15,10 @@ on:
         description: 'Branch to deploy from'
         required: true
         default: 'main'
+      release_version:
+        description: 'Release version for this deployment (optional)'
+        required: false
+        default: ''
 
 env:
   SERVICE: backend
@@ -117,6 +121,7 @@ jobs:
         run: echo ${{ steps.deploy.outputs.url }}
 
       - name: Generate deployment summary
+        if: always() # Ensure this step runs even if previous steps fail
         uses: ./.github/actions/deployment-summary
         with:
           workflow_name: ${{ github.workflow }}
