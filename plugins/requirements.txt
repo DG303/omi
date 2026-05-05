@@ -102,7 +102,7 @@ notebook_shim==0.2.4
 numpy==1.26.4
 openai==1.37.1
 opencv-python==4.10.0.84
-orjson==3.10.6
+orjson==3.11.6
 overrides==7.7.0
 packaging==23.2
 pandocfilters==1.5.1
