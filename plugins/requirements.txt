@@ -39,8 +39,8 @@ fastjsonschema==2.20.0
 fqdn==1.5.1
 frozenlist==1.4.1
 groq==0.11.0
-grpcio==1.65.1
-grpcio-tools==1.62.3
+grpcio==1.66.0
+grpcio-tools==1.66.0
 grpclib==0.4.7
 h11==0.16.0
 h2==4.3.0
@@ -113,7 +113,7 @@ portalocker==2.10.1
 posthog==3.5.0
 prometheus_client==0.20.0
 prompt_toolkit==3.0.47
-protobuf==4.25.4
+protobuf==5.29.6
 psutil==5.9.8
 ptyprocess==0.7.0
 pure_eval==0.2.3
