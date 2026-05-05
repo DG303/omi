@@ -7998,7 +7998,7 @@
     "defaultLabel": "ڈیفالٹ",
     "lastUsedLabel": "آخری استعمال",
     "setDefaultApp": "ڈیفالٹ ایپ سیٹ کریں",
-    "setDefaultAppContent": "{appName} کو اپنی ڈیفالٹ خلاصہ کاری ایپ کے طور پر سیٹ کریں؟\\n\\nیہ ایپ تمام مستقبل کی بات چیت کے خلاصوں کے لیے خودکار طور پر استعمال کی جائے گی۔",
+    "setDefaultAppContent": "{appName} کو اپنی ڈیفالٹ خلاصہ کاری ایپ کے طور پر سیٹ کریں؟\n\nیہ ایپ تمام مستقبل کی بات چیت کے خلاصوں کے لیے خودکار طور پر استعمال کی جائے گی۔",
     "@setDefaultAppContent": {
         "placeholders": {
             "appName": {

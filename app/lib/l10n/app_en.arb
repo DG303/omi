@@ -5255,7 +5255,7 @@
     "@yourOmiUnleashed": {
         "description": "Marketing text for unlimited plan"
     },
-    "planEndedOn": "Your plan ended on {date}.\\nResubscribe now - you'll be charged immediately for a new billing period.",
+    "planEndedOn": "Your plan ended on {date}.\nResubscribe now - you'll be charged immediately for a new billing period.",
     "@planEndedOn": {
         "description": "Message when plan has ended",
         "placeholders": {
@@ -5265,7 +5265,7 @@
             }
         }
     },
-    "planSetToCancelOn": "Your plan is set to cancel on {date}.\\nResubscribe now to keep your benefits - no charge until {date}.",
+    "planSetToCancelOn": "Your plan is set to cancel on {date}.\nResubscribe now to keep your benefits - no charge until {date}.",
     "@planSetToCancelOn": {
         "description": "Message when plan is set to cancel",
         "placeholders": {
@@ -7996,7 +7996,7 @@
     "defaultLabel": "Default",
     "lastUsedLabel": "Last Used",
     "setDefaultApp": "Set Default App",
-    "setDefaultAppContent": "Set {appName} as your default summarization app?\\n\\nThis app will be automatically used for all future conversation summaries.",
+    "setDefaultAppContent": "Set {appName} as your default summarization app?\n\nThis app will be automatically used for all future conversation summaries.",
     "@setDefaultAppContent": {
         "placeholders": {
             "appName": {

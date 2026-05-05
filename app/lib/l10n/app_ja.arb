@@ -1390,8 +1390,8 @@
     "upgradeAlreadyScheduled": "年間プランへのアップグレードは既に予定されています",
     "youAreOnUnlimitedPlan": "Unlimitedプランをご利用中です。",
     "yourOmiUnleashed": "あなたのOmiを解き放とう。無限の可能性のためにUnlimitedへ。",
-    "planEndedOn": "プランは{date}に終了しました。\\n今すぐ再登録 - 新しい請求期間の料金が即座に請求されます。",
-    "planSetToCancelOn": "プランは{date}にキャンセル予定です。\\n特典を維持するために今すぐ再登録 - {date}まで請求はありません。",
+    "planEndedOn": "プランは{date}に終了しました。\n今すぐ再登録 - 新しい請求期間の料金が即座に請求されます。",
+    "planSetToCancelOn": "プランは{date}にキャンセル予定です。\n特典を維持するために今すぐ再登録 - {date}まで請求はありません。",
     "annualPlanStartsAutomatically": "月額プランが終了すると、年間プランが自動的に開始されます。",
     "planRenewsOn": "プランは{date}に更新されます。",
     "unlimitedConversations": "無制限の会話",
@@ -2049,7 +2049,7 @@
     "defaultLabel": "デフォルト",
     "lastUsedLabel": "最後に使用",
     "setDefaultApp": "デフォルトアプリを設定",
-    "setDefaultAppContent": "{appName}をデフォルトの要約アプリとして設定しますか？\\n\\nこのアプリは今後のすべての会話の要約に自動的に使用されます。",
+    "setDefaultAppContent": "{appName}をデフォルトの要約アプリとして設定しますか？\n\nこのアプリは今後のすべての会話の要約に自動的に使用されます。",
     "@setDefaultAppContent": {
         "placeholders": {
             "appName": {
