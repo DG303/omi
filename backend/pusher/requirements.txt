@@ -11,9 +11,9 @@ httpx==0.28.0
 python-multipart==0.0.26
 
 # Data validation
-pydantic==2.8.2
+pydantic==2.11.10
 pydantic-settings==2.10.1
-pydantic_core==2.20.1
+pydantic_core==2.33.2
 
 # Google Cloud
 firebase-admin==6.5.0
