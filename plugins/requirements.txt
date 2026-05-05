@@ -118,9 +118,9 @@ psutil==5.9.8
 ptyprocess==0.7.0
 pure_eval==0.2.3
 pycparser==2.22
-pydantic==2.8.2
-pydantic-settings==2.3.4
-pydantic_core==2.20.1
+pydantic==2.11.10
+pydantic-settings==2.10.1
+pydantic_core==2.33.2
 Pygments==2.18.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
