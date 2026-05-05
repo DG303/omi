@@ -37,7 +37,7 @@ fastapi-cli==0.0.5
 fastjsonschema==2.20.0
 fqdn==1.5.1
 frozenlist==1.4.1
-groq==0.11.0
+groq==0.37.1
 grpcio==1.66.0
 grpcio-tools==1.66.0
 grpclib==0.4.7
