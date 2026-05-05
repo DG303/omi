@@ -3533,7 +3533,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get overview => '要約';
+  String get overview => '概要';
 
   @override
   String get otherAppResults => '他のアプリの結果';
