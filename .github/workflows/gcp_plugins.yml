@@ -14,7 +14,7 @@ on:
         required: true
         default: 'main'
       release_version:
-        description: 'Release version for this deployment (optional)'
+        description: 'Release version (optional)'
         required: false
         default: ''
 
