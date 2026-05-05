@@ -4500,12 +4500,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'แพ็คเกจของคุณสิ้นสุดเมื่อ $date\\nสมัครใหม่ตอนนี้ - คุณจะถูกเรียกเก็บเงินทันทีสำหรับรอบการเรียกเก็บเงินใหม่';
+    return 'แพ็คเกจของคุณสิ้นสุดเมื่อ $date\nสมัครใหม่ตอนนี้ - คุณจะถูกเรียกเก็บเงินทันทีสำหรับรอบการเรียกเก็บเงินใหม่';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'แพ็คเกจของคุณถูกตั้งค่าให้ยกเลิกในวันที่ $date\\nสมัครใหม่ตอนนี้เพื่อรักษาสิทธิประโยชน์ - ไม่มีค่าใช้จ่ายจนถึง $date';
+    return 'แพ็คเกจของคุณถูกตั้งค่าให้ยกเลิกในวันที่ $date\nสมัครใหม่ตอนนี้เพื่อรักษาสิทธิประโยชน์ - ไม่มีค่าใช้จ่ายจนถึง $date';
   }
 
   @override
@@ -6506,7 +6506,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'ตั้ง $appName เป็นแอปสรุปเริ่มต้นของคุณ?\\n\\nแอปนี้จะถูกใช้โดยอัตโนมัติสำหรับการสรุปการสนทนาทั้งหมดในอนาคต';
+    return 'ตั้ง $appName เป็นแอปสรุปเริ่มต้นของคุณ?\n\nแอปนี้จะถูกใช้โดยอัตโนมัติสำหรับการสรุปการสนทนาทั้งหมดในอนาคต';
   }
 
   @override

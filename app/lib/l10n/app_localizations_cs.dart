@@ -4517,12 +4517,12 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Váš plán skončil $date.\\nZnovu se přihlaste nyní - budete okamžitě účtováni za nové fakturační období.';
+    return 'Váš plán skončil $date.\nZnovu se přihlaste nyní - budete okamžitě účtováni za nové fakturační období.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Váš plán je nastaven na zrušení $date.\\nZnovu se přihlaste nyní, abyste si zachovali výhody - bez poplatku do $date.';
+    return 'Váš plán je nastaven na zrušení $date.\nZnovu se přihlaste nyní, abyste si zachovali výhody - bez poplatku do $date.';
   }
 
   @override
@@ -6529,7 +6529,7 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Nastavit $appName jako výchozí aplikaci pro shrnutí?\\n\\nTato aplikace bude automaticky použita pro všechna budoucí shrnutí konverzací.';
+    return 'Nastavit $appName jako výchozí aplikaci pro shrnutí?\n\nTato aplikace bude automaticky použita pro všechna budoucí shrnutí konverzací.';
   }
 
   @override

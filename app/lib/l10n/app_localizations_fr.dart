@@ -4566,12 +4566,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Votre forfait s\'est terminé le $date.\\nRéabonnez-vous maintenant - vous serez facturé immédiatement pour une nouvelle période de facturation.';
+    return 'Votre forfait s\'est terminé le $date.\nRéabonnez-vous maintenant - vous serez facturé immédiatement pour une nouvelle période de facturation.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Votre forfait est programmé pour être annulé le $date.\\nRéabonnez-vous maintenant pour conserver vos avantages - pas de frais jusqu\'au $date.';
+    return 'Votre forfait est programmé pour être annulé le $date.\nRéabonnez-vous maintenant pour conserver vos avantages - pas de frais jusqu\'au $date.';
   }
 
   @override
@@ -6596,7 +6596,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Définir $appName comme application de résumé par défaut ?\\n\\nCette application sera automatiquement utilisée pour tous les futurs résumés de conversations.';
+    return 'Définir $appName comme application de résumé par défaut ?\n\nCette application sera automatiquement utilisée pour tous les futurs résumés de conversations.';
   }
 
   @override

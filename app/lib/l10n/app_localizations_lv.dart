@@ -4531,12 +4531,12 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Jūsu plāns beidzās $date.\\nAbonejiet atkārtoti tagad - jums nekavējoties tiks iekasēta maksa par jauno norēķinu periodu.';
+    return 'Jūsu plāns beidzās $date.\nAbonejiet atkārtoti tagad - jums nekavējoties tiks iekasēta maksa par jauno norēķinu periodu.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Jūsu plāns ir iestatīts atcelšanai $date.\\nAbonejiet atkārtoti tagad, lai saglabātu savus ieguvumus - bez maksas līdz $date.';
+    return 'Jūsu plāns ir iestatīts atcelšanai $date.\nAbonejiet atkārtoti tagad, lai saglabātu savus ieguvumus - bez maksas līdz $date.';
   }
 
   @override
@@ -6552,7 +6552,7 @@ class AppLocalizationsLv extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Vai iestatīt $appName kā noklusējuma kopsavilkuma lietotni?\\n\\nŠī lietotne tiks automātiski izmantota visiem turpmākajiem sarunu kopsavilkumiem.';
+    return 'Vai iestatīt $appName kā noklusējuma kopsavilkuma lietotni?\n\nŠī lietotne tiks automātiski izmantota visiem turpmākajiem sarunu kopsavilkumiem.';
   }
 
   @override

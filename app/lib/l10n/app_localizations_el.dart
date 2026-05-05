@@ -4559,12 +4559,12 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Το πρόγραμμά σας έληξε στις $date.\\nΕπανεγγραφείτε τώρα - θα χρεωθείτε αμέσως για μια νέα περίοδο χρέωσης.';
+    return 'Το πρόγραμμά σας έληξε στις $date.\nΕπανεγγραφείτε τώρα - θα χρεωθείτε αμέσως για μια νέα περίοδο χρέωσης.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Το πρόγραμμά σας έχει ρυθμιστεί να ακυρωθεί στις $date.\\nΕπανεγγραφείτε τώρα για να διατηρήσετε τα οφέλη σας - χωρίς χρέωση μέχρι $date.';
+    return 'Το πρόγραμμά σας έχει ρυθμιστεί να ακυρωθεί στις $date.\nΕπανεγγραφείτε τώρα για να διατηρήσετε τα οφέλη σας - χωρίς χρέωση μέχρι $date.';
   }
 
   @override
@@ -6585,7 +6585,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Να οριστεί το $appName ως προεπιλεγμένη εφαρμογή σύνοψης;\\n\\nΑυτή η εφαρμογή θα χρησιμοποιείται αυτόματα για όλες τις μελλοντικές συνόψεις συνομιλιών.';
+    return 'Να οριστεί το $appName ως προεπιλεγμένη εφαρμογή σύνοψης;\n\nΑυτή η εφαρμογή θα χρησιμοποιείται αυτόματα για όλες τις μελλοντικές συνόψεις συνομιλιών.';
   }
 
   @override

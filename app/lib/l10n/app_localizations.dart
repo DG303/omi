@@ -8622,13 +8622,13 @@ abstract class AppLocalizations {
   /// Message when plan has ended
   ///
   /// In en, this message translates to:
-  /// **'Your plan ended on {date}.\\nResubscribe now - you\'ll be charged immediately for a new billing period.'**
+  /// **'Your plan ended on {date}.\nResubscribe now - you\'ll be charged immediately for a new billing period.'**
   String planEndedOn(String date);
 
   /// Message when plan is set to cancel
   ///
   /// In en, this message translates to:
-  /// **'Your plan is set to cancel on {date}.\\nResubscribe now to keep your benefits - no charge until {date}.'**
+  /// **'Your plan is set to cancel on {date}.\nResubscribe now to keep your benefits - no charge until {date}.'**
   String planSetToCancelOn(String date);
 
   /// Info that annual plan starts automatically
@@ -12366,7 +12366,7 @@ abstract class AppLocalizations {
   /// No description provided for @setDefaultAppContent.
   ///
   /// In en, this message translates to:
-  /// **'Set {appName} as your default summarization app?\\n\\nThis app will be automatically used for all future conversation summaries.'**
+  /// **'Set {appName} as your default summarization app?\n\nThis app will be automatically used for all future conversation summaries.'**
   String setDefaultAppContent(String appName);
 
   /// No description provided for @setDefaultButton.

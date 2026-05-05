@@ -4531,12 +4531,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Gói của bạn đã kết thúc vào $date.\\nĐăng ký lại ngay - bạn sẽ bị tính phí ngay lập tức cho kỳ thanh toán mới.';
+    return 'Gói của bạn đã kết thúc vào $date.\nĐăng ký lại ngay - bạn sẽ bị tính phí ngay lập tức cho kỳ thanh toán mới.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Gói của bạn được đặt để hủy vào $date.\\nĐăng ký lại ngay để giữ quyền lợi - không tính phí cho đến $date.';
+    return 'Gói của bạn được đặt để hủy vào $date.\nĐăng ký lại ngay để giữ quyền lợi - không tính phí cho đến $date.';
   }
 
   @override
@@ -6544,7 +6544,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Đặt $appName làm ứng dụng tóm tắt mặc định của bạn?\\n\\nỨng dụng này sẽ được tự động sử dụng cho tất cả các bản tóm tắt cuộc trò chuyện trong tương lai.';
+    return 'Đặt $appName làm ứng dụng tóm tắt mặc định của bạn?\n\nỨng dụng này sẽ được tự động sử dụng cho tất cả các bản tóm tắt cuộc trò chuyện trong tương lai.';
   }
 
   @override

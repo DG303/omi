@@ -4536,12 +4536,12 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Планът ви приключи на $date.\\nАбонирайте се отново сега - ще бъдете таксувани незабавно за нов период на фактуриране.';
+    return 'Планът ви приключи на $date.\nАбонирайте се отново сега - ще бъдете таксувани незабавно за нов период на фактуриране.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Планът ви е настроен да се отмени на $date.\\nАбонирайте се отново сега, за да запазите предимствата си - без такса до $date.';
+    return 'Планът ви е настроен да се отмени на $date.\nАбонирайте се отново сега, за да запазите предимствата си - без такса до $date.';
   }
 
   @override
@@ -6562,7 +6562,7 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Да зададем $appName като ваше приложение за обобщаване по подразбиране?\\n\\nТова приложение ще се използва автоматично за всички бъдещи резюмета на разговори.';
+    return 'Да зададем $appName като ваше приложение за обобщаване по подразбиране?\n\nТова приложение ще се използва автоматично за всички бъдещи резюмета на разговори.';
   }
 
   @override

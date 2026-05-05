@@ -4442,12 +4442,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'プランは$dateに終了しました。\\n今すぐ再登録 - 新しい請求期間の料金が即座に請求されます。';
+    return 'プランは$dateに終了しました。\n今すぐ再登録 - 新しい請求期間の料金が即座に請求されます。';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'プランは$dateにキャンセル予定です。\\n特典を維持するために今すぐ再登録 - $dateまで請求はありません。';
+    return 'プランは$dateにキャンセル予定です。\n特典を維持するために今すぐ再登録 - $dateまで請求はありません。';
   }
 
   @override
@@ -6427,7 +6427,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return '$appNameをデフォルトの要約アプリとして設定しますか？\\n\\nこのアプリは今後のすべての会話の要約に自動的に使用されます。';
+    return '$appNameをデフォルトの要約アプリとして設定しますか？\n\nこのアプリは今後のすべての会話の要約に自動的に使用されます。';
   }
 
   @override

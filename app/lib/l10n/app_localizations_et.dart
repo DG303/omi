@@ -4522,12 +4522,12 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Teie plaan lõppes $date.\\nTellige uuesti kohe - teilt võetakse kohe tasu uue arveldusperioodi eest.';
+    return 'Teie plaan lõppes $date.\nTellige uuesti kohe - teilt võetakse kohe tasu uue arveldusperioodi eest.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Teie plaan on seatud tühistuma $date.\\nTellige uuesti kohe, et säilitada oma eelised - tasu ei võeta kuni $date.';
+    return 'Teie plaan on seatud tühistuma $date.\nTellige uuesti kohe, et säilitada oma eelised - tasu ei võeta kuni $date.';
   }
 
   @override
@@ -6540,7 +6540,7 @@ class AppLocalizationsEt extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Kas määrata $appName vaikimisi kokkuvõtte rakenduseks?\\n\\nSeda rakendust kasutatakse automaatselt kõigi tulevaste vestluste kokkuvõtete jaoks.';
+    return 'Kas määrata $appName vaikimisi kokkuvõtte rakenduseks?\n\nSeda rakendust kasutatakse automaatselt kõigi tulevaste vestluste kokkuvõtete jaoks.';
   }
 
   @override

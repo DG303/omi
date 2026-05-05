@@ -4520,12 +4520,12 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Váš plán skončil $date.\\nZnova sa prihláste teraz - budete okamžite účtovaní za nové fakturačné obdobie.';
+    return 'Váš plán skončil $date.\nZnova sa prihláste teraz - budete okamžite účtovaní za nové fakturačné obdobie.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Váš plán je nastavený na zrušenie $date.\\nZnova sa prihláste teraz, aby ste si zachovali výhody - bez poplatku do $date.';
+    return 'Váš plán je nastavený na zrušenie $date.\nZnova sa prihláste teraz, aby ste si zachovali výhody - bez poplatku do $date.';
   }
 
   @override
@@ -6538,7 +6538,7 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Nastaviť $appName ako predvolenú aplikáciu na zhrnutia?\\n\\nTáto aplikácia sa automaticky použije pre všetky budúce zhrnutia konverzácií.';
+    return 'Nastaviť $appName ako predvolenú aplikáciu na zhrnutia?\n\nTáto aplikácia sa automaticky použije pre všetky budúce zhrnutia konverzácií.';
   }
 
   @override

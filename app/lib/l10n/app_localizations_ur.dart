@@ -6548,7 +6548,7 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return '$appName کو اپنی ڈیفالٹ خلاصہ کاری ایپ کے طور پر سیٹ کریں؟\\n\\nیہ ایپ تمام مستقبل کی بات چیت کے خلاصوں کے لیے خودکار طور پر استعمال کی جائے گی۔';
+    return '$appName کو اپنی ڈیفالٹ خلاصہ کاری ایپ کے طور پر سیٹ کریں؟\n\nیہ ایپ تمام مستقبل کی بات چیت کے خلاصوں کے لیے خودکار طور پر استعمال کی جائے گی۔';
   }
 
   @override

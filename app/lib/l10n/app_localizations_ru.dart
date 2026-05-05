@@ -4535,12 +4535,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String planEndedOn(String date) {
-    return 'Ваш план закончился $date.\\nПодпишитесь снова - с вас сразу спишется оплата за новый расчетный период.';
+    return 'Ваш план закончился $date.\nПодпишитесь снова - с вас сразу спишется оплата за новый расчетный период.';
   }
 
   @override
   String planSetToCancelOn(String date) {
-    return 'Ваш план будет отменен $date.\\nПодпишитесь снова, чтобы сохранить преимущества - без оплаты до $date.';
+    return 'Ваш план будет отменен $date.\nПодпишитесь снова, чтобы сохранить преимущества - без оплаты до $date.';
   }
 
   @override
@@ -6555,7 +6555,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String setDefaultAppContent(String appName) {
-    return 'Установить $appName как приложение для сводок по умолчанию?\\n\\nЭто приложение будет автоматически использоваться для всех будущих сводок разговоров.';
+    return 'Установить $appName как приложение для сводок по умолчанию?\n\nЭто приложение будет автоматически использоваться для всех будущих сводок разговоров.';
   }
 
   @override
