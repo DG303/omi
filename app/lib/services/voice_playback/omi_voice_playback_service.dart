@@ -247,6 +247,7 @@ class OmiVoicePlaybackService {
     _audioQueue.clear();
     _synthesizing = false;
     _isPlayingQueue = false;
+    _pausedByInterruption = false;
     try {
       await _player.stop();
     } catch (_) {}
