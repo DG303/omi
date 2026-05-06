@@ -107,8 +107,8 @@ class OmiVoicePlaybackService {
       }
     }
 
-    if (_activeMessageId == messageId) {
-      // Same response already in-flight; no-op.
+    if (_activeMessageId == messageId && isSpeaking) {
+      // Same response actively in-flight; no-op (rapid-double-call guard).
       return;
     }
 
