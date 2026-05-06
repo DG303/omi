@@ -208,6 +208,10 @@ class OmiVoicePlaybackService {
   }
 
   void _onInterruption(AudioInterruptionEvent event) {
+    debugPrint(
+      'OmiVoicePlayback: interruption begin=${event.begin} type=${event.type} '
+      'activeId=$_activeMessageId isSpeaking=$isSpeaking pausedByInt=$_pausedByInterruption',
+    );
     if (event.begin) {
       switch (event.type) {
         case AudioInterruptionType.duck:
