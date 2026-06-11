@@ -1,0 +1,45 @@
+import asyncio
+import json
+import logging
+import os
+
+logging.basicConfig(level=logging.INFO)
+
+import firebase_admin
+from fastapi import FastAPI
+
+from routers import pusher, metrics
+from utils.http_client import close_all_clients
+from utils.executors import drain_background_tasks, log_executor_health
+
+if os.environ.get('SERVICE_ACCOUNT_JSON'):
+    service_account_info = json.loads(os.environ["SERVICE_ACCOUNT_JSON"])
+    credentials = firebase_admin.credentials.Certificate(service_account_info)
+    firebase_admin.initialize_app(credentials)
+else:
+    firebase_admin.initialize_app()
+
+app = FastAPI()
+app.include_router(pusher.router)
+app.include_router(metrics.router)
+
+paths = ['_temp', '_samples', '_segments', '_speech_profiles']
+for path in paths:
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(log_executor_health())
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await drain_background_tasks(timeout=10.0)
+    await close_all_clients()
+
+
+@app.get('/health')
+async def health_check():
+    return {"status": "healthy"}
