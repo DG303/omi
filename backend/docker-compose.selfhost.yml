@@ -1,0 +1,77 @@
+# Self-hosted Omi backend stack (your-host). Run from backend/:
+#   docker compose -f docker-compose.selfhost.yml up -d --build
+#
+# Data lives in named volumes inside the Colima VM disk, which itself sits on
+# the APFS sparsebundle on the 4TB drive — no host bind mounts for data (qemu
+# 9p mounts are slow/flaky on Intel; named volumes land on the drive anyway).
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.13.4
+    restart: unless-stopped
+    ports:
+      - "6333:6333" # REST — also used by tailnet consumers (MCP, dashboards)
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  backend:
+    image: omi-backend-selfhost:latest
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile.selfhost
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      REDIS_DB_HOST: redis
+      REDIS_DB_PORT: "6379"
+      HOSTED_PUSHER_API_URL: http://pusher:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - qdrant
+      - redis
+      - pusher
+
+  pusher:
+    image: omi-backend-selfhost:latest
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile.selfhost
+    restart: unless-stopped
+    command:
+      [
+        "uvicorn",
+        "pusher.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+        "--ws-ping-interval",
+        "20",
+        "--ws-ping-timeout",
+        "20",
+        "--loop",
+        "uvloop",
+      ]
+    env_file: .env
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      REDIS_DB_HOST: redis
+      REDIS_DB_PORT: "6379"
+    depends_on:
+      - qdrant
+      - redis
+
+volumes:
+  qdrant_data:
+  redis_data:
