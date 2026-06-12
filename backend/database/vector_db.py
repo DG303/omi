@@ -63,10 +63,18 @@ def _ensure_collections(client: QdrantClient):
     for name in _ALL_COLLECTIONS:
         if name in existing:
             continue
-        client.create_collection(
-            collection_name=name,
-            vectors_config=VectorParams(size=EMBEDDING_DIMENSIONS, distance=Distance.COSINE),
-        )
+        # Multiple services (backend, pusher) boot concurrently; losing the
+        # create race is fine — the collection exists either way.
+        try:
+            client.create_collection(
+                collection_name=name,
+                vectors_config=VectorParams(size=EMBEDDING_DIMENSIONS, distance=Distance.COSINE),
+            )
+        except Exception as e:
+            if 'already exists' in str(e):
+                logger.info(f'qdrant collection {name} already exists (concurrent create)')
+                continue
+            raise
         client.create_payload_index(name, field_name='uid', field_schema=PayloadSchemaType.KEYWORD)
         client.create_payload_index(name, field_name='created_at', field_schema=PayloadSchemaType.INTEGER)
         if name == SCREEN_ACTIVITY_COLLECTION:
