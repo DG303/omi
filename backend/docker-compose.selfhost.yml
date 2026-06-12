@@ -34,6 +34,11 @@ services:
       REDIS_DB_HOST: redis
       REDIS_DB_PORT: "6379"
       HOSTED_PUSHER_API_URL: http://pusher:8080
+      # typesense.Client is constructed at import time; dummy values keep boot
+      # alive with keyword search disabled (vector search is unaffected)
+      TYPESENSE_HOST: typesense.invalid
+      TYPESENSE_HOST_PORT: "443"
+      TYPESENSE_API_KEY: unused
     ports:
       - "8080:8080"
     depends_on:
@@ -68,6 +73,9 @@ services:
       QDRANT_PORT: "6333"
       REDIS_DB_HOST: redis
       REDIS_DB_PORT: "6379"
+      TYPESENSE_HOST: typesense.invalid
+      TYPESENSE_HOST_PORT: "443"
+      TYPESENSE_API_KEY: unused
     depends_on:
       - qdrant
       - redis
