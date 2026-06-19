@@ -137,7 +137,7 @@ def _get_structured(
     people: List[Person] = None,
 ) -> Tuple[Structured, bool]:
     try:
-        tz = notification_db.get_user_time_zone(uid)
+        tz = notification_db.get_user_time_zone(uid) or 'UTC'
         user_language = users_db.get_user_language_preference(uid) or language_code
 
         # Extract calendar context from external_data
@@ -670,7 +670,7 @@ def save_transcript_chunk_vectors(uid: str, conversation: Conversation):
 
 def save_structured_vector(uid: str, conversation: Conversation, update_only: bool = False):
     vector = generate_embedding(str(conversation.structured)) if not update_only else None
-    tz = notification_db.get_user_time_zone(uid)
+    tz = notification_db.get_user_time_zone(uid) or 'UTC'
 
     metadata = {}
 
