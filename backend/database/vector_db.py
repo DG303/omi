@@ -1,67 +1,176 @@
 import json
 import os
+import uuid
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
-from typing import List
+from datetime import datetime, timezone
+from typing import List, Optional
 
-from pinecone import Pinecone
+from qdrant_client import QdrantClient
+from qdrant_client.models import (
+    Distance,
+    FieldCondition,
+    Filter,
+    FilterSelector,
+    MatchAny,
+    MatchValue,
+    PayloadSchemaType,
+    PointIdsList,
+    PointStruct,
+    Range,
+    VectorParams,
+)
 
 from utils.llm.clients import embeddings
 import logging
 
 logger = logging.getLogger(__name__)
 
-if os.getenv('PINECONE_API_KEY') is not None:
-    pc = Pinecone(api_key=os.getenv('PINECONE_API_KEY', ''))
-    index = pc.Index(os.getenv('PINECONE_INDEX_NAME', ''))
+# Qdrant replaces Pinecone. One collection per former Pinecone namespace; the
+# original string vector ids ('{uid}-{conversation_id}', etc.) are mapped to
+# deterministic UUIDv5 point ids because Qdrant only accepts UUID/int ids.
+EMBEDDING_DIMENSIONS = 3072  # OpenAI text-embedding-3-large (and Gemini embedding-001 for screen activity)
+
+CONVERSATIONS_COLLECTION = "omi_conversations"  # was ns1
+MEMORIES_COLLECTION = "omi_memories"  # was ns2
+X_POSTS_COLLECTION = "omi_x_posts"  # was ns_x
+SCREEN_ACTIVITY_COLLECTION = "omi_screen_activity"  # was ns3
+ACTION_ITEMS_COLLECTION = "omi_action_items"  # was ns4
+TRANSCRIPT_CHUNKS_COLLECTION = "omi_transcript_chunks"  # was ns_tchunks
+
+# Back-compat aliases: callers/tests reference these names.
+MEMORIES_NAMESPACE = MEMORIES_COLLECTION
+X_POSTS_NAMESPACE = X_POSTS_COLLECTION
+SCREEN_ACTIVITY_NAMESPACE = SCREEN_ACTIVITY_COLLECTION
+ACTION_ITEMS_NAMESPACE = ACTION_ITEMS_COLLECTION
+TRANSCRIPT_CHUNKS_NAMESPACE = TRANSCRIPT_CHUNKS_COLLECTION
+
+_ALL_COLLECTIONS = [
+    CONVERSATIONS_COLLECTION,
+    MEMORIES_COLLECTION,
+    X_POSTS_COLLECTION,
+    SCREEN_ACTIVITY_COLLECTION,
+    ACTION_ITEMS_COLLECTION,
+    TRANSCRIPT_CHUNKS_COLLECTION,
+]
+
+
+def _point_id(string_id: str) -> str:
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, string_id))
+
+
+def _ensure_collections(client: QdrantClient):
+    existing = {c.name for c in client.get_collections().collections}
+    for name in _ALL_COLLECTIONS:
+        if name in existing:
+            continue
+        # Multiple services (backend, pusher) boot concurrently; losing the
+        # create race is fine — the collection exists either way.
+        try:
+            client.create_collection(
+                collection_name=name,
+                vectors_config=VectorParams(size=EMBEDDING_DIMENSIONS, distance=Distance.COSINE),
+            )
+        except Exception as e:
+            if 'already exists' in str(e):
+                logger.info(f'qdrant collection {name} already exists (concurrent create)')
+                continue
+            raise
+        client.create_payload_index(name, field_name='uid', field_schema=PayloadSchemaType.KEYWORD)
+        client.create_payload_index(name, field_name='created_at', field_schema=PayloadSchemaType.INTEGER)
+        if name == SCREEN_ACTIVITY_COLLECTION:
+            client.create_payload_index(name, field_name='timestamp', field_schema=PayloadSchemaType.INTEGER)
+            client.create_payload_index(name, field_name='appName', field_schema=PayloadSchemaType.KEYWORD)
+        if name == TRANSCRIPT_CHUNKS_COLLECTION:
+            client.create_payload_index(name, field_name='conversation_id', field_schema=PayloadSchemaType.KEYWORD)
+        logger.info(f'created qdrant collection {name}')
+
+
+if os.getenv('QDRANT_HOST'):
+    index = QdrantClient(
+        host=os.getenv('QDRANT_HOST'),
+        port=int(os.getenv('QDRANT_PORT', '6333')),
+        api_key=os.getenv('QDRANT_API_KEY') or None,
+        https=os.getenv('QDRANT_HTTPS', 'false').lower() == 'true',
+    )
+    _ensure_collections(index)
 else:
     index = None
+    logger.warning('QDRANT_HOST not set, vector db disabled')
+
+
+def _uid_filter(uid: str, extra: Optional[List[FieldCondition]] = None) -> Filter:
+    must = [FieldCondition(key='uid', match=MatchValue(value=uid))]
+    if extra:
+        must.extend(extra)
+    return Filter(must=must)
+
+
+def _search(collection: str, vector: List[float], flt: Filter, limit: int):
+    return index.query_points(collection_name=collection, query=vector, query_filter=flt, limit=limit).points
 
 
 def _get_data(uid: str, conversation_id: str, vector: List[float]):
-    return {
-        "id": f'{uid}-{conversation_id}',
-        "values": vector,
-        'metadata': {
+    return PointStruct(
+        id=_point_id(f'{uid}-{conversation_id}'),
+        vector=vector,
+        payload={
             'uid': uid,
             'memory_id': conversation_id,
             'created_at': int(datetime.now(timezone.utc).timestamp()),
         },
-    }
+    )
 
 
 def upsert_vector(uid: str, conversation_id: str, vector: List[float]):
-    res = index.upsert(vectors=[_get_data(uid, conversation_id, vector)], namespace="ns1")
-    logger.info(f'upsert_vector {res}')
+    if index is None:
+        logger.warning('Qdrant not initialized, skipping conversation vector upsert')
+        return
+    res = index.upsert(collection_name=CONVERSATIONS_COLLECTION, points=[_get_data(uid, conversation_id, vector)])
+    logger.info(f'upsert_vector {res.status}')
 
 
 def upsert_vector2(uid: str, conversation_id: str, vector: List[float], metadata: dict):
-    data = _get_data(uid, conversation_id, vector)
-    data['metadata'].update(metadata)
-    res = index.upsert(vectors=[data], namespace="ns1")
-    logger.info(f'upsert_vector {res}')
+    if index is None:
+        logger.warning('Qdrant not initialized, skipping conversation vector upsert')
+        return
+    point = _get_data(uid, conversation_id, vector)
+    point.payload.update(metadata)
+    res = index.upsert(collection_name=CONVERSATIONS_COLLECTION, points=[point])
+    logger.info(f'upsert_vector {res.status}')
 
 
 def update_vector_metadata(uid: str, conversation_id: str, metadata: dict):
+    if index is None:
+        logger.warning('Qdrant not initialized, skipping conversation vector metadata update')
+        return
     metadata['uid'] = uid
     metadata['memory_id'] = conversation_id
-    return index.update(f'{uid}-{conversation_id}', set_metadata=metadata, namespace="ns1")
+    return index.set_payload(
+        collection_name=CONVERSATIONS_COLLECTION,
+        payload=metadata,
+        points=[_point_id(f'{uid}-{conversation_id}')],
+    )
 
 
 def upsert_vectors(uid: str, vectors: List[List[float]], conversation_ids: List[str]):
-    data = [_get_data(uid, cid, vector) for cid, vector in zip(conversation_ids, vectors)]
-    res = index.upsert(vectors=data, namespace="ns1")
-    logger.info(f'upsert_vectors {res}')
+    if index is None:
+        logger.warning('Qdrant not initialized, skipping conversation vectors upsert')
+        return
+    points = [_get_data(uid, cid, vector) for cid, vector in zip(conversation_ids, vectors)]
+    res = index.upsert(collection_name=CONVERSATIONS_COLLECTION, points=points)
+    logger.info(f'upsert_vectors {res.status}')
 
 
 def query_vectors(query: str, uid: str, starts_at: int = None, ends_at: int = None, k: int = 5) -> List[str]:
-    filter_data = {'uid': uid}
+    if index is None:
+        logger.warning('Qdrant not initialized, skipping query_vectors')
+        return []
+    extra = []
     if starts_at is not None:
-        filter_data['created_at'] = {'$gte': starts_at, '$lte': ends_at}
-
+        extra.append(FieldCondition(key='created_at', range=Range(gte=starts_at, lte=ends_at)))
     xq = embeddings.embed_query(query)
-    xc = index.query(vector=xq, top_k=k, include_metadata=False, filter=filter_data, namespace="ns1")
-    return [item['id'].replace(f'{uid}-', '') for item in xc['matches']]
+    points = _search(CONVERSATIONS_COLLECTION, xq, _uid_filter(uid, extra), k)
+    return [p.payload['memory_id'] for p in points]
 
 
 def query_vectors_by_metadata(
@@ -74,77 +183,77 @@ def query_vectors_by_metadata(
     dates: List[str],
     limit: int = 5,
 ):
-    filter_data = {
-        '$and': [
-            {'uid': {'$eq': uid}},
-        ]
-    }
+    if index is None:
+        logger.warning('Qdrant not initialized, skipping query_vectors_by_metadata')
+        return []
+
+    must = [FieldCondition(key='uid', match=MatchValue(value=uid))]
+    structured_should = []
     if people or topics or entities or dates:
-        filter_data['$and'].append(
-            {
-                '$or': [
-                    {'people': {'$in': people}},
-                    {'topics': {'$in': topics}},
-                    {'entities': {'$in': entities}},
-                    # {'dates': {'$in': dates_mentioned}},
-                ]
-            }
-        )
+        if people:
+            structured_should.append(FieldCondition(key='people', match=MatchAny(any=people)))
+        if topics:
+            structured_should.append(FieldCondition(key='topics', match=MatchAny(any=topics)))
+        if entities:
+            structured_should.append(FieldCondition(key='entities', match=MatchAny(any=entities)))
     if dates_filter and len(dates_filter) == 2 and dates_filter[0] and dates_filter[1]:
         logger.info(f'dates_filter {dates_filter}')
-        filter_data['$and'].append(
-            {'created_at': {'$gte': int(dates_filter[0].timestamp()), '$lte': int(dates_filter[1].timestamp())}}
+        must.append(
+            FieldCondition(
+                key='created_at',
+                range=Range(gte=int(dates_filter[0].timestamp()), lte=int(dates_filter[1].timestamp())),
+            )
         )
 
-    xc = index.query(
-        vector=vector, filter=filter_data, namespace="ns1", include_values=False, include_metadata=True, top_k=1000
-    )
-    if not xc['matches']:
-        if len(filter_data['$and']) == 3:
-            filter_data['$and'].pop(1)
-            logger.warning(f'query_vectors_by_metadata retrying without structured filters: {json.dumps(filter_data)}')
-            xc = index.query(
-                vector=vector,
-                filter=filter_data,
-                namespace="ns1",
-                include_values=False,
-                include_metadata=True,
-                top_k=20,
+    flt = Filter(must=must, should=structured_should or None)
+    # Qdrant 'should' is a soft preference, not Pinecone's hard '$or'; replicate
+    # the hard filter by requiring at least one structured match when present.
+    if structured_should:
+        flt = Filter(must=must + [Filter(should=structured_should)])
+    points = _search(CONVERSATIONS_COLLECTION, vector, flt, 1000)
+
+    if not points:
+        if structured_should:
+            retry_filter = Filter(must=must)
+            logger.warning(
+                f'query_vectors_by_metadata retrying without structured filters: '
+                f'{json.dumps([m.model_dump() for m in must], default=str)}'
             )
+            points = _search(CONVERSATIONS_COLLECTION, vector, retry_filter, 20)
         else:
             return []
 
     conversation_id_to_matches = defaultdict(int)
-    for item in xc['matches']:
-        metadata = item['metadata']
-        conversation_id = metadata['memory_id']
+    for p in points:
+        payload = p.payload
+        conversation_id = payload['memory_id']
         for topic in topics:
-            if topic in metadata.get('topics', []):
+            if topic in payload.get('topics', []):
                 conversation_id_to_matches[conversation_id] += 1
         for entity in entities:
-            if entity in metadata.get('entities', []):
+            if entity in payload.get('entities', []):
                 conversation_id_to_matches[conversation_id] += 1
         for person in people:
-            if person in metadata.get('people_mentioned', []):
+            if person in payload.get('people_mentioned', []):
                 conversation_id_to_matches[conversation_id] += 1
 
-    conversations_id = [item['id'].replace(f'{uid}-', '') for item in xc['matches']]
+    conversations_id = [p.payload['memory_id'] for p in points]
     conversations_id.sort(key=lambda x: conversation_id_to_matches[x], reverse=True)
     return conversations_id[:limit] if len(conversations_id) > limit else conversations_id
 
 
 def delete_vector(uid: str, conversation_id: str):
     """
-    Delete a conversation vector from Pinecone.
-
-    Note: Vectors are stored with ID format '{uid}-{conversation_id}'
+    Delete a conversation vector from Qdrant.
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping conversation vector delete')
+        logger.warning('Qdrant not initialized, skipping conversation vector delete')
         return
     vector_id = f'{uid}-{conversation_id}'
-    result = index.delete(ids=[vector_id], namespace="ns1")
-    logger.info(f'delete_vector {vector_id} {result}')
+    result = index.delete(
+        collection_name=CONVERSATIONS_COLLECTION, points_selector=PointIdsList(points=[_point_id(vector_id)])
+    )
+    logger.info(f'delete_vector {vector_id} {result.status}')
 
 
 # ==========================================
@@ -152,44 +261,42 @@ def delete_vector(uid: str, conversation_id: str):
 # For memory embeddings and semantic search
 # ==========================================
 
-MEMORIES_NAMESPACE = "ns2"
-
 
 def upsert_memory_vector(uid: str, memory_id: str, content: str, category: str):
     """
-    Upsert a memory embedding to Pinecone.
+    Upsert a memory embedding to Qdrant.
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping memory vector upsert')
+        logger.warning('Qdrant not initialized, skipping memory vector upsert')
         return None
 
     vector = embeddings.embed_query(content)
-    data = {
-        "id": f'{uid}-{memory_id}',
-        "values": vector,
-        "metadata": {
-            "uid": uid,
-            "memory_id": memory_id,
-            "category": category,
-            "created_at": int(datetime.now(timezone.utc).timestamp()),
+    point = PointStruct(
+        id=_point_id(f'{uid}-{memory_id}'),
+        vector=vector,
+        payload={
+            'uid': uid,
+            'memory_id': memory_id,
+            'category': category,
+            'created_at': int(datetime.now(timezone.utc).timestamp()),
         },
-    }
-    res = index.upsert(vectors=[data], namespace=MEMORIES_NAMESPACE)
-    logger.info(f'upsert_memory_vector {memory_id} {res}')
+    )
+    res = index.upsert(collection_name=MEMORIES_COLLECTION, points=[point])
+    logger.info(f'upsert_memory_vector {memory_id} {res.status}')
     return vector
 
 
 def upsert_memory_vectors_batch(uid: str, items: List[dict]) -> int:
     """
-    Upsert many memory embeddings to Pinecone in a single request.
+    Upsert many memory embeddings to Qdrant in a single request.
 
     Each item must be a dict with keys: 'memory_id', 'content', 'category'.
     Batching cuts latency from N embedding calls + N upserts to one embedding
     call + one upsert. Used by POST /v3/memories/batch and the dev batch API.
-    Returns the number of vectors written (0 if Pinecone is not configured).
+    Returns the number of vectors written (0 if Qdrant is not configured).
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping memory vector batch upsert')
+        logger.warning('Qdrant not initialized, skipping memory vector batch upsert')
         return 0
 
     if not items:
@@ -199,22 +306,22 @@ def upsert_memory_vectors_batch(uid: str, items: List[dict]) -> int:
     vectors = embeddings.embed_documents(contents)
 
     now_ts = int(datetime.now(timezone.utc).timestamp())
-    payload = [
-        {
-            "id": f"{uid}-{item['memory_id']}",
-            "values": vectors[i],
-            "metadata": {
-                "uid": uid,
-                "memory_id": item['memory_id'],
-                "category": item['category'],
-                "created_at": now_ts,
+    points = [
+        PointStruct(
+            id=_point_id(f"{uid}-{item['memory_id']}"),
+            vector=vectors[i],
+            payload={
+                'uid': uid,
+                'memory_id': item['memory_id'],
+                'category': item['category'],
+                'created_at': now_ts,
             },
-        }
+        )
         for i, item in enumerate(items)
     ]
-    res = index.upsert(vectors=payload, namespace=MEMORIES_NAMESPACE)
-    logger.info(f'upsert_memory_vectors_batch count={len(payload)} {res}')
-    return len(payload)
+    res = index.upsert(collection_name=MEMORIES_COLLECTION, points=points)
+    logger.info(f'upsert_memory_vectors_batch count={len(points)} {res.status}')
+    return len(points)
 
 
 def find_similar_memories(uid: str, content: str, threshold: float = 0.85, limit: int = 5) -> List[dict]:
@@ -224,24 +331,20 @@ def find_similar_memories(uid: str, content: str, threshold: float = 0.85, limit
     Used for duplicate detection and semantic search.
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping similarity search')
+        logger.warning('Qdrant not initialized, skipping similarity search')
         return []
 
     vector = embeddings.embed_query(content)
-    filter_data = {'uid': uid}
-
-    xc = index.query(
-        vector=vector, top_k=limit, include_metadata=True, filter=filter_data, namespace=MEMORIES_NAMESPACE
-    )
+    points = _search(MEMORIES_COLLECTION, vector, _uid_filter(uid), limit)
 
     results = []
-    for match in xc.get('matches', []):
-        if match['score'] >= threshold:
+    for match in points:
+        if match.score >= threshold:
             results.append(
                 {
-                    'memory_id': match['metadata'].get('memory_id'),
-                    'category': match['metadata'].get('category'),
-                    'score': match['score'],
+                    'memory_id': match.payload.get('memory_id'),
+                    'category': match.payload.get('category'),
+                    'score': match.score,
                 }
             )
 
@@ -266,30 +369,27 @@ def search_memories_by_vector(uid: str, query: str, limit: int = 10) -> List[str
     Returns list of memory_ids ordered by relevance.
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping memory search')
+        logger.warning('Qdrant not initialized, skipping memory search')
         return []
 
     vector = embeddings.embed_query(query)
-    filter_data = {'uid': uid}
-
-    xc = index.query(
-        vector=vector, top_k=limit, include_metadata=True, filter=filter_data, namespace=MEMORIES_NAMESPACE
-    )
-
-    return [match['metadata'].get('memory_id') for match in xc.get('matches', [])]
+    points = _search(MEMORIES_COLLECTION, vector, _uid_filter(uid), limit)
+    return [match.payload.get('memory_id') for match in points]
 
 
 def delete_memory_vector(uid: str, memory_id: str):
     """
-    Delete a memory vector from Pinecone.
+    Delete a memory vector from Qdrant.
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping memory vector delete')
+        logger.warning('Qdrant not initialized, skipping memory vector delete')
         return
 
     vector_id = f'{uid}-{memory_id}'
-    result = index.delete(ids=[vector_id], namespace=MEMORIES_NAMESPACE)
-    logger.info(f'delete_memory_vector {vector_id} {result}')
+    result = index.delete(
+        collection_name=MEMORIES_COLLECTION, points_selector=PointIdsList(points=[_point_id(vector_id)])
+    )
+    logger.info(f'delete_memory_vector {vector_id} {result.status}')
 
 
 # ==========================================
@@ -297,14 +397,12 @@ def delete_memory_vector(uid: str, memory_id: str):
 # Semantic search over the user's raw imported tweets/bookmarks.
 # ==========================================
 
-X_POSTS_NAMESPACE = "ns_x"
-
 
 def upsert_x_post_vectors_batch(uid: str, items: List[dict]) -> int:
     """Upsert X post embeddings in one request. Each item: {'post_id', 'content', 'kind'}.
-    Returns the number of vectors written (0 if Pinecone is not configured)."""
+    Returns the number of vectors written (0 if Qdrant is not configured)."""
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping x_post vector batch upsert')
+        logger.warning('Qdrant not initialized, skipping x_post vector batch upsert')
         return 0
     items = [it for it in items if (it.get('content') or '').strip()]
     if not items:
@@ -312,40 +410,38 @@ def upsert_x_post_vectors_batch(uid: str, items: List[dict]) -> int:
 
     vectors = embeddings.embed_documents([it['content'] for it in items])
     now_ts = int(datetime.now(timezone.utc).timestamp())
-    payload = [
-        {
-            "id": f"{uid}-x-{it['post_id']}",
-            "values": vectors[i],
-            "metadata": {
-                "uid": uid,
-                "post_id": str(it['post_id']),
-                "kind": it.get('kind', 'tweet'),
-                "created_at": now_ts,
+    points = [
+        PointStruct(
+            id=_point_id(f"{uid}-x-{it['post_id']}"),
+            vector=vectors[i],
+            payload={
+                'uid': uid,
+                'post_id': str(it['post_id']),
+                'kind': it.get('kind', 'tweet'),
+                'created_at': now_ts,
             },
-        }
+        )
         for i, it in enumerate(items)
     ]
-    res = index.upsert(vectors=payload, namespace=X_POSTS_NAMESPACE)
-    logger.info(f'upsert_x_post_vectors_batch count={len(payload)} {res}')
-    return len(payload)
+    res = index.upsert(collection_name=X_POSTS_COLLECTION, points=points)
+    logger.info(f'upsert_x_post_vectors_batch count={len(points)} {res.status}')
+    return len(points)
 
 
 def find_similar_x_posts(uid: str, content: str, limit: int = 10) -> List[dict]:
     """Semantic search over the user's X posts. Returns [{post_id, kind, score}]."""
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping x_post similarity search')
+        logger.warning('Qdrant not initialized, skipping x_post similarity search')
         return []
     vector = embeddings.embed_query(content)
-    xc = index.query(
-        vector=vector, top_k=limit, include_metadata=True, filter={'uid': uid}, namespace=X_POSTS_NAMESPACE
-    )
+    points = _search(X_POSTS_COLLECTION, vector, _uid_filter(uid), limit)
     return [
         {
-            'post_id': m['metadata'].get('post_id'),
-            'kind': m['metadata'].get('kind'),
-            'score': m['score'],
+            'post_id': m.payload.get('post_id'),
+            'kind': m.payload.get('kind'),
+            'score': m.score,
         }
-        for m in xc.get('matches', [])
+        for m in points
     ]
 
 
@@ -354,45 +450,42 @@ def find_similar_x_posts(uid: str, content: str, limit: int = 10) -> List[dict]:
 # For screenshot embeddings (Gemini embedding-001, 3072-dim)
 # ==========================================
 
-SCREEN_ACTIVITY_NAMESPACE = "ns3"
-
 
 def upsert_screen_activity_vectors(uid: str, rows: List[dict]) -> int:
-    """Batch upsert screenshot embeddings to Pinecone ns3."""
+    """Batch upsert screenshot embeddings."""
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping screen activity vector upsert')
+        logger.warning('Qdrant not initialized, skipping screen activity vector upsert')
         return 0
 
-    vectors = []
+    points = []
     for row in rows:
         embedding = row.get('embedding')
         if not embedding:
             continue
-        vectors.append(
-            {
-                "id": f'{uid}-sa-{row["id"]}',
-                "values": embedding,
-                "metadata": {
-                    "uid": uid,
-                    "screenshot_id": str(row['id']),
-                    "timestamp": (
+        points.append(
+            PointStruct(
+                id=_point_id(f'{uid}-sa-{row["id"]}'),
+                vector=embedding,
+                payload={
+                    'uid': uid,
+                    'screenshot_id': str(row['id']),
+                    'timestamp': (
                         int(datetime.fromisoformat(row['timestamp'].replace('Z', '+00:00')).timestamp())
                         if isinstance(row['timestamp'], str)
                         else int(row['timestamp'])
                     ),
-                    "appName": row.get('appName', ''),
+                    'appName': row.get('appName', ''),
                 },
-            }
+            )
         )
 
-    if not vectors:
+    if not points:
         return 0
 
-    # Pinecone upsert limit is 100 vectors per call
     upserted = 0
-    for i in range(0, len(vectors), 100):
-        chunk = vectors[i : i + 100]
-        index.upsert(vectors=chunk, namespace=SCREEN_ACTIVITY_NAMESPACE)
+    for i in range(0, len(points), 100):
+        chunk = points[i : i + 100]
+        index.upsert(collection_name=SCREEN_ACTIVITY_COLLECTION, points=chunk)
         upserted += len(chunk)
 
     logger.info(f'upsert_screen_activity_vectors uid={uid} count={upserted}')
@@ -407,37 +500,30 @@ def search_screen_activity_vectors(
     app_filter: str = None,
     k: int = 10,
 ) -> List[dict]:
-    """Vector search across screenshot embeddings in ns3."""
+    """Vector search across screenshot embeddings."""
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping screen activity search')
+        logger.warning('Qdrant not initialized, skipping screen activity search')
         return []
 
-    filter_data = {'uid': uid}
+    extra = []
     if start_date and end_date:
-        filter_data['timestamp'] = {'$gte': start_date, '$lte': end_date}
+        extra.append(FieldCondition(key='timestamp', range=Range(gte=start_date, lte=end_date)))
     elif start_date:
-        filter_data['timestamp'] = {'$gte': start_date}
+        extra.append(FieldCondition(key='timestamp', range=Range(gte=start_date)))
     elif end_date:
-        filter_data['timestamp'] = {'$lte': end_date}
+        extra.append(FieldCondition(key='timestamp', range=Range(lte=end_date)))
     if app_filter:
-        filter_data['appName'] = app_filter
+        extra.append(FieldCondition(key='appName', match=MatchValue(value=app_filter)))
 
-    xc = index.query(
-        vector=query_vector,
-        top_k=k,
-        include_metadata=True,
-        filter=filter_data,
-        namespace=SCREEN_ACTIVITY_NAMESPACE,
-    )
-
+    points = _search(SCREEN_ACTIVITY_COLLECTION, query_vector, _uid_filter(uid, extra), k)
     return [
         {
-            'screenshot_id': match['metadata'].get('screenshot_id'),
-            'timestamp': match['metadata'].get('timestamp'),
-            'appName': match['metadata'].get('appName'),
-            'score': match['score'],
+            'screenshot_id': match.payload.get('screenshot_id'),
+            'timestamp': match.payload.get('timestamp'),
+            'appName': match.payload.get('appName'),
+            'score': match.score,
         }
-        for match in xc.get('matches', [])
+        for match in points
     ]
 
 
@@ -445,40 +531,38 @@ def delete_screen_activity_vectors(uid: str, ids: List[int]):
     """Delete screen activity vectors by screenshot IDs."""
     if index is None:
         return
-    vector_ids = [f'{uid}-sa-{sid}' for sid in ids]
-    index.delete(ids=vector_ids, namespace=SCREEN_ACTIVITY_NAMESPACE)
+    point_ids = [_point_id(f'{uid}-sa-{sid}') for sid in ids]
+    index.delete(collection_name=SCREEN_ACTIVITY_COLLECTION, points_selector=PointIdsList(points=point_ids))
 
 
 # ==========================================
 # Action Item Vector Functions
 # ==========================================
 
-ACTION_ITEMS_NAMESPACE = "ns4"
-
 
 def upsert_action_item_vector(uid: str, action_item_id: str, description: str):
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping action item vector upsert')
+        logger.warning('Qdrant not initialized, skipping action item vector upsert')
         return None
 
     vector = embeddings.embed_query(description)
-    data = {
-        "id": f'{uid}-ai-{action_item_id}',
-        "values": vector,
-        "metadata": {
-            "uid": uid,
-            "action_item_id": action_item_id,
-            "created_at": int(datetime.now(timezone.utc).timestamp()),
+    point = PointStruct(
+        id=_point_id(f'{uid}-ai-{action_item_id}'),
+        vector=vector,
+        payload={
+            'uid': uid,
+            'action_item_id': action_item_id,
+            'created_at': int(datetime.now(timezone.utc).timestamp()),
         },
-    }
-    res = index.upsert(vectors=[data], namespace=ACTION_ITEMS_NAMESPACE)
-    logger.info(f'upsert_action_item_vector {action_item_id} {res}')
+    )
+    res = index.upsert(collection_name=ACTION_ITEMS_COLLECTION, points=[point])
+    logger.info(f'upsert_action_item_vector {action_item_id} {res.status}')
     return vector
 
 
 def upsert_action_item_vectors_batch(uid: str, items: List[dict]) -> int:
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping action item vector batch upsert')
+        logger.warning('Qdrant not initialized, skipping action item vector batch upsert')
         return 0
 
     if not items:
@@ -488,43 +572,38 @@ def upsert_action_item_vectors_batch(uid: str, items: List[dict]) -> int:
     vectors = embeddings.embed_documents(descriptions)
 
     now_ts = int(datetime.now(timezone.utc).timestamp())
-    payload = [
-        {
-            "id": f"{uid}-ai-{item['action_item_id']}",
-            "values": vectors[i],
-            "metadata": {
-                "uid": uid,
-                "action_item_id": item['action_item_id'],
-                "created_at": now_ts,
+    points = [
+        PointStruct(
+            id=_point_id(f"{uid}-ai-{item['action_item_id']}"),
+            vector=vectors[i],
+            payload={
+                'uid': uid,
+                'action_item_id': item['action_item_id'],
+                'created_at': now_ts,
             },
-        }
+        )
         for i, item in enumerate(items)
     ]
-    res = index.upsert(vectors=payload, namespace=ACTION_ITEMS_NAMESPACE)
-    logger.info(f'upsert_action_item_vectors_batch count={len(payload)} {res}')
-    return len(payload)
+    res = index.upsert(collection_name=ACTION_ITEMS_COLLECTION, points=points)
+    logger.info(f'upsert_action_item_vectors_batch count={len(points)} {res.status}')
+    return len(points)
 
 
 def search_action_items_by_vector(uid: str, query: str, limit: int = 10, min_score: float = 0.3) -> List[str]:
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping action item search')
+        logger.warning('Qdrant not initialized, skipping action item search')
         return []
 
     vector = embeddings.embed_query(query)
-    filter_data = {'uid': uid}
+    points = _search(ACTION_ITEMS_COLLECTION, vector, _uid_filter(uid), limit)
 
-    xc = index.query(
-        vector=vector, top_k=limit, include_metadata=True, filter=filter_data, namespace=ACTION_ITEMS_NAMESPACE
-    )
-
-    matches = xc.get('matches', [])
-    top_score = matches[0]['score'] if matches else None
-    kept = [m for m in matches if m.get('score', 0.0) >= min_score]
+    top_score = points[0].score if points else None
+    kept = [m for m in points if m.score >= min_score]
     logger.info(
-        f'search_action_items_by_vector uid={uid} matches={len(matches)} kept={len(kept)} '
+        f'search_action_items_by_vector uid={uid} matches={len(points)} kept={len(kept)} '
         f'top_score={top_score} min_score={min_score}'
     )
-    return [m['metadata'].get('action_item_id') for m in kept]
+    return [m.payload.get('action_item_id') for m in kept]
 
 
 def find_similar_action_items(uid: str, query: str, threshold: float = 0.6, limit: int = 10) -> List[dict]:
@@ -534,8 +613,8 @@ def find_similar_action_items(uid: str, query: str, threshold: float = 0.6, limi
     tasks so the LLM can suppress true duplicates.
 
     Returns matches at or above the threshold. Each result is
-    `{'action_item_id': str, 'score': float}` ordered by Pinecone relevance.
-    Pinecone or embedding failures degrade silently to an empty list — the
+    `{'action_item_id': str, 'score': float}` ordered by relevance.
+    Qdrant or embedding failures degrade silently to an empty list — the
     caller treats "no candidates" as "user has nothing relevant," which is
     the same behavior as a brand-new user.
     """
@@ -544,27 +623,20 @@ def find_similar_action_items(uid: str, query: str, threshold: float = 0.6, limi
 
     try:
         vector = embeddings.embed_query(query)
-        xc = index.query(
-            vector=vector,
-            top_k=limit,
-            include_metadata=True,
-            filter={'uid': uid},
-            namespace=ACTION_ITEMS_NAMESPACE,
-        )
-        matches = xc.get('matches', [])
+        points = _search(ACTION_ITEMS_COLLECTION, vector, _uid_filter(uid), limit)
         kept = []
         dropped_no_id = 0
-        for m in matches:
-            if m.get('score', 0.0) < threshold:
+        for m in points:
+            if m.score < threshold:
                 continue
-            aid = m.get('metadata', {}).get('action_item_id')
+            aid = (m.payload or {}).get('action_item_id')
             if not aid:
                 dropped_no_id += 1
                 continue
-            kept.append({'action_item_id': aid, 'score': m.get('score', 0.0)})
-        top_score = matches[0]['score'] if matches else None
+            kept.append({'action_item_id': aid, 'score': m.score})
+        top_score = points[0].score if points else None
         logger.info(
-            f'find_similar_action_items uid={uid} matches={len(matches)} '
+            f'find_similar_action_items uid={uid} matches={len(points)} '
             f'kept={len(kept)} dropped_no_id={dropped_no_id} '
             f'top_score={top_score} threshold={threshold}'
         )
@@ -576,12 +648,14 @@ def find_similar_action_items(uid: str, query: str, threshold: float = 0.6, limi
 
 def delete_action_item_vector(uid: str, action_item_id: str):
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping action item vector delete')
+        logger.warning('Qdrant not initialized, skipping action item vector delete')
         return
 
     vector_id = f'{uid}-ai-{action_item_id}'
-    result = index.delete(ids=[vector_id], namespace=ACTION_ITEMS_NAMESPACE)
-    logger.info(f'delete_action_item_vector {vector_id} {result}')
+    result = index.delete(
+        collection_name=ACTION_ITEMS_COLLECTION, points_selector=PointIdsList(points=[_point_id(vector_id)])
+    )
+    logger.info(f'delete_action_item_vector {vector_id} {result.status}')
 
 
 def delete_action_item_vectors_batch(uid: str, action_item_ids: List[str]):
@@ -589,46 +663,48 @@ def delete_action_item_vectors_batch(uid: str, action_item_ids: List[str]):
         return
     if not action_item_ids:
         return
-    vector_ids = [f'{uid}-ai-{aid}' for aid in action_item_ids]
-    index.delete(ids=vector_ids, namespace=ACTION_ITEMS_NAMESPACE)
-    logger.info(f'delete_action_item_vectors_batch count={len(vector_ids)}')
+    point_ids = [_point_id(f'{uid}-ai-{aid}') for aid in action_item_ids]
+    index.delete(collection_name=ACTION_ITEMS_COLLECTION, points_selector=PointIdsList(points=point_ids))
+    logger.info(f'delete_action_item_vectors_batch count={len(point_ids)}')
 
 
 def delete_conversation_vectors_batch(uid: str, conversation_ids: List[str]):
-    """Delete a user's conversation vectors (ns1) in one batched, chunked call.
+    """Delete a user's conversation vectors in one batched, chunked call.
 
-    Chunked so a single failure can't abandon the rest (and to stay under Pinecone's per-delete id
-    limit). Used by account deletion to purge all of a user's conversation vectors.
+    Chunked so a single failure can't abandon the rest. Used by account
+    deletion to purge all of a user's conversation vectors.
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping conversation vector batch delete')
+        logger.warning('Qdrant not initialized, skipping conversation vector batch delete')
         return
     if not conversation_ids:
         return
-    vector_ids = [f'{uid}-{cid}' for cid in conversation_ids]
-    for i in range(0, len(vector_ids), 1000):
-        index.delete(ids=vector_ids[i : i + 1000], namespace="ns1")
-    logger.info(f'delete_conversation_vectors_batch count={len(vector_ids)}')
+    point_ids = [_point_id(f'{uid}-{cid}') for cid in conversation_ids]
+    for i in range(0, len(point_ids), 1000):
+        index.delete(
+            collection_name=CONVERSATIONS_COLLECTION, points_selector=PointIdsList(points=point_ids[i : i + 1000])
+        )
+    logger.info(f'delete_conversation_vectors_batch count={len(point_ids)}')
 
 
 def delete_memory_vectors_batch(uid: str, memory_ids: List[str]) -> int:
-    """Delete a user's memory vectors (ns2) in batched, chunked calls.
+    """Delete a user's memory vectors in batched, chunked calls.
 
     Each chunk is individually wrapped in try/except so a transient failure
     on one chunk does not abandon the rest. Returns the number of vectors
-    successfully deleted (0 if Pinecone is not configured).
+    successfully deleted (0 if Qdrant is not configured).
     """
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping memory vector batch delete')
+        logger.warning('Qdrant not initialized, skipping memory vector batch delete')
         return 0
     if not memory_ids:
         return 0
-    vector_ids = [f'{uid}-{mid}' for mid in memory_ids]
+    point_ids = [_point_id(f'{uid}-{mid}') for mid in memory_ids]
     total_deleted = 0
-    for i in range(0, len(vector_ids), 1000):
-        chunk = vector_ids[i : i + 1000]
+    for i in range(0, len(point_ids), 1000):
+        chunk = point_ids[i : i + 1000]
         try:
-            index.delete(ids=chunk, namespace=MEMORIES_NAMESPACE)
+            index.delete(collection_name=MEMORIES_COLLECTION, points_selector=PointIdsList(points=chunk))
             total_deleted += len(chunk)
         except Exception:
             logger.warning(f'delete_memory_vectors_batch chunk failed uid={uid} chunk={i // 1000}')
@@ -637,47 +713,46 @@ def delete_memory_vectors_batch(uid: str, memory_ids: List[str]) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Transcript chunks ("ns_tchunks"): verbatim retrieval over raw conversation
-# transcripts. Conversation vectors (ns1) embed only the structured SUMMARY, so
-# specific details (exact dates, names, numbers, one-off mentions) are not
-# findable semantically. Chunk vectors make the raw transcript searchable.
+# Transcript chunks: verbatim retrieval over raw conversation transcripts.
+# Conversation vectors embed only the structured SUMMARY, so specific details
+# (exact dates, names, numbers, one-off mentions) are not findable
+# semantically. Chunk vectors make the raw transcript searchable.
 #
-# Privacy: chunk TEXT is embedded but never stored in Pinecone metadata —
+# Privacy: chunk TEXT is embedded but never stored in the Qdrant payload —
 # transcripts are encrypted at rest in Firestore, and mirroring them as
-# plaintext metadata would bypass that. Readers re-hydrate the text from
+# plaintext payload would bypass that. Readers re-hydrate the text from
 # Firestore via (conversation_id, chunk_index).
-TRANSCRIPT_CHUNKS_NAMESPACE = "ns_tchunks"
 
 
 def upsert_transcript_chunk_vectors(uid: str, conversation_id: str, chunks: List[dict]) -> int:
     """chunks: [{'text': str, 'created_at': int unix ts, 'chunk_index': int}]"""
     if index is None:
-        logger.warning('Pinecone index not initialized, skipping transcript chunk upsert')
+        logger.warning('Qdrant not initialized, skipping transcript chunk upsert')
         return 0
     chunks = [c for c in chunks if (c.get('text') or '').strip()]
     if not chunks:
         return 0
 
     vectors = embeddings.embed_documents([c['text'] for c in chunks])
-    payload = []
+    points = []
     for c, v in zip(chunks, vectors):
-        payload.append(
-            {
-                'id': f"{uid}-{conversation_id}-c{c['chunk_index']}",
-                'values': v,
-                'metadata': {
+        points.append(
+            PointStruct(
+                id=_point_id(f"{uid}-{conversation_id}-c{c['chunk_index']}"),
+                vector=v,
+                payload={
                     'uid': uid,
                     'conversation_id': conversation_id,
                     'chunk_index': c['chunk_index'],
                     'created_at': int(c['created_at']),
                 },
-            }
+            )
         )
 
     upserted = 0
-    for i in range(0, len(payload), 100):
-        index.upsert(vectors=payload[i : i + 100], namespace=TRANSCRIPT_CHUNKS_NAMESPACE)
-        upserted += len(payload[i : i + 100])
+    for i in range(0, len(points), 100):
+        index.upsert(collection_name=TRANSCRIPT_CHUNKS_COLLECTION, points=points[i : i + 100])
+        upserted += len(points[i : i + 100])
     logger.info(f'upsert_transcript_chunk_vectors uid={uid} conversation={conversation_id} count={upserted}')
     return upserted
 
@@ -691,43 +766,42 @@ def search_transcript_chunks(
     if index is None:
         return []
     vector = embeddings.embed_query(query)
-    filter_data = {'uid': uid}
+    extra = []
     if starts_at is not None and ends_at is not None:
-        filter_data['created_at'] = {'$gte': int(starts_at), '$lte': int(ends_at)}
-    xc = index.query(
-        vector=vector,
-        top_k=limit,
-        include_metadata=True,
-        filter=filter_data,
-        namespace=TRANSCRIPT_CHUNKS_NAMESPACE,
-    )
+        extra.append(FieldCondition(key='created_at', range=Range(gte=int(starts_at), lte=int(ends_at))))
+    points = _search(TRANSCRIPT_CHUNKS_COLLECTION, vector, _uid_filter(uid, extra), limit)
     results = []
-    for m in xc.get('matches', []):
-        md = m.get('metadata') or {}
+    for m in points:
+        md = m.payload or {}
         results.append(
             {
                 'created_at': int(md['created_at']) if md.get('created_at') is not None else None,
                 'conversation_id': md.get('conversation_id'),
                 'chunk_index': int(md['chunk_index']) if md.get('chunk_index') is not None else None,
-                'score': m.get('score', 0),
+                'score': m.score,
             }
         )
     return results
 
 
+def _delete_chunks_by_conversation(uid: str, conversation_id: str) -> bool:
+    flt = Filter(
+        must=[
+            FieldCondition(key='uid', match=MatchValue(value=uid)),
+            FieldCondition(key='conversation_id', match=MatchValue(value=conversation_id)),
+        ]
+    )
+    index.delete(collection_name=TRANSCRIPT_CHUNKS_COLLECTION, points_selector=FilterSelector(filter=flt))
+    return True
+
+
 def delete_transcript_chunk_vectors(uid: str, conversation_id: str):
-    """Delete all chunk vectors for one conversation (id-prefix listing on serverless)."""
+    """Delete all chunk vectors for one conversation (payload filter delete)."""
     if index is None:
         return
-    prefix = f'{uid}-{conversation_id}-c'
     try:
-        ids = []
-        for page in index.list(prefix=prefix, namespace=TRANSCRIPT_CHUNKS_NAMESPACE):
-            ids.extend(page if isinstance(page, list) else [page])
-        for i in range(0, len(ids), 1000):
-            index.delete(ids=ids[i : i + 1000], namespace=TRANSCRIPT_CHUNKS_NAMESPACE)
-        if ids:
-            logger.info(f'delete_transcript_chunk_vectors uid={uid} conversation={conversation_id} count={len(ids)}')
+        _delete_chunks_by_conversation(uid, conversation_id)
+        logger.info(f'delete_transcript_chunk_vectors uid={uid} conversation={conversation_id}')
     except Exception:
         logger.warning(f'delete_transcript_chunk_vectors failed uid={uid} conversation={conversation_id}')
 
@@ -738,15 +812,10 @@ def delete_transcript_chunk_vectors_batch(uid: str, conversation_ids: List[str])
         return 0
     deleted = 0
     for conversation_id in conversation_ids:
-        prefix = f'{uid}-{conversation_id}-c'
         try:
-            ids = []
-            for page in index.list(prefix=prefix, namespace=TRANSCRIPT_CHUNKS_NAMESPACE):
-                ids.extend(page if isinstance(page, list) else [page])
-            for i in range(0, len(ids), 1000):
-                index.delete(ids=ids[i : i + 1000], namespace=TRANSCRIPT_CHUNKS_NAMESPACE)
-            deleted += len(ids)
+            _delete_chunks_by_conversation(uid, conversation_id)
+            deleted += 1
         except Exception:
             logger.warning(f'delete_transcript_chunk_vectors_batch failed uid={uid} conversation={conversation_id}')
-    logger.info(f'delete_transcript_chunk_vectors_batch uid={uid} total_deleted={deleted}')
+    logger.info(f'delete_transcript_chunk_vectors_batch uid={uid} conversations_purged={deleted}')
     return deleted
