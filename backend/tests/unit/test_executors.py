@@ -105,6 +105,37 @@ def test_submit_with_context_returns_future_with_result():
     assert future.result(timeout=5) == 42
 
 
+def test_submit_with_context_logs_exception(caplog):
+    """A fire-and-forget task that raises must be logged with its function name."""
+    def save_structured_vector():  # name chosen to assert it appears in the log
+        raise ValueError("boom")
+
+    with caplog.at_level(logging.ERROR, logger='utils.executors'):
+        future = submit_with_context(_test_executor, save_structured_vector)
+        try:
+            future.result(timeout=5)
+        except ValueError:
+            pass
+    assert any('save_structured_vector' in r.message and 'boom' in r.message for r in caplog.records)
+
+
+def test_monitored_executor_logs_exception(caplog):
+    """_tracked must log (and re-raise) exceptions from any submitted task."""
+    executor = MonitoredThreadPoolExecutor(name="test-exc-log", max_workers=1)
+
+    def boom():
+        raise RuntimeError("kaboom")
+
+    with caplog.at_level(logging.ERROR, logger='utils.executors'):
+        future = executor.submit(boom)
+        try:
+            future.result(timeout=5)
+        except RuntimeError:
+            pass
+    assert any('test-exc-log' in r.message for r in caplog.records)
+    executor.shutdown(wait=False)
+
+
 # ---------------------------------------------------------------------------
 # MonitoredThreadPoolExecutor tests
 # ---------------------------------------------------------------------------
