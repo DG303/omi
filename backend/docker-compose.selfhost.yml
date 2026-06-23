@@ -43,11 +43,10 @@ services:
       TYPESENSE_HOST: typesense.invalid
       TYPESENSE_HOST_PORT: "443"
       TYPESENSE_API_KEY: unused
-      # .env's GOOGLE_APPLICATION_CREDENTIALS is a host path the container can't see;
-      # override to the in-container mount point (file mounted below).
+      # _client.py writes /app/google-credentials.json from SERVICE_ACCOUNT_JSON at
+      # startup; .env's GOOGLE_APPLICATION_CREDENTIALS is a host path the container
+      # can't see, so override it to where _client.py actually writes the file.
       GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json
-    volumes:
-      - ./google-credentials.json:/app/google-credentials.json:ro
     ports:
       - "8080:8080"
     depends_on:
@@ -86,8 +85,6 @@ services:
       TYPESENSE_HOST_PORT: "443"
       TYPESENSE_API_KEY: unused
       GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json
-    volumes:
-      - ./google-credentials.json:/app/google-credentials.json:ro
     depends_on:
       - qdrant
       - redis
