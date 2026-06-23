@@ -50,6 +50,11 @@ class MonitoredThreadPoolExecutor(ThreadPoolExecutor):
             self._active_count += 1
         try:
             return fn(*args, **kwargs)
+        except Exception:
+            # Defensive net for ANY submit (including raw .submit). Full traceback,
+            # scoped to the pool. submit_with_context adds a second, named one-liner.
+            logger.exception('executor[%s] submitted task raised', self.name)
+            raise
         finally:
             with self._active_lock:
                 self._active_count -= 1
@@ -82,10 +87,25 @@ async def run_blocking(executor: ThreadPoolExecutor, fn, *args, **kwargs):
     return await loop.run_in_executor(executor, call)
 
 
+def _log_future_exception(fn_name: str, future: Future) -> None:
+    if future.cancelled():
+        return
+    exc = future.exception()
+    if exc is not None:
+        logger.error('submit_with_context task failed: %s — %s: %s', fn_name, type(exc).__name__, exc)
+
+
 def submit_with_context(executor: ThreadPoolExecutor, fn, *args, **kwargs) -> Future:
-    """Submit *fn* to *executor*, propagating the current contextvars (BYOK keys, etc.)."""
+    """Submit *fn* to *executor*, propagating the current contextvars (BYOK keys, etc.).
+
+    Attaches a done-callback that logs any exception with the real function name, so
+    fire-and-forget pipeline tasks (e.g. save_structured_vector) can never fail silently.
+    """
     ctx = contextvars.copy_context()
-    return executor.submit(ctx.run, fn, *args, **kwargs)
+    fn_name = getattr(fn, '__name__', repr(fn))
+    future = executor.submit(ctx.run, fn, *args, **kwargs)
+    future.add_done_callback(functools.partial(_log_future_exception, fn_name))
+    return future
 
 
 def get_executor_metrics() -> list:

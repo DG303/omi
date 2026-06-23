@@ -16,6 +16,7 @@ from models.conversation_enums import ConversationStatus, PostProcessingModel, P
 from models.conversation_photo import ConversationPhoto
 from models.transcript_segment import TranscriptSegment
 from utils import encryption
+from utils.conversations.overlap import closest_conversation_by_timestamps
 from ._client import db
 from .helpers import set_data_protection_level, prepare_for_write, prepare_for_read, with_photos
 from utils.other.storage import list_audio_chunks
@@ -1039,36 +1040,26 @@ def get_closest_conversation_to_timestamps(uid: str, start_timestamp: int, end_t
     start_threshold = datetime.fromtimestamp(start_timestamp, tz=timezone.utc) - timedelta(minutes=2)
     end_threshold = datetime.fromtimestamp(end_timestamp, tz=timezone.utc) + timedelta(minutes=2)
 
+    # Firestore allows an inequality on only one field. Filter started_at server-side
+    # (ordering on the same field stays a single-field index), then apply the finished_at
+    # lower bound + closest-pick in Python.
     query = (
         db.collection('users')
         .document(uid)
         .collection(conversations_collection)
-        .where(filter=FieldFilter('finished_at', '>=', start_threshold))
         .where(filter=FieldFilter('started_at', '<=', end_threshold))
-        .order_by('created_at', direction=firestore.Query.DESCENDING)
+        .order_by('started_at', direction=firestore.Query.DESCENDING)
+        .limit(50)
     )
 
     conversations = [doc.to_dict() for doc in query.stream()]
-    logger.info(f'get_closest_conversation_to_timestamps len(conversations) {len(conversations)}')
-    if not conversations:
+    logger.info(f'get_closest_conversation_to_timestamps candidates {len(conversations)}')
+
+    closest_conversation = closest_conversation_by_timestamps(
+        conversations, start_threshold, end_threshold, start_timestamp, end_timestamp
+    )
+    if closest_conversation is None:
         return None
-
-    logger.info('get_closest_conversation_to_timestamps found:')
-    for conversation in conversations:
-        logger.info(f"- {conversation['id']} {conversation['started_at']} {conversation['finished_at']}")
-
-    # get the conversation that has the closest start timestamp or end timestamp
-    closest_conversation = None
-    min_diff = float('inf')
-    for conversation in conversations:
-        conversation_start_timestamp = conversation['started_at'].timestamp()
-        conversation_end_timestamp = conversation['finished_at'].timestamp()
-        diff1 = abs(conversation_start_timestamp - start_timestamp)
-        diff2 = abs(conversation_end_timestamp - end_timestamp)
-        if diff1 < min_diff or diff2 < min_diff:
-            min_diff = min(diff1, diff2)
-            closest_conversation = conversation
-
     logger.info(f"get_closest_conversation_to_timestamps closest_conversation: {closest_conversation['id']}")
     return closest_conversation
 

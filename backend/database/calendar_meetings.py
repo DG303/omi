@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from google.cloud import firestore
 
 from ._client import db
+from utils.conversations.overlap import filter_overlapping_meetings
 
 
 def _get_meetings_collection(uid: str):
@@ -141,19 +142,18 @@ def get_meetings_in_time_range(uid: str, start_time: datetime, end_time: datetim
     Find meetings that overlap with the given time range.
     A meeting overlaps if: meeting.start_time < range.end_time AND meeting.end_time > range.start_time
 
-    Note: This requires a composite index on (start_time, end_time).
+    Note: only start_time is filtered server-side (single-field index); the end_time
+    bound is applied in Python, since Firestore forbids inequalities on two fields.
     Returns meetings sorted by start_time ascending.
     """
-    # Query for meetings where:
-    # - meeting starts before the range ends (start_time < end_time)
-    # - meeting ends after the range starts (end_time > start_time)
-    # This captures all overlapping meetings
+    # Firestore allows an inequality on only one field. Filter start_time server-side
+    # (ordering on the same field stays a single-field index), then apply the end_time
+    # bound in Python. Over-fetch then cap so the in-memory filter doesn't drop overlaps.
     query = (
         _get_meetings_collection(uid)
         .where('start_time', '<', end_time)
-        .where('end_time', '>', start_time)
         .order_by('start_time', direction=firestore.Query.ASCENDING)
-        .limit(10)  # Cap to prevent excessive results
+        .limit(50)
     )
 
     meetings = []
@@ -162,4 +162,4 @@ def get_meetings_in_time_range(uid: str, start_time: datetime, end_time: datetim
         data['id'] = doc.id
         meetings.append(data)
 
-    return meetings
+    return filter_overlapping_meetings(meetings, start_time, end_time)[:10]
