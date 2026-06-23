@@ -10,7 +10,8 @@ def filter_overlapping_meetings(meetings: list, range_start, range_end) -> list:
     """Keep meetings overlapping [range_start, range_end): start_time < range_end AND
     end_time > range_start. Sorted by start_time ascending. Skips items missing either field."""
     out = [
-        m for m in meetings
+        m
+        for m in meetings
         if m.get('start_time') is not None
         and m.get('end_time') is not None
         and m['start_time'] < range_end
