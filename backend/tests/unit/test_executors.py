@@ -107,6 +107,7 @@ def test_submit_with_context_returns_future_with_result():
 
 def test_submit_with_context_logs_exception(caplog):
     """A fire-and-forget task that raises must be logged with its function name."""
+
     def save_structured_vector():  # name chosen to assert it appears in the log
         raise ValueError("boom")
 
@@ -116,7 +117,12 @@ def test_submit_with_context_logs_exception(caplog):
             future.result(timeout=5)
         except ValueError:
             pass
-    assert any('save_structured_vector' in r.message and 'boom' in r.message for r in caplog.records)
+        # The done-callback that logs runs in the worker thread, asynchronously
+        # relative to result() returning — poll briefly for it to fire.
+        deadline = time.time() + 2
+        while time.time() < deadline and not any('save_structured_vector' in r.getMessage() for r in caplog.records):
+            time.sleep(0.01)
+    assert any('save_structured_vector' in r.getMessage() and 'boom' in r.getMessage() for r in caplog.records)
 
 
 def test_monitored_executor_logs_exception(caplog):
@@ -132,7 +138,7 @@ def test_monitored_executor_logs_exception(caplog):
             future.result(timeout=5)
         except RuntimeError:
             pass
-    assert any('test-exc-log' in r.message for r in caplog.records)
+    assert any('test-exc-log' in r.getMessage() for r in caplog.records)
     executor.shutdown(wait=False)
 
 
