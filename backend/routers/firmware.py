@@ -81,8 +81,14 @@ async def get_omi_github_releases(cache_key: str, tag_filter: Optional[re.Patter
     headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
-        "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
     }
+    # Only authenticate when a token is actually configured. BasedHardware/omi is a
+    # public repo, so unauthenticated requests succeed (60 req/hr, fine behind the
+    # 5min cache). A missing/empty GITHUB_TOKEN would otherwise send "Bearer " and
+    # GitHub returns 401, breaking firmware update-checks entirely.
+    github_token = os.getenv('GITHUB_TOKEN')
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
 
     collected: List[Dict] = []
     fetch_failed = False

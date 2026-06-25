@@ -123,7 +123,10 @@ def get_github_docs_content(repo="BasedHardware/omi", path="docs/doc"):
     if cached := get_generic_cache(f'get_github_docs_content_{repo}_{path}'):
         return cached
     docs_content = {}
-    headers = {"Authorization": f"token {os.getenv('GITHUB_TOKEN')}"}
+    # Public repo — authenticate only when a token is configured. An empty
+    # GITHUB_TOKEN would send "token " and GitHub returns 401.
+    github_token = os.getenv('GITHUB_TOKEN')
+    headers = {"Authorization": f"token {github_token}"} if github_token else {}
 
     def get_contents(path):
         url = f"https://api.github.com/repos/{repo}/contents/{path}"
