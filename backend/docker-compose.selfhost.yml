@@ -9,10 +9,9 @@ services:
     image: qdrant/qdrant:v1.13.4
     restart: unless-stopped
     ports:
-      # Host ports 6335/6336 (not 6333/6334) to avoid colliding with the separate
-      # another local service RAG qdrant that occupies 6333/6334 on this host. The backend still
-      # reaches qdrant internally as qdrant:6333; only host-side consumers (audit
-      # scripts, MCP, dashboards) use 6335.
+      # Host ports 6335/6336 to avoid colliding with another local service that may
+      # already use the default 6333/6334. The backend reaches qdrant internally as
+      # qdrant:6333; only host-side consumers use 6335.
       - "6335:6333" # REST — host-side consumers connect on 6335
       - "6336:6334" # gRPC
     volumes:
