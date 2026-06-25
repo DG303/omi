@@ -1,4 +1,4 @@
-# Self-hosted Omi backend stack (your-host). Run from backend/:
+# Self-hosted Omi backend stack. Run from backend/:
 #   docker compose -f docker-compose.selfhost.yml up -d --build
 #
 # Data lives in named volumes inside the Colima VM disk, which itself sits on
