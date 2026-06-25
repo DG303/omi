@@ -414,6 +414,52 @@ class TestFindCandidateReleasesGuardsAgainstBadMetadata:
         assert len(candidates) == 1
 
 
+class TestGitHubAuthHeader:
+    """The Authorization header must only be sent when GITHUB_TOKEN is non-empty.
+
+    A missing/empty token previously sent "Bearer " (or "Bearer None"), which GitHub
+    rejects with 401 — breaking firmware update-checks entirely. BasedHardware/omi is
+    public, so unauthenticated requests succeed and the check keeps working.
+    """
+
+    async def _headers_for_env(self, token_env, clear=False):
+        """Invoke get_omi_github_releases under the given os.environ patch and return
+        the headers passed to the httpx client."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = _firmware_releases()
+
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=False)
+
+        with patch('routers.firmware.get_generic_cache', return_value=None), patch(
+            'routers.firmware.set_generic_cache'
+        ), patch('routers.firmware.httpx.AsyncClient', return_value=mock_client), patch.dict(
+            'os.environ', token_env, clear=clear
+        ):
+            await get_omi_github_releases("test_key", tag_filter=FIRMWARE_TAG_PATTERN)
+
+        return mock_client.get.call_args.kwargs["headers"]
+
+    @pytest.mark.asyncio
+    async def test_authorization_sent_when_token_present(self):
+        headers = await self._headers_for_env({'GITHUB_TOKEN': 'test-token'})
+        assert headers.get("Authorization") == "Bearer test-token"
+
+    @pytest.mark.asyncio
+    async def test_no_authorization_when_token_empty(self):
+        headers = await self._headers_for_env({'GITHUB_TOKEN': ''})
+        assert "Authorization" not in headers
+
+    @pytest.mark.asyncio
+    async def test_no_authorization_when_token_unset(self):
+        # clear=True wipes os.environ for the patch scope, so GITHUB_TOKEN is absent.
+        headers = await self._headers_for_env({}, clear=True)
+        assert "Authorization" not in headers
+
+
 class TestGetLatestVersionRejectsUnknownCurrent:
     """`/v2/firmware/latest` must refuse to recommend an upgrade when it can't trust
     the caller's reported current firmware. Without this, an empty / garbled
