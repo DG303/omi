@@ -96,6 +96,7 @@ from utils.cloud_tasks import (
 from utils.http_client import _get_semaphore
 from utils.log_sanitizer import sanitize
 from utils.stt.pre_recorded import postprocess_words, prerecorded
+from utils.stt.synced_segment import transcribe_segment_bytes
 from utils.stt.vad import vad_is_empty
 from utils.fair_use import (
     record_speech_ms,
@@ -1135,8 +1136,11 @@ def process_segment(
     turnstile: Optional[_OrderedTurnstile] = None,
 ):
     try:
-        url = get_syncing_file_temporal_signed_url(path)
-        schedule_syncing_temporal_file_deletion(path)
+        # Self-host stages segments in a private GCS emulator whose download URLs
+        # Deepgram cannot fetch ("not publicly routable"). Transcribe from the
+        # local bytes instead — the file is on disk here (it was just decoded).
+        with open(path, 'rb') as f:
+            segment_audio_bytes = f.read()
 
         # Apply user transcription preferences (vocabulary, language, model)
         prefs = transcription_prefs or {}
@@ -1150,13 +1154,11 @@ def process_segment(
         # When single-language mode is active, trust the user's language choice
         # rather than Deepgram's detection (avoids overriding explicit selection).
         use_return_language = not (single_language_mode and user_language)
-        words, detected_language = prerecorded(
-            url,
-            speakers_count=3,
-            attempts=0,
-            return_language=True,
+        words, detected_language = transcribe_segment_bytes(
+            segment_audio_bytes,
             language=req_language,
             keywords=vocabulary if vocabulary else None,
+            return_language=True,
         )
         language = user_language if (single_language_mode and user_language) else detected_language
         if not words:
@@ -1170,7 +1172,7 @@ def process_segment(
             return True
 
         # Speaker identification: voice embedding matching + text-based detection
-        audio_bytes = _download_audio_bytes(url) if person_embeddings_cache else None
+        audio_bytes = segment_audio_bytes if person_embeddings_cache else None
         try:
             identify_speakers_for_segments(transcript_segments, audio_bytes, person_embeddings_cache or {}, uid)
         except Exception as e:
