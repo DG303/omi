@@ -37,6 +37,10 @@ services:
       REDIS_DB_HOST: redis
       REDIS_DB_PORT: "6379"
       HOSTED_PUSHER_API_URL: http://pusher:8080
+      # Speaker voiceprint service (CPU ECAPA). Without this, speaker ID is inert:
+      # extract_embedding raises and is swallowed, so is_user/person_id never set.
+      # See docs/adr/0005. SPEAKER_MATCH_THRESHOLD (ECAPA cutoff) is tuned in .env.
+      HOSTED_SPEAKER_EMBEDDING_API_URL: http://speaker-embedding:8080
       # typesense.Client is constructed at import time; dummy values keep boot
       # alive with keyword search disabled (vector search is unaffected)
       TYPESENSE_HOST: typesense.invalid
@@ -52,6 +56,7 @@ services:
       - qdrant
       - redis
       - pusher
+      - speaker-embedding
 
   pusher:
     image: omi-backend-selfhost:latest
@@ -80,6 +85,8 @@ services:
       QDRANT_PORT: "6333"
       REDIS_DB_HOST: redis
       REDIS_DB_PORT: "6379"
+      # Speaker voiceprint service — pusher extracts speaker samples too. See ADR-0005.
+      HOSTED_SPEAKER_EMBEDDING_API_URL: http://speaker-embedding:8080
       TYPESENSE_HOST: typesense.invalid
       TYPESENSE_HOST_PORT: "443"
       TYPESENSE_API_KEY: unused
@@ -87,6 +94,21 @@ services:
     depends_on:
       - qdrant
       - redis
+      - speaker-embedding
+
+  # CPU-only speaker voiceprint service (SpeechBrain ECAPA). Answers the
+  # /v2/embedding contract that utils/stt/speaker_embedding.py POSTs to. The
+  # upstream diarizer is GPU/CUDA and unusable on this Intel/Colima box (no
+  # NVIDIA GPU); this is the self-hosted CPU replacement. Weights baked into image.
+  # See docs/adr/0005.
+  speaker-embedding:
+    image: omi-speaker-embedding:latest
+    build:
+      context: ./speaker-embedding
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "8080"
 
 volumes:
   qdrant_data:
