@@ -4,10 +4,20 @@
 # Data lives in named volumes inside the Colima VM disk, which itself sits on
 # the APFS sparsebundle on the 4TB drive — no host bind mounts for data (qemu
 # 9p mounts are slow/flaky on Intel; named volumes land on the drive anyway).
+
+# Bound every container's logs so json-file can't grow unbounded and fill the
+# host disk over long uptimes (this box runs for weeks). 10MB x 3 per service.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   qdrant:
     image: qdrant/qdrant:v1.13.4
     restart: unless-stopped
+    logging: *default-logging
     ports:
       # Host ports 6335/6336 to avoid colliding with another local service that may
       # already use the default 6333/6334. The backend reaches qdrant internally as
@@ -20,6 +30,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    logging: *default-logging
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
@@ -30,6 +41,7 @@ services:
       context: ..
       dockerfile: backend/Dockerfile.selfhost
     restart: unless-stopped
+    logging: *default-logging
     env_file: .env
     environment:
       QDRANT_HOST: qdrant
@@ -53,10 +65,17 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - qdrant
-      - redis
-      - pusher
-      - speaker-embedding
+      # Wait for the embedding model to be loaded (service_healthy), not just the
+      # container to start — otherwise early speaker-ID calls fail during the
+      # multi-second model load. qdrant/redis/pusher only need to be started.
+      qdrant:
+        condition: service_started
+      redis:
+        condition: service_started
+      pusher:
+        condition: service_started
+      speaker-embedding:
+        condition: service_healthy
 
   pusher:
     image: omi-backend-selfhost:latest
@@ -64,6 +83,7 @@ services:
       context: ..
       dockerfile: backend/Dockerfile.selfhost
     restart: unless-stopped
+    logging: *default-logging
     command:
       [
         "uvicorn",
@@ -92,9 +112,12 @@ services:
       TYPESENSE_API_KEY: unused
       GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json
     depends_on:
-      - qdrant
-      - redis
-      - speaker-embedding
+      qdrant:
+        condition: service_started
+      redis:
+        condition: service_started
+      speaker-embedding:
+        condition: service_healthy
 
   # CPU-only speaker voiceprint service (SpeechBrain ECAPA). Answers the
   # /v2/embedding contract that utils/stt/speaker_embedding.py POSTs to. The
@@ -107,8 +130,24 @@ services:
       context: ./speaker-embedding
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *default-logging
     expose:
       - "8080"
+    # /health returns 503 until the ECAPA model finishes loading (preloaded at
+    # startup), so dependents that wait on service_healthy only start once this
+    # can actually answer embedding requests. start_period covers the CPU load.
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8080/health').status == 200 else 1)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
 
 volumes:
   qdrant_data:
