@@ -98,8 +98,8 @@ services:
 
   # CPU-only speaker voiceprint service (SpeechBrain ECAPA). Answers the
   # /v2/embedding contract that utils/stt/speaker_embedding.py POSTs to. The
-  # upstream diarizer is GPU/CUDA and unusable on this Apple-Silicon box; this
-  # is the self-hosted CPU replacement. Model weights are baked into the image.
+  # upstream diarizer is GPU/CUDA and unusable on this Intel/Colima box (no
+  # NVIDIA GPU); this is the self-hosted CPU replacement. Weights baked into image.
   # See docs/adr/0005.
   speaker-embedding:
     image: omi-speaker-embedding:latest
