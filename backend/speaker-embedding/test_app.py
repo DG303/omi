@@ -12,7 +12,7 @@ import soundfile as sf
 from fastapi.testclient import TestClient
 from scipy.spatial.distance import cosine
 
-from app import app
+from app import app, get_classifier
 
 client = TestClient(app)
 
@@ -34,6 +34,10 @@ def _embed(wav: bytes):
 
 
 def test_health():
+    # /health now reflects model readiness (503 until loaded). The non-context
+    # TestClient doesn't run lifespan, so preload the model explicitly first —
+    # mirrors what the lifespan startup does in production.
+    get_classifier()
     assert client.get("/health").json()["status"] == "ok"
 
 
