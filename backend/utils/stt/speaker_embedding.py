@@ -14,9 +14,11 @@ from utils.http_client import get_stt_client
 
 logger = logging.getLogger(__name__)
 
-# Cosine distance threshold for speaker matching
-# Based on VoxCeleb 1 test set EER of 2.8%
-SPEAKER_MATCH_THRESHOLD = 0.45
+# Cosine distance threshold for speaker matching. Env-tunable: the 0.45 default
+# was tuned for wespeaker; the self-hosted stack uses a SpeechBrain ECAPA service
+# (different embedding space) and overrides this via SPEAKER_MATCH_THRESHOLD.
+# See docs/adr/0005.
+SPEAKER_MATCH_THRESHOLD = float(os.getenv("SPEAKER_MATCH_THRESHOLD", "0.45"))
 
 # Minimum audio duration (seconds) for speaker embedding extraction.
 # Audio shorter than this crashes pyannote wespeaker fbank (see issue #4572).
