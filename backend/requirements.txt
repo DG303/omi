@@ -227,5 +227,7 @@ typesense==0.21.0
 pycountry==24.6.1
 google-cloud-translate==3.20.2
 langdetect==1.0.9
-lc3py==1.1.3
+# lc3py ships no arm64 wheels; LC3 decode is optional (pendant-only codec) and
+# transcribe.py degrades gracefully when the import is missing.
+lc3py==1.1.3; platform_machine == "x86_64"
 twilio==9.5.0
