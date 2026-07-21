@@ -3,7 +3,7 @@
 # the CUDA runtime in the Dockerfile (13.2) must match the torch wheel NeMo pulls.
 fastapi==0.121.0
 uvicorn[standard]==0.34.0
-python-multipart==0.0.18
+python-multipart==0.0.31
 numpy==2.4.0
 soundfile==0.13.1
 httpx==0.28.1
