@@ -1,7 +1,7 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
-torch==2.5.1
+torch==2.13.0
 torchaudio==2.5.1
 speechbrain==1.0.2
 # speechbrain 1.0.2 calls hf_hub_download(use_auth_token=...), removed in hub 1.x.
