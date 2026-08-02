@@ -417,13 +417,24 @@ class AppState: ObservableObject {
     case systemOnly
   }
 
+  /// - Parameter systemAudioOnlyCaptureEnabled: gates the `.systemOnly` outcome. Off by default
+  ///   so every shipped bundle (`com.omi.computer-macos`) keeps its pre-branch behavior — a denied
+  ///   microphone falls through to `.blocked` and prompts, rather than silently starting a
+  ///   system-audio-only recording. Passed in explicitly (not read from UserDefaults here) so this
+  ///   stays a pure function of its arguments, which `CaptureStartDecisionTests` depends on.
+  ///   Self-hosted/local builds opt in via the hidden UserDefault, mirroring
+  ///   `disableSystemAudioCapture`:
+  ///     defaults write com.omi.desktop-dev systemAudioOnlyCaptureEnabled -bool true
   nonisolated static func captureStartDecision(
     micGranted: Bool,
     systemAudioMode: AssistantSettings.SystemAudioCaptureMode,
-    systemAudioSupported: Bool
+    systemAudioSupported: Bool,
+    systemAudioOnlyCaptureEnabled: Bool
   ) -> CaptureStartDecision {
     if micGranted { return .micAndSystem }
-    guard systemAudioSupported, systemAudioMode != .never else { return .blocked }
+    guard systemAudioOnlyCaptureEnabled, systemAudioSupported, systemAudioMode != .never else {
+      return .blocked
+    }
     return .systemOnly
   }
 
@@ -1574,7 +1585,9 @@ class AppState: ObservableObject {
       captureDecision = AppState.captureStartDecision(
         micGranted: AudioCaptureService.checkPermission(),
         systemAudioMode: effectiveSystemAudioMode,
-        systemAudioSupported: systemAudioSupported)
+        systemAudioSupported: systemAudioSupported,
+        systemAudioOnlyCaptureEnabled: UserDefaults.standard.bool(
+          forKey: "systemAudioOnlyCaptureEnabled"))
       if captureDecision == .blocked {
         requestMicrophonePermission()
         return
@@ -1626,7 +1639,10 @@ class AppState: ObservableObject {
         recordingInputDeviceName = device.displayName
       } else {
         currentConversationSource = .desktop
-        recordingInputDeviceName = AudioCaptureService.getCurrentMicrophoneName()
+        // .systemOnly has no running microphone — don't name one in session metadata / UI.
+        recordingInputDeviceName =
+          captureDecision == .systemOnly
+          ? "System Audio" : AudioCaptureService.getCurrentMicrophoneName()
       }
 
       // Initialize audio services based on source
@@ -1863,12 +1879,17 @@ class AppState: ObservableObject {
   // MARK: - Capture Gating (meeting-aware)
 
   /// Start the system-audio tap and wire its chunks/levels to the active sink (the mixer in cloud
-  /// mode, the system Parakeet instance in local mode). No-op if already capturing. System audio is
-  /// optional — a failure is logged and mic-only capture continues.
+  /// mode, the system Parakeet instance in local mode). No-op if already capturing. Returns whether
+  /// the tap ended up running. A failure is non-fatal when a microphone is also capturing (mic-only
+  /// capture continues); `reconcileCapture()` treats it as fatal in `.systemOnly`, where this is the
+  /// only source.
   @available(macOS 14.4, *)
-  private func startSystemAudioCaptureIfNeeded() async {
-    guard let systemService = systemAudioCaptureService as? SystemAudioCaptureService else { return }
-    guard !systemService.capturing else { return }
+  @discardableResult
+  private func startSystemAudioCaptureIfNeeded() async -> Bool {
+    guard let systemService = systemAudioCaptureService as? SystemAudioCaptureService else {
+      return false
+    }
+    guard !systemService.capturing else { return true }
     do {
       try await systemService.startCapture(
         onAudioChunk: { [weak self] audioData in
@@ -1891,12 +1912,15 @@ class AppState: ObservableObject {
       else {
         systemService.stopCapture()
         log("Transcription: System audio capture aborted (recording stopped during start)")
-        return
+        return false
       }
       log("Transcription: System audio capture started (mode=\(effectiveSystemAudioMode.rawValue))")
+      return true
     } catch {
-      logError(
-        "Transcription: System audio capture failed (continuing with mic only)", error: error)
+      // Non-fatal when a microphone is also running; reconcileCapture() treats it as fatal
+      // when this is the only source (.systemOnly — no mic service in this session).
+      logError("Transcription: System audio capture failed", error: error)
+      return false
     }
   }
 
@@ -1975,7 +1999,16 @@ class AppState: ObservableObject {
       }
       if let systemService = systemAudioCaptureService as? SystemAudioCaptureService {
         if systemShouldCapture, !systemService.capturing {
-          await startSystemAudioCaptureIfNeeded()
+          let started = await startSystemAudioCaptureIfNeeded()
+          if !started, isTranscribing, audioCaptureService == nil {
+            // No microphone in this session (.systemOnly) — a system-audio failure here means
+            // zero audio sources are running. Stop rather than sit "recording" with nothing
+            // captured, mirroring the microphone hard-failure treatment above.
+            log("Transcription: stopping — system audio could not start and no microphone is active")
+            captureGateInFlight = false
+            stopTranscription()
+            return
+          }
         } else if !systemShouldCapture, systemService.capturing {
           systemService.stopCapture()
           AudioLevelMonitor.shared.updateSystemLevel(0)
