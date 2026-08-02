@@ -386,6 +386,9 @@ class AppState: ObservableObject {
   /// Serializes async capture start/stop so overlapping reconciles don't race the HAL.
   private var captureGateInFlight = false
   private var captureReconcilePending = false
+  /// Sources this session is starting with. `.systemOnly` when the microphone is
+  /// denied in TCC — see `captureStartDecision`.
+  private var captureDecision: CaptureStartDecision = .micAndSystem
   /// True while recording is armed in "Only during meetings" mode but no call is active yet
   /// (microphone + system audio are paused). Surfaced in the UI as "Waiting for a meeting…".
   @Published var isAwaitingMeeting = false
@@ -396,6 +399,34 @@ class AppState: ObservableObject {
     if UserDefaults.standard.bool(forKey: "disableSystemAudioCapture") { return .never }
     return AssistantSettings.shared.systemAudioCaptureMode
   }
+
+  /// What a capture session can actually start with, given microphone permission
+  /// and the system-audio mode.
+  ///
+  /// The self-hosted build runs with the microphone denied in TCC on purpose:
+  /// the iPhone is the room mic, and the Mac contributes only what the phone
+  /// cannot hear. The backend keeps one in-progress conversation per uid with no
+  /// device dimension, so two mics on the same room interleave into a single
+  /// conversation at doubled STT cost.
+  enum CaptureStartDecision {
+    /// No usable source — prompt for the microphone instead of starting.
+    case blocked
+    /// Microphone (plus system audio, per mode) — the historical path.
+    case micAndSystem
+    /// System audio only; no microphone service is created.
+    case systemOnly
+  }
+
+  nonisolated static func captureStartDecision(
+    micGranted: Bool,
+    systemAudioMode: AssistantSettings.SystemAudioCaptureMode,
+    systemAudioSupported: Bool
+  ) -> CaptureStartDecision {
+    if micGranted { return .micAndSystem }
+    guard systemAudioSupported, systemAudioMode != .never else { return .blocked }
+    return .systemOnly
+  }
+
   private var vadGateService: VADGateService?
   // On-device Parakeet STT (FluidAudio) — used instead of the cloud WebSocket when OMI_LOCAL_STT=1.
   // On-device Parakeet: separate mic vs system-audio instances so transcripts are diarized by
@@ -1534,11 +1565,21 @@ class AppState: ObservableObject {
         return
       }
     } else {
-      // For microphone, check permission
-      guard AudioCaptureService.checkPermission() else {
+      // Microphone permission is optional: with the mic denied in TCC we still
+      // capture system audio (the self-hosted build's whole point — see
+      // captureStartDecision). Only a session with no usable source at all
+      // falls back to prompting.
+      let systemAudioSupported: Bool
+      if #available(macOS 14.4, *) { systemAudioSupported = true } else { systemAudioSupported = false }
+      captureDecision = AppState.captureStartDecision(
+        micGranted: AudioCaptureService.checkPermission(),
+        systemAudioMode: effectiveSystemAudioMode,
+        systemAudioSupported: systemAudioSupported)
+      if captureDecision == .blocked {
         requestMicrophonePermission()
         return
       }
+      log("Transcription: capture decision = \(captureDecision)")
     }
 
     do {
@@ -1590,10 +1631,19 @@ class AppState: ObservableObject {
 
       // Initialize audio services based on source
       if effectiveSource == .microphone {
-        // Initialize audio capture service
-        audioCaptureService = AudioCaptureService()
+        // Initialize audio capture service. Skipped in system-only mode: with no
+        // mic service, reconcileCapture()'s `if let mic = audioCaptureService`
+        // guard skips the microphone entirely and never tries to start it.
+        if captureDecision == .systemOnly {
+          audioCaptureService = nil
+          log("Transcription: microphone not permitted — capturing system audio only")
+        } else {
+          audioCaptureService = AudioCaptureService()
+        }
 
-        // Initialize audio mixer for combining mic and system audio
+        // Initialize audio mixer for combining mic and system audio. Always
+        // created: it is the only sink feeding the WebSocket, and it forwards
+        // system audio on its own once the mic source is marked stalled (2s).
         audioMixer = AudioMixer()
 
         // VAD gate not used for Python backend streaming (backend handles its own VAD)
@@ -1743,23 +1793,27 @@ class AppState: ObservableObject {
   /// Captured audio is mixed into one mono stream (cloud) or fed to separate Parakeet instances
   /// (local) so calls/videos/music end up in the transcript alongside the user's voice.
   private func startMicrophoneAudioCapture() async {
-    guard let audioCaptureService = audioCaptureService else { return }
-
-    // Silent-mic watchdog: on A2DP profile conflict the Bluetooth input device returns
-    // zero samples even though CoreAudio reports healthy capture. Fall back to the
-    // built-in mic when the watchdog fires.
-    audioCaptureService.onSilentMicDetected = { [weak self] in
-      Task { @MainActor in
-        self?.handleSilentMicFallback()
-      }
-    }
-
     // Cloud mode: the mixer sums mic + system into one mono stream for the WebSocket.
     // Local mode: bypass the mixer — mic and system are transcribed by SEPARATE Parakeet
     // instances so transcripts are diarized by source (mic = you, system = another speaker).
+    //
+    // Started before the microphone guard below: in system-only mode there is no
+    // mic service, and the mixer is still the sink that carries system audio to
+    // the WebSocket.
     if !useLocalSTT {
       audioMixer?.start { [weak self] monoMixed in
         self?.transcriptionService?.sendAudio(monoMixed)
+      }
+    }
+
+    // Silent-mic watchdog: on A2DP profile conflict the Bluetooth input device returns
+    // zero samples even though CoreAudio reports healthy capture. Fall back to the
+    // built-in mic when the watchdog fires. No mic service in system-only mode.
+    if let audioCaptureService = audioCaptureService {
+      audioCaptureService.onSilentMicDetected = { [weak self] in
+        Task { @MainActor in
+          self?.handleSilentMicFallback()
+        }
       }
     }
 
