@@ -6983,13 +6983,8 @@ struct SettingsContentView: View {
   }
 
   private func toggleTranscription(enabled: Bool) {
-    // Check microphone permission
-    if enabled && !appState.hasMicrophonePermission {
-      transcriptionError = "Microphone permission required"
-      isTranscribing = false
-      return
-    }
-
+    // No mic pre-guard here: startTranscription() owns the policy (it can start
+    // system-audio-only capture, or prompt for the microphone itself when blocked).
     transcriptionError = nil
     isTogglingTranscription = true
 

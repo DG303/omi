@@ -865,15 +865,7 @@ class AuthService {
             throw AuthError.invalidResponse
         }
 
-        // expiresIn can be String or Int
-        let expiresIn: Int
-        if let expiresInStr = json["expiresIn"] as? String {
-            expiresIn = Int(expiresInStr) ?? 3600
-        } else if let expiresInInt = json["expiresIn"] as? Int {
-            expiresIn = expiresInInt
-        } else {
-            expiresIn = 3600
-        }
+        let expiresIn = AuthService.parseExpiresIn(json)
 
         // localId might be missing from REST API response - extract from JWT if needed
         var localId = json["localId"] as? String ?? ""
@@ -892,6 +884,146 @@ class AuthService {
             expiresIn: expiresIn,
             localId: localId
         )
+    }
+
+    // MARK: - Email/Password Sign In (self-hosted backend)
+
+    /// Parse an identitytoolkit `accounts:signInWithPassword` response body.
+    /// Split out from the network call so it can be unit-tested without a socket.
+    /// `localId` is required: signing in with an empty uid would silently store
+    /// tokens the rest of the app attributes to a different user.
+    nonisolated static func parseSignInWithPasswordResponse(_ data: Data) throws
+        -> FirebaseTokenResult
+    {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let idToken = json["idToken"] as? String,
+              let refreshToken = json["refreshToken"] as? String,
+              let localId = json["localId"] as? String,
+              !localId.isEmpty
+        else {
+            throw AuthError.invalidResponse
+        }
+
+        let expiresIn = AuthService.parseExpiresIn(json)
+
+        return FirebaseTokenResult(
+            idToken: idToken,
+            refreshToken: refreshToken,
+            expiresIn: expiresIn,
+            localId: localId
+        )
+    }
+
+    /// `expiresIn` comes back from the identitytoolkit REST API as a String,
+    /// but tolerate a number. Defaults to one hour when absent or unparseable.
+    private nonisolated static func parseExpiresIn(_ json: [String: Any]) -> Int {
+        if let s = json["expiresIn"] as? String { return Int(s) ?? 3600 }
+        if let i = json["expiresIn"] as? Int { return i }
+        return 3600
+    }
+
+    /// Read a non-blank process-environment value, or nil.
+    /// The bundled `.env` reaches `getenv` via `AppState.loadEnvironment()`.
+    nonisolated static func envValue(_ name: String) -> String? {
+        guard let raw = getenv(name), let value = String(validatingUTF8: raw) else { return nil }
+        let trimmed = value.trimmingCharacters(in: .whitespaces)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    /// Sign in with email + password via the Firebase REST API.
+    ///
+    /// The self-hosted build's only sign-in path. Apple and Google both detour
+    /// through Omi's Rust Cloud Run backend, which mints custom tokens for
+    /// *their* Firebase project; the Backend on macshiva verifies against
+    /// omi-macdad-2026 and rejects those. This talks to identitytoolkit
+    /// directly with FIREBASE_API_KEY, so no Rust backend and no Apple
+    /// entitlement are involved. `saveTokens` then hands off to the existing
+    /// securetoken refresh path, which is already project-generic.
+    func signInWithEmailPassword(email: String, password: String) async throws {
+        guard !isLoading else {
+            NSLog("OMI AUTH: Sign in already in progress, ignoring duplicate request")
+            return
+        }
+        isLoading = true
+        error = nil
+        defer { isLoading = false }
+
+        guard let url = URL(
+            string:
+                "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=\(firebaseApiKey)"
+        ) else {
+            throw AuthError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "email": email,
+            "password": password,
+            "returnSecureToken": true,
+        ])
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AuthError.invalidResponse
+        }
+        guard httpResponse.statusCode == 200 else {
+            NSLog(
+                "OMI AUTH: signInWithPassword failed (HTTP %d): %@",
+                httpResponse.statusCode,
+                String(data: data, encoding: .utf8) ?? "unknown")
+            throw AuthError.tokenExchangeFailed(httpResponse.statusCode)
+        }
+
+        let tokens = try AuthService.parseSignInWithPasswordResponse(data)
+
+        saveTokens(
+            idToken: tokens.idToken,
+            refreshToken: tokens.refreshToken,
+            expiresIn: tokens.expiresIn,
+            userId: tokens.localId)
+        isSignedIn = true
+        saveAuthState(isSignedIn: true, email: email, userId: tokens.localId)
+        AuthState.shared.userEmail = email
+        AuthState.shared.isRestoringAuth = false
+        await RewindDatabase.shared.configure(userId: tokens.localId)
+
+        // Start trial polling for the newly signed-in user
+        if let state = AppState.current {
+            state.startTrialMetadataRefresh()
+            TrialBannerService.shared.start(appState: state)
+        }
+
+        NSLog("OMI AUTH: Signed in via email/password as %@", tokens.localId)
+    }
+
+    /// Sign in from OMI_DEV_EMAIL / OMI_DEV_PASSWORD in the bundled .env.
+    ///
+    /// Called by `AppState.loadEnvironment()` — not by `configure()` — because
+    /// `configure()` runs from `applicationDidFinishLaunching` before the
+    /// bundled .env has been pushed into `getenv`, so the credentials (and
+    /// FIREBASE_API_KEY) would not be visible yet.
+    ///
+    /// Gated on the persisted `auth_isSignedIn` flag rather than `isSignedIn`,
+    /// which may not have been restored yet at this point in startup. No-op
+    /// without both values, which keeps this inert in any non-self-hosted build.
+    func signInFromEnvironmentIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: kAuthIsSignedIn) else { return }
+        guard let email = AuthService.envValue("OMI_DEV_EMAIL"),
+              let password = AuthService.envValue("OMI_DEV_PASSWORD")
+        else { return }
+
+        NSLog("OMI AUTH: Signing in from environment credentials (%@)", email)
+        Task { @MainActor in
+            do {
+                try await signInWithEmailPassword(email: email, password: password)
+            } catch {
+                NSLog("OMI AUTH: env sign-in failed: %@", error.localizedDescription)
+                AuthState.shared.isRestoringAuth = false
+            }
+        }
     }
 
     /// Refresh the ID token using the refresh token

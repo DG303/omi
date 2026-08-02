@@ -1,5 +1,8 @@
 {
-  "unreleased": [],
+  "unreleased": [
+    "Added email and password sign-in, so the app can be pointed at a self-hosted backend",
+    "Recording can now capture system audio alone when microphone access has not been granted (opt-in)"
+  ],
   "releases": [
     {
       "version": "0.11.471",

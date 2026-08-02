@@ -556,11 +556,9 @@ struct DashboardPage: View {
 
     private func toggleListening() {
         let enabled = !appState.isTranscribing
-        if enabled && !appState.hasMicrophonePermission {
-            appState.requestMicrophonePermission()
-            return
-        }
-
+        // No mic pre-guard here: startTranscription() (invoked downstream via
+        // .toggleTranscriptionRequested) owns the policy — it can start system-audio-only
+        // capture, or prompt for the microphone itself when blocked.
         isTogglingListening = true
         transcriptionEnabled = enabled
         AssistantSettings.shared.transcriptionEnabled = enabled

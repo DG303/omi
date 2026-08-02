@@ -871,7 +871,17 @@ struct SidebarView: View {
   @ViewBuilder
   private func microphonePermissionRow(isExpanded: Bool) -> some View {
     let isDenied = appState.isMicrophonePermissionDenied()
-    let isToggleable = appState.hasMicrophonePermission
+    // Toggleable whenever startTranscription() could actually start a session — mirrors
+    // AppState.captureStartDecision(), which also allows a system-audio-only start when the
+    // microphone is denied.
+    let isToggleable =
+      AppState.captureStartDecision(
+        micGranted: appState.hasMicrophonePermission,
+        systemAudioMode: AssistantSettings.shared.systemAudioCaptureMode,
+        systemAudioSupported: appState.isSystemAudioSupported,
+        systemAudioOnlyCaptureEnabled: UserDefaults.standard.bool(
+          forKey: "systemAudioOnlyCaptureEnabled")
+      ) != .blocked
     let isActive = transcriptionEnabled && isToggleable
     let color: Color =
       isToggleable
@@ -1033,11 +1043,8 @@ struct SidebarView: View {
   // MARK: - Toggle Handlers
 
   private func toggleTranscription(enabled: Bool) {
-    // Check microphone permission
-    if enabled && !appState.hasMicrophonePermission {
-      return
-    }
-
+    // No mic pre-guard here: startTranscription() owns the policy (it can start
+    // system-audio-only capture, or prompt for the microphone itself when blocked).
     // Show loading immediately
     isTogglingTranscription = true
 
