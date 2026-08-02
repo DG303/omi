@@ -1575,6 +1575,9 @@ class AppState: ObservableObject {
         showAlert(title: "Device Not Connected", message: "Please connect a wearable device first.")
         return
       }
+      // BLE is always a real audio source — never leave a stale `.systemOnly` from a
+      // prior microphone session sitting here (see reconcileCapture()'s fail-safe below).
+      captureDecision = .micAndSystem
     } else {
       // Microphone permission is optional: with the mic denied in TCC we still
       // capture system audio (the self-hosted build's whole point — see
@@ -2000,9 +2003,12 @@ class AppState: ObservableObject {
       if let systemService = systemAudioCaptureService as? SystemAudioCaptureService {
         if systemShouldCapture, !systemService.capturing {
           let started = await startSystemAudioCaptureIfNeeded()
-          if !started, isTranscribing, audioCaptureService == nil {
-            // No microphone in this session (.systemOnly) — a system-audio failure here means
-            // zero audio sources are running. Stop rather than sit "recording" with nothing
+          if !started, isTranscribing, captureDecision == .systemOnly {
+            // Only a `.systemOnly` session (no microphone by design) treats a failed system-audio
+            // tap as zero audio sources. `audioCaptureService == nil` is NOT a safe proxy for that:
+            // it's also nil for every BLE/pendant session (mic service is only ever created when
+            // effectiveSource == .microphone), so keying on it here would kill a healthy pendant
+            // recording on a CoreAudio tap failure. Stop rather than sit "recording" with nothing
             // captured, mirroring the microphone hard-failure treatment above.
             log("Transcription: stopping — system audio could not start and no microphone is active")
             captureGateInFlight = false
