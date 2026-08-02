@@ -6994,7 +6994,13 @@ struct SettingsContentView: View {
     if enabled {
       appState.startTranscription()
       isTogglingTranscription = false
-      isTranscribing = true
+      // startTranscription() can refuse to start synchronously (paywall, blocked mic with the
+      // gate off, BLE not connected) without throwing — reconcile from the source of truth
+      // instead of assuming success, so the card doesn't show "Recording" while nothing runs.
+      isTranscribing = appState.isTranscribing
+      if !isTranscribing {
+        transcriptionError = "Microphone permission required"
+      }
     } else {
       appState.stopTranscription()
       isTogglingTranscription = false

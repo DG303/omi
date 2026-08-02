@@ -555,19 +555,26 @@ struct DashboardPage: View {
     }
 
     private func toggleListening() {
-        let enabled = !appState.isTranscribing
+        let requestedEnabled = !appState.isTranscribing
         // No mic pre-guard here: startTranscription() (invoked downstream via
         // .toggleTranscriptionRequested) owns the policy — it can start system-audio-only
         // capture, or prompt for the microphone itself when blocked.
         isTogglingListening = true
-        transcriptionEnabled = enabled
-        AssistantSettings.shared.transcriptionEnabled = enabled
-        AnalyticsManager.shared.settingToggled(setting: "transcription", enabled: enabled)
+        AnalyticsManager.shared.settingToggled(setting: "transcription", enabled: requestedEnabled)
         NotificationCenter.default.post(
             name: .toggleTranscriptionRequested,
             object: nil,
-            userInfo: ["enabled": enabled]
+            userInfo: ["enabled": requestedEnabled]
         )
+
+        // The notification is delivered synchronously (DesktopHomeView's onReceive calls
+        // appState.startTranscription()/stopTranscription() inline), so appState.isTranscribing
+        // already reflects whether the start actually succeeded — or was refused (paywall,
+        // blocked mic with the gate off) — by the time post() returns. Persist that, not the
+        // request, so the menu-bar switch (OmiApp.swift) never reads ON while nothing records.
+        let actualEnabled = appState.isTranscribing
+        transcriptionEnabled = actualEnabled
+        AssistantSettings.shared.transcriptionEnabled = actualEnabled
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             isTogglingListening = false
