@@ -31,6 +31,12 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     logging: *default-logging
+    ports:
+      # Loopback-only, for host-side tooling. The nightly health check's vector
+      # backfill imports the backend's own save_structured_vector, which touches
+      # redis; unpublished, that path dies with "connection refused" and the
+      # self-heal never runs. Containers still reach it as redis:6379.
+      - "127.0.0.1:6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
