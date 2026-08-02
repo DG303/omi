@@ -7007,8 +7007,11 @@ struct SettingsContentView: View {
       isTranscribing = false
     }
 
-    // Persist the setting
-    AssistantSettings.shared.transcriptionEnabled = enabled
+    // Persist what actually happened, not what was requested. `transcriptionEnabled` is the
+    // shared "transcriptionEnabled" UserDefaults key that the menu-bar switch and the sidebar
+    // row also read, so persisting `enabled` after a refused start left those reading ON while
+    // nothing recorded — and DesktopHomeView/wake-from-sleep then kept re-attempting the start.
+    AssistantSettings.shared.transcriptionEnabled = isTranscribing
   }
 
   private func setSystemAudioCaptureMode(_ mode: AssistantSettings.SystemAudioCaptureMode) {
