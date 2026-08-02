@@ -1,8 +1,7 @@
 {
   "unreleased": [
     "Added email and password sign-in, so the app can be pointed at a self-hosted backend",
-    "Recording now captures system audio even when microphone access has not been granted",
-    "Fixed the microphone-required capture toggles (sidebar, dashboard, settings) so they can start system-audio-only recording when the mic is denied"
+    "Recording can now capture system audio alone when microphone access has not been granted (opt-in)"
   ],
   "releases": [
     {
