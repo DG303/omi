@@ -6,3 +6,11 @@
 ASSET_PREFIX=dev
 BUNDLE_NAME=Omi Dev
 BUNDLE_DISPLAY_NAME=Omi Dev
+
+// Self-hosted signing override: personal team G6DR2ZD34D, bundle com.bensanson.omi.
+// Overrides Base/Custom.xcconfig (upstream com.friend-app-with-wearable.ios12). Must follow the #includes above.
+APP_BUNDLE_IDENTIFIER=com.bensanson.omi
+DEVELOPMENT_TEAM=G6DR2ZD34D
+// Google sign-in URL scheme must match the macdad Firebase project (omi-macdad-2026).
+// Custom.xcconfig is auto-generated and stale (upstream 1031333818730 client). Override here.
+GOOGLE_REVERSE_CLIENT_ID=com.googleusercontent.apps.1047335153480-sgphso59u0qj1dnq886kp4e91r5pc9bg
