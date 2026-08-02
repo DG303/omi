@@ -35,6 +35,37 @@ services:
     volumes:
       - redis_data:/data
 
+  # Local GCS emulator. `.env` sets STORAGE_EMULATOR_HOST=http://fake-gcs:4443, so
+  # every storage call resolves here — speech profiles, backups, memory recordings,
+  # chat files, private cloud sync, postprocessing.
+  #
+  # This service was lost in the macdad -> macshiva migration, and its absence is not
+  # a graceful degradation: the hostname fails to resolve, google-api-core retries for
+  # 120s, and because the desktop client requests a speech profile on the /v4/listen
+  # upgrade that retry runs inside the WebSocket handler and blocks the uvicorn event
+  # loop. The symptom is a total HTTP outage while new WebSocket upgrades are still
+  # accepted, which reads as "the backend is up" until you try an HTTP call.
+  #
+  # fake-gcs-server creates a bucket per top-level directory under -filesystem-root on
+  # startup, so the bucket layout lives in the gcs_data volume, not in this file.
+  fake-gcs:
+    image: fsouza/fake-gcs-server:latest
+    restart: unless-stopped
+    logging: *default-logging
+    command:
+      - "-scheme"
+      - "http"
+      - "-port"
+      - "4443"
+      - "-host"
+      - "0.0.0.0"
+      - "-public-host"
+      - "fake-gcs:4443"
+      - "-filesystem-root"
+      - "/data"
+    volumes:
+      - gcs_data:/data
+
   backend:
     image: omi-backend-selfhost:latest
     build:
@@ -71,6 +102,8 @@ services:
       qdrant:
         condition: service_started
       redis:
+        condition: service_started
+      fake-gcs:
         condition: service_started
       pusher:
         condition: service_started
@@ -116,6 +149,8 @@ services:
         condition: service_started
       redis:
         condition: service_started
+      fake-gcs:
+        condition: service_started
       speaker-embedding:
         condition: service_healthy
 
@@ -152,3 +187,4 @@ services:
 volumes:
   qdrant_data:
   redis_data:
+  gcs_data:
