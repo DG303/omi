@@ -770,6 +770,10 @@ class AppState: ObservableObject {
     DesktopBackendEnvironment.applyReleaseChannelDefaults()
 
     log("Environment loaded (API keys will be fetched from backend after auth)")
+
+    // Self-hosted build: sign in from OMI_DEV_EMAIL / OMI_DEV_PASSWORD now that
+    // the bundled .env is in the process environment. No-op without them.
+    AuthService.shared.signInFromEnvironmentIfNeeded()
   }
 
   func openScreenRecordingPreferences() {
