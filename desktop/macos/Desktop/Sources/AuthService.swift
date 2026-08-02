@@ -865,15 +865,7 @@ class AuthService {
             throw AuthError.invalidResponse
         }
 
-        // expiresIn can be String or Int
-        let expiresIn: Int
-        if let expiresInStr = json["expiresIn"] as? String {
-            expiresIn = Int(expiresInStr) ?? 3600
-        } else if let expiresInInt = json["expiresIn"] as? Int {
-            expiresIn = expiresInInt
-        } else {
-            expiresIn = 3600
-        }
+        let expiresIn = AuthService.parseExpiresIn(json)
 
         // localId might be missing from REST API response - extract from JWT if needed
         var localId = json["localId"] as? String ?? ""
@@ -912,15 +904,7 @@ class AuthService {
             throw AuthError.invalidResponse
         }
 
-        // expiresIn comes back as a String from the REST API, but tolerate a number.
-        let expiresIn: Int
-        if let s = json["expiresIn"] as? String {
-            expiresIn = Int(s) ?? 3600
-        } else if let i = json["expiresIn"] as? Int {
-            expiresIn = i
-        } else {
-            expiresIn = 3600
-        }
+        let expiresIn = AuthService.parseExpiresIn(json)
 
         return FirebaseTokenResult(
             idToken: idToken,
@@ -928,6 +912,14 @@ class AuthService {
             expiresIn: expiresIn,
             localId: localId
         )
+    }
+
+    /// `expiresIn` comes back from the identitytoolkit REST API as a String,
+    /// but tolerate a number. Defaults to one hour when absent or unparseable.
+    private nonisolated static func parseExpiresIn(_ json: [String: Any]) -> Int {
+        if let s = json["expiresIn"] as? String { return Int(s) ?? 3600 }
+        if let i = json["expiresIn"] as? Int { return i }
+        return 3600
     }
 
     /// Read a non-blank process-environment value, or nil.
@@ -997,6 +989,12 @@ class AuthService {
         AuthState.shared.userEmail = email
         AuthState.shared.isRestoringAuth = false
         await RewindDatabase.shared.configure(userId: tokens.localId)
+
+        // Start trial polling for the newly signed-in user
+        if let state = AppState.current {
+            state.startTrialMetadataRefresh()
+            TrialBannerService.shared.start(appState: state)
+        }
 
         NSLog("OMI AUTH: Signed in via email/password as %@", tokens.localId)
     }
