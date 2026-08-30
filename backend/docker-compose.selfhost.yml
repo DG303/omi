@@ -52,6 +52,16 @@ services:
     image: fsouza/fake-gcs-server:latest
     restart: unless-stopped
     logging: *default-logging
+    # The image entrypoint bakes in `-data /data`, which walks the whole volume and
+    # seeds every object into RAM at startup. Once the volume grew past the VM's
+    # memory (21GB / ~15k objects vs an 8GB VM) the process was OOM-killed in a
+    # restart loop, and it failed silently: the container still reported "running"
+    # with no process inside it. Because /v4/listen fetches the speech profile from
+    # storage inside the WebSocket handler, every live recording session died with
+    # ConnectionRefused while HTTP kept answering, so the backend looked healthy.
+    # Override the entrypoint so only the flags below apply and objects stream from
+    # disk instead of being pre-loaded into memory.
+    entrypoint: ["/bin/fake-gcs-server"]
     command:
       - "-scheme"
       - "http"
