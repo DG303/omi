@@ -5,6 +5,7 @@ One process, asyncio, in-memory state per uid. No locks: asyncio is single-threa
 so state changes between awaits are atomic, and Claude is always awaited outside them.
 """
 
+import asyncio
 import logging
 import os
 import re
@@ -12,7 +13,7 @@ import time
 
 import httpx
 from anthropic import AsyncAnthropic
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("convo-coach")
@@ -141,3 +142,79 @@ async def ask_claude(mode, user_input, recent):
         messages=[{"role": "user", "content": user_input}],
     )
     return resp.content[0].text
+
+
+def deliver(s, text):
+    """A suggestion went out: start the cooldown and remember it so prompts don't repeat it."""
+    s.cooldown_until = time.monotonic() + COOLDOWN_S
+    s.last_suggestions = (s.last_suggestions + [text])[-3:]
+
+
+async def run_claude(s, mode):
+    """One guarded Claude call. Returns a validated line or None; llm_in_flight always clears."""
+    s.llm_in_flight = True
+    started = time.monotonic()
+    result = "error"
+    text = None
+    try:
+        if mode == "opener":
+            user_input = f"Context: {s.opener_context}"
+        else:
+            user_input = "Transcript, oldest first:\n" + transcript(s)
+        raw = await ask_claude(mode, user_input, s.last_suggestions)
+        text = validate(raw, s.last_suggestions)
+        result = "fired" if text else "none" if raw.strip() == "NONE" else "dropped"
+    except asyncio.CancelledError:
+        result = "cancelled"
+        raise
+    except Exception as e:  # timeout, API error: no retry, a late suggestion is worthless
+        log.warning("claude error: %s", type(e).__name__)
+    finally:
+        s.llm_in_flight = False
+        log.info("mode=%s result=%s latency_ms=%d", mode, result, (time.monotonic() - started) * 1000)
+    return text
+
+
+async def evaluate(s):
+    """Webhook decision. If Claude says nothing but speech arrived during the call,
+    look once more in this same request, so that speech isn't stranded."""
+    for _ in range(2):
+        if s.llm_in_flight:
+            return {}
+        if opener_live(s) and s.opener_context:
+            mode = "opener"
+        elif new_other_speech(s) and time.monotonic() >= s.cooldown_until:
+            mode = "followup"
+        else:
+            return {}
+        snapshot = s.seq
+        text = await run_claude(s, mode)
+        s.last_checked = max(s.last_checked, snapshot)
+        if mode == "opener":
+            s.opener_armed_at = None
+        if text:
+            deliver(s, text)
+            return {"message": text}
+        if s.seq == snapshot:
+            return {}
+    return {}
+
+
+async def handle(body):
+    uid = body.get("session_id")
+    segments = body.get("segments")
+    if not uid or not segments:
+        return {}
+    s = sessions.setdefault(uid, Session())
+    ingest(s, segments)
+    return await evaluate(s)
+
+
+@app.post("/webhook")
+async def webhook(request: Request):
+    # Always 200: an error status trips Omi's per-URL circuit breaker and the coach goes quiet
+    try:
+        return await handle(await request.json())
+    except Exception as e:
+        log.error("webhook error: %s", type(e).__name__)
+        return {}

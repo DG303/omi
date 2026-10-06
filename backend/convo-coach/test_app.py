@@ -111,3 +111,150 @@ def test_transcript_labels_speakers_without_names():
     s = coach.Session()
     coach.ingest(s, [me("Hi"), {"text": "Hey", "is_user": False, "speaker": "SPEAKER_01"}])
     assert coach.transcript(s) == "USER: Hi\nOTHER: Hey"
+
+
+def body(*segments):
+    return {"session_id": UID, "segments": list(segments)}
+
+
+def claude_says(monkeypatch, *outputs, gate=None, gate_on=1):
+    """Fake Claude returning outputs in call order. With a gate, call number gate_on
+    blocks until gate.set(); pass a gate to hold a call in flight."""
+    calls = []
+    queue = list(outputs)
+
+    async def fake(mode, user_input, recent):
+        calls.append((mode, user_input))
+        out = queue.pop(0)
+        if gate is not None and len(calls) == gate_on:
+            await gate.wait()
+        return out
+
+    monkeypatch.setattr(coach, "ask_claude", fake)
+    return calls
+
+
+async def until(condition):
+    for _ in range(1000):
+        if condition():
+            return
+        await asyncio.sleep(0)
+    raise AssertionError("condition never became true")
+
+
+def in_flight():
+    return UID in coach.sessions and coach.sessions[UID].llm_in_flight
+
+
+def test_none_leaves_cooldown_untouched(monkeypatch):
+    """#1"""
+    calls = claude_says(monkeypatch, "NONE")
+    assert asyncio.run(coach.handle(body(other("I just got back from Lisbon")))) == {}
+    s = coach.sessions[UID]
+    assert len(calls) == 1
+    assert s.cooldown_until == 0.0
+    assert s.last_suggestions == []
+
+
+def test_valid_webhook_message_starts_cooldown(monkeypatch):
+    """#2 (webhook half)"""
+    calls = claude_says(monkeypatch, GOOD)
+
+    async def run():
+        assert await coach.handle(body(other("I've been climbing a lot lately"))) == {"message": GOOD}
+        assert await coach.handle(body(other("Mostly bouldering, actually"))) == {}
+
+    asyncio.run(run())
+    s = coach.sessions[UID]
+    assert len(calls) == 1  # the second webhook hit the cooldown
+    assert s.cooldown_until > time.monotonic() + 40
+    assert s.last_suggestions == [GOOD]
+
+
+def test_user_only_speech_never_asks_for_a_followup(monkeypatch):
+    calls = claude_says(monkeypatch)
+    assert asyncio.run(coach.handle(body(me("So anyway, that was my weekend")))) == {}
+    assert calls == []
+
+
+def test_codeword_with_context_fires_an_opener_and_disarms(monkeypatch):
+    opener = "That travel guide looks well used. Where are you headed?"
+    calls = claude_says(monkeypatch, opener)
+    result = asyncio.run(coach.handle(body(me("omi opener bookstore, woman holding a travel guide"))))
+    assert result == {"message": opener}
+    assert calls == [("opener", "Context: bookstore woman holding a travel guide")]
+    assert not coach.opener_live(coach.sessions[UID])
+
+
+def test_internal_exception_returns_200_empty(monkeypatch):
+    """#8"""
+
+    def boom(s, segments):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(coach, "ingest", boom)
+    client = TestClient(coach.app)
+    r = client.post("/webhook", json=body(other("hello there")))
+    assert r.status_code == 200
+    assert r.json() == {}
+    r = client.post("/webhook", content=b"not json")
+    assert r.status_code == 200
+    assert r.json() == {}
+
+
+def test_reenable_probe_gets_200():
+    r = TestClient(coach.app).post("/webhook", json={})
+    assert r.status_code == 200
+    assert r.json() == {}
+
+
+def test_in_flight_call_blocks_a_second_call(monkeypatch):
+    """#11"""
+    gate = asyncio.Event()
+    calls = claude_says(monkeypatch, GOOD, gate=gate)
+
+    async def run():
+        a = asyncio.create_task(coach.handle(body(other("I just started learning the cello"))))
+        await until(in_flight)
+        assert await coach.handle(body(other("It's harder than I expected"))) == {}
+        assert len(calls) == 1
+        assert coach.sessions[UID].segments[-1][2]["text"] == "It's harder than I expected"
+        gate.set()
+        assert await a == {"message": GOOD}
+        assert len(calls) == 1  # A fired, so no re-evaluation
+
+    asyncio.run(run())
+
+
+def test_later_speech_is_checked_after_the_call_finishes(monkeypatch):
+    """#12"""
+    gate = asyncio.Event()
+    calls = claude_says(monkeypatch, "NONE", "NONE", gate=gate)
+
+    async def run():
+        a = asyncio.create_task(coach.handle(body(other("We drove up the coast last weekend"))))
+        await until(in_flight)
+        gate.set()
+        assert await a == {}
+        assert not coach.sessions[UID].llm_in_flight
+        assert await coach.handle(body(other("Stopped in Big Sur for a night"))) == {}
+
+    asyncio.run(run())
+    assert [mode for mode, _ in calls] == ["followup", "followup"]
+
+
+def test_speech_during_a_none_call_is_reevaluated_without_another_webhook(monkeypatch):
+    """#14"""
+    gate = asyncio.Event()
+    calls = claude_says(monkeypatch, "NONE", GOOD, gate=gate)
+
+    async def run():
+        a = asyncio.create_task(coach.handle(body(other("Work has been a lot lately"))))
+        await until(in_flight)
+        assert await coach.handle(body(other("We're moving to Denver in March"))) == {}
+        gate.set()
+        assert await a == {"message": GOOD}  # A's own request re-evaluated and fired
+
+    asyncio.run(run())
+    assert [mode for mode, _ in calls] == ["followup", "followup"]
+    assert "Denver" in calls[1][1]
