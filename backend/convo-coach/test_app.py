@@ -136,10 +136,12 @@ def claude_says(monkeypatch, *outputs, gate=None, gate_on=1):
 
 
 async def until(condition):
-    for _ in range(1000):
+    # Bounded by wall-clock time, not loop turns: the silence timers really sleep, and
+    # a fixed turn count finishes before a 10ms sleep on a slow box (it flaked in Docker).
+    for _ in range(2000):
         if condition():
             return
-        await asyncio.sleep(0)
+        await asyncio.sleep(0.001)
     raise AssertionError("condition never became true")
 
 
