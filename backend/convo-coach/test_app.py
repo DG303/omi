@@ -258,3 +258,119 @@ def test_speech_during_a_none_call_is_reevaluated_without_another_webhook(monkey
     asyncio.run(run())
     assert [mode for mode, _ in calls] == ["followup", "followup"]
     assert "Denver" in calls[1][1]
+
+
+def push_returns(monkeypatch, ok):
+    sent = []
+
+    async def fake(uid, text):
+        sent.append(text)
+        return ok
+
+    monkeypatch.setattr(coach, "push", fake)
+    return sent
+
+
+def test_successful_silence_push_starts_cooldown(monkeypatch):
+    """#2 (silence half)"""
+    monkeypatch.setattr(coach, "SILENCE_S", 0.01)
+    calls = claude_says(monkeypatch, "NONE", GOOD)
+    sent = push_returns(monkeypatch, True)
+
+    async def run():
+        await coach.handle(body(other("We hiked Mount Tam on Sunday")))
+        await asyncio.sleep(0.1)
+
+    asyncio.run(run())
+    s = coach.sessions[UID]
+    assert [mode for mode, _ in calls] == ["followup", "restart"]
+    assert sent == [GOOD]
+    assert s.cooldown_until > time.monotonic() + 40
+    assert s.last_suggestions == [GOOD]
+
+
+def test_failed_silence_push_does_not_start_cooldown(monkeypatch):
+    """#3"""
+    monkeypatch.setattr(coach, "SILENCE_S", 0.01)
+    claude_says(monkeypatch, "NONE", GOOD)
+    sent = push_returns(monkeypatch, False)
+
+    async def run():
+        await coach.handle(body(other("We hiked Mount Tam on Sunday")))
+        await asyncio.sleep(0.1)
+
+    asyncio.run(run())
+    s = coach.sessions[UID]
+    assert sent == [GOOD]
+    assert s.cooldown_until == 0.0
+    assert s.last_suggestions == []
+
+
+def test_silence_fires_once_per_lull(monkeypatch):
+    """#9"""
+    monkeypatch.setattr(coach, "SILENCE_S", 0.01)
+    calls = claude_says(monkeypatch, "NONE", "NONE")
+    push_returns(monkeypatch, True)
+
+    async def run():
+        await coach.handle(body(other("The new place on Fifth is great")))
+        await asyncio.sleep(0.2)  # 20 silence periods; still only one fire
+
+    asyncio.run(run())
+    assert [mode for mode, _ in calls] == ["followup", "restart"]
+
+
+def test_new_speech_cancels_a_pending_silence_timer(monkeypatch):
+    """#10 (before it fires)"""
+    monkeypatch.setattr(coach, "SILENCE_S", 0.2)
+    calls = claude_says(monkeypatch, "NONE", "NONE", "NONE")
+    push_returns(monkeypatch, True)
+
+    async def run():
+        await coach.handle(body(other("I've been getting into pottery")))
+        await asyncio.sleep(0.1)
+        await coach.handle(body(other("Mostly mugs so far")))
+        await asyncio.sleep(0.15)  # 0.25s after the first webhook: its timer would have fired
+        assert [mode for mode, _ in calls] == ["followup", "followup"]
+        await asyncio.sleep(0.15)
+        assert [mode for mode, _ in calls] == ["followup", "followup", "restart"]
+
+    asyncio.run(run())
+
+
+def test_new_speech_cancels_a_silence_timer_mid_claude_call(monkeypatch):
+    """#10 (mid-call)"""
+    monkeypatch.setattr(coach, "SILENCE_S", 0.01)
+    gate = asyncio.Event()  # never set: the restart call hangs until cancelled
+    calls = claude_says(monkeypatch, "NONE", GOOD, "NONE", gate=gate, gate_on=2)
+    sent = push_returns(monkeypatch, True)
+
+    async def run():
+        await coach.handle(body(other("My sister just had twins")))
+        await until(in_flight)
+        timer = coach.sessions[UID].silence_task
+        assert await coach.handle(body(other("So I'm an aunt twice over"))) == {}
+        assert timer.cancelled()
+        assert not coach.sessions[UID].llm_in_flight
+        assert [mode for mode, _ in calls] == ["followup", "restart", "followup"]
+        assert sent == []
+
+    asyncio.run(run())
+
+
+def test_cancelling_silence_during_claude_always_clears_in_flight(monkeypatch):
+    """#13"""
+    monkeypatch.setattr(coach, "SILENCE_S", 0.01)
+    gate = asyncio.Event()
+    claude_says(monkeypatch, "NONE", GOOD, gate=gate, gate_on=2)
+    push_returns(monkeypatch, True)
+
+    async def run():
+        await coach.handle(body(other("We just adopted a rescue dog")))
+        await until(in_flight)
+        timer = coach.sessions[UID].silence_task
+        timer.cancel()
+        await asyncio.wait([timer])
+        assert not coach.sessions[UID].llm_in_flight
+
+    asyncio.run(run())

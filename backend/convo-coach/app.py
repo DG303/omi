@@ -207,6 +207,7 @@ async def handle(body):
         return {}
     s = sessions.setdefault(uid, Session())
     ingest(s, segments)
+    await reschedule_silence(s, uid)
     return await evaluate(s)
 
 
@@ -218,3 +219,41 @@ async def webhook(request: Request):
     except Exception as e:
         log.error("webhook error: %s", type(e).__name__)
         return {}
+
+
+async def push(uid, text):
+    """App-initiated push through the Omi backend. Rate-limited there to 10/hour."""
+    async with httpx.AsyncClient(timeout=5) as client:
+        r = await client.post(
+            f"{OMI_API_URL}/v1/integrations/notification",
+            headers={"Authorization": f"Bearer {os.environ['OMI_APP_API_KEY']}"},
+            json={"aid": os.environ["OMI_APP_ID"], "uid": uid, "message": text},
+        )
+    # The error body is the backend's detail string (bad key, not installed, 429), no transcript
+    log.info("push status=%d%s", r.status_code, "" if r.is_success else f" detail={r.text[:200]}")
+    return r.is_success
+
+
+async def silence(s, uid):
+    """Fires once, SILENCE_S after the last segment, unless new speech cancels it first."""
+    await asyncio.sleep(SILENCE_S)
+    try:
+        if s.llm_in_flight or time.monotonic() < s.cooldown_until:
+            return
+        mode = "opener" if opener_live(s) else "restart"
+        text = await run_claude(s, mode)
+        if mode == "opener":
+            s.opener_armed_at = None
+        if text and await push(uid, text):
+            deliver(s, text)  # cooldown only once the push actually landed
+    except Exception as e:
+        log.warning("silence error: %s", type(e).__name__)
+
+
+async def reschedule_silence(s, uid):
+    old = s.silence_task
+    if old and not old.done():
+        old.cancel()
+        # Wait for it to unwind so its finally clears llm_in_flight before we evaluate
+        await asyncio.wait([old])
+    s.silence_task = asyncio.create_task(silence(s, uid))
