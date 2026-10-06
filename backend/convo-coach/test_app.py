@@ -374,3 +374,28 @@ def test_cancelling_silence_during_claude_always_clears_in_flight(monkeypatch):
         assert not coach.sessions[UID].llm_in_flight
 
     asyncio.run(run())
+
+
+def test_cancel_mid_push_keeps_the_cooldown(monkeypatch):
+    """The push may already have gone out, so a cancel during it must not lose the delivery."""
+    monkeypatch.setattr(coach, "SILENCE_S", 0.01)
+    claude_says(monkeypatch, "NONE", GOOD)
+    in_push = asyncio.Event()
+
+    async def hanging_push(uid, text):
+        in_push.set()
+        await asyncio.Event().wait()  # never returns: only a cancel ends it
+
+    monkeypatch.setattr(coach, "push", hanging_push)
+
+    async def run():
+        await coach.handle(body(other("We hiked Mount Tam on Sunday")))
+        await in_push.wait()
+        timer = coach.sessions[UID].silence_task
+        timer.cancel()
+        await asyncio.wait([timer])
+
+    asyncio.run(run())
+    s = coach.sessions[UID]
+    assert s.cooldown_until > time.monotonic() + 40
+    assert s.last_suggestions == [GOOD]

@@ -244,8 +244,18 @@ async def silence(s, uid):
         text = await run_claude(s, mode)
         if mode == "opener":
             s.opener_armed_at = None
-        if text and await push(uid, text):
-            deliver(s, text)  # cooldown only once the push actually landed
+        if text:
+            # Deliver before pushing: a cancel mid-push may still send it, so keep the cooldown.
+            # Roll back only if the push definitely failed (False or an Exception, not a cancel).
+            before = (s.cooldown_until, s.last_suggestions)
+            deliver(s, text)
+            try:
+                ok = await push(uid, text)
+            except Exception:
+                s.cooldown_until, s.last_suggestions = before
+                raise
+            if not ok:
+                s.cooldown_until, s.last_suggestions = before
     except Exception as e:
         log.warning("silence error: %s", type(e).__name__)
 
