@@ -194,6 +194,31 @@ services:
       retries: 5
       start_period: 180s
 
+  # Convo Coach: live small-talk coaching on Ben's watch. The pusher POSTs realtime
+  # transcript segments to /webhook; the coach replies {"message": ...} or, after a
+  # lull, pushes through backend:/v1/integrations/notification. Only its own three
+  # secrets are passed through, not the whole backend .env (compose interpolates them
+  # from backend/.env). The dotted alias exists because the Omi app's URL validator
+  # rejects bare hostnames: the app's webhook URL is
+  # http://convo-coach.internal:8000/webhook.
+  convo-coach:
+    image: omi-convo-coach:latest
+    build:
+      context: ./convo-coach
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      OMI_API_URL: http://backend:8080
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OMI_APP_ID: ${OMI_APP_ID:-}
+      OMI_APP_API_KEY: ${OMI_APP_API_KEY:-}
+    expose:
+      - "8000"
+    networks:
+      default:
+        aliases:
+          - convo-coach.internal
+
 volumes:
   qdrant_data:
   redis_data:
