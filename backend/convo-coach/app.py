@@ -27,6 +27,7 @@ MODEL = "claude-haiku-4-5-20251001"
 OMI_API_URL = os.getenv("OMI_API_URL", "http://backend:8080")
 # Whole phrase, matched after normalize(); covers the usual mis-transcriptions of "omi"
 CODEWORD = re.compile(r"\b(?:omi|oh me|omni|oh my) opener\b")
+NONE = re.compile(r"NONE\b")  # the model sometimes appends an explanation
 QUOTE_PAIRS = {'"': '"', "'": "'", "“": "”"}
 
 # Paraphrased from Vanessa Van Edwards' public material; no book text.
@@ -111,7 +112,9 @@ def new_other_speech(s):
 
 def transcript(s):
     # Labels only; never speaker names or person ids
-    return "\n".join(f"{'USER' if seg.get('is_user') else 'OTHER'}: {seg.get('text', '')}" for _, _, seg in s.segments)
+    return "\n".join(
+        f"{'USER' if seg.get('is_user') else 'OTHER'}: {seg.get('text') or ''}" for _, _, seg in s.segments
+    )
 
 
 def validate(raw, recent):
@@ -119,7 +122,7 @@ def validate(raw, recent):
     text = raw.strip()
     if len(text) >= 2 and QUOTE_PAIRS.get(text[0]) == text[-1]:
         text = text[1:-1].strip()
-    if not text or text == "NONE" or "\n" in text:
+    if not text or NONE.match(text) or "\n" in text:
         return None
     # Omi drops messages of 5 chars or fewer, so a cooldown for one would be wasted
     if len(text) <= 5 or len(text.split()) > MAX_WORDS or text in recent:
@@ -163,7 +166,7 @@ async def run_claude(s, mode):
             user_input = "Transcript, oldest first:\n" + transcript(s)
         raw = await ask_claude(mode, user_input, s.last_suggestions)
         text = validate(raw, s.last_suggestions)
-        result = "fired" if text else "none" if raw.strip() == "NONE" else "dropped"
+        result = "fired" if text else "none" if NONE.match(raw.strip()) else "dropped"
     except asyncio.CancelledError:
         result = "cancelled"
         raise
@@ -261,9 +264,11 @@ async def silence(s, uid):
 
 
 async def reschedule_silence(s, uid):
-    old = s.silence_task
+    # Webhooks are serialized per pusher connection, not per uid, so two can overlap here.
+    # Swap in the new timer before awaiting (it sleeps SILENCE_S before touching state), so a
+    # concurrent call sees it and cancels it instead of orphaning it.
+    old, s.silence_task = s.silence_task, asyncio.create_task(silence(s, uid))
     if old and not old.done():
         old.cancel()
         # Wait for it to unwind so its finally clears llm_in_flight before we evaluate
         await asyncio.wait([old])
-    s.silence_task = asyncio.create_task(silence(s, uid))

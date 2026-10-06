@@ -5,6 +5,7 @@ the network. "#N" in a docstring is item N of the spec's acceptance list
 import asyncio
 import time
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -399,3 +400,69 @@ def test_cancel_mid_push_keeps_the_cooldown(monkeypatch):
     s = coach.sessions[UID]
     assert s.cooldown_until > time.monotonic() + 40
     assert s.last_suggestions == [GOOD]
+
+
+def test_overlapping_webhooks_leave_exactly_one_live_silence_timer(monkeypatch):
+    """Webhooks are serialized per pusher connection, not per uid, so two can overlap."""
+    claude_says(monkeypatch, "NONE", "NONE", "NONE", "NONE")
+
+    def live_timers():
+        return [t for t in asyncio.all_tasks() if t.get_coro().__name__ == "silence" and not t.done()]
+
+    async def run():
+        await coach.handle(body(other("I started a vegetable garden")))
+        first = coach.sessions[UID].silence_task
+        await asyncio.gather(
+            coach.handle(body(other("Mostly tomatoes and basil"))),
+            coach.handle(body(other("The squirrels keep stealing them"))),
+        )
+        assert first.cancelled()
+        assert live_timers() == [coach.sessions[UID].silence_task]
+        coach.sessions[UID].silence_task.cancel()
+
+    asyncio.run(run())
+
+
+def test_none_with_trailing_text_is_dropped_and_logged_none(monkeypatch, caplog):
+    assert coach.validate("NONE - nothing to add", []) is None
+    assert coach.validate("NONE.", []) is None
+    assert coach.validate("NONEXISTENT places are fun to ask about", []) is not None
+    claude_says(monkeypatch, "NONE - nothing to add")
+    with caplog.at_level("INFO", logger="convo-coach"):
+        assert asyncio.run(coach.handle(body(other("I just got back from Lisbon")))) == {}
+    assert "result=none" in caplog.text
+
+
+def test_claude_error_through_webhook_returns_200_empty_and_clears_state(monkeypatch):
+    async def boom(mode, user_input, recent):
+        raise TimeoutError
+
+    monkeypatch.setattr(coach, "ask_claude", boom)
+    r = TestClient(coach.app).post("/webhook", json=body(other("I just got back from Lisbon")))
+    assert r.status_code == 200
+    assert r.json() == {}
+    s = coach.sessions[UID]
+    assert not s.llm_in_flight
+    assert s.cooldown_until == 0.0
+
+
+def test_raising_silence_push_rolls_back_the_delivery(monkeypatch):
+    monkeypatch.setattr(coach, "SILENCE_S", 0.01)
+    claude_says(monkeypatch, "NONE", GOOD)
+    sent = []
+
+    async def raising_push(uid, text):
+        sent.append(text)
+        raise httpx.ConnectError("down")
+
+    monkeypatch.setattr(coach, "push", raising_push)
+
+    async def run():
+        await coach.handle(body(other("We hiked Mount Tam on Sunday")))
+        await asyncio.sleep(0.1)
+
+    asyncio.run(run())
+    s = coach.sessions[UID]
+    assert sent == [GOOD]
+    assert s.cooldown_until == 0.0
+    assert s.last_suggestions == []
