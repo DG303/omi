@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
 	<!-- Stripped for free Apple ID (team G6DR2ZD34D) self-hosted dev build. -->
-	<!-- Upstream paid-tier entitlements (push, applesignin, associated-domains, healthkit, hotspot, wifi-info, app-groups) removed; free personal teams cannot provision them. Use Google sign-in. Originals in *.bak. -->
+	<!-- Upstream paid-tier entitlements (applesignin, associated-domains, healthkit, hotspot, wifi-info, app-groups) still removed (they point at upstream's domains/app group). Push restored 2026-10-06 now that the team is paid. Use Google sign-in. Originals in *.bak. -->
+	<key>aps-environment</key>
+	<string>development</string>
 </dict>
 </plist>
