@@ -911,7 +911,8 @@ class CaptureProvider extends ChangeNotifier
     // Create audio source for BLE device
     final pd = await device.getDeviceInfo(connection);
     final deviceModel = pd.modelNumber.isNotEmpty ? pd.modelNumber : "Omi";
-    if (device.type == DeviceType.omi || device.type == DeviceType.openglass) {
+    // Apple Watch chunks carry the same 3-byte dummy header (AppDelegate.handleAudioChunk), so strip it too.
+    if (device.type == DeviceType.omi || device.type == DeviceType.openglass || device.type == DeviceType.appleWatch) {
       _activeSource = BleDeviceSource(codec: codec, deviceId: deviceId, deviceModel: deviceModel);
     }
     _wal.getSyncs().phone.setDeviceInfo(deviceId, deviceModel);
