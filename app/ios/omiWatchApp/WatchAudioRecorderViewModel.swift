@@ -294,7 +294,14 @@ class WatchAudioRecorderViewModel: NSObject, ObservableObject {
             }
 
             var error: NSError?
+            // Hand the tap buffer over exactly once; re-feeding it makes the resampler repeat audio.
+            var consumed = false
             let inputBlock: AVAudioConverterInputBlock = { inNumPackets, outStatus in
+                if consumed {
+                    outStatus.pointee = .noDataNow
+                    return nil
+                }
+                consumed = true
                 outStatus.pointee = .haveData
                 return buffer
             }
