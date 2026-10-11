@@ -14,6 +14,21 @@ description: "Sequence diagrams for the /v4/listen WebSocket and Pusher processi
 
 ## 1. Connection + Streaming + Transcription
 
+### Self-hosted Apple Watch capture
+
+Watch chunks contain 16 kHz mono PCM16 with a three-byte bridge header. The phone
+strips that header for live streaming and uses `WatchAudioSource` to split the same
+audio into 320-byte frames for the local WAL. Frames sent over a connected socket
+are marked synced; windows with at least ten seconds of unsent audio are kept for
+Offline Sync. A connected socket is not a backend receipt acknowledgment.
+
+The Watch stop callback sends an empty marker through the audio stream after queued
+chunks. CaptureProvider drains the source and saves the WAL's retained tail to disk;
+device cleanup also finalizes before replacing the source. The padded remainder is
+not sent to the socket again. iOS forwards chunks without retaining a second copy of
+the whole recording. Phone-app relaunch recovery and Watch-to-phone delivery while
+the phone is unreachable are outside this change.
+
 The STT provider is selected at session start via `STT_SERVICE_MODELS` env var
 (e.g., `modulate-velma-2,dg-nova-3`). The first provider supporting the
 requested language wins. All providers implement the `STTSocket` ABC and are
