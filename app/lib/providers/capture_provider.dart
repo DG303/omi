@@ -120,6 +120,7 @@ class CaptureProvider extends ChangeNotifier
 
   // Phone mic WAL: buffer for splitting variable-sized PCM chunks into fixed-size frames
   bool _phoneMicWalActive = false;
+  Future<void>? _pendingWatchFinalize;
 
   bool _isLoadingInProgressConversation = false;
 
@@ -752,6 +753,13 @@ class CaptureProvider extends ChangeNotifier
       deviceId,
       onAudioBytesReceived: (List<int> value) {
         final snapshot = List<int>.from(value);
+        if (snapshot.isEmpty && _recordingDevice?.type == DeviceType.appleWatch) {
+          _pendingWatchFinalize = _finalizeWatchRecording();
+          unawaited(_pendingWatchFinalize!.catchError((Object error) {
+            Logger.debug('Could not save stopped Watch recording: $error');
+          }));
+          return;
+        }
         if (snapshot.isEmpty || snapshot.length < 3) return;
 
         // Track bytes received from BLE
@@ -831,8 +839,21 @@ class CaptureProvider extends ChangeNotifier
     _socketReconnectPending = false;
     _stopInProgressConversationRefresh();
     await _closeBleStream(disableNativeBackground: disableNativeBackground);
+    await _pendingWatchFinalize;
+    _pendingWatchFinalize = null;
+    await _finalizeWatchRecording();
     _activeSource = null;
     notifyListeners();
+  }
+
+  Future<void> _finalizeWatchRecording() async {
+    if (_activeSource is! WatchAudioSource && _recordingDevice?.type != DeviceType.appleWatch) return;
+    final sync = _wal.getSyncs().phone;
+    for (final frame in _activeSource?.flush() ?? <WalFrame>[]) {
+      // Live chunks already sent these bytes; only retain the padded tail locally.
+      sync.onFrameCaptured(frame);
+    }
+    await sync.finalizeCurrentSession();
   }
 
   Future<BleAudioCodec> _getAudioCodec(String deviceId) async {
