@@ -187,6 +187,10 @@ class AppleWatchDeviceConnection extends DeviceConnection {
     return null;
   }
 
+  // The watch always streams pcm16; don't fall back to pcm8 when it is momentarily unreachable.
+  @override
+  Future<BleAudioCodec> getAudioCodec() async => BleAudioCodec.pcm16;
+
   @override
   Future<BleAudioCodec> performGetAudioCodec() async {
     return BleAudioCodec.pcm16;
