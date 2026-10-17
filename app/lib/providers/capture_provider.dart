@@ -754,10 +754,10 @@ class CaptureProvider extends ChangeNotifier
       onAudioBytesReceived: (List<int> value) {
         final snapshot = List<int>.from(value);
         if (snapshot.isEmpty && _recordingDevice?.type == DeviceType.appleWatch) {
-          _pendingWatchFinalize = _finalizeWatchRecording();
-          unawaited(_pendingWatchFinalize!.catchError((Object error) {
+          _pendingWatchFinalize = _finalizeWatchRecording().catchError((Object error) {
             Logger.debug('Could not save stopped Watch recording: $error');
-          }));
+          });
+          unawaited(_pendingWatchFinalize!);
           return;
         }
         if (snapshot.isEmpty || snapshot.length < 3) return;
