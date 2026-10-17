@@ -58,6 +58,11 @@ class WatchTransport extends DeviceTransport {
         },
         onRecordingStoppedCb: () {
           Logger.debug('Watch Transport: Recording stopped');
+          // End marker shares the audio stream so queued chunks arrive before finalization.
+          _audioControllers.removeWhere((controller) => controller.isClosed);
+          for (final controller in _audioControllers) {
+            controller.add(const []);
+          }
         },
         onRecordingErrorCb: (String error) {
           Logger.debug('Watch Transport: Recording error: $error');
