@@ -2178,11 +2178,6 @@ packages:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
 
-  cssesc@3.0.0:
-    resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
-    engines: {node: '>=4'}
-    hasBin: true
-
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
@@ -2598,8 +2593,8 @@ packages:
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
 
-  follow-redirects@1.16.0:
-    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
+  follow-redirects@1.16.3:
+    resolution: {integrity: sha512-toOSoqN6d51Wjf1aOFJYcoVv1aND9rj/CwjLU0Vz40oDuSpWDayCeKe4JpL5NL0WdFvoOOCI3BRo69HahjbR1A==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -3404,8 +3399,8 @@ packages:
     peerDependencies:
       postcss: ^8.2.14
 
-  postcss-selector-parser@6.1.4:
-    resolution: {integrity: sha512-bIoJLOmjCO1S9XdY/DcnR5hJxvrDir1PbGChrzXG3vw0/FOliy/fA3dmdhQ441kah4gKv+TwckGzex6wNS5cnQ==}
+  postcss-selector-parser@6.1.6:
+    resolution: {integrity: sha512-BK87/Qgti3DIcgS2PaCVoteFIkjIFvCJBizZDIVSjdlFNg4Jv+SRqbN2JONb/qQUH4ZFqfXYF+izg15W2HVRvA==}
     engines: {node: '>=4'}
 
   postcss-value-parser@4.2.0:
@@ -4020,8 +4015,8 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  undici@6.26.0:
-    resolution: {integrity: sha512-4yqz8a3n5HmGTlsbADNtr/dJlhkh/55Rq798G6ibiULcXbDtaLpTl1pvdqcbFfeoj3iSi52lePFM7h9H21cw/A==}
+  undici@6.29.1:
+    resolution: {integrity: sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA==}
     engines: {node: '>=18.17'}
 
   universalify@0.1.2:
@@ -4523,7 +4518,7 @@ snapshots:
       fs-extra: 10.1.0
       isbinaryfile: 4.0.10
       minimist: 1.2.8
-      plist: 3.1.1
+      plist: 3.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -4546,7 +4541,7 @@ snapshots:
       dir-compare: 4.2.0
       fs-extra: 11.3.5
       minimatch: 9.0.9
-      plist: 3.1.1
+      plist: 3.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -5974,7 +5969,8 @@ snapshots:
 
   '@xmldom/xmldom@0.8.13': {}
 
-  '@xmldom/xmldom@0.9.10': {}
+  '@xmldom/xmldom@0.9.10':
+    optional: true
 
   abbrev@4.0.0: {}
 
@@ -6159,7 +6155,7 @@ snapshots:
 
   axios@1.20.0(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@7.2.0))
+      follow-redirects: 1.16.3(debug@4.4.3(supports-color@7.2.0))
       form-data: 4.0.6
       https-proxy-agent: 5.0.1(supports-color@7.2.0)
       proxy-from-env: 2.1.0
@@ -6411,8 +6407,6 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
-
-  cssesc@3.0.0: {}
 
   csstype@3.2.3: {}
 
@@ -7045,7 +7039,7 @@ snapshots:
 
   flatted@3.4.2: {}
 
-  follow-redirects@1.16.0(debug@4.4.3(supports-color@7.2.0)):
+  follow-redirects@1.16.3(debug@4.4.3(supports-color@7.2.0)):
     optionalDependencies:
       debug: 4.4.3(supports-color@7.2.0)
 
@@ -7691,7 +7685,7 @@ snapshots:
       semver: 7.8.1
       tar: 7.5.16
       tinyglobby: 0.2.17
-      undici: 6.26.0
+      undici: 6.29.1
       which: 6.0.1
 
   node-releases@2.0.47: {}
@@ -7812,6 +7806,7 @@ snapshots:
       '@xmldom/xmldom': 0.9.10
       base64-js: 1.5.1
       xmlbuilder: 15.1.1
+    optional: true
 
   possible-typed-array-names@1.1.0: {}
 
@@ -7837,11 +7832,10 @@ snapshots:
   postcss-nested@6.2.0(postcss@8.5.15):
     dependencies:
       postcss: 8.5.15
-      postcss-selector-parser: 6.1.4
+      postcss-selector-parser: 6.1.6
 
-  postcss-selector-parser@6.1.4:
+  postcss-selector-parser@6.1.6:
     dependencies:
-      cssesc: 3.0.0
       util-deprecate: 1.0.2
 
   postcss-value-parser@4.2.0: {}
@@ -8406,7 +8400,7 @@ snapshots:
       postcss-js: 4.1.0(postcss@8.5.15)
       postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.15)
       postcss-nested: 6.2.0(postcss@8.5.15)
-      postcss-selector-parser: 6.1.4
+      postcss-selector-parser: 6.1.6
       resolve: 1.22.12
       sucrase: 3.35.1
     transitivePeerDependencies:
@@ -8599,7 +8593,7 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  undici@6.26.0: {}
+  undici@6.29.1: {}
 
   universalify@0.1.2: {}
 
